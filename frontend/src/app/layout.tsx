@@ -28,8 +28,11 @@ const RootLayout = (props: Props) => {
       </head>
       <body>
         <Navbar />
-        <div className="flex justify-center">
-          <div className="m-3 w-full max-w-7xl">{props.children}</div>
+        <div className="flex">
+          {/* ml-21/md:ml-67 = w-18/w-64 + 3 */}
+          <div className="duration-medium mt-3 mr-3 mb-3 ml-21 w-full max-w-7xl transition-all md:ml-67">
+            {props.children}
+          </div>
         </div>
       </body>
     </html>

@@ -21,16 +21,36 @@ select:-webkit-autofill:focus {
 
 @layer base {
   /* --- Main --- */
-  .duration-transform {
-    transition-duration: var(--duration-transform);
+  .duration-slow {
+    transition-duration: var(--duration-slow) !important;
   }
 
-  .duration-hover {
-    transition-duration: var(--duration-hover);
+  .duration-medium {
+    transition-duration: var(--duration-medium) !important;
+  }
+
+  .duration-fast {
+    transition-duration: var(--duration-fast) !important;
   }
 
   .border-main {
     border-color: var(--border-main);
+  }
+
+  .bg-accent-color {
+    background-color: var(--accent-color);
+  }
+
+  .bg-accent-color-hover {
+    background-color: var(--accent-color-hover);
+  }
+
+  .text-accent-color {
+    color: var(--accent-color);
+  }
+
+  .text-accent-color-hover {
+    color: var(--accent-color-hover);
   }
 
   /* --- Navbar --- */
