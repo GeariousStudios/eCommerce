@@ -71,7 +71,7 @@ const ThemeButton = () => {
   return (
     <button
       onClick={toggleDarkTheme}
-      className="bg-navbar-link-hover duration-fast m-1 h-10 w-10 rounded-full transition-colors"
+      className="m-1 h-10 w-10 rounded-full transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]"
     >
       {darkTheme ? (
         <SunIcon className="h-10 w-10 p-2" />

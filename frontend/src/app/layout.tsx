@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
-import "./styles/globals.css";
-import "./styles/variables.css";
-import Navbar from "./components/navbar/Navbar";
+import "./styles/globals.scss";
+import "./styles/variables.scss";
+import LayoutWrapper from "./components/layoutWrapper/LayoutWrapper";
+import StorageProvider from "./components/storageProvider/StorageProvider";
 
 type Props = {
   children: ReactNode;
@@ -27,13 +28,9 @@ const RootLayout = (props: Props) => {
         <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
       </head>
       <body>
-        <Navbar />
-        <div className="flex">
-          {/* ml-21/md:ml-67 = w-18/w-64 + 3 */}
-          <div className="duration-medium mt-3 mr-3 mb-3 ml-21 w-full max-w-7xl transition-all md:ml-67">
-            {props.children}
-          </div>
-        </div>
+        <StorageProvider>
+          <LayoutWrapper>{props.children}</LayoutWrapper>
+        </StorageProvider>
       </body>
     </html>
   );

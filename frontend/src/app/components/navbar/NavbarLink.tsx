@@ -1,24 +1,42 @@
-import { LinkIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { ComponentType, ReactNode, SVGProps, useState } from "react";
 
 type Props = {
   href: string;
-  children: ReactNode;
+  label: string;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
 const NavbarLink = (props: Props) => {
+  // States.
+  const [onHover, setOnHover] = useState(false);
 
+  // Mouse enter.
+  const mouseEnter = () => {
+    if (!onHover) {
+      setOnHover(true);
+    }
+  };
+
+  // Mouse leave.
+  const mouseLeave = () => {
+    if (onHover) {
+      setOnHover(false);
+    }
+  };
 
   return (
     <Link
-      className="bg-navbar-link-hover text-navbar duration-fast mr-3 ml-3 flex h-full items-center rounded-xl p-3 text-nowrap transition-colors"
+      onMouseEnter={mouseEnter}
+      onMouseLeave={mouseLeave}
+      className="mr-3 ml-3 flex max-h-12 max-w-12 items-center rounded-xl p-3 text-[var(--text-navbar)] transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:max-w-full"
       href={props.href}
     >
-
-      <LinkIcon className="flex h-6 min-h-6 w-6 min-w-6" />
-      <span className="duration-slow mr-3 ml-3 w-0 overflow-hidden transition-all md:w-full">
-        {props.children}
+      <props.icon
+        className={`${onHover ? "text-[var(--accent-color)]" : ""} flex h-6 min-h-6 w-6 min-w-6 transition-colors duration-[var(--slow)]`}
+      />
+      <span className="mr-3 ml-3 w-0 overflow-hidden text-nowrap transition-all duration-[var(--slow)] md:w-full">
+        {props.label}
       </span>
     </Link>
   );
