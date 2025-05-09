@@ -227,10 +227,13 @@ export default function Home() {
           </div>
 
           {/* --- News content --- */}
-          <div className="bg-grid flex items-center rounded-b border-2 border-t-0 border-[var(--border-main)] p-4">
+          <div className="bg-grid flex max-h-96 flex-col overflow-y-auto rounded-b border-2 border-t-0 border-[var(--border-main)] p-4">
             <div>
               {newsItems.map((item, index) => (
-                <article key={index}>
+                <article
+                  key={index}
+                  className="flex flex-col transition-colors duration-fast hover:bg-[var(--bg-navbar-link)]"
+                >
                   <time className="text-xs uppercase" dateTime={item.date}>
                     {new Date(item.date).toLocaleDateString("sv-SE", {
                       day: "numeric",
@@ -239,12 +242,12 @@ export default function Home() {
                     })}
                   </time>
 
-                  <div>
+                  <div className="flex items-center justify-between">
                     <h3 className="text-xl text-[var(--accent-color)]">
                       {item.type}
                     </h3>
                     {isLoggedIn !== false && isAdmin && (
-                      <div>
+                      <div className="flex gap-2">
                         <button
                           type="button"
                           className="mr-1 h-6 w-6 cursor-pointer transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
@@ -255,7 +258,7 @@ export default function Home() {
 
                         <button
                           type="button"
-                          className="mr-1 h-6 w-6 cursor-pointer transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+                          className="mr-1 h-6 w-6 cursor-pointer transition-colors duration-[var(--fast)] hover:text-[var(--button-delete)]"
                           onClick={() => toggleConfirmModal(item.id)}
                         >
                           <TrashIcon />
@@ -263,15 +266,19 @@ export default function Home() {
                       </div>
                     )}
                   </div>
+
                   <h4 className="text-lg font-semibold">{item.headline}</h4>
+
                   <div dangerouslySetInnerHTML={{ __html: item.content }} />
-                  <small>
+                  <small className="text-nowrap italic opacity-25">
                     Publicerad av:{" "}
                     {isAdmin
                       ? item.author + " (ID: " + item.authorId + ")"
                       : item.author}
                   </small>
-                  <span />
+                  {index !== newsItems.length - 1 && (
+                    <span className="mt-4 mb-4 flex h-[2px] w-full self-stretch rounded bg-[var(--border-main)]"></span>
+                  )}
                 </article>
               ))}
             </div>

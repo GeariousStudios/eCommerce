@@ -166,14 +166,6 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
                 </span>
                 <span>{newsId ? "Uppdatera nyhet" : "Lägg till nyhet"}</span>
               </h2>
-              {/* <label htmlFor="date">Datum</label>
-              <input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-              /> */}
 
               <Input
                 id="date"
@@ -195,14 +187,6 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
                 ]}
                 required
               />
-
-              {/* <label htmlFor="headline">Rubrik</label>
-              <input
-                id="headline"
-                value={headline}
-                onChange={(e) => setHeadline(e.target.value)}
-                required
-              /> */}
 
               <Input
                 id="headline"
