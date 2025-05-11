@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import useAuthStatus from "./useAuthStatus";
 
-const useUserPreferences = () => {
+const useUserPrefs = () => {
   // States.
   const { isLoggedIn } = useAuthStatus();
   const [userTheme, setUserTheme] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingUserPrefs, setIsLoadingUserPrefs] = useState(false);
 
   // Other variables.
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -19,7 +19,7 @@ const useUserPreferences = () => {
 
     // Theme fetcher.
     const fetchUserTheme = async () => {
-      setIsLoading(true);
+      setIsLoadingUserPrefs(true);
       try {
         const response = await fetch(`${apiUrl}/user-preferences`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -34,7 +34,7 @@ const useUserPreferences = () => {
       } catch (err) {
         console.error("Misslyckades att hämta användartema:", err);
       } finally {
-        setIsLoading(false);
+        setIsLoadingUserPrefs(false);
       }
     };
 
@@ -49,16 +49,24 @@ const useUserPreferences = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ theme: newTheme }),
+        body: JSON.stringify({ Theme: newTheme }),
       });
       setUserTheme(newTheme);
     } catch (err) {
       console.error("Misslyckades att uppdatera användartema:", err);
     }
   };
+
+  useEffect(() => {
+    if (userTheme) {
+      document.documentElement.setAttribute("data-theme", userTheme);
+      localStorage.setItem("theme", userTheme);
+      window.dispatchEvent(new Event("theme-changed"));
+    }
+  }, [userTheme]);
   /* --- BACKEND COMMUNICATION --- */
 
-  return { userTheme, updateUserTheme, isLoading };
+  return { userTheme, updateUserTheme, isLoadingUserPrefs };
 };
 
-export default useUserPreferences;
+export default useUserPrefs;

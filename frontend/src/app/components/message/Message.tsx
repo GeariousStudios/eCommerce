@@ -1,0 +1,73 @@
+import { hyperLinkButtonClass } from "@/app/styles/buttonClasses";
+import {
+  ArrowPathIcon,
+  ExclamationCircleIcon,
+  FaceFrownIcon,
+  IdentificationIcon,
+  MagnifyingGlassCircleIcon,
+  NoSymbolIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import Link from "next/link";
+import { ElementType, ReactNode, useEffect, useState } from "react";
+
+type Props = {
+  content: string;
+  icon?: string;
+  fullscreen?: boolean;
+};
+
+const iconMap: Record<string, ElementType> = {
+  loading: ArrowPathIcon,
+  deny: IdentificationIcon,
+  server: NoSymbolIcon,
+  user: UserIcon,
+  beware: ExclamationCircleIcon,
+  search: MagnifyingGlassCircleIcon
+};
+
+const contentMap: Record<string, ReactNode> = {
+  loading: "Laddar...",
+  auth: "Autentiserar...",
+  deny: (
+    <div className="flex flex-col">
+      <span>Obehörig access!</span>{" "}
+      <span>
+        <Link href="/" className={`${hyperLinkButtonClass}`}>
+          Klicka här
+        </Link>{" "}
+        för att logga in.
+      </span>
+    </div>
+  ),
+  server: "Ingen kontakt med servern, försök igen senare!",
+};
+
+const Message = (props: Props) => {
+  const [Icon, setIcon] = useState<ElementType | null>(null);
+
+  useEffect(() => {
+    setIcon(() => (props.icon ? (iconMap[props.icon] ?? null) : null));
+  }, [props.icon]);
+
+  const content = contentMap[props.content] ?? props.content;
+
+  return (
+    <div
+      className={`${props.fullscreen ? "fixed inset-0 ml-18 overflow-auto md:ml-64" : "h-full grow"} flex items-center justify-center`}
+    >
+      <div className="flex flex-col items-center gap-3 opacity-75">
+        {Icon ? (
+          <Icon
+            className={`${props.icon === "loading" ? "motion-safe:animate-[spin_2s_linear_infinite]" : ""} h-8 w-8`}
+          />
+        ) : (
+          <FaceFrownIcon className="h-8 w-8" />
+        )}
+        <span className="text-center">{content}</span>
+      </div>
+    </div>
+  );
+};
+
+export default Message;

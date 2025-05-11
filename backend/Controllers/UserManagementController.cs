@@ -65,6 +65,9 @@ namespace backend.Controllers
                 Email = u.Email,
                 Roles = u.GetRoleStrings(),
                 IsLocked = u.IsLocked,
+
+                // Meta data.
+                IsOnline = u.IsOnline,
             });
 
             return Ok(result);

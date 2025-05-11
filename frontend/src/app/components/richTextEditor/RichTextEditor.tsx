@@ -95,7 +95,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     };
 
     return (
-      <div className="focus-within:z-[calc(var(--z-base)+1) relative mt-4 mb-4 w-full rounded border-2 border-[var(--border-main)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
+      <div className="focus-within:z-[calc(var(--z-base)+1) relative w-full rounded border-2 border-[var(--border-main)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
         <QuillWrapper
           ref={quillRef}
           id="quill-editor"

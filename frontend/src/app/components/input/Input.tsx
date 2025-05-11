@@ -1,9 +1,9 @@
 import React from "react";
-import styles from "./Input.module.scss";
 
 type InputProps = {
   id?: string;
   label?: string;
+  placeholder?: string;
   type?: string;
   value?: string;
   checked?: boolean;
@@ -26,6 +26,7 @@ const isDarkTheme = () => {
 const Input = ({
   id,
   label,
+  placeholder,
   type,
   value,
   checked,
@@ -36,37 +37,46 @@ const Input = ({
 }: InputProps) => {
   // Checks.
   const isCheckbox = type === "checkbox";
+  const isRadio = type === "radio";
   const isDate = type === "date";
-  const isNotClickable = id === "notClickable";
+  const isDisabled = id === "disabled";
 
   return (
-    <div
-      className={`${isCheckbox ? "flex items-center justify-center" : ""} ${isDarkTheme() ? "dark-calender" : ""} relative w-full`}
-    >
-      <input
-        type={type}
-        id={id}
-        name={id}
-        placeholder={isCheckbox ? undefined : " "}
-        value={isCheckbox ? undefined : value}
-        checked={isCheckbox ? checked : undefined}
-        onChange={(e) =>
-          onChange &&
-          (isCheckbox ? onChange(e.target.checked) : onChange(e.target.value))
-        }
-        spellCheck={spellCheck}
-        required={required}
-        className={`${isNotClickable ? "pointer-events-none" : "pointer-events-auto"} ${isCheckbox ? "relative max-h-5 min-h-5 max-w-5 min-w-5 cursor-pointer appearance-none bg-[var(--bg-main)] accent-[var(--accent-color)]" : "duration-medium mt-4 mb-4 flex max-h-12 min-h-12 w-full bg-transparent p-4 caret-[var(--accent-color)] transition-all"} ${isDate ? "" : ""} ${onModal ? "modal-label" : ""} rounded border-2 border-[var(--border-main)] last:mb-4`}
-      />
-      {label?.trim() && (
-        <label
-          htmlFor={id}
-          className={`${isDate ? "top-0" : "top-[30%]"} pointer-events-none absolute left-3 translate-y-[15%] pr-1.5 pl-1.5 transition-all duration-[var(--slow)] select-none`}
-        >
-          {label}
-        </label>
-      )}
-    </div>
+    <>
+      <div
+        className={`${isCheckbox || isRadio ? "flex items-center justify-center" : "w-full"} ${isDarkTheme() ? "dark-calender" : ""} relative`}
+      >
+        <input
+          type={type}
+          id={id}
+          name={id}
+          placeholder={
+            isCheckbox || isRadio
+              ? undefined
+              : `${placeholder !== undefined ? placeholder : " "}`
+          }
+          value={isCheckbox || isRadio ? undefined : value}
+          checked={isCheckbox || isRadio ? checked : undefined}
+          onChange={(e) =>
+            onChange &&
+            (isCheckbox || isRadio
+              ? onChange(e.target.checked)
+              : onChange(e.target.value))
+          }
+          spellCheck={spellCheck}
+          required={required}
+          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative max-h-5 min-h-5 max-w-5 min-w-5 cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex max-h-12 min-h-12 w-full p-4 caret-[var(--accent-color)]"} ${isRadio ? "rounded-4xl" : ""} ${isDate ? "" : ""} rounded border-2 border-[var(--border-main)]`}
+        />
+        {label?.trim() && (
+          <label
+            htmlFor={id}
+            className={`${isDate ? "top-0" : "top-[57.5%]"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} pointer-events-none absolute left-3 -translate-y-[65%] pr-1.5 pl-1.5 transition-[top] duration-[var(--slow)] select-none`}
+          >
+            {label}
+          </label>
+        )}
+      </div>
+    </>
   );
 };
 

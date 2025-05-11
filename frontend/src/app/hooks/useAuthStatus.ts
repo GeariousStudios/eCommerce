@@ -1,10 +1,15 @@
+import { connection } from "next/server";
 import { useEffect, useState } from "react";
 
 const useAuthStatus = () => {
   // States.
-  const [isLoading, setIsLoading] = useState<boolean | null>(null);
+  const [isLoadingAuthStatus, setIsLoadingAuthStatus] = useState<
+    boolean | null
+  >(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
+  const [isConnected, setIsConnected] = useState<boolean | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
   // Other variables.
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -13,17 +18,27 @@ const useAuthStatus = () => {
   /* --- BACKEND COMMUNICATION --- */
   useEffect(() => {
     const fetchAuthData = async () => {
-      if (!token) {
-        setIsLoggedIn(false);
-        setUserRoles([]);
-        setIsLoading(false);
-        return;
-      }
-
       try {
-        setIsLoading(true);
+        setIsLoadingAuthStatus(true);
+
+        // Test API connection.
+        const connectionResponse = await fetch(`${apiUrl}/ping`);
+        setIsConnected(connectionResponse.ok);
+
+        // Skip the rest if not connected.
+        if (!connectionResponse.ok) {
+          setIsLoggedIn(false);
+          setUserRoles([]);
+          return;
+        }
 
         // Check login.
+        if (!token) {
+          setIsLoggedIn(false);
+          setUserRoles([]);
+          return;
+        }
+
         const loginResponse = await fetch(`${apiUrl}/user/check-login`, {
           headers: {
             "Content-Type": "application/json",
@@ -60,11 +75,12 @@ const useAuthStatus = () => {
           setUserRoles([]);
         }
       } catch (err) {
-        console.error("Misslyckades med att hämta auth-status:", err);
+        setIsConnected(false);
         setIsLoggedIn(false);
         setUserRoles([]);
       } finally {
-        setIsLoading(false);
+        setIsLoadingAuthStatus(false);
+        setIsAuthReady(true);
       }
     };
 
@@ -72,10 +88,13 @@ const useAuthStatus = () => {
   }, []);
   /* --- BACKEND COMMUNICATION --- */
 
-  const isAdmin = userRoles.includes("Admin");
-  const isDev = userRoles.includes("Developer");
-
-  return { isLoggedIn, isAdmin, isDev, isLoading };
+  return {
+    isLoggedIn,
+    isAdmin: userRoles.includes("Admin"),
+    isDev: userRoles.includes("Developer"),
+    isConnected,
+    isAuthReady,
+  };
 };
 
 export default useAuthStatus;

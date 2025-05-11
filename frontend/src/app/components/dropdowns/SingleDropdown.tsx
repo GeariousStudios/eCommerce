@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import styles from "./Dropdown.module.scss";
 import ChevronDownIcon from "@heroicons/react/20/solid/ChevronDownIcon";
 
 type OptionProps = {
@@ -9,20 +8,22 @@ type OptionProps = {
 
 type DropdownProps = {
   id?: string;
-  label: string;
+  label?: string;
   options: OptionProps[];
   value: string;
   onChange?: (value: string) => void;
   required?: boolean;
+  onModal?: boolean;
 };
 
-const Dropdown = ({
+const SingleDropdown = ({
   id,
   label,
   options,
   value,
   onChange,
   required,
+  onModal = false,
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -51,7 +52,7 @@ const Dropdown = ({
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <div
-        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 mt-4 mb-4 flex max-h-12 min-h-12 w-full cursor-pointer items-center rounded border-2 border-[var(--border-main)] bg-transparent p-4 transition-[max-height] duration-[var(--medium)]`}
+        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex max-h-12 min-h-12 w-full cursor-pointer items-center rounded border-2 border-[var(--border-main)] bg-transparent p-4 transition-[max-height] duration-[var(--medium)]`}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -73,20 +74,20 @@ const Dropdown = ({
           <ChevronDownIcon
             className={`${
               isOpen ? "rotate-180 text-[var(--accent-color)]" : ""
-            } h-6 min-h-6 w-0 rotate-0 font-bold transition-all duration-[var(--slow)] md:min-w-6`}
+            } h-6 min-h-6 w-0 min-w-6 rotate-0 transition-[color,rotate] duration-[var(--slow)]`}
           />
         </span>
       </div>
 
       <label
         htmlFor={id}
-        className={`${value || isOpen ? "top-0 translate-y-0 bg-[var(--bg-navbar)] font-semibold text-[var(--accent-color)]" : "top-[30%] translate-y-[15%] bg-transparent"} pointer-events-none absolute left-3 z-2 pr-1.5 pl-1.5 transition-all duration-[var(--slow)] select-none`}
+        className={`${value || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[57.5%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-3 z-2 pr-1.5 pl-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
       >
         {label}
       </label>
 
       <ul
-        className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} overflow-y-auto" absolute top-[calc(100%-1rem)] left-0 z-10 ml-2 w-[calc(100%-1rem)] list-none rounded-b border-2 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-all duration-[var(--medium)]`}
+        className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} absolute left-0 z-10 ml-2 w-[calc(100%-1rem)] list-none rounded-b border-2 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
         role="listbox"
         inert={!isOpen || undefined}
       >
@@ -145,4 +146,4 @@ const Dropdown = ({
   );
 };
 
-export default Dropdown;
+export default SingleDropdown;

@@ -1,13 +1,17 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import Dropdown from "../dropdown/Dropdown";
+import SingleDropdown from "../dropdowns/SingleDropdown";
 import { FocusTrap } from "focus-trap-react";
 import RichTextEditor, {
   RichTextEditorRef,
 } from "../richTextEditor/RichTextEditor";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
 import Input from "../input/Input";
+import {
+  buttonPrimaryClass,
+  buttonSecondaryClass,
+} from "@/app/styles/buttonClasses";
 
 type Props = {
   isOpen: boolean;
@@ -153,14 +157,14 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
       )}
 
       {isOpen && (
-        <div className="w-vw fixed inset-0 z-[var(--z-overlay)] h-svh bg-black/50">
+        <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
           <FocusTrap focusTrapOptions={{ initialFocus: false }}>
             <form
               ref={formRef}
-              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col overflow-y-auto rounded border-2 border-[var(--border-main)] bg-[var(--bg-navbar)] p-4"
+              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-6 overflow-y-auto rounded border-2 border-[var(--border-main)] bg-[var(--bg-modal)] p-6"
               onSubmit={(e) => (newsId ? updateNews(e, newsId) : addNews(e))}
             >
-              <h2 className="mb-4 flex items-center text-2xl font-semibold">
+              <h2 className="mb-9 flex items-center text-2xl font-semibold">
                 <span className="mr-2 h-6 w-6 text-[var(--accent-color)]">
                   {newsId ? <PencilSquareIcon /> : <PlusIcon />}
                 </span>
@@ -177,7 +181,7 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
                 required
               />
 
-              <Dropdown
+              <SingleDropdown
                 label="Nyhetstyp"
                 value={type}
                 onChange={setType}
@@ -185,6 +189,7 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
                   { value: "Release", label: "Release" },
                   { value: "Hotfix", label: "Hotfix" },
                 ]}
+                onModal={true}
                 required
               />
 
@@ -204,14 +209,18 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
                 required
               />
 
-              <div className="mt-4 flex justify-between gap-4">
-                <button type="button" onClick={onClose} className="w-1/3">
+              <div className="flex justify-between gap-6">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className={`${buttonSecondaryClass} w-1/3`}
+                >
                   Ångra
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveClick}
-                  className="w-2/3"
+                  className={`${buttonPrimaryClass} w-2/3`}
                 >
                   {newsId ? "Uppdatera" : "Lägg till"}
                 </button>

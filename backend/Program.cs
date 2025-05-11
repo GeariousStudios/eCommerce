@@ -35,14 +35,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 /* --- Home --- */
-// builder.Services.AddDbContext<AppDbContext>(options =>
-//     options.UseSqlServer(
-//         "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
-//     )
-// );
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
+    )
+);
 
 /* --- Work --- */
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=eCommerce.db"));
+// builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=eCommerce.db"));
 
 builder.Services.AddCors(options =>
 {
@@ -78,29 +78,29 @@ app.MapControllers();
 // Console.WriteLine(BCrypt.Net.BCrypt.HashPassword("admin123"));
 
 /* --- Create user --- */
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+// using (var scope = app.Services.CreateScope())
+// {
+//     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    if (!db.Users.Any())
-    {
-        var user = new User
-        {
-            Name = "Test Admin",
-            Username = "admin",
-            Email = "admin@example.com",
-            Password = "admin123",
-            Roles = UserRoles.Admin,
-            UserPreferences = new UserPreferences
-            {
+//     if (!db.Users.Any())
+//     {
+//         var user = new User
+//         {
+//             Name = "Test Admin",
+//             Username = "admin",
+//             Email = "admin@example.com",
+//             Password = "admin123",
+//             Roles = UserRoles.Admin,
+//             UserPreferences = new UserPreferences
+//             {
 
-            }
-        };
+//             }
+//         };
 
-        db.Users.Add(user);
-        await db.SaveChangesAsync();
-    }
-}
+//         db.Users.Add(user);
+//         await db.SaveChangesAsync();
+//     }
+// }
 
 
 app.Run();

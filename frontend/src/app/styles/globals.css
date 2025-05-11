@@ -17,19 +17,19 @@ input[type="date"]:valid ~ label,
 input:not([type="date"]):not(:placeholder-shown) ~ label,
 input:not(:placeholder-shown) ~ label,
 input:-webkit-autofill ~ label {
-  background: var(--bg-main);
+  /* background: var(--bg-main); */
   color: var(--accent-color);
   top: 0;
   font-weight: 600;
 }
 
-// If on modal, change bg to --bg-modal.
+/* If on modal, change bg to --bg-modal. */
 input:focus.modal-label ~ label,
 input[type="date"].modal-label:valid ~ label,
 input.modal-label:not([type="date"]):not(:placeholder-shown) ~ label,
 input.modal-label:not(:placeholder-shown) ~ label,
 input.modal-label:-webkit-autofill ~ label {
-  background: var(--bg-modal) !important;
+  /* background: var(--bg-modal) !important; */
 }
 
 #navbar-menu {
@@ -56,6 +56,21 @@ select:-webkit-autofill:focus {
 
 .dark-calender input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  &:checked::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 6px;
+    width: 4px;
+    height: 8px;
+    border: solid var(--accent-color);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
 }
 
 /* --- Scrollbar --- */
@@ -134,7 +149,7 @@ select:-webkit-autofill:focus {
   }
 }
 
-// Highlighted borders when tabbing between focusable objects.
+/* Highlighted borders when tabbing between focusable objects. */
 a:focus-visible,
 li:focus-visible,
 button:focus-visible,
@@ -150,7 +165,7 @@ th:focus-visible {
   transition: 0s;
 }
 
-// /* --- Quill --- *
+/* --- Quill --- */
 .ql-toolbar.ql-snow,
 .ql-container.ql-snow {
   border: none !important;
@@ -169,7 +184,7 @@ th:focus-visible {
 
   button,
   .ql-picker-label {
-    transition: background-color 0.1s ease;
+    transition: background-color var(--fast);
     border-radius: 4px;
   }
 
@@ -203,32 +218,56 @@ th:focus-visible {
   .ql-italic,
   .ql-underline,
   .ql-strike,
-  .ql-picker,
+  .ql-color,
+  .ql-background,
   .ql-list,
   .ql-clean {
     display: flex;
     justify-content: center;
-    align-items: center;
 
+    &::before,
     &::after {
       position: absolute;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    &::after {
       display: flex;
       align-items: center;
-      background-color: #00000075;
-      font-size: 0.75rem;
-      min-height: 1.75rem;
+      background-color: var(--bg-tooltip);
+      font-size: 0.8rem;
+      min-height: 1.625rem;
+      line-height: 1.125;
       border-radius: 4px;
       color: var(--text-main);
-      padding: 0.25rem 0.5rem;
-      transform: translateY(-90%);
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      pointer-events: none;
+      padding: 0.4rem 0.6rem;
+      bottom: 100%;
       white-space: pre;
     }
 
-    &:hover::after {
+    &::before {
+      content: "";
+      bottom: 98.5%;
+      height: 15px;
+      width: 15px;
+      background: var(--bg-tooltip);
+      transform: rotate(45deg);
+    }
+
+    &:hover::after,
+    &:hover::before {
       opacity: 1;
+    }
+  }
+
+  .ql-picker {
+    &::before {
+      bottom: 124%;
+    }
+
+    &::after {
+      bottom: 139%;
     }
   }
 
@@ -274,7 +313,6 @@ th:focus-visible {
   min-height: 10rem !important;
   max-height: 10rem !important;
   font-size: 1rem;
-  transition: font-size 0.2s ease;
 
   &:focus-visible {
     outline: none !important;
@@ -291,6 +329,10 @@ li[data-list] {
 
 [data-list="bullet"] {
   list-style: disc;
+}
+
+[data-list="ordered"] {
+  list-style: decimal;
 }
 
 li.ql-indent-1 {

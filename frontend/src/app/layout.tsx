@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import "./styles/globals.scss";
-import "./styles/variables.scss";
+import "./styles/globals.css";
+import "./styles/variables.css";
 import LayoutWrapper from "./components/layoutWrapper/LayoutWrapper";
 import StorageProvider from "./components/storageProvider/StorageProvider";
 

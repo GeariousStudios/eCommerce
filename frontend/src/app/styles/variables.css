@@ -22,16 +22,21 @@
 
   --accent-color-hover-dark: #4b815b;
   --accent-color-hover-light: #6faa7f;
+
+  --accent-color-active-dark: #3e6e4e;
+  --accent-color-active-light: #5e966e;
 }
 
 [data-theme="dark"] {
   /* --- Main --- */
   --bg-main: var(--bg-main-dark);
   --text-main: #e0e0e0;
+  --text-main-reverse: #212121;
   --border-main: var(--border-main-dark);
 
   --accent-color: var(--accent-color-dark);
   --accent-color-hover: var(--accent-color-hover-dark);
+  --accent-color-active: var(--accent-color-active-dark);
 
   /* --- Navbar --- */
   --bg-navbar: #1a1a1a;
@@ -42,23 +47,42 @@
   --bg-modal: #1a1a1a;
 
   /* --- Grid --- */
-  --grid: var(--bg-main-dark);
-  --grid-header: #1a1a1a;
+  --bg-grid: var(--bg-main-dark);
+  --bg-grid-header: #1a1a1a;
+  --bg-grid-header-hover: #3a3a3a;
+
+  /* --- Tooltip --- */
+  --bg-tooltip: #5a5a5a;
+  --text-tooltip: var(--text-main);
 
   /* --- Buttons --- */
   --button-primary: var(--accent-color);
   --button-primary-hover: var(--accent-color-hover);
+  --button-primary-active: var(--accent-color-active);
+
+  --button-secondary: #3a3a3a;
+  --button-secondary-hover: #e0e0e0;
+  --button-secondary-active: #212121;
+
   --button-delete: #aa6f6f;
+  --button-delete-hover: #814b4b;
+  --button-delete-active: #663939;
+
+  /* --- Other --- */
+  --locked: var(--button-delete);
+  --unlocked: var(--button-primary);
 }
 
 [data-theme="light"] {
   /* --- Main --- */
   --bg-main: var(--bg-main-light);
   --text-main: #212121;
+  --text-main-reverse: #e0e0e0;
   --border-main: var(--border-main-light);
 
   --accent-color: var(--accent-color-light);
   --accent-color-hover: var(--accent-color-hover-light);
+  --accent-color-active: var(--accent-color-active-light);
 
   /* --- Navbar --- */
   --bg-navbar: #f0f0f0;
@@ -69,13 +93,30 @@
   --bg-modal: #f0f0f0;
 
   /* --- Grid --- */
-  --grid: var(--bg-main-light);
-  --grid-header: #f0f0f0;
+  --bg-grid: var(--bg-main-light);
+  --bg-grid-header: #f0f0f0;
+  --bg-grid-header-hover: #d6d6d6;
+
+  /* --- Tooltip --- */
+  --bg-tooltip: #d9d9d9;
+  --text-tooltip: var(--text-main);
 
   /* --- Buttons --- */
   --button-primary: var(--accent-color);
   --button-primary-hover: var(--accent-color-hover);
+  --button-primary-active: var(--accent-color-active);
+
+  --button-secondary: #d6d6d6;
+  --button-secondary-hover: #212121;
+  --button-secondary-active: #e0e0e0;
+
   --button-delete: #814b4b;
+  --button-delete-hover: #aa6f6f;
+  --button-delete-active: #c28888;
+
+  /* --- Other --- */
+  --locked: var(--button-delete);
+  --unlocked: var(--button-primary);
 }
 
 /* --- Scrollbar --- */
