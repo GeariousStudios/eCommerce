@@ -3,6 +3,7 @@ import "./styles/globals.css";
 import "./styles/variables.css";
 import LayoutWrapper from "./components/layoutWrapper/LayoutWrapper";
 import StorageProvider from "./components/storageProvider/StorageProvider";
+import { NotificationProvider } from "./components/notification/NotificationProvider";
 
 type Props = {
   children: ReactNode;
@@ -29,7 +30,9 @@ const RootLayout = (props: Props) => {
       </head>
       <body>
         <StorageProvider>
-          <LayoutWrapper>{props.children}</LayoutWrapper>
+          <NotificationProvider>
+            <LayoutWrapper>{props.children}</LayoutWrapper>
+          </NotificationProvider>
         </StorageProvider>
       </body>
     </html>

@@ -23,7 +23,7 @@ const iconMap: Record<string, ElementType> = {
   server: NoSymbolIcon,
   user: UserIcon,
   beware: ExclamationCircleIcon,
-  search: MagnifyingGlassCircleIcon
+  search: MagnifyingGlassCircleIcon,
 };
 
 const contentMap: Record<string, ReactNode> = {
@@ -57,10 +57,12 @@ const Message = (props: Props) => {
       className={`${props.fullscreen ? "fixed inset-0 ml-18 overflow-auto md:ml-64" : "h-full grow"} flex items-center justify-center`}
     >
       <div className="flex flex-col items-center gap-3 opacity-75">
-        {Icon ? (
+        {props.icon && Icon ? (
           <Icon
             className={`${props.icon === "loading" ? "motion-safe:animate-[spin_2s_linear_infinite]" : ""} h-8 w-8`}
           />
+        ) : props.icon ? (
+          <div className="h-8 w-8" />
         ) : (
           <FaceFrownIcon className="h-8 w-8" />
         )}

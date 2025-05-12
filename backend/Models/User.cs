@@ -32,6 +32,7 @@ namespace backend.Models
             return BCrypt.Net.BCrypt.Verify(password, PasswordHash);
         }
 
+        public string? CurrentSessionId { get; set; }
         public bool IsOnline { get; set; } = false;
         public bool IsLocked { get; set; }
     }

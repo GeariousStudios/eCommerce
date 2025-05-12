@@ -50,7 +50,6 @@ namespace backend.Controllers
                 return Unauthorized(new { message = "Felaktigt användarnamn eller lösenord." });
             }
 
-            user.IsOnline = true;
             await _context.SaveChangesAsync();
 
             await SetUserPreferences(user, dto.Theme);
@@ -59,6 +58,7 @@ namespace backend.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtKey = _configuration["Jwt:Key"];
             var key = Encoding.UTF8.GetBytes(jwtKey!);
+var tokenId = Guid.NewGuid().ToString();
 
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, user!.Username) };
 
@@ -67,8 +67,12 @@ namespace backend.Controllers
                 if (role != UserRoles.None && user.Roles.HasFlag(role))
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
+                    
                 }
             }
+
+claims.Add(new Claim(JwtRegisteredClaimNames.Jti, tokenId));
+
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -83,7 +87,12 @@ namespace backend.Controllers
             var token = tokenHandler.CreateToken(tokenDescriptor);
             var jwt = tokenHandler.WriteToken(token);
 
-            return Ok(new { message = "Inlogging lyckades!", token = jwt });
+            user.CurrentSessionId = tokenId;
+            user.IsOnline = true;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = user.Name, token = jwt });
         }
 
         [HttpGet("check-login")]
@@ -111,6 +120,7 @@ namespace backend.Controllers
             }
 
             user.IsOnline = false;
+            user.CurrentSessionId = null;
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Utloggning lyckades!" });

@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Message from "../message/Message";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
+import { useNotification } from "../notification/NotificationProvider";
 
 type Props = {
   hasScrollbar: boolean;
@@ -26,22 +27,32 @@ const Navbar = (props: Props) => {
   // Other variables.
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
+  const { notify } = useNotification();
+
+  // Display logout message.
+  useEffect(() => {
+    const message = localStorage.getItem("postLogoutNotification");
+    if (message) {
+      notify("info", message, 6000);
+      localStorage.removeItem("postLogoutNotification");
+    }
+  }, []);
 
   /* --- BACKEND COMMUNICATION --- */
   const handleLogout = async () => {
-    const response = await fetch(`${apiUrl}/user/logout`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (response.ok) {
+    try {
+      await fetch(`${apiUrl}/user/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+    } finally {
       localStorage.removeItem("token");
+      localStorage.setItem("postLogoutNotification", "Du är nu utloggad!");
       window.location.reload();
-    } else {
-      console.error("Utloggning misslyckades!");
     }
   };
   /* --- BACKEND COMMUNICATION --- */

@@ -68,6 +68,17 @@
   --button-delete-hover: #814b4b;
   --button-delete-active: #663939;
 
+  /* --- Notification --- */
+  --note-error: #aa6f6f;
+  --note-error-hover: #aa6f6fbf;
+  --note-error-active: #aa6f6fbf;
+  --note-info: #f0f0f0;
+  --note-info-hover: #f0f0f0bf;
+  --note-info-active: #f0f0f0bf;
+  --note-success: #6faa7f;
+  --note-success-hover: #6faa7fbf;
+  --note-success-active: #6faa7f;
+
   /* --- Other --- */
   --locked: var(--button-delete);
   --unlocked: var(--button-primary);
@@ -113,6 +124,18 @@
   --button-delete: #814b4b;
   --button-delete-hover: #aa6f6f;
   --button-delete-active: #c28888;
+
+  /* --- Notification --- */
+  /* --- Notification --- */
+  --note-error: #814b4b;
+  --note-error-hover: #814b4bbf;
+  --note-error-active: #814b4b;
+  --note-info: #1a1a1a;
+  --note-info-hover: #1a1a1abf;
+  --note-info-active: #1a1a1a;
+  --note-success: #4b815b;
+  --note-success-hover: #4b815bbf;
+  --note-success-active: #4b815bbf;
 
   /* --- Other --- */
   --locked: var(--button-delete);

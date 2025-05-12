@@ -12,6 +12,7 @@ import {
   buttonPrimaryClass,
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
+import { useNotification } from "../notification/NotificationProvider";
 
 type Props = {
   isOpen: boolean;
@@ -35,6 +36,7 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
 
   // Other variables.
   const token = localStorage.getItem("token");
+  const { notify } = useNotification();
 
   useEffect(() => {
     if (!hasPreloadedEditor) {
@@ -76,9 +78,10 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
     const result = await response.json();
 
     if (!response.ok) {
-      alert(result.message);
+      notify("error", result.message);
     } else {
       onClose();
+      notify("success", "Nyhet skapad!", 4000);
     }
   };
 
@@ -90,7 +93,7 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
     const result = await response.json();
 
     if (!response.ok) {
-      alert(result.error);
+      notify("error", result.message);
     } else {
       fillNewsItemData(result);
     }
@@ -129,9 +132,10 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
     const result = await response.json();
 
     if (!response.ok) {
-      alert(result.message);
+      notify("error", result.message);
     } else {
       onClose();
+      notify("success", "Nyhet uppdaterad!", 4000);
     }
   };
 

@@ -10,6 +10,7 @@ import NewsModal from "./components/modals/NewsModal";
 import DeleteModal from "./components/modals/DeleteModal";
 import Input from "./components/input/Input";
 import CustomTooltip from "./components/customTooltip/CustomTooltip";
+import { useNotification } from "./components/notification/NotificationProvider";
 import Message from "./components/message/Message";
 import {
   buttonPrimaryClass,
@@ -50,6 +51,16 @@ const HomeClient = (props: Props) => {
   // Other variables.
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
+  const { notify } = useNotification();
+
+  // Display welcome message.
+  useEffect(() => {
+    const message = localStorage.getItem("postLoginNotification");
+    if (message) {
+      notify("info", "Välkommen, " + message + "!", 6000);
+      localStorage.removeItem("postLoginNotification");
+    }
+  }, []);
 
   /* --- BACKEND COMMUNICATION --- */
   // News.
@@ -64,7 +75,7 @@ const HomeClient = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error);
+        notify("error", result.message);
       } else {
         setNewsItems(result);
       }
@@ -91,10 +102,11 @@ const HomeClient = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.error);
+        notify("error", result.message);
       } else {
         setNewsItems((prev) => prev.filter((item) => item.id !== id));
         selectedItemId == null;
+        notify("success", "Nyhet borttagen!", 4000);
       }
     } catch (err) {}
   };
@@ -117,9 +129,10 @@ const HomeClient = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.message);
+        notify("error", result.message);
       } else {
         localStorage.setItem("token", result.token);
+        localStorage.setItem("postLoginNotification", result.message);
         window.location.reload();
       }
     } catch (err) {}
@@ -143,19 +156,6 @@ const HomeClient = (props: Props) => {
     }
     setIsDeleteModalOpen((prev) => !prev);
   };
-
-  // Logout user if another one logs in.
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "token") {
-        window.location.reload();
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, []);
 
   return (
     <>
@@ -268,7 +268,7 @@ const HomeClient = (props: Props) => {
                           {item.type}
                         </h3>
                         {props.isLoggedIn !== false && props.isAdmin && (
-                          <div className="hidden gap-3 group-hover:flex mr-3">
+                          <div className="mr-3 hidden gap-3 group-hover:flex">
                             <CustomTooltip content="Redigera nyhet">
                               <button
                                 type="button"

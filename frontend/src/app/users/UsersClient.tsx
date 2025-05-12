@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Input from "../components/input/Input";
 import MultiDropdown from "../components/dropdowns/MultiDropdown";
 import DeleteModal from "../components/modals/DeleteModal";
+import { useNotification } from "../components/notification/NotificationProvider";
 import CustomTooltip from "../components/customTooltip/CustomTooltip";
 import {
   CheckIcon,
@@ -88,6 +89,9 @@ const UsersClient = (props: Props) => {
   const [usersPerPage, setUsersPerPage] = useState(5);
   const [totalUsers, setTotalUsers] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Other.
+  const { notify } = useNotification();
 
   // Modal before deletion.
   const toggleDeleteModal = (userIds: number[] = []) => {
@@ -223,7 +227,7 @@ const UsersClient = (props: Props) => {
         const result = await response.json();
 
         if (!response.ok) {
-          alert(result.message);
+          notify("error", result.message);
           return;
         }
       } catch (err) {}
@@ -231,6 +235,7 @@ const UsersClient = (props: Props) => {
 
     await fetchUsers(currentPage, usersPerPage, sortBy, sortOrder);
     abortEditUser();
+    notify("success", "Användare uppdaterad!", 4000);
   };
 
   // Abort edit user.
@@ -275,12 +280,13 @@ const UsersClient = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.message);
+        notify("error", result.message);
         return;
       }
 
       await fetchUsers(currentPage, usersPerPage, sortBy, sortOrder);
       abortAddUser();
+      notify("success", "Användare skapad!", 4000);
     } catch (err) {}
   };
 
@@ -314,11 +320,12 @@ const UsersClient = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        alert(result.message);
+        notify("error", result.message);
         return;
       }
 
       await fetchUsers(currentPage, usersPerPage, sortBy, sortOrder);
+      notify("success", "Användare borttagen!", 4000);
     } catch (err) {}
   };
 
