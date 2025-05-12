@@ -32,7 +32,6 @@ const useUserPrefs = () => {
         const result = await response.json();
         setUserTheme(result.theme);
       } catch (err) {
-        console.error("Misslyckades att hämta användartema:", err);
       } finally {
         setIsLoadingUserPrefs(false);
       }
@@ -52,9 +51,7 @@ const useUserPrefs = () => {
         body: JSON.stringify({ Theme: newTheme }),
       });
       setUserTheme(newTheme);
-    } catch (err) {
-      console.error("Misslyckades att uppdatera användartema:", err);
-    }
+    } catch (err) {}
   };
 
   useEffect(() => {

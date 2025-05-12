@@ -230,7 +230,9 @@ const UsersClient = (props: Props) => {
           notify("error", result.message);
           return;
         }
-      } catch (err) {}
+      } catch (err) {
+        notify("error", String(err));
+      }
     }
 
     await fetchUsers(currentPage, usersPerPage, sortBy, sortOrder);
@@ -287,7 +289,9 @@ const UsersClient = (props: Props) => {
       await fetchUsers(currentPage, usersPerPage, sortBy, sortOrder);
       abortAddUser();
       notify("success", "Användare skapad!", 4000);
-    } catch (err) {}
+    } catch (err) {
+      notify("error", String(err));
+    }
   };
 
   // Abort add user.
@@ -326,7 +330,9 @@ const UsersClient = (props: Props) => {
 
       await fetchUsers(currentPage, usersPerPage, sortBy, sortOrder);
       notify("success", "Användare borttagen!", 4000);
-    } catch (err) {}
+    } catch (err) {
+      notify("error", String(err));
+    }
   };
 
   // Select users.

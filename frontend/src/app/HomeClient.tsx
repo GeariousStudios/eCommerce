@@ -108,7 +108,9 @@ const HomeClient = (props: Props) => {
         selectedItemId == null;
         notify("success", "Nyhet borttagen!", 4000);
       }
-    } catch (err) {}
+    } catch (err) {
+      notify("error", String(err));
+    }
   };
 
   // Login.
@@ -135,7 +137,9 @@ const HomeClient = (props: Props) => {
         localStorage.setItem("postLoginNotification", result.message);
         window.location.reload();
       }
-    } catch (err) {}
+    } catch (err) {
+      notify("error", String(err));
+    }
   };
 
   /* --- BACKEND COMMUNICATION --- */

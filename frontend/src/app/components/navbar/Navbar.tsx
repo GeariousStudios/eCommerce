@@ -1,6 +1,7 @@
 "use client";
 
-import { LinkIcon, UserIcon } from "@heroicons/react/24/outline";
+import { UserIcon as OutlineUserIcon } from "@heroicons/react/24/outline";
+import { UserIcon as SolidUserIcon } from "@heroicons/react/20/solid";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
 import useTheme from "../../hooks/useTheme";
@@ -128,7 +129,8 @@ const Navbar = (props: Props) => {
 
               <NavbarSubmenu
                 label="Användare"
-                icon={UserIcon}
+                icon={OutlineUserIcon}
+                iconHover={SolidUserIcon}
                 menus={[
                   {
                     label: "Inställningar",
@@ -160,7 +162,7 @@ const Navbar = (props: Props) => {
                 hasScrollbar={props.hasScrollbar}
               />
 
-              {/* <NavbarLink href="/users" label="Länk 2" icon={LinkIcon} /> */}
+              {/* <NavbarLink href="/users" label="Länk 2" icon={OutlineUserIcon} iconHover={SolidUserIcon} /> */}
 
               <div className="mb-3" />
             </div>

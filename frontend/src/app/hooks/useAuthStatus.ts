@@ -1,4 +1,3 @@
-import { connection } from "next/server";
 import { useEffect, useState } from "react";
 
 const useAuthStatus = () => {

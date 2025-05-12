@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { ComponentType, ReactNode, SVGProps, useState } from "react";
+import { ElementType, useState } from "react";
 
 type Props = {
   href: string;
   label: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  icon: ElementType;
+  iconHover: ElementType;
 };
 
 const NavbarLink = (props: Props) => {
@@ -25,6 +26,9 @@ const NavbarLink = (props: Props) => {
     }
   };
 
+    // Icon.
+  const Icon = onHover && props.iconHover ? props.iconHover : props.icon;
+
   return (
     <div>
       <Link
@@ -33,7 +37,7 @@ const NavbarLink = (props: Props) => {
         className="transition-[background,color,max-width] mr-3 ml-3 flex max-h-12 max-w-12 rounded-xl p-3 text-[var(--text-navbar)] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:max-w-full"
         href={props.href}
       >
-        <props.icon
+        <Icon
           className={`${onHover ? "text-[var(--accent-color)]" : ""} flex h-6 min-h-6 w-6 min-w-6 transition-colors duration-[var(--slow)]`}
         />
         <span className="mr-3 ml-3 w-0 overflow-hidden text-nowrap md:w-full">

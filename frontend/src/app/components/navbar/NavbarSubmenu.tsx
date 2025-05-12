@@ -1,7 +1,7 @@
 import useAuthStatus from "@/app/hooks/useAuthStatus";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
-import { ComponentType, SVGProps, useEffect, useRef, useState } from "react";
+import { ComponentType, ElementType, SVGProps, useEffect, useRef, useState } from "react";
 
 type SubmenuItem = {
   title?: string;
@@ -25,7 +25,8 @@ type Submenu = {
 
 type Props = {
   label: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  icon: ElementType;
+  iconHover: ElementType;
   menus: Submenu[];
   hasScrollbar: boolean;
 
@@ -152,6 +153,9 @@ const NavbarSubmenu = (props: Props) => {
     }
   }
 
+  // Icon.
+  const Icon = isOpen && props.iconHover ? props.iconHover : props.icon;
+
   return (
     <>
       {(!props.requiresLogin || isLoggedIn) &&
@@ -173,7 +177,7 @@ const NavbarSubmenu = (props: Props) => {
                 className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} bg-navbar-link-hover flex max-h-12 w-full max-w-12 items-center justify-between rounded-xl p-3 text-[var(--text-navbar)] transition-colors duration-[var(--fast)] md:max-w-full`}
               >
                 <span className="flex items-center gap-3">
-                  <props.icon
+                  <Icon
                     className={`${isOpen ? "text-[var(--accent-color)]" : ""} flex h-6 min-h-6 w-6 min-w-6 transition-colors duration-[var(--slow)]`}
                   />
                   <span className="w-0 overflow-hidden text-nowrap md:w-full">
@@ -197,7 +201,7 @@ const NavbarSubmenu = (props: Props) => {
             >
               <div className="mt-3 mb-3 ml-3">
                 <div className="flex gap-2">
-                  <props.icon className="flex max-h-4 min-h-4 max-w-4 min-w-4 text-[var(--accent-color)]" />
+                  <props.iconHover className="flex max-h-4 min-h-4 max-w-4 min-w-4 text-[var(--accent-color)]" />
                   <span className="text-xs text-nowrap">{props.label}</span>
                 </div>
                 <div
