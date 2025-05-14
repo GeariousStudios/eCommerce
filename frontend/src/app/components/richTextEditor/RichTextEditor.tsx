@@ -11,7 +11,7 @@ import {
   useRef,
 } from "react";
 
-const QuillWrapper = dynamic(() => import("./QuillWrapper"), {
+const QuillWrapper = dynamic(() => import("../helpers/QuillWrapper"), {
   ssr: false,
 }) as ForwardRefExoticComponent<
   ReactQuill["props"] & React.RefAttributes<ReactQuill>

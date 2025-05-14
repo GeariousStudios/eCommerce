@@ -18,9 +18,10 @@ type Props = {
   isOpen: boolean;
   onClose: () => void;
   newsId?: number | null;
+  onNewsUpdated: () => void;
 };
 
-const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
+const NewsModal = (props: Props) => {
   // Refs.
   const editorRef = useRef<RichTextEditorRef>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -45,10 +46,10 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
   }, []);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!props.isOpen) return;
 
-    if (newsId !== null && newsId !== undefined) {
-      fetchNewsItem(newsId);
+    if (props.newsId !== null && props.newsId !== undefined) {
+      fetchNewsItem(props.newsId);
     } else {
       setDate("");
       setType("");
@@ -56,7 +57,7 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
       setContent("");
       editorRef.current?.setContent("");
     }
-  }, [isOpen, newsId]);
+  }, [props.isOpen, props.newsId]);
 
   // Handle news editing/adding.
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -66,36 +67,45 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
 
     const currentContent = editorRef.current?.getContent() ?? "";
 
-    const response = await fetch(`${apiUrl}/news/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ date, type, headline, content: currentContent }),
-    });
+    try {
+      const response = await fetch(`${apiUrl}/news/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ date, type, headline, content: currentContent }),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok) {
-      notify("error", result.message);
-    } else {
-      onClose();
-      notify("success", "Nyhet skapad!", 4000);
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        props.onClose();
+        props.onNewsUpdated();
+        notify("success", "Nyhet skapad!", 4000);
+      }
+    } catch (err) {
+      notify("error", String(err));
     }
   };
 
   const fetchNewsItem = async (id: number) => {
-    const response = await fetch(`${apiUrl}/news/fetch/${id}`, {
-      headers: { "Content-Type": "application/json" },
-    });
+    try {
+      const response = await fetch(`${apiUrl}/news/fetch/${id}`, {
+        headers: { "Content-Type": "application/json" },
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok) {
-      notify("error", result.message);
-    } else {
-      fillNewsItemData(result);
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        fillNewsItemData(result);
+      }
+    } catch (err) {
+      notify("error", String(err));
     }
   };
 
@@ -120,22 +130,28 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
 
     const currentContent = editorRef.current?.getContent() ?? "";
 
-    const response = await fetch(`${apiUrl}/news/update/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ date, type, headline, content: currentContent }),
-    });
+    try {
+      const response = await fetch(`${apiUrl}/news/update/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ date, type, headline, content: currentContent }),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok) {
-      notify("error", result.message);
-    } else {
-      onClose();
+      if (!response.ok) {
+        notify("error", result.message);
+        return;
+      }
+
+      props.onClose();
+      props.onNewsUpdated();
       notify("success", "Nyhet uppdaterad!", 4000);
+    } catch (err) {
+      notify("error", String(err));
     }
   };
 
@@ -160,19 +176,25 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
         </div>
       )}
 
-      {isOpen && (
+      {props.isOpen && (
         <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
-          <FocusTrap focusTrapOptions={{ initialFocus: false }}>
+          <FocusTrap
+            focusTrapOptions={{ initialFocus: false, allowOutsideClick: true }}
+          >
             <form
               ref={formRef}
-              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-6 overflow-y-auto rounded border-2 border-[var(--border-main)] bg-[var(--bg-modal)] p-6"
-              onSubmit={(e) => (newsId ? updateNews(e, newsId) : addNews(e))}
+              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-8 overflow-y-auto rounded border-2 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
+              onSubmit={(e) =>
+                props.newsId ? updateNews(e, props.newsId) : addNews(e)
+              }
             >
-              <h2 className="mb-9 flex items-center text-2xl font-semibold">
+              <h2 className="mb-4 flex items-center text-2xl font-semibold">
                 <span className="mr-2 h-6 w-6 text-[var(--accent-color)]">
-                  {newsId ? <PencilSquareIcon /> : <PlusIcon />}
+                  {props.newsId ? <PencilSquareIcon /> : <PlusIcon />}
                 </span>
-                <span>{newsId ? "Uppdatera nyhet" : "Lägg till nyhet"}</span>
+                <span>
+                  {props.newsId ? "Redigera nyhet" : "Lägg till nyhet"}
+                </span>
               </h2>
 
               <Input
@@ -213,20 +235,20 @@ const NewsModal = ({ isOpen, onClose, newsId }: Props) => {
                 required
               />
 
-              <div className="flex justify-between gap-6">
+              <div className="flex justify-between gap-4">
                 <button
                   type="button"
-                  onClick={onClose}
-                  className={`${buttonSecondaryClass} w-1/3`}
+                  onClick={props.onClose}
+                  className={`${buttonSecondaryClass} grow`}
                 >
                   Ångra
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveClick}
-                  className={`${buttonPrimaryClass} w-2/3`}
+                  className={`${buttonPrimaryClass} grow-2`}
                 >
-                  {newsId ? "Uppdatera" : "Lägg till"}
+                  {props.newsId ? "Uppdatera" : "Lägg till"}
                 </button>
               </div>
             </form>

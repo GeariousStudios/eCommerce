@@ -28,7 +28,7 @@ namespace backend.Controllers
         {
             if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
             {
-                return BadRequest(new { message = "Användarnamn och lösenord behöver fyllas i." });
+                return BadRequest(new { message = "Användarnamn och lösenord måste fyllas i" });
             }
 
             var user = await _context
@@ -37,17 +37,17 @@ namespace backend.Controllers
 
             if (user == null)
             {
-                return Unauthorized(new { message = "Felaktigt användarnamn eller lösenord." });
+                return Unauthorized(new { message = "Felaktigt användarnamn eller lösenord" });
             }
 
             if (user.IsLocked)
             {
-                return Unauthorized(new { message = "Användaren är låst." });
+                return Unauthorized(new { message = "Användaren är låst" });
             }
 
             if (!user.VerifyPassword(dto.Password))
             {
-                return Unauthorized(new { message = "Felaktigt användarnamn eller lösenord." });
+                return Unauthorized(new { message = "Felaktigt användarnamn eller lösenord" });
             }
 
             await _context.SaveChangesAsync();
@@ -58,7 +58,7 @@ namespace backend.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
             var jwtKey = _configuration["Jwt:Key"];
             var key = Encoding.UTF8.GetBytes(jwtKey!);
-var tokenId = Guid.NewGuid().ToString();
+            var tokenId = Guid.NewGuid().ToString();
 
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, user!.Username) };
 
@@ -67,12 +67,10 @@ var tokenId = Guid.NewGuid().ToString();
                 if (role != UserRoles.None && user.Roles.HasFlag(role))
                 {
                     claims.Add(new Claim(ClaimTypes.Role, role.ToString()));
-                    
                 }
             }
 
-claims.Add(new Claim(JwtRegisteredClaimNames.Jti, tokenId));
-
+            claims.Add(new Claim(JwtRegisteredClaimNames.Jti, tokenId));
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -109,14 +107,14 @@ claims.Add(new Claim(JwtRegisteredClaimNames.Jti, tokenId));
 
             if (loggedInUser == null)
             {
-                return BadRequest(new { message = "Ingen användare är inloggad." });
+                return BadRequest(new { message = "Ingen användare är inloggad" });
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loggedInUser);
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas." });
+                return NotFound(new { message = "Användaren kunde inte hittas" });
             }
 
             user.IsOnline = false;
@@ -133,14 +131,14 @@ claims.Add(new Claim(JwtRegisteredClaimNames.Jti, tokenId));
 
             if (loggedInUser == null)
             {
-                return NotFound(new { message = "Ingen användare är inloggad." });
+                return NotFound(new { message = "Ingen användare är inloggad" });
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loggedInUser);
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas." });
+                return NotFound(new { message = "Användaren kunde inte hittas" });
             }
 
             var roles = user

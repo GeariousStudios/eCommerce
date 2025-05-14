@@ -1,9 +1,10 @@
-import React from "react";
+import React, { ReactNode } from "react";
 
 type InputProps = {
   id?: string;
   label?: string;
   placeholder?: string;
+  icon?: ReactNode;
   type?: string;
   value?: string;
   checked?: boolean;
@@ -27,6 +28,7 @@ const Input = ({
   id,
   label,
   placeholder,
+  icon,
   type,
   value,
   checked,
@@ -34,7 +36,7 @@ const Input = ({
   required = false,
   spellCheck = false,
   onModal = false,
-}: InputProps) => {
+}: InputProps & { icon?: ReactNode }) => {
   // Checks.
   const isCheckbox = type === "checkbox";
   const isRadio = type === "radio";
@@ -65,12 +67,17 @@ const Input = ({
           }
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative max-h-5 min-h-5 max-w-5 min-w-5 cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex max-h-12 min-h-12 w-full p-4 caret-[var(--accent-color)]"} ${isRadio ? "rounded-4xl" : ""} ${isDate ? "" : ""} rounded border-2 border-[var(--border-main)]`}
+          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[38px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-4xl" : ""} ${isDate ? "" : ""} ${icon ? "pl-10" : ""} peer rounded border-2 border-[var(--border-main)] p-2`}
         />
+        {icon && (
+          <div className="pointer-events-none absolute top-1/2 left-3 h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
+            {icon}
+          </div>
+        )}
         {label?.trim() && (
           <label
             htmlFor={id}
-            className={`${isDate ? "top-0" : "top-[57.5%]"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} pointer-events-none absolute left-3 -translate-y-[65%] pr-1.5 pl-1.5 transition-[top] duration-[var(--slow)] select-none`}
+            className={`${isDate ? "top-0" : "top-[60%]"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} pointer-events-none absolute left-3 -translate-y-[65%] px-1.5 transition-[top] duration-[var(--slow)] select-none`}
           >
             {label}
           </label>

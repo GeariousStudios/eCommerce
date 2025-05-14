@@ -1,7 +1,14 @@
 import useAuthStatus from "@/app/hooks/useAuthStatus";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
-import { ComponentType, ElementType, SVGProps, useEffect, useRef, useState } from "react";
+import {
+  ComponentType,
+  ElementType,
+  SVGProps,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 type SubmenuItem = {
   title?: string;
@@ -162,7 +169,7 @@ const NavbarSubmenu = (props: Props) => {
         (!props.requiresAdmin || isAdmin) &&
         (!props.requiresDev || isDev) && (
           <div onMouseEnter={mouseEnter} onMouseLeave={mouseLeave}>
-            <div className="mr-3 ml-3 max-w-12 md:max-w-full">
+            <div className="mx-4">
               <button
                 onClick={() => {
                   if (!isOpen) {
@@ -174,13 +181,13 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} bg-navbar-link-hover flex max-h-12 w-full max-w-12 items-center justify-between rounded-xl p-3 text-[var(--text-navbar)] transition-colors duration-[var(--fast)] md:max-w-full`}
+                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} bg-navbar-link-hover h-[38px] w-[38px] rounded-lg border-2 border-transparent p-2 text-[var(--text-navbar)] transition-colors duration-[var(--fast)] md:flex md:w-full md:justify-between`}
               >
                 <span className="flex items-center gap-3">
                   <Icon
-                    className={`${isOpen ? "text-[var(--accent-color)]" : ""} flex h-6 min-h-6 w-6 min-w-6 transition-colors duration-[var(--slow)]`}
+                    className={`${isOpen ? "text-[var(--accent-color)]" : ""} h-6 w-6 transition-colors duration-[var(--slow)]`}
                   />
-                  <span className="w-0 overflow-hidden text-nowrap md:w-full">
+                  <span className="hidden overflow-hidden whitespace-nowrap md:flex">
                     {props.label}
                   </span>
                 </span>
@@ -188,7 +195,7 @@ const NavbarSubmenu = (props: Props) => {
                 <ChevronRightIcon
                   className={`${
                     isOpen ? "rotate-180 text-[var(--accent-color)]" : ""
-                  } h-6 min-h-6 w-0 rotate-0 transition-[color,rotate] duration-[var(--slow)] md:w-6 md:min-w-6`}
+                  } h-0 w-0 rotate-0 transition-[color,rotate] duration-[var(--slow)] md:h-6 md:w-6`}
                 />
               </button>
             </div>
@@ -202,7 +209,9 @@ const NavbarSubmenu = (props: Props) => {
               <div className="mt-3 mb-3 ml-3">
                 <div className="flex gap-2">
                   <props.iconHover className="flex max-h-4 min-h-4 max-w-4 min-w-4 text-[var(--accent-color)]" />
-                  <span className="text-xs text-nowrap">{props.label}</span>
+                  <span className="text-xs whitespace-nowrap">
+                    {props.label}
+                  </span>
                 </div>
                 <div
                   className={`grid gap-3 ${
@@ -221,12 +230,12 @@ const NavbarSubmenu = (props: Props) => {
                           <ul
                             className={`${isOpen ? "opacity-100" : "opacity-0"} w-34 transition-opacity duration-[var(--fast)]`}
                           >
-                            <li className="border-[var(--border-main)] pt-6 pb-1 text-nowrap">
+                            <li className="border-[var(--border-main)] pt-6 pb-1 whitespace-nowrap">
                               {menu.label}
                             </li>
 
                             {/* Border */}
-                            <li className="h-[0.1rem] rounded bg-[var(--accent-color)]" />
+                            <li className="h-[2px] rounded bg-[var(--border-main)]" />
                             {/* Border */}
 
                             {menu.items.map((item, index) => (
@@ -236,18 +245,18 @@ const NavbarSubmenu = (props: Props) => {
                                   (!item.requiresDev || isDev) && (
                                     <div>
                                       <li
-                                        className={`${item.title ? "pt-4 pb-1 text-xs font-semibold text-nowrap" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
+                                        className={`${item.title ? "pt-4 pb-1 text-xs font-semibold whitespace-nowrap" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
                                       >
                                         {item.title ?? ""}
                                       </li>
 
-                                      <li className="w-34 rounded-xl transition-colors hover:bg-[var(--bg-navbar-link)]">
+                                      <li className="w-34 rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
                                         {item.href ? (
                                           <Link
                                             href={item.href}
                                             tabIndex={isOpen ? 0 : -1}
                                             className={
-                                              "flex h-full w-full p-2.5 text-sm text-nowrap text-[var(--text-navbar)]"
+                                              "flex h-full w-full p-2 text-sm whitespace-nowrap text-[var(--text-navbar)]"
                                             }
                                           >
                                             {item.label}
@@ -257,7 +266,7 @@ const NavbarSubmenu = (props: Props) => {
                                             onClick={item.onClick}
                                             tabIndex={isOpen ? 0 : -1}
                                             className={
-                                              "flex h-full w-full cursor-pointer p-2.5 text-sm text-nowrap text-[var(--text-navbar)]"
+                                              "flex h-full w-full cursor-pointer p-2 text-sm whitespace-nowrap text-[var(--text-navbar)]"
                                             }
                                           >
                                             {item.label}

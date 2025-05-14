@@ -3,6 +3,7 @@
 :root {
   background: var(--bg-main);
   color: var(--text-main);
+  font-size: 0.875rem;
 }
 
 :-webkit-autofill {
@@ -15,21 +16,11 @@
 input:focus ~ label,
 input[type="date"]:valid ~ label,
 input:not([type="date"]):not(:placeholder-shown) ~ label,
-input:not(:placeholder-shown) ~ label,
+input[placeholder]:not([placeholder=" "]) ~ label,
 input:-webkit-autofill ~ label {
-  /* background: var(--bg-main); */
   color: var(--accent-color);
   top: 0;
   font-weight: 600;
-}
-
-/* If on modal, change bg to --bg-modal. */
-input:focus.modal-label ~ label,
-input[type="date"].modal-label:valid ~ label,
-input.modal-label:not([type="date"]):not(:placeholder-shown) ~ label,
-input.modal-label:not(:placeholder-shown) ~ label,
-input.modal-label:-webkit-autofill ~ label {
-  /* background: var(--bg-modal) !important; */
 }
 
 #navbar-menu {
@@ -63,8 +54,8 @@ input[type="radio"] {
   &:checked::after {
     content: "";
     position: absolute;
-    top: 3px;
-    left: 6px;
+    top: 2px;
+    left: 5px;
     width: 4px;
     height: 8px;
     border: solid var(--accent-color);
@@ -321,6 +312,11 @@ th:focus-visible {
   li[data-list] {
     margin-left: unset;
   }
+}
+
+.ql-toolbar.ql-snow {
+  padding: 0.425rem !important;
+  min-height: 38px;
 }
 
 li[data-list] {

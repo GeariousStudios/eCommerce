@@ -59,7 +59,7 @@ namespace backend.Controllers
 
             if (theme != "light" && theme != "dark")
             {
-                return BadRequest(new { error = "Ogiltigt tema." });
+                return BadRequest(new { error = "Ogiltigt tema" });
             }
 
             user.UserPreferences.Theme = theme;

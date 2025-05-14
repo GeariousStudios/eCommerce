@@ -87,7 +87,7 @@ const HomeClient = (props: Props) => {
 
   useEffect(() => {
     fetchNews();
-  }, [isNewsModalOpen]);
+  }, []);
 
   const deleteNewsItem = async (id: number) => {
     try {
@@ -167,6 +167,7 @@ const HomeClient = (props: Props) => {
         isOpen={isNewsModalOpen}
         onClose={closeNewsModal}
         newsId={selectedItemId}
+        onNewsUpdated={fetchNews}
       />
       <DeleteModal
         isOpen={isDeleteModalOpen}
@@ -180,21 +181,21 @@ const HomeClient = (props: Props) => {
         }}
       />
       {/* --- Login & news section --- */}
-      <div className="flex flex-col gap-3 lg:flex-row">
+      <div className="flex flex-col gap-4 lg:flex-row">
         {/* --- Login container --- */}
         {props.isLoggedIn === false && (
           <div className="flex w-full flex-col lg:w-1/3 lg:min-w-80">
             {/* --- Login header --- */}
-            <div className="flex rounded-t border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] p-2">
-              <span className="ml-1 font-semibold">Logga in</span>
+            <div className="flex rounded-t border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] py-2 px-3">
+              <span className="font-semibold">Logga in</span>
             </div>
             {/* --- Login content --- */}
-            <div className="flex max-h-96 min-h-96 items-center justify-center rounded-b border-2 border-t-0 border-[var(--border-main)] p-6">
+            <div className="flex max-h-96 min-h-96 items-center justify-center rounded-b border-2 border-t-0 border-[var(--border-main)] p-4">
               {/* --- Login form --- */}
               {props.isConnected ? (
                 <form
                   onSubmit={handleLogin}
-                  className="flex w-64 flex-col gap-9"
+                  className="flex w-64 flex-col gap-8"
                 >
                   <Input
                     id="username"
@@ -211,10 +212,13 @@ const HomeClient = (props: Props) => {
                     onChange={(val) => setPassword(String(val))}
                     required
                   />
-                  <button type="submit" className={`${buttonPrimaryClass}`}>
+                  <button
+                    type="submit"
+                    className={`${buttonPrimaryClass} w-full`}
+                  >
                     Logga in
                   </button>
-                  <span className="-mt-3 flex justify-center text-center">
+                  <span className="-mt-4 flex justify-center text-center">
                     <Link href="/" className={`${hyperLinkButtonClass} `}>
                       Glömt ditt lösenord?
                     </Link>
@@ -236,7 +240,7 @@ const HomeClient = (props: Props) => {
             <span className="ml-1 font-semibold">Nyheter</span>
 
             {props.isLoggedIn !== false && props.isAdmin && (
-              <CustomTooltip content="Lägg till nyhet">
+              <CustomTooltip content="Lägg till nyhet" hideOnClick={true}>
                 <button
                   type="button"
                   className={`${iconButtonPrimaryClass} h-6 w-6`}
@@ -272,21 +276,27 @@ const HomeClient = (props: Props) => {
                           {item.type}
                         </h3>
                         {props.isLoggedIn !== false && props.isAdmin && (
-                          <div className="mr-3 hidden gap-3 group-hover:flex">
-                            <CustomTooltip content="Redigera nyhet">
+                          <div className="mr-2 hidden gap-2 group-hover:flex">
+                            <CustomTooltip
+                              content="Redigera nyhet"
+                              hideOnClick={true}
+                            >
                               <button
                                 type="button"
-                                className={`${iconButtonPrimaryClass} h-6 w-6`}
+                                className={`${iconButtonPrimaryClass}`}
                                 onClick={() => openNewsModal(item.id)}
                               >
                                 <PencilSquareIcon />
                               </button>
                             </CustomTooltip>
 
-                            <CustomTooltip content="Ta bort nyhet">
+                            <CustomTooltip
+                              content="Ta bort nyhet"
+                              hideOnClick={true}
+                            >
                               <button
                                 type="button"
-                                className={`${iconbuttonDeletePrimaryClass} h-6 w-6`}
+                                className={`${iconbuttonDeletePrimaryClass}`}
                                 onClick={() => toggleDeleteModal(item.id)}
                               >
                                 <TrashIcon />
@@ -307,7 +317,7 @@ const HomeClient = (props: Props) => {
                       </small>
                     </article>
                     {index !== newsItems.length - 1 && (
-                      <span className="mt-2 mb-2 flex h-[2px] w-full self-stretch rounded bg-[var(--border-main)]"></span>
+                      <span className="my-2 flex h-[2px] w-full self-stretch rounded bg-[var(--border-main-transparent)]"></span>
                     )}
                   </div>
                 ))}

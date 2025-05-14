@@ -73,6 +73,30 @@ namespace backend.Controllers
             return Ok(result);
         }
 
+        [HttpGet("fetch/{id}")]
+        public async Task<IActionResult> GetUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
+            }
+
+            var result = new UserDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Name = user.Name,
+                Email = user.Email,
+                Roles = user.GetRoleStrings(),
+                IsLocked = user.IsLocked,
+                IsOnline = user.IsOnline,
+            };
+
+            return Ok(result);
+        }
+
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -80,14 +104,12 @@ namespace backend.Controllers
 
             if (user == null)
             {
-                return NotFound(new { message = "Användare hittades ej i databasen." });
+                return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
             }
 
             if (user.IsOnline)
             {
-                return BadRequest(
-                    new { message = "Kan ej ta bort kontot - användaren är inloggad." }
-                );
+                return BadRequest(new { message = "Kan inte ta bort ett konto som är online!" });
             }
 
             _context.Users.Remove(user);
@@ -101,7 +123,7 @@ namespace backend.Controllers
         {
             if (string.IsNullOrWhiteSpace(dto.Username))
             {
-                return BadRequest(new { message = "Fyll i användarnamn." });
+                return BadRequest(new { message = "Fyll i användarnamn" });
             }
 
             var existingUser = await _context.Users.FirstOrDefaultAsync(u =>
@@ -110,22 +132,22 @@ namespace backend.Controllers
 
             if (existingUser != null)
             {
-                return BadRequest(new { message = "Användarnamnet är upptaget." });
+                return BadRequest(new { message = "Användarnamnet är upptaget" });
             }
 
             if (string.IsNullOrWhiteSpace(dto.Password))
             {
-                return BadRequest(new { message = "Fyll i lösenord." });
+                return BadRequest(new { message = "Fyll i lösenord" });
             }
 
             if (string.IsNullOrWhiteSpace(dto.Email))
             {
-                return BadRequest(new { message = "Fyll i mejladress." });
+                return BadRequest(new { message = "Fyll i mejladress" });
             }
 
             if (dto.Roles == null || dto.Roles.Length == 0)
             {
-                return BadRequest(new { message = "Välj minst en roll." });
+                return BadRequest(new { message = "Välj minst en roll" });
             }
 
             // Parse from string to enum.
@@ -175,7 +197,7 @@ namespace backend.Controllers
 
             if (user == null)
             {
-                return NotFound(new { message = "Användare hittades ej i databasen." });
+                return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
             }
 
             var existingUser = await _context.Users.FirstOrDefaultAsync(u =>
@@ -184,22 +206,22 @@ namespace backend.Controllers
 
             if (existingUser != null)
             {
-                return BadRequest(new { message = "Användarnamnet är upptaget." });
+                return BadRequest(new { message = "Användarnamnet är upptaget" });
             }
 
             if (string.IsNullOrWhiteSpace(dto.Username))
             {
-                return BadRequest(new { message = "Fyll i användarnamn." });
+                return BadRequest(new { message = "Fyll i användarnamn" });
             }
 
             if (string.IsNullOrWhiteSpace(dto.Email))
             {
-                return BadRequest(new { message = "Fyll i mejladress." });
+                return BadRequest(new { message = "Fyll i mejladress" });
             }
 
             if (dto.Roles == null || dto.Roles.Length == 0)
             {
-                return BadRequest(new { message = "Välj minst en roll." });
+                return BadRequest(new { message = "Välj minst en roll" });
             }
 
             // Parse from string to enum.

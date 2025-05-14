@@ -26,22 +26,22 @@ namespace backend.Controllers
 
             if (authorInfo == null)
             {
-                return BadRequest(new { message = "Ingen behörig användare inloggad." });
+                return BadRequest(new { message = "Ingen behörig användare inloggad" });
             }
 
             if (dto.Type == "")
             {
-                return BadRequest(new { message = "Välj nyhetstyp." });
+                return BadRequest(new { message = "Välj nyhetstyp" });
             }
 
             if (dto.Headline == "")
             {
-                return BadRequest(new { message = "Fyll i rubrik." });
+                return BadRequest(new { message = "Fyll i rubrik" });
             }
 
             if (dto.Content == "<p><br></p>")
             {
-                return BadRequest(new { message = "Fyll i innehåll." });
+                return BadRequest(new { message = "Fyll i innehåll" });
             }
 
             var newsItem = new News
@@ -86,7 +86,7 @@ namespace backend.Controllers
 
             if (newsItem == null)
             {
-                return NotFound(new { message = "Nyheten hittades inte." });
+                return NotFound(new { message = "Nyheten kunde inte hittas i databasen" });
             }
 
             return Ok(newsItem);
@@ -100,28 +100,28 @@ namespace backend.Controllers
 
             if (authorInfo == null)
             {
-                return BadRequest(new { message = "Ingen behörig användare inloggad." });
+                return BadRequest(new { message = "Ingen behörig användare inloggad" });
             }
 
             var newsItem = await _context.News.FindAsync(id);
             if (newsItem == null)
             {
-                return NotFound(new { message = "Nyheten hittades inte." });
+                return NotFound(new { message = "Nyheten kunde inte hittas i databasen" });
             }
 
             if (dto.Type == "")
             {
-                return BadRequest(new { message = "Välj nyhetstyp." });
+                return BadRequest(new { message = "Välj nyhetstyp" });
             }
 
             if (dto.Headline == "")
             {
-                return BadRequest(new { message = "Fyll i rubrik." });
+                return BadRequest(new { message = "Fyll i rubrik" });
             }
 
             if (dto.Content == "<p><br></p>")
             {
-                return BadRequest(new { message = "Fyll i innehåll." });
+                return BadRequest(new { message = "Fyll i innehåll" });
             }
 
             newsItem.Date = dto.Date;
@@ -155,7 +155,7 @@ namespace backend.Controllers
 
             if (newsItem == null)
             {
-                return NotFound(new { message = "Nyheten hittades inte." });
+                return NotFound(new { message = "Nyheten hittades inte" });
             }
 
             _context.News.Remove(newsItem);

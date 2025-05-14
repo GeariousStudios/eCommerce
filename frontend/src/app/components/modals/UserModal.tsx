@@ -1,0 +1,326 @@
+"use client";
+
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { FocusTrap } from "focus-trap-react";
+import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
+import Input from "../input/Input";
+import { useNotification } from "../notification/NotificationProvider";
+import {
+  buttonPrimaryClass,
+  buttonSecondaryClass,
+} from "@/app/styles/buttonClasses";
+import MultiDropdown from "../dropdowns/MultiDropdown";
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  userId?: number | null;
+  onUserUpdated: () => void;
+};
+
+const UserModal = (props: Props) => {
+  // Refs.
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // States.
+  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [newUserRoles, setNewUserRoles] = useState<string[]>([]);
+  const [isLocked, setIsLocked] = useState(false);
+
+  // Other variables.
+  const token = localStorage.getItem("token");
+  const { notify } = useNotification();
+
+  useEffect(() => {
+    if (!props.isOpen) return;
+
+    if (props.userId !== null && props.userId !== undefined) {
+      fetchUser();
+    } else {
+      setUsername("");
+      setName("");
+      setPassword("");
+      setEmail("");
+      setNewUserRoles([]);
+      setIsLocked(false);
+    }
+  }, [props.isOpen, props.userId]);
+
+  // Handle user editing/adding.
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  const addUser = async (event: FormEvent) => {
+    event.preventDefault();
+
+    try {
+      const response = await fetch(`${apiUrl}/user-management/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          username,
+          name,
+          password,
+          email,
+          roles: newUserRoles,
+          isLocked,
+        }),
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+        return;
+      }
+
+      props.onClose();
+      props.onUserUpdated();
+      notify("success", "Användare skapad!", 4000);
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/user-management/fetch/${props.userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        fillUserData(result);
+      }
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  const fillUserData = (result: any) => {
+    setUsername(result.username ?? "");
+    setName(result.name ?? "");
+    setPassword("");
+    setEmail(result.email ?? "");
+    setNewUserRoles(result.roles ?? []);
+    setIsLocked(result.isLocked ?? false);
+  };
+
+  const updateUser = async (event: FormEvent, id: number) => {
+    event.preventDefault();
+
+    try {
+      const response = await fetch(
+        `${apiUrl}/user-management/update/${props.userId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            username,
+            name,
+            password,
+            email,
+            roles: newUserRoles,
+            isLocked,
+          }),
+        },
+      );
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+        return;
+      }
+
+      props.onClose();
+      props.onUserUpdated();
+      notify("success", "Användare uppdaterad!", 4000);
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  const handleSaveClick = () => {
+    formRef.current?.requestSubmit();
+  };
+
+  return (
+    <>
+      {props.isOpen && (
+        <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
+          <FocusTrap
+            focusTrapOptions={{ initialFocus: false, allowOutsideClick: true }}
+          >
+            <form
+              ref={formRef}
+              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-4 overflow-y-auto rounded border-2 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
+              onSubmit={(e) =>
+                props.userId ? updateUser(e, props.userId) : addUser(e)
+              }
+            >
+              <h2 className="mb-4 flex items-center text-2xl font-semibold">
+                <span className="mr-2 h-6 w-6 text-[var(--accent-color)]">
+                  {props.userId ? <PencilSquareIcon /> : <PlusIcon />}
+                </span>
+                <span>
+                  {props.userId
+                    ? "Redigera användare"
+                    : "Lägg till ny användare"}
+                </span>
+              </h2>
+
+              <div className="flex items-center gap-2">
+                <span className="h-[2px] w-12 rounded bg-[var(--border-main)] opacity-50" />
+                <h3 className="text-sm whitespace-nowrap opacity-50">
+                  Inloggningsuppgifter
+                </h3>
+                <span className="h-[2px] w-full rounded bg-[var(--border-main)] opacity-50" />
+              </div>
+
+              <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+                <Input
+                  id="username"
+                  label={"Användarnamn"}
+                  value={username}
+                  onChange={(val) => setUsername(String(val))}
+                  onModal={true}
+                  required
+                />
+
+                {props.userId !== null ? (
+                  <Input
+                    id="password"
+                    label={"Lösenord"}
+                    value={password}
+                    placeholder="*********"
+                    onChange={(val) => setPassword(String(val))}
+                    onModal={true}
+                  />
+                ) : (
+                  <Input
+                    id="password"
+                    label={"Lösenord"}
+                    value={password}
+                    onChange={(val) => setPassword(String(val))}
+                    onModal={true}
+                    required
+                  />
+                )}
+              </div>
+
+              <div className="mt-8 flex items-center gap-2">
+                <span className="h-[2px] w-12 rounded bg-[var(--border-main)] opacity-50" />
+                <h3 className="text-sm whitespace-nowrap opacity-50">
+                  Användardetaljer
+                </h3>
+                <span className="h-[2px] w-full rounded bg-[var(--border-main)] opacity-50" />
+              </div>
+
+              <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+                <Input
+                  id="name"
+                  label={"Namn"}
+                  value={name}
+                  onChange={(val) => setName(String(val))}
+                  onModal={true}
+                  required
+                />
+
+                <Input
+                  id="email"
+                  label={"Mejladress"}
+                  value={email}
+                  onChange={(val) => setEmail(String(val))}
+                  onModal={true}
+                  required
+                />
+              </div>
+
+              <div className="mt-8 flex items-center gap-2">
+                <span className="h-[2px] w-12 rounded bg-[var(--border-main)] opacity-50" />
+                <h3 className="text-sm whitespace-nowrap opacity-50">
+                  Behörigheter och status
+                </h3>
+                <span className="h-[2px] w-full rounded bg-[var(--border-main)] opacity-50" />
+              </div>
+
+              <div className="mb-8 flex justify-between gap-4">
+                <div className="flex w-[calc(50%-0.375rem)]">
+                  <MultiDropdown
+                    label="Behörigheter"
+                    options={[
+                      { label: "Admin", value: "Admin" },
+                      { label: "Developer", value: "Developer" },
+                    ]}
+                    value={newUserRoles}
+                    onChange={setNewUserRoles}
+                    onModal={true}
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                  <Input
+                    type="checkbox"
+                    checked={isLocked}
+                    onChange={(val) => {
+                      setIsLocked(Boolean(val));
+                    }}
+                  />
+                  <span className="mb-0.5">Lås konto</span>
+                </div>
+              </div>
+
+              <div className="flex justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={props.onClose}
+                  className={`${buttonSecondaryClass} grow`}
+                >
+                  Ångra
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveClick}
+                  className={`${buttonPrimaryClass} grow-2`}
+                >
+                  {props.userId ? "Uppdatera" : "Lägg till"}
+                </button>
+              </div>
+            </form>
+          </FocusTrap>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default UserModal;

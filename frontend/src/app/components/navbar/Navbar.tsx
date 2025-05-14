@@ -76,7 +76,7 @@ const Navbar = (props: Props) => {
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [isAuthReady]);
 
   // Update theme variable.
   useEffect(() => {

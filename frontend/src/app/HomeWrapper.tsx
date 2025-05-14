@@ -17,7 +17,7 @@ const HomeWrapper = () => {
   if (!isAuthReady) {
     return (
       <>
-        <header className="width-full mb-3 flex h-32 items-center justify-center rounded border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] text-center">
+        <header className="width-full mb-4 flex h-32 items-center justify-center rounded border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] text-center">
           <h1 className="text-4xl transition-[font-size] duration-[var(--medium)] md:text-5xl">
             Admin Dashboard
           </h1>
@@ -29,7 +29,7 @@ const HomeWrapper = () => {
 
   return (
     <>
-      <header className="width-full mb-3 flex h-32 items-center justify-center rounded border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] text-center">
+      <header className="width-full mb-4 flex h-32 items-center justify-center rounded border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] text-center">
         <h1 className="text-4xl transition-[font-size] duration-[var(--medium)] md:text-5xl">
           Admin Dashboard
         </h1>

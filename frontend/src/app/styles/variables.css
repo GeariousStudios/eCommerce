@@ -11,6 +11,8 @@
 
   --border-main-dark: #3a3a3a;
   --border-main-light: #d6d6d6;
+  --border-secondary-dark: #1f1f1f;
+  --border-secondary-light: #e9e9e9;
 
   --slow: 250ms;
   --medium: 200ms;
@@ -33,6 +35,7 @@
   --text-main: #e0e0e0;
   --text-main-reverse: #212121;
   --border-main: var(--border-main-dark);
+  --border-secondary: var(--border-secondary-dark);
 
   --accent-color: var(--accent-color-dark);
   --accent-color-hover: var(--accent-color-hover-dark);
@@ -44,10 +47,11 @@
   --text-navbar: #e0e0e0;
 
   /* --- Modal --- */
-  --bg-modal: #1a1a1a;
+  --bg-modal: var(--bg-navbar);
 
   /* --- Grid --- */
-  --bg-grid: var(--bg-main-dark);
+  --bg-grid: #121212;
+  --bg-grid-zebra: #181818;
   --bg-grid-header: #1a1a1a;
   --bg-grid-header-hover: #3a3a3a;
 
@@ -90,6 +94,7 @@
   --text-main: #212121;
   --text-main-reverse: #e0e0e0;
   --border-main: var(--border-main-light);
+  --border-secondary: var(--border-secondary-light);
 
   --accent-color: var(--accent-color-light);
   --accent-color-hover: var(--accent-color-hover-light);
@@ -101,10 +106,11 @@
   --text-navbar: #212121;
 
   /* --- Modal --- */
-  --bg-modal: #f0f0f0;
+  --bg-modal: var(--bg-main);
 
   /* --- Grid --- */
-  --bg-grid: var(--bg-main-light);
+  --bg-grid: #fafafa;
+  --bg-grid-zebra: #f2f2f2;
   --bg-grid-header: #f0f0f0;
   --bg-grid-header-hover: #d6d6d6;
 

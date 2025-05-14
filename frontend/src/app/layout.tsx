@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import "./styles/globals.css";
 import "./styles/variables.css";
-import LayoutWrapper from "./components/layoutWrapper/LayoutWrapper";
-import StorageProvider from "./components/storageProvider/StorageProvider";
+import LayoutWrapper from "./components/helpers/LayoutWrapper";
+import StorageProvider from "./components/helpers/StorageProvider";
 import { NotificationProvider } from "./components/notification/NotificationProvider";
 
 type Props = {
@@ -34,6 +34,7 @@ const RootLayout = (props: Props) => {
             <LayoutWrapper>{props.children}</LayoutWrapper>
           </NotificationProvider>
         </StorageProvider>
+        
       </body>
     </html>
   );

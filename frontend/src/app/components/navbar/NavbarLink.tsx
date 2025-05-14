@@ -26,21 +26,21 @@ const NavbarLink = (props: Props) => {
     }
   };
 
-    // Icon.
+  // Icon.
   const Icon = onHover && props.iconHover ? props.iconHover : props.icon;
 
   return (
-    <div>
+    <div className="mx-4">
       <Link
         onMouseEnter={mouseEnter}
         onMouseLeave={mouseLeave}
-        className="transition-[background,color,max-width] mr-3 ml-3 flex max-h-12 max-w-12 rounded-xl p-3 text-[var(--text-navbar)] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:max-w-full"
+        className="flex h-[38px] w-[38px] items-center justify-center gap-3 rounded-xl p-2 text-[var(--text-navbar)] transition-[background,color,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-start"
         href={props.href}
       >
         <Icon
-          className={`${onHover ? "text-[var(--accent-color)]" : ""} flex h-6 min-h-6 w-6 min-w-6 transition-colors duration-[var(--slow)]`}
+          className={`${onHover ? "text-[var(--accent-color)]" : ""} flex h-6 w-6 transition-colors duration-[var(--slow)]`}
         />
-        <span className="mr-3 ml-3 w-0 overflow-hidden text-nowrap md:w-full">
+        <span className="hidden overflow-hidden whitespace-nowrap md:flex">
           {props.label}
         </span>
       </Link>
