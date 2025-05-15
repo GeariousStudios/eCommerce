@@ -2,6 +2,7 @@
 
 import { ReactNode, useState } from "react";
 import Navbar from "../navbar/Navbar";
+import Topbar from "../topbar/Topbar";
 
 type Props = {
   children: ReactNode;
@@ -12,10 +13,11 @@ const LayoutWrapper = (props: Props) => {
 
   return (
     <>
+      <Topbar />
       <Navbar hasScrollbar={hasScrollbar} setHasScrollbar={setHasScrollbar} />
       <div className="flex">
         <div
-          className={`${hasScrollbar ? "ml-21 md:ml-67" : "ml-18 md:ml-64"} w-full max-w-[1920px] overflow-x-hidden p-4 duration-[var(--medium)]`}
+          className={`${hasScrollbar ? "ml-22 md:ml-67" : "ml-19 md:ml-64"} w-full max-w-[1920px] overflow-x-hidden p-4 pt-22 duration-[var(--medium)]`}
         >
           {props.children}
         </div>

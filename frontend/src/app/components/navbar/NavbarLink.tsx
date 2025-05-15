@@ -34,14 +34,16 @@ const NavbarLink = (props: Props) => {
       <Link
         onMouseEnter={mouseEnter}
         onMouseLeave={mouseLeave}
-        className="flex h-[38px] w-[38px] items-center justify-center gap-3 rounded-xl p-2 text-[var(--text-navbar)] transition-[background,color,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-start"
         href={props.href}
+        className="flex h-[38px] w-[38px] items-center gap-4 rounded-lg border-2 border-transparent p-2 text-[var(--text-navbar)] transition-[background,color,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-between"
       >
-        <Icon
-          className={`${onHover ? "text-[var(--accent-color)]" : ""} flex h-6 w-6 transition-colors duration-[var(--slow)]`}
-        />
-        <span className="hidden overflow-hidden whitespace-nowrap md:flex">
-          {props.label}
+        <span className="flex items-center gap-4">
+          <Icon
+            className={`${onHover ? "text-[var(--accent-color)]" : ""} flex h-6 w-6 transition-colors duration-[var(--slow)]`}
+          />
+          <span className="hidden overflow-hidden whitespace-nowrap md:flex">
+            {props.label}
+          </span>
         </span>
       </Link>
     </div>

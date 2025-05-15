@@ -399,8 +399,8 @@ const UsersClient = (props: Props) => {
                 <SingleDropdown
                   options={[
                     { label: "5", value: "5" },
+                    { label: "15", value: "15" },
                     { label: "25", value: "25" },
-                    { label: "100", value: "100" },
                   ]}
                   value={String(usersPerPage)}
                   onChange={(val) => {

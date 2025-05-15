@@ -97,10 +97,10 @@ const Navbar = (props: Props) => {
     <>
       <div className="overflow-y-auto" />
       <nav
-        className={`${props.hasScrollbar ? "w-21 md:w-67" : "w-18 md:w-64"} fixed z-[calc(var(--z-overlay)-1)] flex h-svh flex-col bg-[var(--bg-navbar)] duration-[var(--slow)]`}
+        className={`${props.hasScrollbar ? "w-22 md:w-67" : "w-19 md:w-64"} fixed z-[calc(var(--z-overlay)-2)] flex h-full flex-col bg-[var(--bg-navbar)] duration-[var(--slow)]`}
       >
         {/* Simulated border. */}
-        <div className="relative h-full w-full">
+        <div className="relative h-full pt-18 w-full">
           <div className="pointer-events-none absolute top-0 left-0 h-full w-full border-r-2 border-[var(--border-main)]" />
           {/* Simulated border */}
           {!isAuthReady ? (
@@ -111,22 +111,8 @@ const Navbar = (props: Props) => {
               id="navbar-menu"
               role="navigation"
               aria-label="Huvudmeny"
-              className={"flex h-full flex-col overflow-x-hidden"}
+              className={"py-4 flex h-full flex-col overflow-x-hidden"}
             >
-              <Link href="/" className="mt-4 mb-4" aria-label="Startsida">
-                <picture className="flex items-center justify-center">
-                  <source
-                    srcSet={`${currentTheme === "dark" ? "/images/logo_expnd_dark.svg" : "/images/logo_expnd_light.svg"}`}
-                    media="(min-width: 768px)"
-                  />
-                  <img
-                    src={`${currentTheme === "dark" ? "/images/logo_clpsd_dark.svg" : "/images/logo_clpsd_light.svg"}`}
-                    alt="Logga"
-                    className="h-12 md:h-32"
-                  />
-                </picture>
-              </Link>
-
               <NavbarSubmenu
                 label="Användare"
                 icon={OutlineUserIcon}
@@ -162,7 +148,7 @@ const Navbar = (props: Props) => {
                 hasScrollbar={props.hasScrollbar}
               />
 
-              {/* <NavbarLink href="/users" label="Länk 2" icon={OutlineUserIcon} iconHover={SolidUserIcon} /> */}
+              <NavbarLink href="/users" label="Länk 2" icon={OutlineUserIcon} iconHover={SolidUserIcon} />
 
               <div className="mb-3" />
             </div>

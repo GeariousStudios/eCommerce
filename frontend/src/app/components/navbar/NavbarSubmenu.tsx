@@ -105,13 +105,13 @@ const NavbarSubmenu = (props: Props) => {
   let widthClasses = "";
 
   if (hasScrollbar) {
-    widthClasses = "w-43";
+    widthClasses = "w-45";
   } else {
-    widthClasses = "w-40";
+    widthClasses = "w-42";
   }
 
   if (isOpen) {
-    widthClasses += " max-w-43";
+    widthClasses += " max-w-45";
   } else {
     widthClasses = " max-w-0";
   }
@@ -119,43 +119,43 @@ const NavbarSubmenu = (props: Props) => {
   if (cols === 1) {
     if (isOpen) {
       if (hasScrollbar) {
-        widthClasses += " sm:w-43 sm:max-w-43";
+        widthClasses += " sm:w-45 sm:max-w-45";
       } else {
-        widthClasses += " sm:w-40 sm:max-w-40";
+        widthClasses += " sm:w-42 sm:max-w-42";
       }
     } else {
       if (hasScrollbar) {
-        widthClasses += " sm:w-40";
+        widthClasses += " sm:w-42";
       } else {
-        widthClasses += " sm:w-43";
+        widthClasses += " sm:w-45";
       }
     }
   } else if (cols === 2) {
     if (isOpen) {
       if (hasScrollbar) {
-        widthClasses += " sm:w-83 sm:max-w-83";
+        widthClasses += " sm:w-85 sm:max-w-85";
       } else {
-        widthClasses += " sm:w-80 sm:max-w-80";
+        widthClasses += " sm:w-82 sm:max-w-82";
       }
     } else {
       if (hasScrollbar) {
-        widthClasses += " sm:w-80";
+        widthClasses += " sm:w-82";
       } else {
-        widthClasses += " sm:w-83";
+        widthClasses += " sm:w-85";
       }
     }
   } else if (cols >= 3) {
     if (isOpen) {
       if (hasScrollbar) {
-        widthClasses += " sm:w-123 sm:max-w-123";
+        widthClasses += " sm:w-125 sm:max-w-125";
       } else {
-        widthClasses += " sm:w-120 sm:max-w-120";
+        widthClasses += " sm:w-122 sm:max-w-122";
       }
     } else {
       if (hasScrollbar) {
-        widthClasses += " sm:w-120";
+        widthClasses += " sm:w-122";
       } else {
-        widthClasses += " sm:w-123";
+        widthClasses += " sm:w-125";
       }
     }
   }
@@ -181,9 +181,9 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} bg-navbar-link-hover h-[38px] w-[38px] rounded-lg border-2 border-transparent p-2 text-[var(--text-navbar)] transition-colors duration-[var(--fast)] md:flex md:w-full md:justify-between`}
+                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} flex h-[38px] w-[38px] rounded-lg border-2 border-transparent p-2 text-[var(--text-navbar)] transition-colors duration-[var(--fast)] md:w-full md:justify-between`}
               >
-                <span className="flex items-center gap-3">
+                <span className="flex items-center gap-4">
                   <Icon
                     className={`${isOpen ? "text-[var(--accent-color)]" : ""} h-6 w-6 transition-colors duration-[var(--slow)]`}
                   />
@@ -204,9 +204,9 @@ const NavbarSubmenu = (props: Props) => {
               id="submenu-menu"
               inert={!isOpen}
               aria-hidden={!isOpen}
-              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-21 md:left-67" : "left-18 md:left-64"} fixed top-0 h-svh overflow-x-hidden border-r-2 border-[var(--border-main)] bg-[var(--bg-navbar)] transition-all duration-[var(--slow)]`}
+              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-22 md:left-67" : "left-19 md:left-64"} fixed top-0 h-full overflow-x-hidden border-r-2 border-[var(--border-main)] bg-[var(--bg-navbar)] pt-18 transition-all duration-[var(--slow)]`}
             >
-              <div className="mt-3 mb-3 ml-3">
+              <div className="my-4 ml-4">
                 <div className="flex gap-2">
                   <props.iconHover className="flex max-h-4 min-h-4 max-w-4 min-w-4 text-[var(--accent-color)]" />
                   <span className="text-xs whitespace-nowrap">
@@ -214,7 +214,7 @@ const NavbarSubmenu = (props: Props) => {
                   </span>
                 </div>
                 <div
-                  className={`grid gap-3 ${
+                  className={`grid gap-2 ${
                     cols === 1
                       ? "grid-cols-1"
                       : cols === 2
