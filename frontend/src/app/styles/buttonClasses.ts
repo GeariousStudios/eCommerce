@@ -21,3 +21,6 @@ export const iconbuttonDeletePrimaryClass =
 // --- Other ---
 export const hyperLinkButtonClass =
   "cursor-pointer font-semibold text-[var(--accent-color)] transition-[color] duration-[var(--fast)] hover:text-[var(--accent-color-hover)] z-[calc(var(--z-base)+1)]";
+
+export const roundedButtonClass =
+  "h-[38px] w-[38px] flex justify-center items-center cursor-pointer bg-[var(--bg-navbar-link)] border-2 border-transparent rounded-full transition-[border,color] duration-[var(--fast)] hover:border-[var(--accent-color)] hover:text-[var(--accent-color)] z-[calc(var(--z-base)+1)]";

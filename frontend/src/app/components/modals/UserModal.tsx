@@ -251,7 +251,6 @@ const UserModal = (props: Props) => {
                   value={name}
                   onChange={(val) => setName(String(val))}
                   onModal={true}
-                  required
                 />
 
                 <Input

@@ -7,12 +7,20 @@ const useAuthStatus = () => {
   >(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
+  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   // Other variables.
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
+
+  const resetInfo = () => {
+    setUserRoles([]);
+    setUsername("");
+    setName("");
+  };
 
   /* --- BACKEND COMMUNICATION --- */
   useEffect(() => {
@@ -27,14 +35,14 @@ const useAuthStatus = () => {
         // Skip the rest if not connected.
         if (!connectionResponse.ok) {
           setIsLoggedIn(false);
-          setUserRoles([]);
+          resetInfo();
           return;
         }
 
         // Check login.
         if (!token) {
           setIsLoggedIn(false);
-          setUserRoles([]);
+          resetInfo();
           return;
         }
 
@@ -47,7 +55,7 @@ const useAuthStatus = () => {
 
         if (!loginResponse.ok) {
           setIsLoggedIn(false);
-          setUserRoles([]);
+          resetInfo();
           return;
         }
 
@@ -55,28 +63,30 @@ const useAuthStatus = () => {
         const loggedIn = loginResult.isLoggedIn === true;
         setIsLoggedIn(loggedIn);
 
-        // Check roles.
+        // Check user info.
         if (loggedIn) {
-          const roleResponse = await fetch(`${apiUrl}/user/roles`, {
+          const infoResponse = await fetch(`${apiUrl}/user/info`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
 
-          if (!roleResponse.ok) {
-            setUserRoles([]);
+          if (!infoResponse.ok) {
+            resetInfo();
             return;
           }
 
-          const roleResult = await roleResponse.json();
-          setUserRoles(roleResult.roles);
+          const infoResult = await infoResponse.json();
+          setUserRoles(infoResult.roles);
+          setUsername(infoResult.username);
+          setName(infoResult.name);
         } else {
-          setUserRoles([]);
+          resetInfo();
         }
       } catch (err) {
         setIsConnected(false);
         setIsLoggedIn(false);
-        setUserRoles([]);
+        resetInfo();
       } finally {
         setIsLoadingAuthStatus(false);
         setIsAuthReady(true);
@@ -93,6 +103,8 @@ const useAuthStatus = () => {
     isDev: userRoles.includes("Developer"),
     isConnected,
     isAuthReady,
+    username,
+    name,
   };
 };
 

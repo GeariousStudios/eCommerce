@@ -35,14 +35,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 /* --- Home --- */
-// builder.Services.AddDbContext<AppDbContext>(options =>
-//     options.UseSqlServer(
-//         "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
-//     )
-// );
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
+    )
+);
 
 /* --- Work --- */
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=eCommerce.db"));
+// builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=eCommerce.db"));
 
 builder.Services.AddCors(options =>
 {
@@ -50,7 +50,7 @@ builder.Services.AddCors(options =>
         "AllowFrontend",
         policy =>
             policy
-                .WithOrigins("http://localhost:3000") // Change to live url after dev.
+                .WithOrigins("http://localhost:3000", "http://192.168.1.75:3000") // Change to live url after dev.
                 .AllowAnyHeader()
                 .AllowAnyMethod()
     );
@@ -93,10 +93,7 @@ using (var scope = app.Services.CreateScope())
             Email = "liam0765@outlook.com",
             Password = "dev123",
             Roles = UserRoles.Developer,
-            UserPreferences = new UserPreferences
-            {
-
-            }
+            UserPreferences = new UserPreferences { },
         };
 
         db.Users.Add(user);
@@ -104,5 +101,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+app.Urls.Add("http://0.0.0.0:5000");
 
 app.Run();

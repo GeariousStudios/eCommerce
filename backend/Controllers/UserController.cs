@@ -124,8 +124,8 @@ namespace backend.Controllers
             return Ok(new { message = "Utloggning lyckades!" });
         }
 
-        [HttpGet("roles")]
-        public async Task<IActionResult> Roles()
+        [HttpGet("info")]
+        public async Task<IActionResult> Info()
         {
             var loggedInUser = User.Identity?.Name;
 
@@ -146,7 +146,14 @@ namespace backend.Controllers
                 .Split(", ", StringSplitOptions.RemoveEmptyEntries)
                 .ToList();
 
-            return Ok(new { roles });
+            return Ok(
+                new
+                {
+                    name = user.Name,
+                    username = user.Username,
+                    roles,
+                }
+            );
         }
 
         private async Task SetUserPreferences(User user, string theme)

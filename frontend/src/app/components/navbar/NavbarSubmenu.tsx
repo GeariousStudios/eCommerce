@@ -45,7 +45,7 @@ type Props = {
 const NavbarSubmenu = (props: Props) => {
   // Refs.
   const innerRef = useRef<HTMLDivElement>(null);
-  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   // States.
   const [isOpen, setIsOpen] = useState(false);
@@ -61,21 +61,6 @@ const NavbarSubmenu = (props: Props) => {
   );
 
   const cols = visibleMenus.length;
-
-  // Mouse enter.
-  const mouseEnter = () => {
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-    }
-    setIsOpen(true);
-  };
-
-  // Mouse leave.
-  const mouseLeave = () => {
-    closeTimeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 25);
-  };
 
   // Attach observer to check for scrollbar.
   useEffect(() => {
@@ -98,6 +83,36 @@ const NavbarSubmenu = (props: Props) => {
 
     return () => {
       observer.disconnect();
+    };
+  }, [isOpen]);
+
+  // Close menu when clicking outside.
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const menuElement = innerRef.current;
+      const buttonElement = buttonRef.current;
+      const target = event.target as Node;
+
+      if (
+        menuElement &&
+        !menuElement.contains(target) &&
+        buttonElement &&
+        !buttonElement.contains(target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [isOpen]);
 
@@ -168,20 +183,21 @@ const NavbarSubmenu = (props: Props) => {
       {(!props.requiresLogin || isLoggedIn) &&
         (!props.requiresAdmin || isAdmin) &&
         (!props.requiresDev || isDev) && (
-          <div onMouseEnter={mouseEnter} onMouseLeave={mouseLeave}>
+          <div>
             <div className="mx-4">
               <button
+                ref={buttonRef}
                 onClick={() => {
                   if (!isOpen) {
-                    mouseEnter();
-                  } else if (isOpen) {
-                    mouseLeave();
+                    setIsOpen(true);
+                  } else {
+                    setIsOpen(false);
                   }
                 }}
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} flex h-[38px] w-[38px] rounded-lg border-2 border-transparent p-2 text-[var(--text-navbar)] transition-colors duration-[var(--fast)] md:w-full md:justify-between`}
+                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} flex h-[38px] w-[38px] rounded-lg border-2 border-transparent p-2 text-[var(--text-navbar)] transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
               >
                 <span className="flex items-center gap-4">
                   <Icon
@@ -253,6 +269,7 @@ const NavbarSubmenu = (props: Props) => {
                                       <li className="w-34 rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
                                         {item.href ? (
                                           <Link
+                                            onClick={() => setIsOpen(false)}
                                             href={item.href}
                                             tabIndex={isOpen ? 0 : -1}
                                             className={

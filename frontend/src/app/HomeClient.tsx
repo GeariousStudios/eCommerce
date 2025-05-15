@@ -186,7 +186,7 @@ const HomeClient = (props: Props) => {
         {props.isLoggedIn === false && (
           <div className="flex w-full flex-col lg:w-1/3 lg:min-w-80">
             {/* --- Login header --- */}
-            <div className="flex rounded-t border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] py-2 px-3">
+            <div className="flex rounded-t border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
               <span className="font-semibold">Logga in</span>
             </div>
             {/* --- Login content --- */}
