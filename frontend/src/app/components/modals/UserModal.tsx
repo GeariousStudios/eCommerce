@@ -181,7 +181,7 @@ const UserModal = (props: Props) => {
           >
             <form
               ref={formRef}
-              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-4 overflow-y-auto rounded border-2 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
+              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-4 overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
               onSubmit={(e) =>
                 props.userId ? updateUser(e, props.userId) : addUser(e)
               }
@@ -198,11 +198,15 @@ const UserModal = (props: Props) => {
               </h2>
 
               <div className="flex items-center gap-2">
-                <span className="h-[2px] w-12 rounded bg-[var(--border-main)] opacity-50" />
+                 <span className="w-12 rounded opacity-25">
+                  <hr />
+                </span>
                 <h3 className="text-sm whitespace-nowrap opacity-50">
                   Inloggningsuppgifter
                 </h3>
-                <span className="h-[2px] w-full rounded bg-[var(--border-main)] opacity-50" />
+                <span className="w-full rounded opacity-25">
+                  <hr />
+                </span>
               </div>
 
               <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
@@ -237,11 +241,15 @@ const UserModal = (props: Props) => {
               </div>
 
               <div className="mt-8 flex items-center gap-2">
-                <span className="h-[2px] w-12 rounded bg-[var(--border-main)] opacity-50" />
+                <span className="w-12 rounded opacity-25">
+                  <hr />
+                </span>
                 <h3 className="text-sm whitespace-nowrap opacity-50">
                   Användardetaljer
                 </h3>
-                <span className="h-[2px] w-full rounded bg-[var(--border-main)] opacity-50" />
+                <span className="w-full rounded opacity-25">
+                  <hr />
+                </span>
               </div>
 
               <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
@@ -264,11 +272,15 @@ const UserModal = (props: Props) => {
               </div>
 
               <div className="mt-8 flex items-center gap-2">
-                <span className="h-[2px] w-12 rounded bg-[var(--border-main)] opacity-50" />
+                <span className="w-12 rounded opacity-25">
+                  <hr />
+                </span>
                 <h3 className="text-sm whitespace-nowrap opacity-50">
                   Behörigheter och status
                 </h3>
-                <span className="h-[2px] w-full rounded bg-[var(--border-main)] opacity-50" />
+                <span className="w-full rounded opacity-25">
+                  <hr />
+                </span>
               </div>
 
               <div className="mb-8 flex justify-between gap-4">

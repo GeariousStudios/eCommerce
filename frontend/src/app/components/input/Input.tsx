@@ -67,7 +67,7 @@ const Input = ({
           }
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[38px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-4xl" : ""} ${isDate ? "" : ""} ${icon ? "pl-10" : ""} peer rounded border-2 border-[var(--border-main)] p-2`}
+          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[38px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-4xl" : ""} ${isDate ? "" : ""} ${icon ? "pl-10" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
         />
         {icon && (
           <div className="pointer-events-none absolute top-1/2 left-3 h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">

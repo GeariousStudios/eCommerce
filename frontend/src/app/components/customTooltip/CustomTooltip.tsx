@@ -7,6 +7,7 @@ type TooltipProps = {
   side?: "top" | "right" | "bottom" | "left";
   hideOnClick?: boolean;
   lgHidden?: boolean;
+  touchToggle?: boolean;
 };
 
 const CustomTooltip = ({
@@ -15,11 +16,20 @@ const CustomTooltip = ({
   side = "top",
   hideOnClick = false,
   lgHidden = false,
+  touchToggle = false,
 }: TooltipProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  // Refs.
   const closeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const isTouchEvent = useRef(false);
+
+  // States.
+  const [isOpen, setIsOpen] = useState(false);
 
   const handlePointerEnter = () => {
+    if (isTouchEvent.current && !touchToggle) {
+      return;
+    }
+
     if (closeTimeout.current) {
       clearTimeout(closeTimeout.current);
       closeTimeout.current = null;
@@ -28,28 +38,50 @@ const CustomTooltip = ({
   };
 
   const handlePointerLeave = () => {
+    if (isTouchEvent.current && !touchToggle) {
+      return;
+    }
+
     closeTimeout.current = setTimeout(() => {
       setIsOpen(false);
     }, 0);
   };
+
+  const handleClick = () => {
+    if (touchToggle) {
+      setIsOpen((prev) => !prev);
+    }
+  };
+
+  useEffect(() => {
+    const detectTouch = (event: PointerEvent) => {
+      isTouchEvent.current = event.pointerType === "touch";
+    };
+
+    window.addEventListener("pointerdown", detectTouch);
+
+    return () => {
+      window.removeEventListener("pointerdown", detectTouch);
+    };
+  }, []);
 
   useEffect(() => {
     if (!hideOnClick) {
       return;
     }
 
-    const handleClick = () => {
+    const handleGlobalClick = () => {
       if (isOpen) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("touchstart", handleClick);
+    document.addEventListener("mousedown", handleGlobalClick);
+    document.addEventListener("touchstart", handleGlobalClick);
 
     return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("touchstart", handleClick);
+      document.removeEventListener("mousedown", handleGlobalClick);
+      document.removeEventListener("touchstart", handleGlobalClick);
     };
   }, [isOpen]);
 
@@ -60,6 +92,7 @@ const CustomTooltip = ({
           asChild
           onPointerEnter={handlePointerEnter}
           onPointerLeave={handlePointerLeave}
+          onClick={touchToggle ? handleClick : undefined}
         >
           {children}
         </Tooltip.Trigger>

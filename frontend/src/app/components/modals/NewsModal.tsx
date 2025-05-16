@@ -183,7 +183,7 @@ const NewsModal = (props: Props) => {
           >
             <form
               ref={formRef}
-              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-8 overflow-y-auto rounded border-2 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
+              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-8 overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
               onSubmit={(e) =>
                 props.newsId ? updateNews(e, props.newsId) : addNews(e)
               }

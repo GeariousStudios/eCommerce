@@ -228,10 +228,10 @@ const UsersClient = (props: Props) => {
 
   // Pre-defined classes.
   let thClass =
-    "pl-4 p-2 min-w-48 h-[38px] cursor-pointer border-2 border-t-0 border-[var(--border-secondary)] border-b-[var(--border-main)] text-left transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]";
+    "pl-4 p-2 min-w-48 h-[38px] cursor-pointer border-1 border-t-0 border-[var(--border-secondary)] border-b-[var(--border-main)] text-left transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]";
 
   let tdClass =
-    "py-2 px-4 min-w-48 h-[38px] border-2 border-b-0 border-[var(--border-secondary)] text-left break-all";
+    "py-2 px-4 min-w-48 h-[38px] border-1 border-b-0 border-[var(--border-secondary)] text-left break-all";
 
   return (
     <>
@@ -459,13 +459,13 @@ const UsersClient = (props: Props) => {
 
       {/* Users list */}
       <div className="mt-2 mb-4 flex w-full flex-col">
-        <div className="flex w-full overflow-x-auto rounded border-2 border-[var(--border-main)]">
+        <div className="flex w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
           <table className="w-full table-fixed border-collapse">
             <thead
               className={`${!props.isConnected || isLoadingUsers ? "pointer-events-none" : ""} bg-[var(--bg-grid-header)]`}
             >
               <tr>
-                <th className="w-10 min-w-10 border-2 border-t-0 border-l-0 border-[var(--border-secondary)] border-b-[var(--border-main)] p-2">
+                <th className="w-10 min-w-10 border-1 border-t-0 border-l-0 border-[var(--border-secondary)] border-b-[var(--border-main)] p-2">
                   <div className="flex items-center justify-center">
                     <Input
                       type="checkbox"
@@ -764,12 +764,12 @@ const UsersClient = (props: Props) => {
       {/* Meta data section */}
       <div className="flex w-full flex-col">
         {/* --- Meta data header --- */}
-        <div className="flex rounded-t border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] p-2">
+        <div className="flex rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] p-2">
           <span className="font-semibold">Användarinformation</span>
         </div>
         {/* --- Meta data content --- */}
         <div
-          className={`${selectedUsers.length === 0 || selectedUsers.length > 1 ? "items-center" : ""} flex max-h-96 min-h-80 rounded-b border-2 border-t-0 border-[var(--border-main)] p-4`}
+          className={`${selectedUsers.length === 0 || selectedUsers.length > 1 ? "items-center" : ""} flex max-h-96 min-h-80 rounded-b border-1 border-t-0 border-[var(--border-main)] p-4`}
         >
           {selectedUsers.length === 0 ? (
             <Message

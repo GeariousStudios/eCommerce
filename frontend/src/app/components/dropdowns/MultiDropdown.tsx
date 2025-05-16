@@ -92,7 +92,7 @@ const MultiDropdown = ({
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <div
-        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex h-[38px] w-full cursor-pointer items-center rounded border-2 border-[var(--border-main)] bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
+        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex h-[38px] w-full cursor-pointer items-center rounded border-1 border-[var(--border-main)] bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -135,7 +135,7 @@ const MultiDropdown = ({
             dropdownRef.current = el;
             portalContentRef.current = el;
           }}
-          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} fixed z-[var(--z-tooltip)] ml-2 list-none rounded-b border-2 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} fixed z-[var(--z-tooltip)] ml-2 list-none rounded-b border-1 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
           role="listbox"
           inert={!isOpen || undefined}
         >

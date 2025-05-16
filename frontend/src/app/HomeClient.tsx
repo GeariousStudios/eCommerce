@@ -19,6 +19,7 @@ import {
   iconButtonPrimaryClass,
 } from "./styles/buttonClasses";
 import Link from "next/link";
+import useAuthStatus from "./hooks/useAuthStatus";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -52,6 +53,7 @@ const HomeClient = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
   const { notify } = useNotification();
+  const { name } = useAuthStatus();
 
   // Display welcome message.
   useEffect(() => {
@@ -134,7 +136,12 @@ const HomeClient = (props: Props) => {
         notify("error", result.message);
       } else {
         localStorage.setItem("token", result.token);
-        localStorage.setItem("postLoginNotification", result.message);
+        if (result.message) {
+          localStorage.setItem("postLoginNotification", result.message);
+        } else {
+          localStorage.setItem("postLoginNotification", username);
+        }
+
         window.location.reload();
       }
     } catch (err) {
@@ -186,11 +193,11 @@ const HomeClient = (props: Props) => {
         {props.isLoggedIn === false && (
           <div className="flex w-full flex-col lg:w-1/3 lg:min-w-80">
             {/* --- Login header --- */}
-            <div className="flex rounded-t border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
+            <div className="flex rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
               <span className="font-semibold">Logga in</span>
             </div>
             {/* --- Login content --- */}
-            <div className="flex max-h-96 min-h-96 items-center justify-center rounded-b border-2 border-t-0 border-[var(--border-main)] p-4">
+            <div className="flex max-h-96 min-h-96 items-center justify-center rounded-b border-1 border-t-0 border-[var(--border-main)] p-4">
               {/* --- Login form --- */}
               {props.isConnected ? (
                 <form
@@ -236,7 +243,7 @@ const HomeClient = (props: Props) => {
           className={`${props.isLoggedIn ? "w-full" : "lg:w-2/3"} flex w-full flex-col`}
         >
           {/* --- News header --- */}
-          <div className="flex justify-between rounded-t border-2 border-[var(--border-main)] bg-[var(--bg-grid-header)] p-2">
+          <div className="flex justify-between rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] p-2">
             <span className="ml-1 font-semibold">Nyheter</span>
 
             {props.isLoggedIn !== false && props.isAdmin && (
@@ -253,7 +260,7 @@ const HomeClient = (props: Props) => {
           </div>
 
           {/* --- News content --- */}
-          <div className="flex max-h-96 min-h-96 flex-col overflow-y-auto rounded-b border-2 border-t-0 border-[var(--border-main)] p-2">
+          <div className="flex max-h-96 min-h-96 flex-col overflow-y-auto rounded-b border-1 border-t-0 border-[var(--border-main)] p-2">
             {!props.isAuthReady ? (
               ""
             ) : isLoadingNews ? (
@@ -317,7 +324,7 @@ const HomeClient = (props: Props) => {
                       </small>
                     </article>
                     {index !== newsItems.length - 1 && (
-                      <span className="my-2 flex h-[2px] w-full self-stretch rounded bg-[var(--border-main-transparent)]"></span>
+                      <hr className="text-[var(--border-main)]" />
                     )}
                   </div>
                 ))}

@@ -4,7 +4,7 @@ import { ElementType, useState } from "react";
 type Props = {
   href: string;
   label: string;
-  icon: ElementType;
+  icon?: ElementType;
   iconHover: ElementType;
 };
 
@@ -35,12 +35,14 @@ const NavbarLink = (props: Props) => {
         onMouseEnter={mouseEnter}
         onMouseLeave={mouseLeave}
         href={props.href}
-        className="flex h-[38px] w-[38px] items-center gap-4 rounded-lg border-2 border-transparent p-2 text-[var(--text-navbar)] transition-[background,color,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-between"
+        className="group flex h-[38px] w-[38px] items-center gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-between"
       >
         <span className="flex items-center gap-4">
-          <Icon
-            className={`${onHover ? "text-[var(--accent-color)]" : ""} flex h-6 w-6 transition-colors duration-[var(--slow)]`}
-          />
+          {Icon && (
+            <Icon
+              className={`${onHover ? "text-[var(--accent-color)]" : ""} flex h-6 w-6 transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]`}
+            />
+          )}
           <span className="hidden overflow-hidden whitespace-nowrap md:flex">
             {props.label}
           </span>

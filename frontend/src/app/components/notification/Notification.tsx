@@ -51,7 +51,7 @@ const Notification = (props: Props) => {
 
   return (
     <div
-      className={`${isVisible ? "opacity-100" : "opacity-0"} ${backgroundColor} flex cursor-default items-center justify-center gap-3 rounded py-3 font-semibold text-[var(--text-main-reverse)] shadow-md transition-[opacity,background]`}
+      className={`${isVisible ? "opacity-100" : "opacity-0"} ${backgroundColor} flex cursor-default items-center justify-center gap-3 rounded py-3 font-semibold text-[var(--text-main-reverse)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,background]`}
       style={{ transitionDuration: "500ms, 200ms" }}
       onClick={handleClose}
     >

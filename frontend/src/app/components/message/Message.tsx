@@ -12,9 +12,10 @@ import Link from "next/link";
 import { ElementType, ReactNode, useEffect, useState } from "react";
 
 type Props = {
-  content: string;
+  content?: string;
   icon?: string;
   fullscreen?: boolean;
+  sideMessage?: boolean;
 };
 
 const iconMap: Record<string, ElementType> = {
@@ -50,13 +51,15 @@ const Message = (props: Props) => {
     setIcon(() => (props.icon ? (iconMap[props.icon] ?? null) : null));
   }, [props.icon]);
 
-  const content = contentMap[props.content] ?? props.content;
+  const content = (props.content && contentMap[props.content]) ?? props.content;
 
   return (
     <div
       className={`${props.fullscreen ? "fixed inset-0 ml-18 overflow-auto md:ml-64" : "h-full grow"} flex items-center justify-center`}
     >
-      <div className="flex flex-col items-center gap-3 opacity-75">
+      <div
+        className={`${props.sideMessage ? "" : "flex-col"} flex items-center gap-3 opacity-75`}
+      >
         {props.icon && Icon ? (
           <Icon
             className={`${props.icon === "loading" ? "motion-safe:animate-[spin_2s_linear_infinite]" : ""} h-8 w-8`}
@@ -66,7 +69,7 @@ const Message = (props: Props) => {
         ) : (
           <FaceFrownIcon className="h-8 w-8" />
         )}
-        <span className="text-center">{content}</span>
+        {content && <span className="text-center">{content}</span>}
       </div>
     </div>
   );

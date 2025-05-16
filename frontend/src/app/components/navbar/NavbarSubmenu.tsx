@@ -197,11 +197,11 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} flex h-[38px] w-[38px] rounded-lg border-2 border-transparent p-2 text-[var(--text-navbar)] transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
+                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} group flex h-[38px] w-[38px] rounded-lg border-1 border-transparent p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
               >
                 <span className="flex items-center gap-4">
                   <Icon
-                    className={`${isOpen ? "text-[var(--accent-color)]" : ""} h-6 w-6 transition-colors duration-[var(--slow)]`}
+                    className={`${isOpen ? "text-[var(--accent-color)]" : ""} h-6 w-6 transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]`}
                   />
                   <span className="hidden overflow-hidden whitespace-nowrap md:flex">
                     {props.label}
@@ -211,7 +211,7 @@ const NavbarSubmenu = (props: Props) => {
                 <ChevronRightIcon
                   className={`${
                     isOpen ? "rotate-180 text-[var(--accent-color)]" : ""
-                  } h-0 w-0 rotate-0 transition-[color,rotate] duration-[var(--slow)] md:h-6 md:w-6`}
+                  } h-0 w-0 rotate-0  transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)] md:h-6 md:w-6`}
                 />
               </button>
             </div>
@@ -220,7 +220,7 @@ const NavbarSubmenu = (props: Props) => {
               id="submenu-menu"
               inert={!isOpen}
               aria-hidden={!isOpen}
-              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-22 md:left-67" : "left-19 md:left-64"} fixed top-0 h-full overflow-x-hidden border-r-2 border-[var(--border-main)] bg-[var(--bg-navbar)] pt-18 transition-all duration-[var(--slow)]`}
+              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-22 md:left-67" : "left-19 md:left-64"} fixed top-0 h-full overflow-x-hidden border-r-1 border-[var(--border-main)] bg-[var(--bg-navbar)] pt-18 transition-all duration-[var(--slow)]`}
             >
               <div className="my-4 ml-4">
                 <div className="flex gap-2">
@@ -251,7 +251,7 @@ const NavbarSubmenu = (props: Props) => {
                             </li>
 
                             {/* Border */}
-                            <li className="h-[2px] rounded bg-[var(--border-main)]" />
+                            <hr className="text-[var(--border-main)]" />
                             {/* Border */}
 
                             {menu.items.map((item, index) => (
