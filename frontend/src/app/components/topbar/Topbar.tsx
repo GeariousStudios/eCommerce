@@ -155,12 +155,9 @@ const Topbar = (props: Props) => {
                     triggerRef={bellIconRef}
                     isOpen={bellIconClicked}
                     onClose={() => setBellIconClicked(false)}
-                    content={
-                      <>
-                        <span>Du har inga nya meddelanden.</span>
-                      </>
-                    }
-                  />
+                  >
+                    <span>Du har inga nya meddelanden.</span>
+                  </MenuDropdown>
                 </div>
               )}
 
@@ -187,72 +184,65 @@ const Topbar = (props: Props) => {
                   triggerRef={userIconRef}
                   isOpen={userIconClicked}
                   onClose={() => setUserIconClicked(false)}
-                  content={
-                    <>
-                      {isLoggedIn && (
-                        <div className="relative">
-                          <span className="font-semibold break-words text-[var(--accent-color)]">
-                            {name || username}
-                          </span>
-                          <hr className="absolute mt-4 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
-                        </div>
-                      )}
-                      <div>
-                        <span className="flex pb-1 text-sm font-semibold">
-                          Hantera
-                        </span>
-                        <TopbarLink
-                          onClick={toggleTheme}
-                          label={
-                            currentTheme === "dark"
-                              ? "Byt till ljust tema"
-                              : "Byt till mörkt tema"
-                          }
-                          icon={
-                            currentTheme === "dark"
-                              ? OutlineSunIcon
-                              : OutlineMoonIcon
-                          }
-                          iconHover={
-                            currentTheme === "dark"
-                              ? SolidSunIcon
-                              : SolidMoonIcon
-                          }
-                        />
-                        {isLoggedIn && (
-                          <TopbarLink
-                            href="/"
-                            label="Inställningar"
-                            icon={OutlineCog6ToothIcon}
-                            iconHover={SolidCog6ToothIcon}
-                          />
-                        )}
-                      </div>
+                >
+                  {isLoggedIn && (
+                    <div className="relative">
+                      <span className="font-semibold break-words text-[var(--accent-color)]">
+                        {name || username}
+                      </span>
+                      <hr className="absolute mt-4 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
+                    </div>
+                  )}
+                  <div>
+                    <span className="flex pb-1 text-sm font-semibold">
+                      Hantera
+                    </span>
+                    <TopbarLink
+                      onClick={toggleTheme}
+                      label={
+                        currentTheme === "dark"
+                          ? "Byt till ljust tema"
+                          : "Byt till mörkt tema"
+                      }
+                      icon={
+                        currentTheme === "dark"
+                          ? OutlineSunIcon
+                          : OutlineMoonIcon
+                      }
+                      iconHover={
+                        currentTheme === "dark" ? SolidSunIcon : SolidMoonIcon
+                      }
+                    />
+                    {isLoggedIn && (
+                      <TopbarLink
+                        href="/"
+                        label="Inställningar"
+                        icon={OutlineCog6ToothIcon}
+                        iconHover={SolidCog6ToothIcon}
+                      />
+                    )}
+                  </div>
 
-                      <div className="relative">
-                        <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-[var(--border-main)]" />
-                        <span className="pb-1 text-sm font-semibold">
-                          Session
-                        </span>
-                        {isLoggedIn ? (
-                          <TopbarLink
-                            onClick={handleLogout}
-                            label="Logga ut"
-                            icon={OutlineArrowLeftEndOnRectangleIcon}
-                            iconHover={SolidArrowLeftEndOnRectangleIcon}
-                          />
-                        ) : (
-                          <TopbarLink
-                            href="/"
-                            label="Logga in"
-                            icon={OutlineArrowRightEndOnRectangleIcon}
-                            iconHover={SolidArrowRightEndOnRectangleIcon}
-                          />
-                        )}
-                      </div>
-                    </>
-                  }
-                />
+                  <div className="relative">
+                    <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-[var(--border-main)]" />
+                    <span className="pb-1 text-sm font-semibold">Session</span>
+                    {isLoggedIn ? (
+                      <TopbarLink
+                        onClick={handleLogout}
+                        label="Logga ut"
+                        icon={OutlineArrowLeftEndOnRectangleIcon}
+                        iconHover={SolidArrowLeftEndOnRectangleIcon}
+                      />
+                    ) : (
+                      <TopbarLink
+                        href="/"
+                        label="Logga in"
+                        icon={OutlineArrowRightEndOnRectangleIcon}
+                        iconHover={SolidArrowRightEndOnRectangleIcon}
+                      />
+                    )}
+                  </div>
+                </MenuDropdown>
               </div>
             </div>
           </>

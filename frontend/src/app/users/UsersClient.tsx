@@ -32,6 +32,7 @@ import Message from "../components/message/Message";
 import SingleDropdown from "../components/dropdowns/SingleDropdown";
 import UserModal from "../components/modals/UserModal";
 import MenuDropdown from "../components/dropdowns/MenuDropdown";
+import SideMenu from "../components/sideMenu/SideMenu";
 
 type User = {
   id: number;
@@ -93,14 +94,46 @@ const UsersClient = (props: Props) => {
   // Filter states and refs.
   const filterRolesRef = useRef<HTMLButtonElement>(null);
   const filterStatusRef = useRef<HTMLButtonElement>(null);
+  const filterAllRef = useRef<HTMLButtonElement>(null);
 
   const [filterRolesOpen, setFilterRolesOpen] = useState(false);
   const [filterStatusOpen, setFilterStatusOpen] = useState(false);
+  const [filterAllOpen, setFilterAllOpen] = useState(false);
 
   const [showAdmins, setShowAdmins] = useState(false);
   const [showDevelopers, setShowDevelopers] = useState(false);
   const [showLocked, setShowLocked] = useState(false);
   const [showUnlocked, setShowUnlocked] = useState(false);
+
+  // Filter all-section.
+  const filterAllRolesRef = useRef<HTMLDivElement>(null);
+  const filterAllStatusRef = useRef<HTMLDivElement>(null);
+
+  const [filterAllRolesOpen, setFilterAllRolesOpen] = useState(false);
+  const [filterAllStatusOpen, setFilterAllStatusOpen] = useState(false);
+
+  const [filterAllRolesHeight, setFilterAllRolesHeight] = useState("0px");
+  const [filterAllStatusHeight, setFilterAllStatusHeight] = useState("0px");
+
+  useEffect(() => {
+    if (filterAllRolesRef.current) {
+      setFilterAllRolesHeight(
+        filterAllRolesOpen
+          ? `${filterAllRolesRef.current.scrollHeight}px`
+          : "0px",
+      );
+    }
+  }, [filterAllRolesOpen, totalCounts]);
+
+  useEffect(() => {
+    if (filterAllStatusRef.current) {
+      setFilterAllStatusHeight(
+        filterAllStatusOpen
+          ? `${filterAllStatusRef.current.scrollHeight}px`
+          : "0px",
+      );
+    }
+  }, [filterAllStatusOpen, totalCounts]);
 
   // Modal before deletion.
   const toggleDeleteModal = (userIds: number[] = []) => {
@@ -490,36 +523,43 @@ const UsersClient = (props: Props) => {
                   triggerRef={filterRolesRef}
                   isOpen={filterRolesOpen}
                   onClose={() => setFilterRolesOpen(false)}
-                  content={
-                    <div className="flex flex-col gap-4">
-                      <div className="flex justify-between">
-                        <Input
-                          type="checkbox"
-                          checked={showAdmins}
-                          onChange={() => {
-                            setShowAdmins((prev) => !prev);
-                          }}
-                          label="Admin"
-                        />
-                        <span>{totalCounts?.admins ?? 0}</span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <Input
-                          type="checkbox"
-                          checked={showDevelopers}
-                          onChange={() => {
-                            setShowDevelopers((prev) => !prev);
-                          }}
-                          label="Developer"
-                        />
-                        <span>
-                          {<span>{totalCounts?.developers ?? 0}</span>}
-                        </span>
-                      </div>
+                >
+                  <div className="flex w-full flex-col gap-4">
+                    <div
+                      onClick={() => {
+                        setShowAdmins((prev) => !prev);
+                      }}
+                      className="group flex cursor-pointer justify-between"
+                    >
+                      <Input
+                        type="checkbox"
+                        checked={showAdmins}
+                        label="Admin"
+                        readOnly
+                      />
+                      <span>
+                        <span>({totalCounts?.admins ?? 0})</span>
+                      </span>
                     </div>
-                  }
-                />
+
+                    <div
+                      onClick={() => {
+                        setShowDevelopers((prev) => !prev);
+                      }}
+                      className="group flex cursor-pointer justify-between"
+                    >
+                      <Input
+                        type="checkbox"
+                        checked={showDevelopers}
+                        label="Developer"
+                        readOnly
+                      />
+                      <span>
+                        <span>({totalCounts?.developers ?? 0})</span>
+                      </span>
+                    </div>
+                  </div>
+                </MenuDropdown>
               </div>
 
               {/* Status filter */}
@@ -541,50 +581,58 @@ const UsersClient = (props: Props) => {
                     className={`${filterIconClass} ${filterStatusOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
                   />
                 </button>
+
                 <MenuDropdown
                   triggerRef={filterStatusRef}
                   isOpen={filterStatusOpen}
                   onClose={() => setFilterStatusOpen(false)}
-                  content={
-                    <div className="flex flex-col gap-4">
-                      <div className="flex justify-between">
-                        <Input
-                          type="checkbox"
-                          checked={showLocked}
-                          onChange={() => {
-                            setShowLocked((prev) => !prev);
-                          }}
-                          label="Låst"
-                        />
-                        <span>
-                          <span>{totalCounts?.locked ?? 0}</span>
-                        </span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <Input
-                          type="checkbox"
-                          checked={showUnlocked}
-                          onChange={() => {
-                            setShowUnlocked((prev) => !prev);
-                          }}
-                          label="Upplåst"
-                        />
-                        <span>
-                          <span>{totalCounts?.unlocked ?? 0}</span>
-                        </span>
-                      </div>
+                >
+                  <div className="flex flex-col gap-4">
+                    <div
+                      onClick={() => {
+                        setShowLocked((prev) => !prev);
+                      }}
+                      className="group flex cursor-pointer justify-between"
+                    >
+                      <Input
+                        type="checkbox"
+                        checked={showLocked}
+                        label="Låst"
+                        readOnly
+                      />
+                      <span>
+                        <span>({totalCounts?.locked ?? 0})</span>
+                      </span>
                     </div>
-                  }
-                />
+
+                    <div
+                      onClick={() => {
+                        setShowLocked((prev) => !prev);
+                      }}
+                      className="group flex cursor-pointer justify-between"
+                    >
+                      <Input
+                        type="checkbox"
+                        checked={showUnlocked}
+                        label="Upplåst"
+                        readOnly
+                      />
+                      <span>
+                        <span>({totalCounts?.unlocked ?? 0})</span>
+                      </span>
+                    </div>
+                  </div>
+                </MenuDropdown>
               </div>
 
               {/* All filters */}
-              <div className="relative flex md:hidden">
+              <div className="relative">
+                {/* flex md:hidden */}
                 <button
                   className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
                   onClick={() => {
                     closeAllMenus();
+                    setFilterAllOpen(true);
                   }}
                 >
                   <span className={`${filterClass} xs:flex hidden`}>
@@ -592,6 +640,128 @@ const UsersClient = (props: Props) => {
                   </span>
                   <AdjustmentsHorizontalIcon className={`${filterIconClass}`} />
                 </button>
+                <SideMenu
+                  triggerRef={filterAllRef}
+                  isOpen={filterAllOpen}
+                  onClose={() => setFilterAllOpen(false)}
+                  label="Alla filter"
+                >
+                  <div>
+                    <div className="flex flex-col">
+                      {/* --- Roles filter --- */}
+                      <button
+                        onClick={() => setFilterAllRolesOpen((prev) => !prev)}
+                        className={`${filterAllRolesOpen ? "text-[var(--accent-color)]" : ""} flex w-full cursor-pointer items-center justify-between pb-4 duration-[var(--fast)] hover:text-[var(--accent-color)]`}
+                      >
+                        <span className="text-lg font-semibold">
+                          Behörigheter
+                        </span>
+                        <ChevronDownIcon
+                          className={`${filterAllRolesOpen ? "rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
+                        />
+                      </button>
+
+                      <div className="relative">
+                        <div
+                          style={{ height: filterAllRolesHeight }}
+                          className="overflow-hidden transition-[height] duration-[var(--slow)]"
+                        >
+                          <div ref={filterAllRolesRef}>
+                            <div className="flex w-full flex-col gap-4">
+                              <div
+                                onClick={() => {
+                                  setShowAdmins((prev) => !prev);
+                                }}
+                                className="group flex cursor-pointer justify-between py-4"
+                              >
+                                <Input
+                                  type="checkbox"
+                                  checked={showAdmins}
+                                  label="Admin"
+                                  readOnly
+                                />
+                                <span>({totalCounts?.admins ?? 0})</span>
+                              </div>
+                            </div>
+
+                            <div className="flex w-full flex-col gap-4">
+                              <div
+                                onClick={() => {
+                                  setShowDevelopers((prev) => !prev);
+                                }}
+                                className="group flex cursor-pointer justify-between py-4"
+                              >
+                                <Input
+                                  type="checkbox"
+                                  checked={showDevelopers}
+                                  label="Developer"
+                                  readOnly
+                                />
+                                <span>({totalCounts?.developers ?? 0})</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <hr className="absolute -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
+                      </div>
+
+                      {/* --- Status filter --- */}
+                      <button
+                        onClick={() => setFilterAllStatusOpen((prev) => !prev)}
+                        className={`${filterAllStatusOpen ? "text-[var(--accent-color)]" : ""} flex w-full cursor-pointer items-center justify-between py-4 duration-[var(--fast)] hover:text-[var(--accent-color)]`}
+                      >
+                        <span className="text-lg font-semibold">Status</span>
+                        <ChevronDownIcon
+                          className={`${filterAllStatusOpen ? "rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
+                        />
+                      </button>
+
+                      <div className="relative">
+                        <div
+                          style={{ height: filterAllStatusHeight }}
+                          className="overflow-hidden transition-[height] duration-[var(--slow)]"
+                        >
+                          <div ref={filterAllStatusRef}>
+                            <div className="flex w-full flex-col gap-4">
+                              <div
+                                onClick={() => {
+                                  setShowLocked((prev) => !prev);
+                                }}
+                                className="group flex cursor-pointer justify-between py-4"
+                              >
+                                <Input
+                                  type="checkbox"
+                                  checked={showLocked}
+                                  label="Låst"
+                                  readOnly
+                                />
+                                <span>({totalCounts?.locked ?? 0})</span>
+                              </div>
+                            </div>
+
+                            <div className="flex w-full flex-col gap-4">
+                              <div
+                                onClick={() => {
+                                  setShowUnlocked((prev) => !prev);
+                                }}
+                                className="group flex cursor-pointer justify-between py-4"
+                              >
+                                <Input
+                                  type="checkbox"
+                                  checked={showUnlocked}
+                                  label="Upplåst"
+                                  readOnly
+                                />
+                                <span>({totalCounts?.unlocked ?? 0})</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <hr className="absolute -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
+                      </div>
+                    </div>
+                  </div>
+                </SideMenu>
               </div>
             </div>
           </div>

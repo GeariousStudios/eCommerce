@@ -12,6 +12,7 @@ type InputProps = {
   required?: boolean;
   spellCheck?: boolean;
   onModal?: boolean;
+  readOnly?: boolean;
 };
 
 const isDarkTheme = () => {
@@ -36,6 +37,7 @@ const Input = ({
   required = false,
   spellCheck = false,
   onModal = false,
+  readOnly = false,
 }: InputProps & { icon?: ReactNode }) => {
   // Checks.
   const isCheckbox = type === "checkbox";
@@ -67,7 +69,8 @@ const Input = ({
           }
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${isDate ? "" : ""} ${icon ? "pl-12" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
+          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
+          readOnly={readOnly}
         />
         {icon && (
           <div className="pointer-events-none absolute top-1/2 left-4 h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
@@ -84,7 +87,10 @@ const Input = ({
               {required && <span className="ml-1 text-red-700">*</span>}
             </label>
           ) : (
-            <label htmlFor={id} className="cursor-pointer">
+            <label
+              htmlFor={id}
+              className={`${readOnly ? "!pointer-events-none" : ""} cursor-pointer`}
+            >
               <input
                 type={type}
                 id={id}
@@ -94,11 +100,15 @@ const Input = ({
                 required={required}
                 spellCheck={spellCheck}
                 className="invisible"
+                readOnly={readOnly}
               />
-              <span
-                className={`${checked ? "" : "!font-normal"} !text-[var(--text-main)]`}
-              >
-                {label}
+              <span className="relative inline-block">
+                <span
+                  className={`${checked ? "" : "!font-normal"} !text-[var(--text-main)]`}
+                >
+                  {label}
+                </span>
+                <div className="absolute bottom-0 left-0 h-[2px] w-0 rounded-full bg-[var(--accent-color)] transition-all duration-[var(--fast)] group-hover:w-full" />
               </span>
             </label>
           ))}
