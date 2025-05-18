@@ -11,5 +11,7 @@ namespace backend.Dtos.User
 
         // Meta data.
         public bool IsOnline { get; set; }
+        public DateTime CreationDate { get; set; }
+        public DateTime? LastLogin { get; set; }
     }
 }

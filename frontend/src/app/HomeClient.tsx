@@ -193,7 +193,7 @@ const HomeClient = (props: Props) => {
         {props.isLoggedIn === false && (
           <div className="flex w-full flex-col lg:w-1/3 lg:min-w-80">
             {/* --- Login header --- */}
-            <div className="flex rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
+            <div className="flex h-[40px] items-center rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
               <span className="font-semibold">Logga in</span>
             </div>
             {/* --- Login content --- */}
@@ -243,8 +243,8 @@ const HomeClient = (props: Props) => {
           className={`${props.isLoggedIn ? "w-full" : "lg:w-2/3"} flex w-full flex-col`}
         >
           {/* --- News header --- */}
-          <div className="flex justify-between rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] p-2">
-            <span className="ml-1 font-semibold">Nyheter</span>
+          <div className="flex h-[40px] items-center justify-between rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
+            <span className="font-semibold">Nyheter</span>
 
             {props.isLoggedIn !== false && props.isAdmin && (
               <CustomTooltip content="Lägg till nyhet" hideOnClick={true}>
@@ -316,7 +316,7 @@ const HomeClient = (props: Props) => {
                       <h4 className="text-lg font-semibold">{item.headline}</h4>
 
                       <div dangerouslySetInnerHTML={{ __html: item.content }} />
-                      <small className="text italic opacity-25">
+                      <small className="text-[var(--text-secondary)] italic">
                         Publicerad av:{" "}
                         {props.isAdmin
                           ? item.author + " (ID: " + item.authorId + ")"

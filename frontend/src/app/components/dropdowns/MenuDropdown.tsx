@@ -46,7 +46,7 @@ const MenuDropdown = (props: Props) => {
       ref={innerRef}
       role="dialog"
       aria-hidden={!props.isOpen}
-      className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} absolute top-full right-0 mt-1 flex w-64 flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+      className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex w-64 flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
     >
       {props.content}
     </div>

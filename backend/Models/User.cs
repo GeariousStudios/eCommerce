@@ -35,5 +35,7 @@ namespace backend.Models
         public string? CurrentSessionId { get; set; }
         public bool IsOnline { get; set; } = false;
         public bool IsLocked { get; set; }
+        public DateTime CreationDate { get; set; }
+        public DateTime? LastLogin { get; set; }
     }
 }

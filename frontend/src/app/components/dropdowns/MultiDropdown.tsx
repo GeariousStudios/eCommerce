@@ -48,7 +48,7 @@ const MultiDropdown = ({
         const rect = wrapperRef.current.getBoundingClientRect();
         dropdownRef.current.style.top = `${rect.bottom}px`;
         dropdownRef.current.style.left = `${rect.left}px`;
-        dropdownRef.current.style.width = `${rect.width - 16}px`;
+        dropdownRef.current.style.width = `${rect.width-16}px`;
       }
 
       animationFrameId = requestAnimationFrame(update);
@@ -92,7 +92,7 @@ const MultiDropdown = ({
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <div
-        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex h-[38px] w-full cursor-pointer items-center rounded border-1 border-[var(--border-main)] bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
+        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex h-[40px] w-full cursor-pointer items-center rounded border-1 border-[var(--border-main)] bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -107,7 +107,7 @@ const MultiDropdown = ({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <span className="grow overflow-hidden text-ellipsis whitespace-nowrap">
+        <span className="grow truncate overflow-hidden text-ellipsis">
           {displayLabel}
         </span>
         <span
@@ -123,7 +123,7 @@ const MultiDropdown = ({
 
       <label
         htmlFor={id}
-        className={`${value.length > 0 || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-3 z-2 pr-1.5 pl-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
+        className={`${value.length > 0 || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
       >
         {label}
         {required && <span className="ml-1 text-red-700">*</span>}
@@ -135,7 +135,7 @@ const MultiDropdown = ({
             dropdownRef.current = el;
             portalContentRef.current = el;
           }}
-          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} fixed z-[var(--z-tooltip)] ml-2 list-none rounded-b border-1 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} fixed ml-2 z-[var(--z-tooltip)] list-none rounded-b border-1 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
           role="listbox"
           inert={!isOpen || undefined}
         >

@@ -35,14 +35,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 /* --- Home --- */
-// builder.Services.AddDbContext<AppDbContext>(options =>
-//     options.UseSqlServer(
-//         "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
-//     )
-// );
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
+    )
+);
 
 /* --- Work --- */
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=eCommerce.db"));
+// builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=eCommerce.db"));
 
 builder.Services.AddCors(options =>
 {
@@ -91,9 +91,10 @@ using (var scope = app.Services.CreateScope())
             Name = "Liam Fritzson",
             Username = "dev",
             Email = "liam0765@outlook.com",
-            Password = "dev123",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("dev123"),
             Roles = UserRoles.Developer,
             UserPreferences = new UserPreferences { },
+            CreationDate = DateTime.UtcNow,
         };
 
         db.Users.Add(user);

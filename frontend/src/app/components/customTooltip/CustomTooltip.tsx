@@ -7,7 +7,6 @@ type TooltipProps = {
   side?: "top" | "right" | "bottom" | "left";
   hideOnClick?: boolean;
   lgHidden?: boolean;
-  touchToggle?: boolean;
 };
 
 const CustomTooltip = ({
@@ -16,29 +15,27 @@ const CustomTooltip = ({
   side = "top",
   hideOnClick = false,
   lgHidden = false,
-  touchToggle = false,
 }: TooltipProps) => {
   // Refs.
   const closeTimeout = useRef<NodeJS.Timeout | null>(null);
-  const isTouchEvent = useRef(false);
 
   // States.
   const [isOpen, setIsOpen] = useState(false);
 
-  const handlePointerEnter = () => {
-    if (isTouchEvent.current && !touchToggle) {
+  const handlePointerEnter = (e: PointerEvent | any) => {
+    if (e.pointerType === "touch") {
       return;
     }
 
     if (closeTimeout.current) {
       clearTimeout(closeTimeout.current);
-      closeTimeout.current = null;
     }
+
     setIsOpen(true);
   };
 
-  const handlePointerLeave = () => {
-    if (isTouchEvent.current && !touchToggle) {
+  const handlePointerLeave = (e: PointerEvent | any) => {
+    if (e.pointerType === "touch") {
       return;
     }
 
@@ -47,23 +44,13 @@ const CustomTooltip = ({
     }, 0);
   };
 
-  const handleClick = () => {
-    if (touchToggle) {
-      setIsOpen((prev) => !prev);
-    }
-  };
+  // const handlePointerDown = (e: PointerEvent | any) => {
+  //   if (e.pointerType === "touch") {
+  //     return;
+  //   }
 
-  useEffect(() => {
-    const detectTouch = (event: PointerEvent) => {
-      isTouchEvent.current = event.pointerType === "touch";
-    };
-
-    window.addEventListener("pointerdown", detectTouch);
-
-    return () => {
-      window.removeEventListener("pointerdown", detectTouch);
-    };
-  }, []);
+  //   setIsOpen((prev) => !prev);
+  // };
 
   useEffect(() => {
     if (!hideOnClick) {
@@ -92,7 +79,6 @@ const CustomTooltip = ({
           asChild
           onPointerEnter={handlePointerEnter}
           onPointerLeave={handlePointerLeave}
-          onClick={touchToggle ? handleClick : undefined}
         >
           {children}
         </Tooltip.Trigger>

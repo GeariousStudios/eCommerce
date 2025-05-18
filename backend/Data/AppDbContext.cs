@@ -26,7 +26,7 @@ namespace backend.Data
 
             // UserRoles stored as string (None, User, Manager, Admin) in DB instead of bit (0, 1, 2, 4).
             // This is to allow refactoring of enum values.
-            modelBuilder.Entity<User>().Property(u => u.Roles).HasConversion<string>();
+            modelBuilder.Entity<User>().Property(u => u.Roles).HasConversion<int>();
         }
 
         public override int SaveChanges()

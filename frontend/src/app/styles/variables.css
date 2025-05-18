@@ -34,6 +34,7 @@
   --bg-main: var(--bg-main-dark);
   --text-main: #e0e0e0;
   --text-main-reverse: #212121;
+  --text-secondary: #e0e0e080;
   --border-main: var(--border-main-dark);
   --border-secondary: var(--border-secondary-dark);
 
@@ -96,6 +97,7 @@
   --bg-main: var(--bg-main-light);
   --text-main: #212121;
   --text-main-reverse: #e0e0e0;
+  --text-secondary: #21212180;
   --border-main: var(--border-main-light);
   --border-secondary: var(--border-secondary-light);
 

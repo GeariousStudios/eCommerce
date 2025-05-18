@@ -23,7 +23,11 @@ namespace backend.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
-            [FromQuery] bool? isLocked = null
+            [FromQuery] bool? isLocked = null,
+            [FromQuery] string[]? roles = null,
+            [FromQuery] string? search = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10
         )
         {
             IQueryable<User> query = _context.Users;
@@ -31,6 +35,30 @@ namespace backend.Controllers
             if (isLocked.HasValue)
             {
                 query = query.Where(u => u.IsLocked == isLocked.Value);
+            }
+
+            if (roles is { Length: > 0 })
+            {
+                UserRoles roleFilter = UserRoles.None;
+
+                foreach (var role in roles)
+                {
+                    if (Enum.TryParse<UserRoles>(role, true, out var parsedRole))
+                    {
+                        roleFilter |= parsedRole;
+                    }
+                }
+                query = query.Where(u => (u.Roles & roleFilter) != 0);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var lowered = search.ToLower();
+                query = query.Where(u =>
+                    u.Username.ToLower().Contains(lowered)
+                    || u.Name.ToLower().Contains(lowered)
+                    || u.Email.ToLower().Contains(lowered)
+                );
             }
 
             query = sortBy.ToLower() switch
@@ -44,10 +72,7 @@ namespace backend.Controllers
                 "email" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Email)
                     : query.OrderBy(u => u.Email),
-                "roles" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => (int)u.Roles)
-                    : query.OrderBy(u => (int)u.Roles),
-                "isLocked" => sortOrder == "desc"
+                "islocked" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.IsLocked)
                     : query.OrderBy(u => u.IsLocked),
                 _ => sortOrder == "desc"
@@ -55,20 +80,64 @@ namespace backend.Controllers
                     : query.OrderBy(u => u.Id),
             };
 
-            var users = await query.ToListAsync();
+            int totalCount = await query.CountAsync();
 
-            var result = users.Select(u => new UserDto
+            List<User> users;
+
+            if (sortBy.ToLower() == "roles")
             {
-                Id = u.Id,
-                Username = u.Username,
-                Name = u.Name,
-                Email = u.Email,
-                Roles = u.GetRoleStrings(),
-                IsLocked = u.IsLocked,
+                users = await query.ToListAsync();
+                totalCount = users.Count;
 
-                // Meta data.
-                IsOnline = u.IsOnline,
-            });
+                users =
+                    sortOrder == "desc"
+                        ? users
+                            .OrderByDescending(u => string.Join(",", u.GetRoleStrings()))
+                            .ToList()
+                        : users.OrderBy(u => string.Join(",", u.GetRoleStrings())).ToList();
+
+                users = users.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            }
+            else
+            {
+                totalCount = await query.CountAsync();
+                users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            }
+
+            var totalAdminCount = await _context.Users.CountAsync(u =>
+                u.Roles.HasFlag(UserRoles.Admin)
+            );
+            var totalDeveloperCount = await _context.Users.CountAsync(u =>
+                u.Roles.HasFlag(UserRoles.Developer)
+            );
+            var totalLockedCount = await _context.Users.CountAsync(u => u.IsLocked);
+            var totalUnlockedCount = await _context.Users.CountAsync(u => !u.IsLocked);
+
+            var result = new
+            {
+                totalCount,
+                items = users.Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Name = u.Name,
+                    Email = u.Email,
+                    Roles = u.GetRoleStrings(),
+                    IsLocked = u.IsLocked,
+
+                    // Meta data.
+                    IsOnline = u.IsOnline,
+                    CreationDate = u.CreationDate,
+                    LastLogin = u.LastLogin,
+                }),
+                counts = new
+                {
+                    admins = totalAdminCount,
+                    developers = totalDeveloperCount,
+                    locked = totalLockedCount,
+                    unlocked = totalUnlockedCount,
+                },
+            };
 
             return Ok(result);
         }
@@ -91,7 +160,11 @@ namespace backend.Controllers
                 Email = user.Email,
                 Roles = user.GetRoleStrings(),
                 IsLocked = user.IsLocked,
+
+                // Meta data.
                 IsOnline = user.IsOnline,
+                CreationDate = user.CreationDate,
+                LastLogin = user.LastLogin,
             };
 
             return Ok(result);
@@ -172,6 +245,7 @@ namespace backend.Controllers
                 Email = dto.Email,
                 Roles = userRoles,
                 IsLocked = dto.IsLocked,
+                CreationDate = DateTime.UtcNow,
             };
 
             _context.Users.Add(user);
@@ -185,6 +259,9 @@ namespace backend.Controllers
                 Email = user.Email,
                 Roles = user.GetRoleStrings(),
                 IsLocked = user.IsLocked,
+                IsOnline = user.IsOnline,
+                CreationDate = user.CreationDate,
+                LastLogin = user.LastLogin,
             };
 
             return Ok(result);
@@ -257,6 +334,9 @@ namespace backend.Controllers
                 Email = user.Email,
                 Roles = user.GetRoleStrings(),
                 IsLocked = user.IsLocked,
+                IsOnline = user.IsOnline,
+                CreationDate = user.CreationDate,
+                LastLogin = user.LastLogin,
             };
 
             await _context.SaveChangesAsync();

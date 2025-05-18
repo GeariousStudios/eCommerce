@@ -43,9 +43,12 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
       const id = uuid();
       setNotifications((prev) => [...prev, { id, type, content, duration }]);
 
-      setTimeout(() => {
-        setNotifications((prev) => prev.filter((n) => n.id !== id));
-      }, (duration ?? 3000) + 500);
+      setTimeout(
+        () => {
+          setNotifications((prev) => prev.filter((n) => n.id !== id));
+        },
+        (duration ?? 3000) + 500,
+      );
     },
     [],
   );
@@ -57,7 +60,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   return (
     <NotificationContext.Provider value={{ notify }}>
       {children}
-      <div className="fixed bottom-3 right-3 z-[calc(var(--z-tooltip)-1)] flex w-72 min-w-72 flex-col gap-3">
+      <div className="fixed bottom-4 z-[calc(var(--z-tooltip)-1)] mx-4 flex w-[calc(100%-2rem)] flex-col sm:mx-0 gap-4 sm:right-4 sm:w-72 sm:min-w-72">
         {notifications.map((n) => (
           <Notification
             key={n.id}

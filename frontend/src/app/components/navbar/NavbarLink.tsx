@@ -1,54 +1,31 @@
 import Link from "next/link";
-import { ElementType, useState } from "react";
+import { ElementType } from "react";
 
 type Props = {
   href: string;
   label: string;
-  icon?: ElementType;
+  icon: ElementType;
   iconHover: ElementType;
 };
 
 const NavbarLink = (props: Props) => {
-  // States.
-  const [onHover, setOnHover] = useState(false);
-
-  // Mouse enter.
-  const mouseEnter = () => {
-    if (!onHover) {
-      setOnHover(true);
-    }
-  };
-
-  // Mouse leave.
-  const mouseLeave = () => {
-    if (onHover) {
-      setOnHover(false);
-    }
-  };
-
-  // Icon.
-  const Icon = onHover && props.iconHover ? props.iconHover : props.icon;
-
   return (
-    <div className="mx-4">
+    <>
       <Link
-        onMouseEnter={mouseEnter}
-        onMouseLeave={mouseLeave}
         href={props.href}
-        className="group flex h-[38px] w-[38px] items-center gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-between"
+        className="group flex h-[40px] w-[40px] items-center justify-center gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-between"
       >
-        <span className="flex items-center gap-4">
-          {Icon && (
-            <Icon
-              className={`${onHover ? "text-[var(--accent-color)]" : ""} flex h-6 w-6 transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]`}
-            />
-          )}
-          <span className="hidden overflow-hidden whitespace-nowrap md:flex">
+        <div className="flex items-center gap-4">
+          <span className="relative flex h-6 w-6 items-center">
+            <props.icon className="absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0" />
+            <props.iconHover className="absolute text-[var(--accent-color)] opacity-0 transition-opacity duration-[var(--fast)] group-hover:opacity-100" />
+          </span>
+          <span className="hidden truncate overflow-hidden md:flex">
             {props.label}
           </span>
-        </span>
+        </div>
       </Link>
-    </div>
+    </>
   );
 };
 

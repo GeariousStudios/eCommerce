@@ -67,22 +67,41 @@ const Input = ({
           }
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[38px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-4xl" : ""} ${isDate ? "" : ""} ${icon ? "pl-10" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
+          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${isDate ? "" : ""} ${icon ? "pl-12" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
         />
         {icon && (
-          <div className="pointer-events-none absolute top-1/2 left-3 h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
+          <div className="pointer-events-none absolute top-1/2 left-4 h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
             {icon}
           </div>
         )}
-        {label?.trim() && (
-          <label
-            htmlFor={id}
-            className={`${isDate ? "top-0" : "top-[60%]"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} $ pointer-events-none absolute left-3 -translate-y-[65%] px-1.5 transition-[top] duration-[var(--slow)] select-none`}
-          >
-            {label}
-            {required && <span className="ml-1 text-red-700">*</span>}
-          </label>
-        )}
+        {label?.trim() &&
+          (!isCheckbox && !isRadio ? (
+            <label
+              htmlFor={id}
+              className={`${isDate ? "top-0" : "top-[60%]"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} $ pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-[var(--slow)] select-none`}
+            >
+              {label}
+              {required && <span className="ml-1 text-red-700">*</span>}
+            </label>
+          ) : (
+            <label htmlFor={id} className="cursor-pointer">
+              <input
+                type={type}
+                id={id}
+                name={id}
+                checked={checked}
+                onChange={(e) => onChange?.(e.target.checked)}
+                required={required}
+                spellCheck={spellCheck}
+                className="invisible"
+              />
+              <span
+                className={`${checked ? "" : "!font-normal"} !text-[var(--text-main)]`}
+              >
+                {label}
+              </span>
+            </label>
+          ))}
       </div>
     </>
   );

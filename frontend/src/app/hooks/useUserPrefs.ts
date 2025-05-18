@@ -53,7 +53,9 @@ const useUserPrefs = () => {
       setUserTheme(newTheme);
     } catch (err) {}
   };
+  /* --- BACKEND COMMUNICATION --- */
 
+  // Update userTheme.
   useEffect(() => {
     if (userTheme) {
       document.documentElement.setAttribute("data-theme", userTheme);
@@ -61,7 +63,6 @@ const useUserPrefs = () => {
       window.dispatchEvent(new Event("theme-changed"));
     }
   }, [userTheme]);
-  /* --- BACKEND COMMUNICATION --- */
 
   return { userTheme, updateUserTheme, isLoadingUserPrefs };
 };

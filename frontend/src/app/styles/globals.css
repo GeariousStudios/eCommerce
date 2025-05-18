@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --breakpoint-xs: 30rem;
+  --breakpoint-2xs: 25rem;
+}
+
 :root {
   background: var(--bg-main);
   color: var(--text-main);
@@ -171,7 +176,7 @@ th:focus-visible {
 }
 
 .ql-toolbar.ql-snow {
-  border-bottom: 2px solid var(--border-main) !important;
+  border-bottom: 1px solid var(--border-main) !important;
 
   button,
   .ql-picker-label {

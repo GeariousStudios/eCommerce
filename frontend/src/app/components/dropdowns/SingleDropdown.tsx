@@ -89,7 +89,7 @@ const SingleDropdown = ({
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <div
-        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex h-[38px] w-full cursor-pointer items-center rounded border-1 border-[var(--border-main)] bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
+        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex h-[40px] w-full cursor-pointer items-center rounded border-1 border-[var(--border-main)] bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -104,7 +104,7 @@ const SingleDropdown = ({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <span className="grow overflow-hidden text-ellipsis whitespace-nowrap">
+        <span className="grow truncate overflow-hidden text-ellipsis">
           {selectedLabel}
         </span>
         <span
@@ -120,7 +120,7 @@ const SingleDropdown = ({
 
       <label
         htmlFor={id}
-        className={`${value || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-3 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
+        className={`${value || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
       >
         {label}
         {required && <span className="ml-1 text-red-700">*</span>}

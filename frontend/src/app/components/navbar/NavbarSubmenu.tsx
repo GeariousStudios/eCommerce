@@ -175,16 +175,13 @@ const NavbarSubmenu = (props: Props) => {
     }
   }
 
-  // Icon.
-  const Icon = isOpen && props.iconHover ? props.iconHover : props.icon;
-
   return (
     <>
       {(!props.requiresLogin || isLoggedIn) &&
         (!props.requiresAdmin || isAdmin) &&
         (!props.requiresDev || isDev) && (
           <div>
-            <div className="mx-4">
+            <div>
               <button
                 ref={buttonRef}
                 onClick={() => {
@@ -197,21 +194,26 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} group flex h-[38px] w-[38px] rounded-lg border-1 border-transparent p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
+                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} group flex h-[40px] w-[40px] cursor-pointer items-center rounded-lg justify-center p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
               >
-                <span className="flex items-center gap-4">
-                  <Icon
-                    className={`${isOpen ? "text-[var(--accent-color)]" : ""} h-6 w-6 transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]`}
-                  />
-                  <span className="hidden overflow-hidden whitespace-nowrap md:flex">
+                <div className="flex items-center gap-4">
+                  <span className="relative flex h-6 w-6 items-center">
+                    <props.icon
+                      className={`${isOpen ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                    />
+                    <props.iconHover
+                      className={`${isOpen ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                    />
+                  </span>
+                  <span className="hidden truncate overflow-hidden md:flex">
                     {props.label}
                   </span>
-                </span>
+                </div>
 
                 <ChevronRightIcon
                   className={`${
                     isOpen ? "rotate-180 text-[var(--accent-color)]" : ""
-                  } h-0 w-0 rotate-0  transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)] md:h-6 md:w-6`}
+                  } h-0 w-0 rotate-0 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)] md:h-6 md:w-6`}
                 />
               </button>
             </div>
@@ -220,14 +222,12 @@ const NavbarSubmenu = (props: Props) => {
               id="submenu-menu"
               inert={!isOpen}
               aria-hidden={!isOpen}
-              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-22 md:left-67" : "left-19 md:left-64"} fixed top-0 h-full overflow-x-hidden border-r-1 border-[var(--border-main)] bg-[var(--bg-navbar)] pt-18 transition-all duration-[var(--slow)]`}
+              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-22 md:left-67" : "left-19 md:left-64"} fixed top-0 h-full overflow-x-hidden border-r-1 border-[var(--border-main)] bg-[var(--bg-navbar)] transition-all duration-[var(--slow)]`}
             >
               <div className="my-4 ml-4">
                 <div className="flex gap-2">
                   <props.iconHover className="flex max-h-4 min-h-4 max-w-4 min-w-4 text-[var(--accent-color)]" />
-                  <span className="text-xs whitespace-nowrap">
-                    {props.label}
-                  </span>
+                  <span className="truncate text-xs">{props.label}</span>
                 </div>
                 <div
                   className={`grid gap-2 ${
@@ -246,7 +246,7 @@ const NavbarSubmenu = (props: Props) => {
                           <ul
                             className={`${isOpen ? "opacity-100" : "opacity-0"} w-34 transition-opacity duration-[var(--fast)]`}
                           >
-                            <li className="border-[var(--border-main)] pt-6 pb-1 whitespace-nowrap">
+                            <li className="truncate border-[var(--border-main)] pt-6 pb-1">
                               {menu.label}
                             </li>
 
@@ -261,7 +261,7 @@ const NavbarSubmenu = (props: Props) => {
                                   (!item.requiresDev || isDev) && (
                                     <div>
                                       <li
-                                        className={`${item.title ? "pt-4 pb-1 text-xs font-semibold whitespace-nowrap" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
+                                        className={`${item.title ? "truncate pt-4 pb-1 text-xs font-semibold" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
                                       >
                                         {item.title ?? ""}
                                       </li>
@@ -273,7 +273,7 @@ const NavbarSubmenu = (props: Props) => {
                                             href={item.href}
                                             tabIndex={isOpen ? 0 : -1}
                                             className={
-                                              "flex h-full w-full p-2 text-sm whitespace-nowrap text-[var(--text-navbar)]"
+                                              "flex h-full w-full truncate p-2 text-sm text-[var(--text-navbar)]"
                                             }
                                           >
                                             {item.label}
@@ -283,7 +283,7 @@ const NavbarSubmenu = (props: Props) => {
                                             onClick={item.onClick}
                                             tabIndex={isOpen ? 0 : -1}
                                             className={
-                                              "flex h-full w-full cursor-pointer p-2 text-sm whitespace-nowrap text-[var(--text-navbar)]"
+                                              "flex h-full w-full cursor-pointer truncate p-2 text-sm text-[var(--text-navbar)]"
                                             }
                                           >
                                             {item.label}

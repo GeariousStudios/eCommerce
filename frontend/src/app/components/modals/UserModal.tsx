@@ -8,6 +8,8 @@ import { useNotification } from "../notification/NotificationProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
+  switchClass,
+  switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import MultiDropdown from "../dropdowns/MultiDropdown";
 
@@ -198,15 +200,11 @@ const UserModal = (props: Props) => {
               </h2>
 
               <div className="flex items-center gap-2">
-                 <span className="w-12 rounded opacity-25">
-                  <hr />
-                </span>
-                <h3 className="text-sm whitespace-nowrap opacity-50">
+                <hr className="w-12 whitespace-nowrap text-[var(--border-main)]" />
+                <h3 className="flex text-sm text-[var(--text-secondary)]">
                   Inloggningsuppgifter
                 </h3>
-                <span className="w-full rounded opacity-25">
-                  <hr />
-                </span>
+                <hr className="w-full text-[var(--border-main)]" />
               </div>
 
               <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
@@ -241,15 +239,11 @@ const UserModal = (props: Props) => {
               </div>
 
               <div className="mt-8 flex items-center gap-2">
-                <span className="w-12 rounded opacity-25">
-                  <hr />
-                </span>
-                <h3 className="text-sm whitespace-nowrap opacity-50">
+                <hr className="w-12 text-[var(--border-main)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
                   Användardetaljer
                 </h3>
-                <span className="w-full rounded opacity-25">
-                  <hr />
-                </span>
+                <hr className="w-full text-[var(--border-main)]" />
               </div>
 
               <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
@@ -272,19 +266,15 @@ const UserModal = (props: Props) => {
               </div>
 
               <div className="mt-8 flex items-center gap-2">
-                <span className="w-12 rounded opacity-25">
-                  <hr />
-                </span>
-                <h3 className="text-sm whitespace-nowrap opacity-50">
+                <hr className="w-12 text-[var(--border-main)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
                   Behörigheter och status
                 </h3>
-                <span className="w-full rounded opacity-25">
-                  <hr />
-                </span>
+                <hr className="w-full text-[var(--border-main)]" />
               </div>
 
               <div className="mb-8 flex justify-between gap-4">
-                <div className="flex w-[calc(50%-0.375rem)]">
+                <div className="flex w-[calc(50%-0.375rem)] min-w-36">
                   <MultiDropdown
                     label="Behörigheter"
                     options={[
@@ -298,14 +288,16 @@ const UserModal = (props: Props) => {
                   />
                 </div>
 
-                <div className="flex items-center gap-2 whitespace-nowrap">
-                  <Input
-                    type="checkbox"
-                    checked={isLocked}
-                    onChange={(val) => {
-                      setIsLocked(Boolean(val));
-                    }}
-                  />
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isLocked}
+                    className={switchClass(isLocked)}
+                    onClick={() => setIsLocked((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(isLocked)} />
+                  </button>
                   <span className="mb-0.5">Lås konto</span>
                 </div>
               </div>

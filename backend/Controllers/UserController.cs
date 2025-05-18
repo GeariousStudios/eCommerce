@@ -87,6 +87,7 @@ namespace backend.Controllers
 
             user.CurrentSessionId = tokenId;
             user.IsOnline = true;
+            user.LastLogin = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 

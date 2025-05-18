@@ -1,5 +1,29 @@
 import { roundedButtonClass } from "@/app/styles/buttonClasses";
-import { BellIcon, UserIcon } from "@heroicons/react/24/solid";
+import {
+  BellIcon as SolidBellIcon,
+  UserIcon as SolidUserIcon,
+  ArrowLeftEndOnRectangleIcon as SolidArrowLeftEndOnRectangleIcon,
+  ArrowRightEndOnRectangleIcon as SolidArrowRightEndOnRectangleIcon,
+  Cog6ToothIcon as SolidCog6ToothIcon,
+  MoonIcon as SolidMoonIcon,
+  SunIcon as SolidSunIcon,
+} from "@heroicons/react/24/solid";
+import {
+  BellIcon as OutlineBellIcon,
+  UserIcon as OutlineUserIcon,
+  ArrowLeftEndOnRectangleIcon as OutlineArrowLeftEndOnRectangleIcon,
+  ArrowRightEndOnRectangleIcon as OutlineArrowRightEndOnRectangleIcon,
+  Cog6ToothIcon as OutlineCog6ToothIcon,
+  MoonIcon as OutlineMoonIcon,
+  SunIcon as OutlineSunIcon,
+} from "@heroicons/react/24/outline";
+// import {
+//   ArrowLeftEndOnRectangleIcon as SolidArrowLeftEndOnRectangleIcon,
+//   ArrowRightEndOnRectangleIcon as SolidArrowRightEndOnRectangleIcon,
+//   Cog6ToothIcon as SolidCog6ToothIcon,
+//   MoonIcon as SolidMoonIcon,
+//   SunIcon as SolidSunIcon,
+// } from "@heroicons/react/20/solid";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useNotification } from "../notification/NotificationProvider";
@@ -7,22 +31,18 @@ import useAuthStatus from "@/app/hooks/useAuthStatus";
 import Message from "../message/Message";
 import MenuDropdown from "../dropdowns/MenuDropdown";
 import TopbarLink from "./TopbarLink";
-import {
-  ArrowLeftEndOnRectangleIcon,
-  ArrowRightEndOnRectangleIcon,
-  Cog6ToothIcon,
-  MoonIcon,
-  SunIcon,
-} from "@heroicons/react/20/solid";
 import useTheme from "@/app/hooks/useTheme";
 
-const Topbar = () => {
+type Props = {
+  hasScrollbar: boolean;
+};
+
+const Topbar = (props: Props) => {
   // Refs.
   const userIconRef = useRef<HTMLButtonElement>(null);
   const bellIconRef = useRef<HTMLButtonElement>(null);
 
   // States.
-  const [currentTheme, setCurrentTheme] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [userIconClicked, setUserIconClicked] = useState(false);
@@ -33,7 +53,7 @@ const Topbar = () => {
   const token = localStorage.getItem("token");
   const { notify } = useNotification();
   const { username, name, isLoggedIn, isAuthReady } = useAuthStatus();
-  const { toggleTheme, userTheme } = useTheme();
+  const { toggleTheme, currentTheme } = useTheme();
 
   //   Hide topbar on scroll.
   useEffect(() => {
@@ -53,21 +73,6 @@ const Topbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
-
-  // Update theme variable.
-  useEffect(() => {
-    const updateTheme = () => {
-      const theme = document.documentElement.getAttribute("data-theme");
-      setCurrentTheme(theme);
-    };
-
-    updateTheme();
-
-    window.addEventListener("theme-changed", updateTheme);
-    return () => {
-      window.removeEventListener("theme-changed", updateTheme);
-    };
-  }, []);
 
   // Display logout message.
   useEffect(() => {
@@ -104,34 +109,9 @@ const Topbar = () => {
 
   return (
     <>
-      {isAuthReady && (
-        <div
-          inert={isVisible}
-          className={`${isVisible ? "-translate-y-full" : "translate-y-0"} fixed top-0 z-[calc(var(--z-overlay)-1)] flex h-18 transition-transform duration-[var(--slow)]`}
-        >
-          <Link
-            href="/"
-            className="mt-1.25 ml-1.75 flex h-15 max-w-17 min-w-17 md:max-w-17 md:min-w-40"
-            aria-label="Startsida"
-          >
-            <picture>
-              <source
-                srcSet={`${currentTheme === "dark" ? "/images/logo_expnd_dark.svg" : "/images/logo_expnd_light.svg"}`}
-                media="(min-width: 768px)"
-              />
-              <img
-                src={`${currentTheme === "dark" ? "/images/logo_clpsd_dark.svg" : "/images/logo_clpsd_light.svg"}`}
-                alt="Logga"
-                className="h-full w-full"
-              />
-            </picture>
-          </Link>
-        </div>
-      )}
-
       <div
         inert={!isVisible}
-        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} fixed top-0 z-[calc(var(--z-overlay)-1)] flex h-18 w-full border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] shadow-[0_0_4px_0_rgba(0,0,0,0.1)] transition-transform duration-[var(--slow)]`}
+        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} ${props.hasScrollbar ? "pl-26 md:pl-71" : "pl-23 md:pl-68"} fixed top-0 right-0 z-[calc(var(--z-overlay)-2)] flex h-18 w-full border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] p-4 transition-transform duration-[var(--slow)]`}
       >
         {!isAuthReady ? (
           <div className="inline">
@@ -149,26 +129,8 @@ const Topbar = () => {
           </div>
         ) : (
           <>
-            <Link
-              href="/"
-              className="mt-1.25 ml-1.75 flex h-15 max-w-17 min-w-17 md:max-w-17 md:min-w-40"
-              aria-label="Startsida"
-            >
-              <picture>
-                <source
-                  srcSet={`${currentTheme === "dark" ? "/images/logo_expnd_dark.svg" : "/images/logo_expnd_light.svg"}`}
-                  media="(min-width: 768px)"
-                />
-                <img
-                  src={`${currentTheme === "dark" ? "/images/logo_clpsd_dark.svg" : "/images/logo_clpsd_light.svg"}`}
-                  alt="Logga"
-                  className="h-full w-full"
-                />
-              </picture>
-            </Link>
-
             {/* Buttons */}
-            <div className="mr-4 flex h-full w-full items-center justify-end gap-4">
+            <div className="flex h-full w-full items-center justify-end gap-4">
               {/* Alerts */}
               {isLoggedIn && (
                 <div className="group relative">
@@ -180,8 +142,13 @@ const Topbar = () => {
                       setBellIconClicked(!bellIconClicked);
                     }}
                   >
-                    <span className="flex h-full w-full items-center justify-center transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]">
-                      <BellIcon className="h-6 w-6" />
+                    <span className="group relative flex h-6 w-6 items-center justify-center">
+                      <OutlineBellIcon
+                        className={`${bellIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                      />
+                      <SolidBellIcon
+                        className={`${bellIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                      />
                     </span>
                   </button>
                   <MenuDropdown
@@ -198,7 +165,7 @@ const Topbar = () => {
               )}
 
               {/* User */}
-              <div className="group relative">
+              <div className="relative">
                 <button
                   ref={userIconRef}
                   className={`${roundedButtonClass}`}
@@ -207,8 +174,13 @@ const Topbar = () => {
                     setUserIconClicked(!userIconClicked);
                   }}
                 >
-                  <span className="flex h-full w-full items-center justify-center transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]">
-                    <UserIcon className="h-6 w-6" />
+                  <span className="group relative flex h-6 w-6 items-center justify-center">
+                    <OutlineUserIcon
+                      className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                    />
+                    <SolidUserIcon
+                      className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                    />
                   </span>
                 </button>
                 <MenuDropdown
@@ -236,23 +208,29 @@ const Topbar = () => {
                               ? "Byt till ljust tema"
                               : "Byt till mörkt tema"
                           }
-                          icon={currentTheme === "dark" ? SunIcon : MoonIcon}
+                          icon={
+                            currentTheme === "dark"
+                              ? OutlineSunIcon
+                              : OutlineMoonIcon
+                          }
                           iconHover={
-                            currentTheme === "dark" ? SunIcon : MoonIcon
+                            currentTheme === "dark"
+                              ? SolidSunIcon
+                              : SolidMoonIcon
                           }
                         />
                         {isLoggedIn && (
                           <TopbarLink
                             href="/"
                             label="Inställningar"
-                            icon={Cog6ToothIcon}
-                            iconHover={Cog6ToothIcon}
+                            icon={OutlineCog6ToothIcon}
+                            iconHover={SolidCog6ToothIcon}
                           />
                         )}
                       </div>
 
                       <div className="relative">
-                        <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] opacity-25" />
+                        <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-[var(--border-main)]" />
                         <span className="pb-1 text-sm font-semibold">
                           Session
                         </span>
@@ -260,15 +238,15 @@ const Topbar = () => {
                           <TopbarLink
                             onClick={handleLogout}
                             label="Logga ut"
-                            icon={ArrowLeftEndOnRectangleIcon}
-                            iconHover={ArrowLeftEndOnRectangleIcon}
+                            icon={OutlineArrowLeftEndOnRectangleIcon}
+                            iconHover={SolidArrowLeftEndOnRectangleIcon}
                           />
                         ) : (
                           <TopbarLink
                             href="/"
                             label="Logga in"
-                            icon={ArrowRightEndOnRectangleIcon}
-                            iconHover={ArrowRightEndOnRectangleIcon}
+                            icon={OutlineArrowRightEndOnRectangleIcon}
+                            iconHover={SolidArrowRightEndOnRectangleIcon}
                           />
                         )}
                       </div>
