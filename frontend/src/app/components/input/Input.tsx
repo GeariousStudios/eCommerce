@@ -81,7 +81,7 @@ const Input = ({
           (!isCheckbox && !isRadio ? (
             <label
               htmlFor={id}
-              className={`${isDate ? "top-0" : "top-[60%]"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} $ pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-[var(--slow)] select-none`}
+              className={`${isDate ? "top-0" : "top-[60%]"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-[var(--slow)] select-none`}
             >
               {label}
               {required && <span className="ml-1 text-red-700">*</span>}
@@ -89,7 +89,7 @@ const Input = ({
           ) : (
             <label
               htmlFor={id}
-              className={`${readOnly ? "!pointer-events-none" : ""} cursor-pointer`}
+              className={`${readOnly ? "!pointer-events-none" : ""} ${isDisabled ? "opacity-25" : "opacity-100"} "cursor-pointer"`}
             >
               <input
                 type={type}

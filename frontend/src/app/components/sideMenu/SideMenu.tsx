@@ -56,7 +56,7 @@ const SideMenu = (props: Props) => {
         <div
           ref={innerRef}
           onClick={(e) => e.stopPropagation()}
-          className={`${props.isOpen ? "2xs:translate-x-0 2xs:translate-y-0 visible translate-y-0" : "2xs:translate-y-0 2xs:translate-x-full invisible translate-y-full"} 2xs:w-128 2xs:right-0 2xs:top-0 2xs:h-full 2xs:rounded-b-2xl 2xs:!rounded-r-none fixed bottom-0 z-[calc(var(--z-modal))] flex h-3/4 w-full flex-col rounded-l-2xl rounded-r-2xl rounded-b-none bg-[var(--bg-topbar)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[translate,visibility] duration-[var(--slow)]`}
+          className={`${props.isOpen ? "sm:translate-x-0 sm:translate-y-0 visible translate-y-0" : "sm:translate-y-0 sm:translate-x-full invisible translate-y-full"} sm:w-128 sm:right-0 sm:top-0 sm:h-full sm:rounded-b-2xl sm:!rounded-r-none fixed bottom-0 z-[calc(var(--z-modal))] flex h-3/4 w-full flex-col rounded-l-2xl rounded-r-2xl rounded-b-none bg-[var(--bg-topbar)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[translate,visibility] duration-[var(--slow)]`}
         >
           <FocusTrap
             active={props.isOpen}

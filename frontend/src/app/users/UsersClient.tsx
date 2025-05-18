@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
 import Input from "../components/input/Input";
 import DeleteModal from "../components/modals/DeleteModal";
 import { useNotification } from "../components/notification/NotificationProvider";
@@ -34,9 +34,15 @@ import UserModal from "../components/modals/UserModal";
 import MenuDropdown from "../components/dropdowns/MenuDropdown";
 import SideMenu from "../components/sideMenu/SideMenu";
 
-type User = {
+  let filterClass =
+    "truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
+
+  let filterIconClass =
+    "h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
+
+type Item = {
   id: number;
-  username: string;
+  itemname: string;
   name: string;
   email: string;
   password: string;
@@ -49,8 +55,75 @@ type User = {
   lastLogin: string | null;
 };
 
+type FilterItemData = {
+  label: string;
+  show: boolean;
+  setShow: (value: boolean) => void;
+  count?: number;
+};
+
 type Props = {
   isConnected: boolean | null;
+};
+
+// --- Filter ---
+const Filter = ({
+  filterRef,
+  label,
+  filterData,
+}: {
+  filterRef: RefObject<HTMLButtonElement | null>;
+  label: string;
+  filterData: FilterItemData[];
+}) => {
+  const [filterOpen, setFilterOpen] = useState(false);
+
+  return (
+    <div className="relative hidden sm:flex">
+      <button
+        ref={filterRef}
+        className={`${roundedButtonClass} group w-auto gap-2 px-4`}
+        onClick={() => {
+          setFilterOpen((prev) => !prev);
+        }}
+      >
+        <span
+          className={`${filterClass} ${filterOpen ? "text-[var(--accent-color)]" : ""}`}
+        >
+          {label}
+        </span>
+        <ChevronDownIcon
+          className={`${filterIconClass} ${filterOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
+        />
+      </button>
+
+      <MenuDropdown
+        triggerRef={filterRef}
+        isOpen={filterOpen}
+        onClose={() => setFilterOpen(false)}
+      >
+        <div className="flex w-full flex-col gap-4">
+          {filterData.map((item, index) => (
+            <div
+              key={index}
+              onClick={() => item.setShow(!item.show)}
+              className="group flex cursor-pointer justify-between"
+            >
+              <Input
+                type="checkbox"
+                checked={item.show}
+                label={item.label}
+                readOnly
+              />
+              <span>
+                <span>({item.count ?? 0})</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </MenuDropdown>
+    </div>
+  );
 };
 
 const UsersClient = (props: Props) => {
@@ -64,40 +137,46 @@ const UsersClient = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const [sortBy, setSortBy] = useState<string>("id");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [isLoadingContent, setIsLoadingItems] = useState(false);
   const [totalCounts, setTotalCounts] = useState<{
     admins: number;
     developers: number;
     locked: number;
     unlocked: number;
+
+    // Filtered.
+    filteredAdmins: number;
+    filteredDevelopers: number;
+    filteredLocked: number;
+    filteredUnlocked: number;
   } | null>(null);
 
   // Add/edit variables.
-  const [users, setUsers] = useState<User[]>([]);
-  const [editingUserId, setEditingUserId] = useState<number | null>(null);
-  const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
   // Delete variables.
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingUserIds, setDeletingUserIds] = useState<number[]>([]);
+  const [deletingItemIds, setDeletingItemIds] = useState<number[]>([]);
 
   // Pagination and search variables.
   const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage, setUsersPerPage] = useState(5);
-  const [totalUsers, setTotalUsers] = useState<number | null>(null);
+  const [itemsPerPage, setitemsPerPage] = useState(5);
+  const [totalItems, setTotalItems] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Other.
   const { notify } = useNotification();
 
   // Filter states and refs.
-  const filterRolesRef = useRef<HTMLButtonElement>(null);
-  const filterStatusRef = useRef<HTMLButtonElement>(null);
+  const filterOneRef = useRef<HTMLButtonElement>(null);
+  const filterTwoRef = useRef<HTMLButtonElement>(null);
   const filterAllRef = useRef<HTMLButtonElement>(null);
 
-  const [filterRolesOpen, setFilterRolesOpen] = useState(false);
-  const [filterStatusOpen, setFilterStatusOpen] = useState(false);
+  const [filterOneOpen, setFilterOneOpen] = useState(false);
+  const [filterTwoOpen, setFilterTwoOpen] = useState(false);
   const [filterAllOpen, setFilterAllOpen] = useState(false);
 
   const [showAdmins, setShowAdmins] = useState(false);
@@ -105,55 +184,55 @@ const UsersClient = (props: Props) => {
   const [showLocked, setShowLocked] = useState(false);
   const [showUnlocked, setShowUnlocked] = useState(false);
 
-  // Filter all-section.
+  // Big filter.
   const filterAllRolesRef = useRef<HTMLDivElement>(null);
   const filterAllStatusRef = useRef<HTMLDivElement>(null);
 
-  const [filterAllRolesOpen, setFilterAllRolesOpen] = useState(false);
-  const [filterAllStatusOpen, setFilterAllStatusOpen] = useState(false);
+  const [bigFilterOneOpen, setBigFilterOneOpen] = useState(false);
+  const [bigFilterTwoOpen, setBigFilterTwoOpen] = useState(false);
 
-  const [filterAllRolesHeight, setFilterAllRolesHeight] = useState("0px");
-  const [filterAllStatusHeight, setFilterAllStatusHeight] = useState("0px");
+  const [bigFilterOneHeight, setBigFilterOneHeight] = useState("0px");
+  const [bigFilterTwoHeight, setBigFilterTwoHeight] = useState("0px");
 
   useEffect(() => {
     if (filterAllRolesRef.current) {
-      setFilterAllRolesHeight(
-        filterAllRolesOpen
+      setBigFilterOneHeight(
+        bigFilterOneOpen
           ? `${filterAllRolesRef.current.scrollHeight}px`
           : "0px",
       );
     }
-  }, [filterAllRolesOpen, totalCounts]);
+  }, [bigFilterOneOpen, totalCounts]);
 
   useEffect(() => {
     if (filterAllStatusRef.current) {
-      setFilterAllStatusHeight(
-        filterAllStatusOpen
+      setBigFilterTwoHeight(
+        bigFilterTwoOpen
           ? `${filterAllStatusRef.current.scrollHeight}px`
           : "0px",
       );
     }
-  }, [filterAllStatusOpen, totalCounts]);
+  }, [bigFilterTwoOpen, totalCounts]);
 
   // Modal before deletion.
-  const toggleDeleteModal = (userIds: number[] = []) => {
-    setDeletingUserIds(userIds);
+  const toggleDeleteModal = (itemIds: number[] = []) => {
+    setDeletingItemIds(itemIds);
     setIsDeleteModalOpen((prev) => !prev);
   };
 
-  // Modal for user editing/adding.
-  const openUserModal = (userId: number | null = null) => {
-    setEditingUserId(userId);
+  // Modal for item editing/adding.
+  const openUserModal = (itemId: number | null = null) => {
+    setEditingItemId(itemId);
     setIsUserModalOpen(true);
   };
 
   const closeUserModal = () => {
     setIsUserModalOpen(false);
-    setEditingUserId(null);
+    setEditingItemId(null);
   };
 
-  // Fetch all users.
-  const fetchUsers = async (
+  // Fetch all items.
+  const fetchItems = async (
     page: number,
     pageSize: number,
     sortByField: string,
@@ -162,7 +241,7 @@ const UsersClient = (props: Props) => {
   ) => {
     try {
       if (showLoading) {
-        setIsLoadingUsers(true);
+        setIsLoadingItems(true);
       }
 
       const params = new URLSearchParams({
@@ -203,23 +282,23 @@ const UsersClient = (props: Props) => {
       }
 
       const result = await response.json();
-      setUsers(Array.isArray(result.items) ? result.items : []);
-      setTotalUsers(result.totalCount ?? 0);
+      setItems(Array.isArray(result.items) ? result.items : []);
+      setTotalItems(result.totalCount ?? 0);
       setTotalCounts(result.counts ?? null);
     } catch (err) {
     } finally {
       if (showLoading) {
-        setIsLoadingUsers(false);
+        setIsLoadingItems(false);
       }
     }
   };
 
-  // Fetch users every time page changes.
+  // Fetch items every time page changes.
   useEffect(() => {
-    fetchUsers(currentPage, usersPerPage, sortBy, sortOrder);
+    fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
   }, [
     currentPage,
-    usersPerPage,
+    itemsPerPage,
     sortBy,
     sortOrder,
     searchTerm,
@@ -241,7 +320,7 @@ const UsersClient = (props: Props) => {
 
     setSortBy(field);
     setSortOrder(newSortOrder);
-    fetchUsers(currentPage, usersPerPage, field, newSortOrder, false);
+    fetchItems(currentPage, itemsPerPage, field, newSortOrder, false);
   };
 
   // Change sorting icon.
@@ -256,8 +335,8 @@ const UsersClient = (props: Props) => {
     );
   };
 
-  // Delete user.
-  const finishDeleteUser = async (id: number) => {
+  // Delete item.
+  const finishDeleteItem = async (id: number) => {
     try {
       const response = await fetch(`${apiUrl}/user-management/delete/${id}`, {
         method: "DELETE",
@@ -279,42 +358,36 @@ const UsersClient = (props: Props) => {
         return;
       }
 
-      await fetchUsers(currentPage, usersPerPage, sortBy, sortOrder);
+      await fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
       notify("success", "Användare borttagen!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
   };
 
-  // Select users.
-  const visibleUserIds = users.map((user) => user.id);
+  // Select items.
+  const visibleContentIds = items.map((item) => item.id);
 
   const allSelected =
-    visibleUserIds.length > 0 &&
-    visibleUserIds.every((id) => selectedUsers.includes(id));
+    visibleContentIds.length > 0 &&
+    visibleContentIds.every((id) => selectedItems.includes(id));
 
-  const selectUser = (userId: number) => {
-    if (selectedUsers.includes(userId)) {
-      setSelectedUsers(selectedUsers.filter((id) => id !== userId));
+  const selectUser = (itemId: number) => {
+    if (selectedItems.includes(itemId)) {
+      setSelectedItems(selectedItems.filter((id) => id !== itemId));
     } else {
-      setSelectedUsers([...selectedUsers, userId]);
+      setSelectedItems([...selectedItems, itemId]);
     }
   };
 
-  const selectAllUsers = () => {
+  const selectAll = () => {
     if (allSelected) {
-      setSelectedUsers(
-        selectedUsers.filter((id) => !visibleUserIds.includes(id)),
+      setSelectedItems(
+        selectedItems.filter((id) => !visibleContentIds.includes(id)),
       );
     } else {
-      setSelectedUsers([...new Set([...selectedUsers, ...visibleUserIds])]);
+      setSelectedItems([...new Set([...selectedItems, ...visibleContentIds])]);
     }
-  };
-
-  // Close all menu dropdowns.
-  const closeAllMenus = () => {
-    setFilterRolesOpen(false);
-    setFilterStatusOpen(false);
   };
 
   // Go to page 1 upon filtering.
@@ -346,7 +419,7 @@ const UsersClient = (props: Props) => {
     return () => removeEventListener("resize", updateColSpan);
   }, []);
 
-  // Pre-defined classes.
+  // --- Pre-defined classes ---
   let thClass =
     "pl-4 p-2 min-w-48 h-[40px] cursor-pointer border-1 border-t-0 border-[var(--border-secondary)] border-b-[var(--border-main)] text-left transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]";
 
@@ -359,14 +432,95 @@ const UsersClient = (props: Props) => {
   let filterIconClass =
     "h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
 
+  // --- Pre-defined components ---
+  // --- FilterItem ---
+  const FilterItem = ({
+    visible,
+    onClickEvent,
+    label,
+  }: {
+    visible: boolean;
+    onClickEvent: (value: boolean) => void;
+    label: string;
+  }) => {
+    return (
+      <>
+        {visible && (
+          <button
+            className={`${roundedButtonClass} group w-auto gap-2 px-4`}
+            onClick={() => {
+              onClickEvent(false);
+            }}
+          >
+            <span className={`${filterClass}`}>{label}</span>
+            <XMarkIcon className={`${filterIconClass}`} />
+          </button>
+        )}
+      </>
+    );
+  };
+
+  // --- ThCell ---
+  const ThCell = ({
+    sortingItem,
+    label,
+    labelAsc,
+    labelDesc,
+    classNameAddition,
+  }: {
+    sortingItem: string;
+    label: string;
+    labelAsc: string;
+    labelDesc: string;
+    classNameAddition?: string;
+  }) => {
+    return (
+      <CustomTooltip
+        content={
+          sortBy === sortingItem
+            ? sortOrder === "asc"
+              ? "Sortera " + labelAsc
+              : "Sortera " + labelDesc
+            : "Sortera " + labelDesc
+        }
+      >
+        <th
+          className={`${thClass} ${classNameAddition ? classNameAddition : ""}`}
+          onClick={() => handleSort(sortingItem)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleSort(sortingItem);
+            }
+          }}
+          tabIndex={0}
+          aria-sort={
+            sortBy === sortingItem
+              ? sortOrder === "asc"
+                ? "ascending"
+                : "descending"
+              : "none"
+          }
+        >
+          <div className="relative flex gap-2">
+            <span className="w-full truncate overflow-hidden text-ellipsis">
+              {label}
+            </span>
+            <span className="flex">{getSortIcon(sortingItem)}</span>
+          </div>
+        </th>
+      </CustomTooltip>
+    );
+  };
+
   return (
     <>
       <UserModal
         isOpen={isUserModalOpen}
         onClose={closeUserModal}
-        userId={editingUserId}
+        userId={editingItemId}
         onUserUpdated={() => {
-          fetchUsers(currentPage, usersPerPage, sortBy, sortOrder);
+          fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
         }}
       />
 
@@ -374,24 +528,26 @@ const UsersClient = (props: Props) => {
         isOpen={isDeleteModalOpen}
         onClose={() => {
           toggleDeleteModal();
-          setDeletingUserIds([]);
+          setDeletingItemIds([]);
         }}
         onConfirm={async () => {
-          for (const id of deletingUserIds) {
-            await finishDeleteUser(id);
+          for (const id of deletingItemIds) {
+            await finishDeleteItem(id);
           }
 
           setIsDeleteModalOpen(false);
-          setDeletingUserIds([]);
-          setSelectedUsers([]);
+          setDeletingItemIds([]);
+          setSelectedItems([]);
         }}
       />
 
+      {/* --- All content --- */}
       <div className="flex flex-col gap-4">
-        {/* Top container */}
+        {/* --- Top --- */}
         <div className="flex flex-col gap-4">
-          {/* User editing buttons */}
+          {/* --- Item editing buttons --- */}
           <div className="flex gap-4">
+            {/* --- Add item --- */}
             <CustomTooltip content="Lägg till ny användare" lgHidden={true}>
               <button
                 className={`${buttonPrimaryClass} sm:w-56 sm:min-w-56`}
@@ -415,31 +571,31 @@ const UsersClient = (props: Props) => {
               </button>
             </CustomTooltip>
 
-            {/* Edit */}
+            {/* --- Edit item --- */}
             <CustomTooltip
               content={
-                selectedUsers.length === 0
+                selectedItems.length === 0
                   ? "Välj en användare"
-                  : selectedUsers.length === 1
+                  : selectedItems.length === 1
                     ? "Redigera användare"
                     : "Du kan bara redigera en användare i taget!"
               }
-              lgHidden={selectedUsers.length === 1}
+              lgHidden={selectedItems.length === 1}
             >
               <button
                 className={`${buttonSecondaryClass} sm:w-56 sm:min-w-56`}
                 onClick={() => {
-                  openUserModal(selectedUsers[0]);
+                  openUserModal(selectedItems[0]);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    openUserModal(selectedUsers[0]);
+                    openUserModal(selectedItems[0]);
                   }
                 }}
                 tabIndex={0}
                 disabled={
-                  selectedUsers.length === 0 || selectedUsers.length > 1
+                  selectedItems.length === 0 || selectedItems.length > 1
                 }
               >
                 <div className="flex items-center justify-center gap-2 truncate">
@@ -449,33 +605,34 @@ const UsersClient = (props: Props) => {
               </button>
             </CustomTooltip>
 
+            {/* --- Delete item --- */}
             <CustomTooltip
               content={
-                selectedUsers.length === 0
+                selectedItems.length === 0
                   ? "Välj en eller fler användare"
-                  : `Ta bort användare (${selectedUsers.length})`
+                  : `Ta bort användare (${selectedItems.length})`
               }
-              lgHidden={selectedUsers.length > 0}
+              lgHidden={selectedItems.length > 0}
             >
               <button
                 className={`${buttonDeleteSecondaryClass} ml-auto lg:w-56 lg:min-w-56`}
-                onClick={() => toggleDeleteModal(selectedUsers)}
+                onClick={() => toggleDeleteModal(selectedItems)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
-                    toggleDeleteModal(selectedUsers);
+                    toggleDeleteModal(selectedItems);
                   }
                 }}
                 tabIndex={0}
-                disabled={selectedUsers.length === 0}
+                disabled={selectedItems.length === 0}
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <TrashIcon className="h-6" />
                   <span className="hidden lg:block">
                     Ta bort användare
                     <span>
-                      {selectedUsers.length > 0
-                        ? ` (${selectedUsers.length})`
+                      {selectedItems.length > 0
+                        ? ` (${selectedItems.length})`
                         : ""}
                     </span>
                   </span>
@@ -484,9 +641,9 @@ const UsersClient = (props: Props) => {
             </CustomTooltip>
           </div>
 
-          {/* Search and filter section */}
+          {/* --- Search and filters --- */}
           <div className="flex justify-between gap-4">
-            {/* Search */}
+            {/* --- Search --- */}
             <div className="flex w-full items-center gap-4">
               <div className="flex w-full items-center justify-start">
                 <Input
@@ -498,31 +655,48 @@ const UsersClient = (props: Props) => {
               </div>
             </div>
 
-            {/* Filters */}
+            {/* --- Filters --- */}
             <div className="flex gap-4">
-              {/* Roles filter */}
-              <div className="relative hidden sm:flex">
+              {/* --- Filter one --- */}
+              <Filter
+                filterRef={filterOneRef}
+                label="Behörigheter"
+                filterData={[
+                  {
+                    label: "Admin",
+                    show: showAdmins,
+                    setShow: setShowAdmins,
+                    count: totalCounts?.filteredAdmins,
+                  },
+                  {
+                    label: "Developer",
+                    show: showDevelopers,
+                    setShow: setShowDevelopers,
+                    count: totalCounts?.filteredDevelopers,
+                  },
+                ]}
+              />
+              {/* <div className="relative hidden sm:flex">
                 <button
-                  ref={filterRolesRef}
+                  ref={filterOneRef}
                   className={`${roundedButtonClass} group w-auto gap-2 px-4`}
                   onClick={() => {
-                    closeAllMenus();
-                    setFilterRolesOpen(!filterRolesOpen);
+                    setFilterOneOpen(!filterOneOpen);
                   }}
                 >
                   <span
-                    className={`${filterClass} ${filterRolesOpen ? "text-[var(--accent-color)]" : ""}`}
+                    className={`${filterClass} ${filterOneOpen ? "text-[var(--accent-color)]" : ""}`}
                   >
                     Behörigheter
                   </span>
                   <ChevronDownIcon
-                    className={`${filterIconClass} ${filterRolesOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
+                    className={`${filterIconClass} ${filterOneOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
                   />
                 </button>
                 <MenuDropdown
-                  triggerRef={filterRolesRef}
-                  isOpen={filterRolesOpen}
-                  onClose={() => setFilterRolesOpen(false)}
+                  triggerRef={filterOneRef}
+                  isOpen={filterOneOpen}
+                  onClose={() => setFilterOneOpen(false)}
                 >
                   <div className="flex w-full flex-col gap-4">
                     <div
@@ -538,7 +712,7 @@ const UsersClient = (props: Props) => {
                         readOnly
                       />
                       <span>
-                        <span>({totalCounts?.admins ?? 0})</span>
+                        <span>({totalCounts?.filteredAdmins ?? 0})</span>
                       </span>
                     </div>
 
@@ -555,37 +729,36 @@ const UsersClient = (props: Props) => {
                         readOnly
                       />
                       <span>
-                        <span>({totalCounts?.developers ?? 0})</span>
+                        <span>({totalCounts?.filteredDevelopers ?? 0})</span>
                       </span>
                     </div>
                   </div>
                 </MenuDropdown>
-              </div>
+              </div> */}
 
               {/* Status filter */}
               <div className="relative hidden md:flex">
                 <button
-                  ref={filterStatusRef}
+                  ref={filterTwoRef}
                   className={`${roundedButtonClass} group w-auto gap-2 px-4`}
                   onClick={() => {
-                    closeAllMenus();
-                    setFilterStatusOpen(!filterStatusOpen);
+                    setFilterTwoOpen(!filterTwoOpen);
                   }}
                 >
                   <span
-                    className={`${filterClass} ${filterStatusOpen ? "text-[var(--accent-color)]" : ""}`}
+                    className={`${filterClass} ${filterTwoOpen ? "text-[var(--accent-color)]" : ""}`}
                   >
                     Status
                   </span>
                   <ChevronDownIcon
-                    className={`${filterIconClass} ${filterStatusOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
+                    className={`${filterIconClass} ${filterTwoOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
                   />
                 </button>
 
                 <MenuDropdown
-                  triggerRef={filterStatusRef}
-                  isOpen={filterStatusOpen}
-                  onClose={() => setFilterStatusOpen(false)}
+                  triggerRef={filterTwoRef}
+                  isOpen={filterTwoOpen}
+                  onClose={() => setFilterTwoOpen(false)}
                 >
                   <div className="flex flex-col gap-4">
                     <div
@@ -595,13 +768,14 @@ const UsersClient = (props: Props) => {
                       className="group flex cursor-pointer justify-between"
                     >
                       <Input
+                        id={totalCounts?.filteredLocked === 0 ? "disabled" : ""}
                         type="checkbox"
                         checked={showLocked}
                         label="Låst"
                         readOnly
                       />
                       <span>
-                        <span>({totalCounts?.locked ?? 0})</span>
+                        <span>({totalCounts?.filteredLocked ?? 0})</span>
                       </span>
                     </div>
 
@@ -618,7 +792,7 @@ const UsersClient = (props: Props) => {
                         readOnly
                       />
                       <span>
-                        <span>({totalCounts?.unlocked ?? 0})</span>
+                        <span>({totalCounts?.filteredUnlocked ?? 0})</span>
                       </span>
                     </div>
                   </div>
@@ -631,7 +805,6 @@ const UsersClient = (props: Props) => {
                 <button
                   className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
                   onClick={() => {
-                    closeAllMenus();
                     setFilterAllOpen(true);
                   }}
                 >
@@ -646,24 +819,24 @@ const UsersClient = (props: Props) => {
                   onClose={() => setFilterAllOpen(false)}
                   label="Alla filter"
                 >
-                  <div>
+                  <div className="flex h-full flex-col justify-between">
                     <div className="flex flex-col">
                       {/* --- Roles filter --- */}
                       <button
-                        onClick={() => setFilterAllRolesOpen((prev) => !prev)}
-                        className={`${filterAllRolesOpen ? "text-[var(--accent-color)]" : ""} flex w-full cursor-pointer items-center justify-between pb-4 duration-[var(--fast)] hover:text-[var(--accent-color)]`}
+                        onClick={() => setBigFilterOneOpen((prev) => !prev)}
+                        className={`${bigFilterOneOpen ? "text-[var(--accent-color)]" : ""} flex w-full cursor-pointer items-center justify-between pb-4 duration-[var(--fast)] hover:text-[var(--accent-color)]`}
                       >
                         <span className="text-lg font-semibold">
                           Behörigheter
                         </span>
                         <ChevronDownIcon
-                          className={`${filterAllRolesOpen ? "rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
+                          className={`${bigFilterOneOpen ? "rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
                         />
                       </button>
 
                       <div className="relative">
                         <div
-                          style={{ height: filterAllRolesHeight }}
+                          style={{ height: bigFilterOneHeight }}
                           className="overflow-hidden transition-[height] duration-[var(--slow)]"
                         >
                           <div ref={filterAllRolesRef}>
@@ -680,7 +853,9 @@ const UsersClient = (props: Props) => {
                                   label="Admin"
                                   readOnly
                                 />
-                                <span>({totalCounts?.admins ?? 0})</span>
+                                <span>
+                                  ({totalCounts?.filteredAdmins ?? 0})
+                                </span>
                               </div>
                             </div>
 
@@ -697,7 +872,9 @@ const UsersClient = (props: Props) => {
                                   label="Developer"
                                   readOnly
                                 />
-                                <span>({totalCounts?.developers ?? 0})</span>
+                                <span>
+                                  ({totalCounts?.filteredDevelopers ?? 0})
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -707,18 +884,18 @@ const UsersClient = (props: Props) => {
 
                       {/* --- Status filter --- */}
                       <button
-                        onClick={() => setFilterAllStatusOpen((prev) => !prev)}
-                        className={`${filterAllStatusOpen ? "text-[var(--accent-color)]" : ""} flex w-full cursor-pointer items-center justify-between py-4 duration-[var(--fast)] hover:text-[var(--accent-color)]`}
+                        onClick={() => setBigFilterTwoOpen((prev) => !prev)}
+                        className={`${bigFilterTwoOpen ? "text-[var(--accent-color)]" : ""} flex w-full cursor-pointer items-center justify-between py-4 duration-[var(--fast)] hover:text-[var(--accent-color)]`}
                       >
                         <span className="text-lg font-semibold">Status</span>
                         <ChevronDownIcon
-                          className={`${filterAllStatusOpen ? "rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
+                          className={`${bigFilterTwoOpen ? "rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
                         />
                       </button>
 
                       <div className="relative">
                         <div
-                          style={{ height: filterAllStatusHeight }}
+                          style={{ height: bigFilterTwoHeight }}
                           className="overflow-hidden transition-[height] duration-[var(--slow)]"
                         >
                           <div ref={filterAllStatusRef}>
@@ -735,7 +912,9 @@ const UsersClient = (props: Props) => {
                                   label="Låst"
                                   readOnly
                                 />
-                                <span>({totalCounts?.locked ?? 0})</span>
+                                <span>
+                                  ({totalCounts?.filteredLocked ?? 0})
+                                </span>
                               </div>
                             </div>
 
@@ -752,7 +931,9 @@ const UsersClient = (props: Props) => {
                                   label="Upplåst"
                                   readOnly
                                 />
-                                <span>({totalCounts?.unlocked ?? 0})</span>
+                                <span>
+                                  ({totalCounts?.filteredUnlocked ?? 0})
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -760,61 +941,55 @@ const UsersClient = (props: Props) => {
                         <hr className="absolute -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
                       </div>
                     </div>
+
+                    <div className="flex flex-col gap-4 sm:flex-row">
+                      <button className={`${buttonPrimaryClass} w-full`}>
+                        Visa{" "}
+                        <span className="font-normal">{totalItems ?? 0}</span>
+                      </button>
+                      <button
+                        className={`${buttonSecondaryClass} w-full`}
+                        disabled={
+                          !showDevelopers &&
+                          !showAdmins &&
+                          !showLocked &&
+                          !showUnlocked
+                        }
+                      >
+                        Rensa alla
+                      </button>
+                    </div>
                   </div>
                 </SideMenu>
               </div>
             </div>
           </div>
 
-          {/* Active filters */}
+          {/* --- Active filters --- */}
           <div className="flex flex-wrap gap-4">
-            {showAdmins && (
-              <button
-                className={`${roundedButtonClass} group w-auto gap-2 px-4`}
-                onClick={() => {
-                  setShowAdmins(false);
-                }}
-              >
-                <span className={`${filterClass}`}>Admin</span>
-                <XMarkIcon className={`${filterIconClass}`} />
-              </button>
-            )}
+            <FilterItem
+              visible={showAdmins}
+              onClickEvent={setShowAdmins}
+              label="Admin"
+            />
 
-            {showDevelopers && (
-              <button
-                className={`${roundedButtonClass} group w-auto gap-2 px-4`}
-                onClick={() => {
-                  setShowDevelopers(false);
-                }}
-              >
-                <span className={`${filterClass}`}>Developer</span>
-                <XMarkIcon className={`${filterIconClass}`} />
-              </button>
-            )}
+            <FilterItem
+              visible={showDevelopers}
+              onClickEvent={setShowDevelopers}
+              label="Developer"
+            />
 
-            {showLocked && (
-              <button
-                className={`${roundedButtonClass} group w-auto gap-2 px-4`}
-                onClick={() => {
-                  setShowLocked(false);
-                }}
-              >
-                <span className={`${filterClass}`}>Låst</span>
-                <XMarkIcon className={`${filterIconClass}`} />
-              </button>
-            )}
+            <FilterItem
+              visible={showLocked}
+              onClickEvent={setShowLocked}
+              label="Låst"
+            />
 
-            {showUnlocked && (
-              <button
-                className={`${roundedButtonClass} group w-auto gap-2 px-4`}
-                onClick={() => {
-                  setShowUnlocked(false);
-                }}
-              >
-                <span className={`${filterClass}`}>Upplåst</span>
-                <XMarkIcon className={`${filterIconClass}`} />
-              </button>
-            )}
+            <FilterItem
+              visible={showUnlocked}
+              onClickEvent={setShowUnlocked}
+              label="Upplåst"
+            />
 
             {(showAdmins || showDevelopers || showLocked || showUnlocked) && (
               <button
@@ -833,216 +1008,77 @@ const UsersClient = (props: Props) => {
             )}
           </div>
 
-          {/* Showing info */}
+          {/* --- Showing info --- */}
           <span className="-mb-2 flex items-end text-[var(--text-secondary)]">
-            Visar {(currentPage - 1) * usersPerPage + 1}-
-            {Math.min(currentPage * usersPerPage, totalUsers ?? 0)} av{" "}
-            {totalUsers ?? 0}
+            Visar {(currentPage - 1) * itemsPerPage + 1}-
+            {Math.min(currentPage * itemsPerPage, totalItems ?? 0)} av{" "}
+            {totalItems ?? 0}
           </span>
         </div>
 
-        {/* Users list */}
+        {/* --- Table --- */}
         <div className="flex w-full flex-col">
           <div className="flex w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
             <table className="w-full table-fixed border-collapse">
+              {/* --- Table Headers --- */}
               <thead
-                className={`${!props.isConnected || isLoadingUsers ? "pointer-events-none" : ""} bg-[var(--bg-grid-header)]`}
+                className={`${!props.isConnected || isLoadingContent ? "pointer-events-none" : ""} bg-[var(--bg-grid-header)]`}
               >
                 <tr>
-                  <th className="w-10 min-w-10 border-1 border-t-0 border-l-0 border-[var(--border-secondary)] border-b-[var(--border-main)] p-2">
+                  <th
+                    className={`${thClass} !w-[40px] !min-w-[40px] !cursor-default !border-l-0 !pl-2 hover:!bg-[var(--bg-grid-header)]`}
+                  >
                     <div className="flex items-center justify-center">
                       <Input
                         type="checkbox"
                         checked={allSelected}
-                        onChange={selectAllUsers}
+                        onChange={selectAll}
                       />
                     </div>
                   </th>
-                  <CustomTooltip
-                    content={
-                      sortBy === "username"
-                        ? sortOrder === "asc"
-                          ? "Sortera användarnamn Ö-A"
-                          : "Sortera användarnamn A-Ö"
-                        : "Sortera användarnamn A-Ö"
-                    }
-                  >
-                    <th
-                      className={`${thClass}`}
-                      onClick={() => handleSort("username")}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleSort("username");
-                        }
-                      }}
-                      tabIndex={0}
-                      aria-sort={
-                        sortBy === "username"
-                          ? sortOrder === "asc"
-                            ? "ascending"
-                            : "descending"
-                          : "none"
-                      }
-                    >
-                      <div className="relative flex gap-2">
-                        <span className="w-full truncate overflow-hidden text-ellipsis">
-                          Användarnamn
-                        </span>
-                        <span className="flex">{getSortIcon("username")}</span>
-                      </div>
-                    </th>
-                  </CustomTooltip>
-                  <CustomTooltip
-                    content={
-                      sortBy === "name"
-                        ? sortOrder === "asc"
-                          ? "Sortera namn Ö-A"
-                          : "Sortera namn A-Ö"
-                        : "Sortera namn A-Ö"
-                    }
-                  >
-                    <th
-                      className={`${thClass} hidden sm:table-cell`}
-                      onClick={() => handleSort("name")}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleSort("name");
-                        }
-                      }}
-                      tabIndex={0}
-                      aria-sort={
-                        sortBy === "name"
-                          ? sortOrder === "asc"
-                            ? "ascending"
-                            : "descending"
-                          : "none"
-                      }
-                    >
-                      <div className="relative flex">
-                        <span className="w-full truncate overflow-hidden text-ellipsis">
-                          Namn
-                        </span>
-                        <span className="flex justify-end">
-                          {getSortIcon("name")}
-                        </span>
-                      </div>
-                    </th>
-                  </CustomTooltip>
-                  <CustomTooltip
-                    content={
-                      sortBy === "email"
-                        ? sortOrder === "asc"
-                          ? "Sortera mejladress Ö-A"
-                          : "Sortera mejladress A-Ö"
-                        : "Sortera mejladress A-Ö"
-                    }
-                  >
-                    <th
-                      className={`${thClass} hidden lg:table-cell`}
-                      onClick={() => handleSort("email")}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleSort("email");
-                        }
-                      }}
-                      tabIndex={0}
-                      aria-sort={
-                        sortBy === "email"
-                          ? sortOrder === "asc"
-                            ? "ascending"
-                            : "descending"
-                          : "none"
-                      }
-                    >
-                      <div className="relative flex">
-                        <span className="w-full truncate overflow-hidden text-ellipsis">
-                          Mejladress
-                        </span>
-                        <span className="flex justify-end">
-                          {getSortIcon("email")}
-                        </span>
-                      </div>
-                    </th>
-                  </CustomTooltip>
-                  <CustomTooltip
-                    content={
-                      sortBy === "roles"
-                        ? sortOrder === "asc"
-                          ? "Sortera behörigheter Ö-A"
-                          : "Sortera behörigheter A-Ö"
-                        : "Sortera behörigheter A-Ö"
-                    }
-                  >
-                    <th
-                      className={`${thClass} hidden xl:table-cell`}
-                      onClick={() => handleSort("roles")}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleSort("roles");
-                        }
-                      }}
-                      tabIndex={0}
-                      aria-sort={
-                        sortBy === "roles"
-                          ? sortOrder === "asc"
-                            ? "ascending"
-                            : "descending"
-                          : "none"
-                      }
-                    >
-                      <div className="relative flex">
-                        <span className="w-full truncate overflow-hidden text-ellipsis">
-                          Behörigheter
-                        </span>
-                        <span className="flex justify-end">
-                          {getSortIcon("roles")}
-                        </span>
-                      </div>
-                    </th>
-                  </CustomTooltip>
-                  <CustomTooltip
-                    content={
-                      sortBy === "isLocked"
-                        ? sortOrder === "asc"
-                          ? "Sortera låsta konton"
-                          : "Sortera upplåsta konton"
-                        : "Sortera upplåsta konton"
-                    }
-                  >
-                    <th
-                      className={`${thClass} w-28 min-w-28 border-r-0`}
-                      onClick={() => handleSort("isLocked")}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          handleSort("isLocked");
-                        }
-                      }}
-                      tabIndex={0}
-                      aria-sort={
-                        sortBy === "isLocked"
-                          ? sortOrder === "asc"
-                            ? "ascending"
-                            : "descending"
-                          : "none"
-                      }
-                    >
-                      <div className="relative flex">
-                        <span className="w-full truncate overflow-hidden text-ellipsis">
-                          Status
-                        </span>
-                        <span className="flex justify-end">
-                          {getSortIcon("isLocked")}
-                        </span>
-                      </div>
-                    </th>
-                  </CustomTooltip>
+
+                  <ThCell
+                    sortingItem="itemname"
+                    label="Användarnamn"
+                    labelAsc="användarnamn Ö-A"
+                    labelDesc="användarnamn A-Ö"
+                  />
+
+                  <ThCell
+                    sortingItem="name"
+                    label="Namn"
+                    labelAsc="namn Ö-A"
+                    labelDesc="namn A-Ö"
+                    classNameAddition="hidden sm:table-cell"
+                  />
+
+                  <ThCell
+                    sortingItem="email"
+                    label="Mejladress"
+                    labelAsc="mejladress Ö-A"
+                    labelDesc="mejladress A-Ö"
+                    classNameAddition="hidden lg:table-cell"
+                  />
+
+                  <ThCell
+                    sortingItem="roles"
+                    label="Behörigheter"
+                    labelAsc="behörigheter Ö-A"
+                    labelDesc="behörigheter A-Ö"
+                    classNameAddition="hidden xl:table-cell"
+                  />
+
+                  <ThCell
+                    sortingItem="isLocked"
+                    label="Status"
+                    labelAsc="låsta konton"
+                    labelDesc="upplåsta konton"
+                    classNameAddition="w-28 min-w-28 border-r-0"
+                  />
                 </tr>
               </thead>
+
+              {/* --- Table body --- */}
               <tbody>
                 {!props.isConnected ? (
                   <tr>
@@ -1050,12 +1086,12 @@ const UsersClient = (props: Props) => {
                       <Message icon="server" content="server" />
                     </td>
                   </tr>
-                ) : isLoadingUsers ? (
+                ) : isLoadingContent ? (
                   <>
                     {Array.from({
                       length: Math.min(
-                        usersPerPage,
-                        totalUsers ?? usersPerPage,
+                        itemsPerPage,
+                        totalItems ?? itemsPerPage,
                       ),
                     }).map((_, i) => (
                       <tr key={`loading-${i}`} className="bg-[var(--bg-grid)]">
@@ -1063,14 +1099,14 @@ const UsersClient = (props: Props) => {
                           {i ===
                             Math.floor(
                               Math.min(
-                                usersPerPage,
-                                totalUsers ?? usersPerPage,
+                                itemsPerPage,
+                                totalItems ?? itemsPerPage,
                               ) / 2,
                             ) && (
                             <div className="flex h-[40px]">
                               <Message
                                 icon="loading"
-                                content="Hämtar användare..."
+                                content="Hämtar innehåll..."
                               />
                             </div>
                           )}
@@ -1078,7 +1114,7 @@ const UsersClient = (props: Props) => {
                       </tr>
                     ))}
                   </>
-                ) : users.length === 0 ? (
+                ) : items.length === 0 ? (
                   <tr>
                     <td colSpan={colSpan} className="h-57">
                       <Message
@@ -1097,7 +1133,7 @@ const UsersClient = (props: Props) => {
                   </tr>
                 ) : (
                   <>
-                    {users.map((item, index) => {
+                    {items.map((item, index) => {
                       const isEven = index % 2 === 0;
                       const rowClass = isEven
                         ? "bg-[var(--bg-grid)]"
@@ -1112,7 +1148,7 @@ const UsersClient = (props: Props) => {
                               <div className="flex items-center justify-center">
                                 <Input
                                   type="checkbox"
-                                  checked={selectedUsers.includes(item.id)}
+                                  checked={selectedItems.includes(item.id)}
                                   onChange={() => selectUser(item.id)}
                                 />
                               </div>
@@ -1120,7 +1156,7 @@ const UsersClient = (props: Props) => {
                           </td>
                           <td className={`${tdClass}`}>
                             <div className="truncate overflow-hidden text-ellipsis">
-                              {item.username}
+                              {item.itemname}
                             </div>
                           </td>
                           <td className={`${tdClass} hidden sm:table-cell`}>
@@ -1175,13 +1211,13 @@ const UsersClient = (props: Props) => {
                   { label: "15", value: "15" },
                   { label: "25", value: "25" },
                 ]}
-                value={String(usersPerPage)}
+                value={String(itemsPerPage)}
                 onChange={(val) => {
                   const newPageSize = Number(val);
                   const newMaxPages = Math.ceil(
-                    (totalUsers ?? 0) / newPageSize,
+                    (totalItems ?? 0) / newPageSize,
                   );
-                  setUsersPerPage(newPageSize);
+                  setitemsPerPage(newPageSize);
 
                   if (currentPage > newMaxPages) {
                     setCurrentPage(newMaxPages);
@@ -1203,20 +1239,20 @@ const UsersClient = (props: Props) => {
               </button>
               <span className="text-[var(--text-secondary)]">
                 Sida {currentPage} av{" "}
-                {Math.max(1, Math.ceil((totalUsers ?? 0) / usersPerPage))}
+                {Math.max(1, Math.ceil((totalItems ?? 0) / itemsPerPage))}
               </span>
               <button
                 type="button"
                 onClick={() =>
                   setCurrentPage((prev) =>
                     prev <
-                    Math.max(1, Math.ceil((totalUsers ?? 0) / usersPerPage))
+                    Math.max(1, Math.ceil((totalItems ?? 0) / itemsPerPage))
                       ? prev + 1
                       : prev,
                   )
                 }
                 disabled={
-                  currentPage >= Math.ceil((totalUsers ?? 0) / usersPerPage)
+                  currentPage >= Math.ceil((totalItems ?? 0) / itemsPerPage)
                 }
                 className={`${iconButtonPrimaryClass}`}
               >
@@ -1232,28 +1268,28 @@ const UsersClient = (props: Props) => {
           <div className="flex items-center rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
             <span className="font-semibold">Användarinformation</span>
           </div>
-          {/* --- Meta data content --- */}
+          {/* --- Meta data items --- */}
           <div
-            className={`${selectedUsers.length === 0 || selectedUsers.length > 1 ? "items-center" : ""} flex max-h-96 min-h-80 rounded-b border-1 border-t-0 border-[var(--border-main)] p-4`}
+            className={`${selectedItems.length === 0 || selectedItems.length > 1 ? "items-center" : ""} flex max-h-96 min-h-80 rounded-b border-1 border-t-0 border-[var(--border-main)] p-4`}
           >
-            {selectedUsers.length === 0 ? (
+            {selectedItems.length === 0 ? (
               <Message
-                icon="user"
+                icon="item"
                 content="Här kan du se information om vald användare. Välj en i tabellen ovan!"
               />
-            ) : selectedUsers.length > 1 ? (
+            ) : selectedItems.length > 1 ? (
               <Message
                 icon="beware"
                 content="Kan inte visa information om flera användare samtidigt."
               />
             ) : (
               <div className="flex">
-                {users
-                  .filter((u) => u.id === selectedUsers[0])
-                  .map((user) => (
-                    <div key={user.id} className="flex flex-col gap-8">
+                {items
+                  .filter((u) => u.id === selectedItems[0])
+                  .map((item) => (
+                    <div key={item.id} className="flex flex-col gap-8">
                       <div>
-                        {user.isOnline ? (
+                        {item.isOnline ? (
                           <span className="font-semibold text-[var(--unlocked)]">
                             Online
                           </span>
@@ -1265,31 +1301,31 @@ const UsersClient = (props: Props) => {
 
                         <p>
                           <strong>Användarnamn: </strong>
-                          {user.username}
+                          {item.itemname}
                         </p>
 
                         <p>
                           <strong>Namn: </strong>
-                          {user.name}
+                          {item.name}
                         </p>
 
                         <p>
                           <strong>Mejladress: </strong>
-                          {user.email}
+                          {item.email}
                         </p>
 
                         <p className="flex">
                           <strong>Behörigheter:&nbsp;</strong>
-                          {user.roles.map((role, i) => (
+                          {item.roles.map((role, i) => (
                             <span key={i}>
                               {role}
-                              {i < user.roles.length - 1 ? ",\u00A0" : ""}
+                              {i < item.roles.length - 1 ? ",\u00A0" : ""}
                             </span>
                           ))}
                         </p>
 
                         <div className="mt-2">
-                          {!user.isLocked ? (
+                          {!item.isLocked ? (
                             <span className="flex h-6 w-20 items-center justify-center rounded-xl bg-[var(--unlocked)] text-sm font-semibold text-[var(--text-main-reverse)]">
                               Upplåst
                             </span>
@@ -1304,14 +1340,14 @@ const UsersClient = (props: Props) => {
                       <div>
                         <p>
                           <strong>Senast inloggad: </strong>
-                          {user.lastLogin
-                            ? new Date(user.lastLogin).toLocaleString()
+                          {item.lastLogin
+                            ? new Date(item.lastLogin).toLocaleString()
                             : "Aldrig"}
                         </p>
 
                         <p>
                           <strong>Konto skapat: </strong>
-                          {new Date(user.creationDate).toLocaleString()}
+                          {new Date(item.creationDate).toLocaleString()}
                         </p>
                       </div>
                     </div>
