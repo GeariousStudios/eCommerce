@@ -17,7 +17,11 @@ const DeleteModal = (props: Props) => {
       {props.isOpen && (
         <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
           <FocusTrap
-            focusTrapOptions={{ initialFocus: false, allowOutsideClick: true }}
+            focusTrapOptions={{
+              initialFocus: false,
+              allowOutsideClick: true,
+              escapeDeactivates: false,
+            }}
           >
             <div className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl min-w-[90vw] -translate-1/2 flex-col overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4 md:min-w-auto">
               <h2 className="mb-4 flex items-center text-2xl font-semibold">

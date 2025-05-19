@@ -12,7 +12,7 @@ import {
   buttonPrimaryClass,
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
-import { useNotification } from "../notification/NotificationProvider";
+import { useToast } from "../toast/ToastProvider";
 
 type Props = {
   isOpen: boolean;
@@ -22,11 +22,12 @@ type Props = {
 };
 
 const NewsModal = (props: Props) => {
-  // Refs.
+  // --- VARIABLES ---
+  // --- Refs ---
   const editorRef = useRef<RichTextEditorRef>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // States.
+  // --- States ---
   const [date, setDate] = useState("");
   const [type, setType] = useState("");
   const [headline, setHeadline] = useState("");
@@ -35,9 +36,10 @@ const NewsModal = (props: Props) => {
   const [authorId, setAuthorId] = useState("");
   const [hasPreloadedEditor, setHasPreloadedEditor] = useState(false);
 
-  // Other variables.
+  // --- Other ---
   const token = localStorage.getItem("token");
-  const { notify } = useNotification();
+  const { notify } = useToast();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     if (!hasPreloadedEditor) {
@@ -59,9 +61,8 @@ const NewsModal = (props: Props) => {
     }
   }, [props.isOpen, props.newsId]);
 
-  // Handle news editing/adding.
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
+  // --- BACKEND ---
+  // --- Add news item ---
   const addNews = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -91,6 +92,7 @@ const NewsModal = (props: Props) => {
     }
   };
 
+  // --- Fetch news item ---
   const fetchNewsItem = async (id: number) => {
     try {
       const response = await fetch(`${apiUrl}/news/fetch/${id}`, {
@@ -125,6 +127,7 @@ const NewsModal = (props: Props) => {
     setAuthorId(result.authorId);
   };
 
+  // --- Update news item ---
   const updateNews = async (event: FormEvent, id: number) => {
     event.preventDefault();
 
@@ -179,7 +182,7 @@ const NewsModal = (props: Props) => {
       {props.isOpen && (
         <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
           <FocusTrap
-            focusTrapOptions={{ initialFocus: false, allowOutsideClick: true }}
+            focusTrapOptions={{ initialFocus: false, allowOutsideClick: true, escapeDeactivates: false, }}
           >
             <form
               ref={formRef}

@@ -11,10 +11,8 @@ type Props = {
 };
 
 const SideMenu = (props: Props) => {
-  // Refs.
   const innerRef = useRef<HTMLDivElement>(null);
 
-  // Close menu when clicking outside.
   useEffect(() => {
     if (!props.isOpen) {
       return;
@@ -66,8 +64,8 @@ const SideMenu = (props: Props) => {
               fallbackFocus: () => innerRef.current!,
             }}
           >
-            <div className="flex h-full flex-col pt-4">
-              <div className="relative flex items-center justify-between px-4 pb-4">
+            <div className="flex h-full flex-col">
+              <div className="relative flex items-center justify-between p-4">
                 <span className="text-2xl font-semibold">{props.label}</span>
                 <button
                   onClick={() => props.onClose()}
@@ -78,7 +76,7 @@ const SideMenu = (props: Props) => {
                 <hr className="absolute mt-16 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4">{props.children}</div>
+              <div className="flex-1 overflow-y-auto px-4">{props.children}</div>
             </div>
           </FocusTrap>
         </div>

@@ -26,16 +26,17 @@ const MultiDropdown = ({
   required,
   onModal = false,
 }: DropdownProps) => {
-  // Refs.
+  // --- VARIABLES ---
+  // --- Refs ---
   const wrapperRef = useRef<HTMLDivElement>(null);
   const optionRefs = useRef<(HTMLLIElement | null)[]>([]);
   const dropdownRef = useRef<HTMLUListElement>(null);
   const portalContentRef = useRef<HTMLUListElement>(null);
 
-  // States.
+  // --- States ---
   const [isOpen, setIsOpen] = useState(false);
 
-  // UL handler.
+  // --- UL HANDLER ---
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -59,7 +60,7 @@ const MultiDropdown = ({
     return () => cancelAnimationFrame(animationFrameId);
   }, [isOpen]);
 
-  // isOpen handler.
+  // --- ISOPEN HANDLER ---
   useEffect(() => {
     const close = (e: MouseEvent | TouchEvent) => {
       const target = e.target as Node;

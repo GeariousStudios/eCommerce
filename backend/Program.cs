@@ -35,14 +35,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 /* --- Home --- */
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
-    )
-);
+// builder.Services.AddDbContext<AppDbContext>(options =>
+//     options.UseSqlServer(
+//         "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
+//     )
+// );
 
 /* --- Work --- */
-// builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite("Data Source=eCommerce.db"));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite("Data Source=eCommerce.db")
+);
 
 builder.Services.AddCors(options =>
 {
@@ -50,7 +52,11 @@ builder.Services.AddCors(options =>
         "AllowFrontend",
         policy =>
             policy
-                .WithOrigins("http://localhost:3000", "http://192.168.1.75:3000") // Change to live url after dev.
+                .WithOrigins(
+                    "http://localhost:3000",
+                    "http://192.168.1.75:3000",
+                    "http://10.160.14.124:3000"
+                ) // Change to live url after dev.
                 .AllowAnyHeader()
                 .AllowAnyMethod()
     );
@@ -77,8 +83,6 @@ app.UseMiddleware<SessionValidationMiddleware>();
 
 app.MapControllers();
 
-// Console.WriteLine(BCrypt.Net.BCrypt.HashPassword("admin123"));
-
 /* --- Create user --- */
 using (var scope = app.Services.CreateScope())
 {
@@ -91,7 +95,7 @@ using (var scope = app.Services.CreateScope())
             Name = "Liam Fritzson",
             Username = "dev",
             Email = "liam0765@outlook.com",
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword("dev123"),
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("123"),
             Roles = UserRoles.Developer,
             UserPreferences = new UserPreferences { },
             CreationDate = DateTime.UtcNow,

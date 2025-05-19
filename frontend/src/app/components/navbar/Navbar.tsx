@@ -16,14 +16,15 @@ type Props = {
 };
 
 const Navbar = (props: Props) => {
-  // Refs.
+  // --- VARIABLES ---
+  // --- Refs ---
   const innerRef = useRef<HTMLDivElement>(null);
 
-  // Other variables.
+  // --- Other ---
   const { isAuthReady, isDev } = useAuthStatus();
   const { currentTheme } = useTheme();
 
-  // Attach observer to check for scrollbar.
+  // --- SCROLLBAR OBSERVER ---
   useEffect(() => {
     const element = innerRef.current;
     if (!element) {
@@ -47,7 +48,7 @@ const Navbar = (props: Props) => {
     <>
       <div className="overflow-y-auto" />
       <nav
-        className={`${props.hasScrollbar ? "w-22 md:w-67" : "w-19 md:w-64"} fixed z-[calc(var(--z-overlay)-1)] flex h-full flex-col bg-[var(--bg-navbar)] duration-[var(--slow)]`}
+        className={`${props.hasScrollbar ? "max-w-22 md:max-w-67" : "max-w-19 md:max-w-64"} transtion-[max-width] fixed z-[calc(var(--z-overlay)-1)] flex h-full w-full flex-col bg-[var(--bg-navbar)] duration-[var(--slow)]`}
       >
         {/* Simulated border. */}
         <div className="relative h-full w-full pt-18">

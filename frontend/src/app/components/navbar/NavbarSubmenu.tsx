@@ -2,14 +2,13 @@ import useAuthStatus from "@/app/hooks/useAuthStatus";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
 import {
-  ComponentType,
   ElementType,
-  SVGProps,
   useEffect,
   useRef,
   useState,
 } from "react";
 
+// --- PROPS ---
 type SubmenuItem = {
   title?: string;
   href?: string;
@@ -43,16 +42,19 @@ type Props = {
 };
 
 const NavbarSubmenu = (props: Props) => {
-  // Refs.
+  // --- VARIABLES ---
+  // --- Refs ---
   const innerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // States.
+  // --- States ---
   const [isOpen, setIsOpen] = useState(false);
   const [hasScrollbar, setHasScrollbar] = useState(false);
+
+  // --- Other ---
   const { isLoggedIn, isAdmin, isDev } = useAuthStatus();
 
-  // Column amount.
+  // --- COLUMN AMOUNT ---
   const visibleMenus = props.menus.filter(
     (menu) =>
       (!menu.requiresLogin || isLoggedIn) &&
@@ -62,7 +64,7 @@ const NavbarSubmenu = (props: Props) => {
 
   const cols = visibleMenus.length;
 
-  // Attach observer to check for scrollbar.
+  // --- SCROLLBAR OBSERVER ---
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -86,7 +88,7 @@ const NavbarSubmenu = (props: Props) => {
     };
   }, [isOpen]);
 
-  // Close menu when clicking outside.
+  // --- CLOSE ON CLICK OUTSIDE ---
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -116,7 +118,8 @@ const NavbarSubmenu = (props: Props) => {
     };
   }, [isOpen]);
 
-  // Class determining width of submenu.
+  // --- CLASSES ---
+  // --- Submenu width ---
   let widthClasses = "";
 
   if (hasScrollbar) {
@@ -194,7 +197,7 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} group flex h-[40px] w-[40px] cursor-pointer items-center rounded-lg justify-center p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
+                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} group flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-lg p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
               >
                 <div className="flex items-center gap-4">
                   <span className="relative flex h-6 w-6 items-center">
@@ -221,7 +224,6 @@ const NavbarSubmenu = (props: Props) => {
               ref={innerRef}
               id="submenu-menu"
               inert={!isOpen}
-              aria-hidden={!isOpen}
               className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-22 md:left-67" : "left-19 md:left-64"} fixed top-0 h-full overflow-x-hidden border-r-1 border-[var(--border-main)] bg-[var(--bg-navbar)] transition-all duration-[var(--slow)]`}
             >
               <div className="my-4 ml-4">
@@ -250,9 +252,9 @@ const NavbarSubmenu = (props: Props) => {
                               {menu.label}
                             </li>
 
-                            {/* Border */}
+                            {/* --- Border --- */}
                             <hr className="text-[var(--border-main)]" />
-                            {/* Border */}
+                            {/* --- /Border --- */}
 
                             {menu.items.map((item, index) => (
                               <div key={index}>

@@ -1,11 +1,11 @@
 :root {
-  /* --- z-index --- */
+  /* --- Z-INDEX --- */
   --z-base: 0;
   --z-overlay: 10;
   --z-modal: 20;
   --z-tooltip: 30;
 
-  /*  --- Main --- */
+  /*  --- MAIN --- */
   --bg-main-dark: #121212;
   --bg-main-light: #fafafa;
 
@@ -18,7 +18,7 @@
   --medium: 200ms;
   --fast: 150ms;
 
-  /* --- Theme --- */
+  /* --- ACCENT COLOR --- */
   --accent-color-dark: #6faa7f;
   --accent-color-light: #4b815b;
 
@@ -30,11 +30,11 @@
 }
 
 [data-theme="dark"] {
-  /* --- Main --- */
+  /* --- MAIN --- */
   --bg-main: var(--bg-main-dark);
   --text-main: #e0e0e0;
   --text-main-reverse: #212121;
-  --text-secondary: #e0e0e080;
+  --text-secondary: #e0e0e0aa;
   --border-main: var(--border-main-dark);
   --border-secondary: var(--border-secondary-dark);
 
@@ -42,28 +42,28 @@
   --accent-color-hover: var(--accent-color-hover-dark);
   --accent-color-active: var(--accent-color-active-dark);
 
-  /* --- Navbar --- */
+  /* --- NAVBAR --- */
   --bg-navbar: #1a1a1a;
   --bg-navbar-link: #3a3a3a;
 
-  /* --- Topbar --- */
+  /* --- TOPBAR --- */
   --bg-topbar: #3a3a3a;
   --bg-topbar-link: #5a5a5a;
 
-  /* --- Modal --- */
+  /* --- MODAL --- */
   --bg-modal: var(--bg-main);
 
-  /* --- Grid --- */
+  /* --- GRID --- */
   --bg-grid: #121212;
   --bg-grid-zebra: #181818;
   --bg-grid-header: #1a1a1a;
   --bg-grid-header-hover: #3a3a3a;
 
-  /* --- Tooltip --- */
+  /* --- TOOLTIP --- */
   --bg-tooltip: #5a5a5a;
   --text-tooltip: var(--text-main);
 
-  /* --- Buttons --- */
+  /* --- BUTTONS --- */
   --button-primary: var(--accent-color);
   --button-primary-hover: var(--accent-color-hover);
   --button-primary-active: var(--accent-color-active);
@@ -76,7 +76,7 @@
   --button-delete-hover: #814b4b;
   --button-delete-active: #663939;
 
-  /* --- Notification --- */
+  /* --- TOASTS --- */
   --note-error: #aa6f6f;
   --note-error-hover: #aa6f6fbf;
   --note-error-active: #aa6f6fbf;
@@ -87,17 +87,17 @@
   --note-success-hover: #6faa7fbf;
   --note-success-active: #6faa7f;
 
-  /* --- Other --- */
+  /* --- OTHER --- */
   --locked: var(--button-delete);
   --unlocked: var(--button-primary);
 }
 
 [data-theme="light"] {
-  /* --- Main --- */
+  /* --- MAIN --- */
   --bg-main: var(--bg-main-light);
   --text-main: #212121;
   --text-main-reverse: #e0e0e0;
-  --text-secondary: #21212180;
+  --text-secondary: #212121aa;
   --border-main: var(--border-main-light);
   --border-secondary: var(--border-secondary-light);
 
@@ -105,28 +105,28 @@
   --accent-color-hover: var(--accent-color-hover-light);
   --accent-color-active: var(--accent-color-active-light);
 
-  /* --- Navbar --- */
+  /* --- NAVBAR --- */
   --bg-navbar: #f0f0f0;
   --bg-navbar-link: #d6d6d6;
 
-  /* --- Topbar --- */
+  /* --- TOPBAR --- */
   --bg-topbar: #d6d6d6;
   --bg-topbar-link: #f0f0f0;
 
-  /* --- Modal --- */
+  /* --- MODAL --- */
   --bg-modal: var(--bg-main);
 
-  /* --- Grid --- */
+  /* --- GRID --- */
   --bg-grid: #fafafa;
   --bg-grid-zebra: #f2f2f2;
   --bg-grid-header: #f0f0f0;
   --bg-grid-header-hover: #d6d6d6;
 
-  /* --- Tooltip --- */
+  /* --- TOOLTIP --- */
   --bg-tooltip: #d9d9d9;
   --text-tooltip: var(--text-main);
 
-  /* --- Buttons --- */
+  /* --- BUTTONS --- */
   --button-primary: var(--accent-color);
   --button-primary-hover: var(--accent-color-hover);
   --button-primary-active: var(--accent-color-active);
@@ -139,8 +139,7 @@
   --button-delete-hover: #aa6f6f;
   --button-delete-active: #c28888;
 
-  /* --- Notification --- */
-  /* --- Notification --- */
+  /* --- TOASTS --- */
   --note-error: #814b4b;
   --note-error-hover: #814b4bbf;
   --note-error-active: #814b4b;
@@ -151,12 +150,12 @@
   --note-success-hover: #4b815bbf;
   --note-success-active: #4b815bbf;
 
-  /* --- Other --- */
+  /* --- OTHER --- */
   --locked: var(--button-delete);
   --unlocked: var(--button-primary);
 }
 
-/* --- Scrollbar --- */
+/* --- SCROLLBAR --- */
 [data-theme="dark"] {
   --scrollbar-thumb-bg: #4d4d4d;
   --scrollbar-thumb-hover-bg: #c0c0c1;

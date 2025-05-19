@@ -3,7 +3,7 @@ import "./styles/globals.css";
 import "./styles/variables.css";
 import LayoutWrapper from "./components/helpers/LayoutWrapper";
 import StorageProvider from "./components/helpers/StorageProvider";
-import { NotificationProvider } from "./components/notification/NotificationProvider";
+import { ToastProvider } from "./components/toast/ToastProvider";
 
 type Props = {
   children: ReactNode;
@@ -30,9 +30,9 @@ const RootLayout = (props: Props) => {
       </head>
       <body>
         <StorageProvider>
-          <NotificationProvider>
+          <ToastProvider>
             <LayoutWrapper>{props.children}</LayoutWrapper>
-          </NotificationProvider>
+          </ToastProvider>
         </StorageProvider>
         
       </body>

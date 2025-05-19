@@ -32,7 +32,6 @@ type Props = {
 
 const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
   ({ value, name, required }, ref) => {
-    // Refs.
     const quillRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -54,7 +53,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
       },
     }));
 
-    // Pastes in HTML from the news item.
+    // --- PASTE HTML FROM ITEM ---
     useEffect(() => {
       const interval = setInterval(() => {
         const editor = quillRef.current?.getEditor();

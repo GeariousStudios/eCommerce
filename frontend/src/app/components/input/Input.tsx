@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect, useRef } from "react";
 
 type InputProps = {
   id?: string;
@@ -8,6 +8,7 @@ type InputProps = {
   type?: string;
   value?: string;
   checked?: boolean;
+  indeterminate?: boolean;
   onChange?: (value: string | boolean) => void;
   required?: boolean;
   spellCheck?: boolean;
@@ -33,13 +34,15 @@ const Input = ({
   type,
   value,
   checked,
+  indeterminate,
   onChange,
   required = false,
   spellCheck = false,
   onModal = false,
   readOnly = false,
 }: InputProps & { icon?: ReactNode }) => {
-  // Checks.
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const isCheckbox = type === "checkbox";
   const isRadio = type === "radio";
   const isDate = type === "date";
@@ -51,6 +54,12 @@ const Input = ({
         className={`${isCheckbox || isRadio ? "flex items-center justify-center" : "w-full"} ${isDarkTheme() ? "dark-calender" : ""} relative`}
       >
         <input
+          ref={(el) => {
+            if (el) {
+              el.indeterminate = !!indeterminate;
+              inputRef.current = el;
+            }
+          }}
           type={type}
           id={id}
           name={id}

@@ -17,12 +17,9 @@ const HomeWrapper = () => {
   if (!isAuthReady) {
     return (
       <>
-        <h1 className="text-2xl font-semibold uppercase transition-[font-size] duration-[var(--medium)]">
+        <h1 className="mb-4 text-2xl font-semibold uppercase transition-[font-size] duration-[var(--medium)]">
           Dashboard
         </h1>
-        <p className="mb-8 text-[var(--accent-color)]">
-          Välkommen till Webb-ie!
-        </p>
         <Message icon="loading" content="auth" fullscreen={true} />
       </>
     );
@@ -30,10 +27,9 @@ const HomeWrapper = () => {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold uppercase transition-[font-size] duration-[var(--medium)]">
+      <h1 className="mb-4 text-2xl font-semibold uppercase transition-[font-size] duration-[var(--medium)]">
         Dashboard
       </h1>
-      <p className="mb-8 text-[var(--accent-color)]">Välkommen till Webb-ie!</p>
 
       <HomeClient
         isAuthReady={isAuthReady}

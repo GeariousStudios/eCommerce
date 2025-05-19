@@ -16,10 +16,7 @@ const CustomTooltip = ({
   hideOnClick = false,
   lgHidden = false,
 }: TooltipProps) => {
-  // Refs.
   const closeTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  // States.
   const [isOpen, setIsOpen] = useState(false);
 
   const handlePointerEnter = (e: PointerEvent | any) => {
@@ -43,14 +40,6 @@ const CustomTooltip = ({
       setIsOpen(false);
     }, 0);
   };
-
-  // const handlePointerDown = (e: PointerEvent | any) => {
-  //   if (e.pointerType === "touch") {
-  //     return;
-  //   }
-
-  //   setIsOpen((prev) => !prev);
-  // };
 
   useEffect(() => {
     if (!hideOnClick) {

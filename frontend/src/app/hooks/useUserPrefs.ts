@@ -2,22 +2,23 @@ import { useEffect, useState } from "react";
 import useAuthStatus from "./useAuthStatus";
 
 const useUserPrefs = () => {
-  // States.
+  // --- VARIABLES ---
+  // --- States ---
   const { isLoggedIn } = useAuthStatus();
   const [userTheme, setUserTheme] = useState<string | null>(null);
   const [isLoadingUserPrefs, setIsLoadingUserPrefs] = useState(false);
 
-  // Other variables.
+  // --- Other ---
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
 
-  /* --- BACKEND COMMUNICATION --- */
+  /* --- BACKEND --- */
   useEffect(() => {
     if (!isLoggedIn) {
       return;
     }
 
-    // Theme fetcher.
+    // --- Fetch theme ---
     const fetchUserTheme = async () => {
       setIsLoadingUserPrefs(true);
       try {
@@ -53,9 +54,8 @@ const useUserPrefs = () => {
       setUserTheme(newTheme);
     } catch (err) {}
   };
-  /* --- BACKEND COMMUNICATION --- */
 
-  // Update userTheme.
+  // --- UPDATE USER THEME ---
   useEffect(() => {
     if (userTheme) {
       document.documentElement.setAttribute("data-theme", userTheme);

@@ -10,7 +10,7 @@ import NewsModal from "./components/modals/NewsModal";
 import DeleteModal from "./components/modals/DeleteModal";
 import Input from "./components/input/Input";
 import CustomTooltip from "./components/customTooltip/CustomTooltip";
-import { useNotification } from "./components/notification/NotificationProvider";
+import { useToast } from "./components/toast/ToastProvider";
 import Message from "./components/message/Message";
 import {
   buttonPrimaryClass,
@@ -39,33 +39,34 @@ type NewsItem = {
 };
 
 const HomeClient = (props: Props) => {
-  // States.
+  // --- VARIABLES ---
+  // --- States: News ---
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
 
+  // --- States: Login ---
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoadingNews, setIsLoadingNews] = useState(false);
 
-  // Other variables.
+  // --- Other ---
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
-  const { notify } = useNotification();
-  const { name } = useAuthStatus();
+  const { notify } = useToast();
 
-  // Display welcome message.
+  // --- WELCOME MESSAGE ---
   useEffect(() => {
-    const message = localStorage.getItem("postLoginNotification");
+    const message = localStorage.getItem("postLoginToast");
     if (message) {
       notify("info", "Välkommen, " + message + "!", 6000);
-      localStorage.removeItem("postLoginNotification");
+      localStorage.removeItem("postLoginToast");
     }
   }, []);
 
-  /* --- BACKEND COMMUNICATION --- */
-  // News.
+  /* --- BACKEND --- */
+  // --- Fetch news ---
   const fetchNews = async () => {
     try {
       setIsLoadingNews(true);
@@ -87,10 +88,7 @@ const HomeClient = (props: Props) => {
     }
   };
 
-  useEffect(() => {
-    fetchNews();
-  }, []);
-
+  // --- Delete news item ---
   const deleteNewsItem = async (id: number) => {
     try {
       const response = await fetch(`${apiUrl}/news/delete/${id}`, {
@@ -115,7 +113,7 @@ const HomeClient = (props: Props) => {
     }
   };
 
-  // Login.
+  // --- Login ---
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
     localStorage.removeItem("token");
@@ -137,9 +135,9 @@ const HomeClient = (props: Props) => {
       } else {
         localStorage.setItem("token", result.token);
         if (result.message) {
-          localStorage.setItem("postLoginNotification", result.message);
+          localStorage.setItem("postLoginToast", result.message);
         } else {
-          localStorage.setItem("postLoginNotification", username);
+          localStorage.setItem("postLoginToast", username);
         }
 
         window.location.reload();
@@ -149,9 +147,13 @@ const HomeClient = (props: Props) => {
     }
   };
 
-  /* --- BACKEND COMMUNICATION --- */
+  // --- FETCH NEWS ON INIT ---
+  useEffect(() => {
+    fetchNews();
+  }, []);
 
-  // News editing handler.
+  // --- TOGGLE MODAL(S) ---
+  // --- News ---
   const openNewsModal = (itemId: number | null = null) => {
     setSelectedItemId(itemId);
     setIsNewsModalOpen(true);
@@ -170,6 +172,7 @@ const HomeClient = (props: Props) => {
 
   return (
     <>
+    {/* --- MODALS --- */}
       <NewsModal
         isOpen={isNewsModalOpen}
         onClose={closeNewsModal}
@@ -187,9 +190,10 @@ const HomeClient = (props: Props) => {
           setIsDeleteModalOpen(false);
         }}
       />
-      {/* --- Login & news section --- */}
+
+      {/* --- MAIN --- */}
       <div className="flex flex-col gap-4 lg:flex-row">
-        {/* --- Login container --- */}
+        {/* --- LOGIN --- */}
         {props.isLoggedIn === false && (
           <div className="flex w-full flex-col lg:w-1/3 lg:min-w-80">
             {/* --- Login header --- */}
@@ -238,19 +242,19 @@ const HomeClient = (props: Props) => {
           </div>
         )}
 
-        {/* --- News container --- */}
+        {/* --- NEWS --- */}
         <div
           className={`${props.isLoggedIn ? "w-full" : "lg:w-2/3"} flex w-full flex-col`}
         >
           {/* --- News header --- */}
           <div className="flex h-[40px] items-center justify-between rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
-            <span className="font-semibold">Nyheter</span>
+            <span className="font-semibold truncate">Nyheter</span>
 
             {props.isLoggedIn !== false && props.isAdmin && (
               <CustomTooltip content="Lägg till nyhet" hideOnClick={true}>
                 <button
                   type="button"
-                  className={`${iconButtonPrimaryClass} h-6 w-6`}
+                  className={`${iconButtonPrimaryClass} min-h-6 min-w-6`}
                   onClick={() => openNewsModal(null)}
                 >
                   <PlusIcon />

@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
+/* --- CUSTOM BREAKPOINTS --- */
 @theme {
-  --breakpoint-xs: 30rem;
-  --breakpoint-2xs: 25rem;
+  --breakpoint-ml: 56rem;
+  --breakpoint-xs: 32rem;
+  --breakpoint-2xs: 24rem;
+  --breakpoint-3xs: 16rem;
+  --breakpoint-4xs: 8rem;
 }
 
 :root {
@@ -17,7 +21,7 @@
   -webkit-box-shadow: 0 0 0 1000px transparent inset;
 }
 
-/* --- Input labels --- */
+/* --- INPUT LABELS --- */
 input:focus ~ label,
 input[type="date"]:valid ~ label,
 input:not([type="date"]):not(:placeholder-shown) ~ label,
@@ -69,7 +73,18 @@ input[type="radio"] {
   }
 }
 
-/* --- Scrollbar --- */
+input[type="checkbox"]:indeterminate::after {
+  content: "";
+  position: absolute;
+  top: 6.5px;
+  left: 3.5px;
+  width: 7px;
+  height: 8px;
+  border: solid var(--accent-color);
+  border-width: 2px 0 0 0;
+}
+
+/* --- SCROLLBAR --- */
 * {
   &::-webkit-scrollbar {
     width: 10px;
@@ -145,7 +160,7 @@ input[type="radio"] {
   }
 }
 
-/* Highlighted borders when tabbing between focusable objects. */
+/* --- HIGHLIGHTED BORDERS --- */
 a:focus-visible,
 li:focus-visible,
 button:focus-visible,
@@ -161,7 +176,7 @@ th:focus-visible {
   transition: 0s;
 }
 
-/* --- Quill --- */
+/* --- QUILL --- */
 .ql-toolbar.ql-snow,
 .ql-container.ql-snow {
   border: none !important;

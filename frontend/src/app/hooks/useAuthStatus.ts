@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 
 const useAuthStatus = () => {
-  // States.
+  // --- VARIABLES ---
+  // --- States ---
   const [isLoadingAuthStatus, setIsLoadingAuthStatus] = useState<
     boolean | null
   >(null);
@@ -12,7 +13,7 @@ const useAuthStatus = () => {
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
-  // Other variables.
+  // --- Other variables ---
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
 
@@ -22,24 +23,24 @@ const useAuthStatus = () => {
     setName("");
   };
 
-  /* --- BACKEND COMMUNICATION --- */
+  /* --- BACKEND --- */
   useEffect(() => {
     const fetchAuthData = async () => {
       try {
         setIsLoadingAuthStatus(true);
 
-        // Test API connection.
+        // --- Test API connection ---
         const connectionResponse = await fetch(`${apiUrl}/ping`);
         setIsConnected(connectionResponse.ok);
 
-        // Skip the rest if not connected.
+        // --- Return if not connected ---
         if (!connectionResponse.ok) {
           setIsLoggedIn(false);
           resetInfo();
           return;
         }
 
-        // Check login.
+        // --- Return if not logged in ---
         if (!token) {
           setIsLoggedIn(false);
           resetInfo();
@@ -63,7 +64,7 @@ const useAuthStatus = () => {
         const loggedIn = loginResult.isLoggedIn === true;
         setIsLoggedIn(loggedIn);
 
-        // Check user info.
+        // --- User info ---
         if (loggedIn) {
           const infoResponse = await fetch(`${apiUrl}/user/info`, {
             headers: {
@@ -95,7 +96,6 @@ const useAuthStatus = () => {
 
     fetchAuthData();
   }, []);
-  /* --- BACKEND COMMUNICATION --- */
 
   return {
     isLoggedIn,

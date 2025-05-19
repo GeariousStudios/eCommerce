@@ -2,13 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import useUserPrefs from "./useUserPrefs";
 
 const useTheme = () => {
-  // States.
   const [currentTheme, setCurrentTheme] = useState<string | null>(null);
 
-  // Other variables.
   const { userTheme, updateUserTheme } = useUserPrefs();
 
-  // Update currentTheme.
   useEffect(() => {
     const updateTheme = () => {
       const theme = document.documentElement.getAttribute("data-theme");

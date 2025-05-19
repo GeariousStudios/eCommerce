@@ -14,8 +14,7 @@ type Props = {
   onDone?: () => void;
 };
 
-const Notification = (props: Props) => {
-  // States.
+const Toast = (props: Props) => {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
@@ -34,7 +33,6 @@ const Notification = (props: Props) => {
     }, 500);
   };
 
-  //   Success/info/error alternatives.
   const backgroundColor =
     props.type === "success"
       ? "bg-[var(--note-success)] hover:bg-[var(--note-success-hover)] active:bg-[var(--note-success-active)]"
@@ -51,7 +49,7 @@ const Notification = (props: Props) => {
 
   return (
     <div
-      className={`${isVisible ? "opacity-100" : "opacity-0"} ${backgroundColor} flex cursor-default items-center justify-center gap-4 rounded py-4 font-semibold text-[var(--text-main-reverse)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,background]`}
+      className={`${isVisible ? "opacity-100" : "opacity-0"} ${backgroundColor} flex cursor-pointer items-center justify-center gap-4 rounded py-4 font-semibold text-[var(--text-main-reverse)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,background]`}
       style={{ transitionDuration: "500ms, 200ms" }}
       onClick={handleClose}
     >
@@ -61,4 +59,4 @@ const Notification = (props: Props) => {
   );
 };
 
-export default Notification;
+export default Toast;

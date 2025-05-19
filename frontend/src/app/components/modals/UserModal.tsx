@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { FocusTrap } from "focus-trap-react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
 import Input from "../input/Input";
-import { useNotification } from "../notification/NotificationProvider";
+import { useToast } from "../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
@@ -21,10 +21,11 @@ type Props = {
 };
 
 const UserModal = (props: Props) => {
-  // Refs.
+  // --- VARIABLES ---
+  // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
 
-  // States.
+  // --- States ---
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -32,12 +33,15 @@ const UserModal = (props: Props) => {
   const [newUserRoles, setNewUserRoles] = useState<string[]>([]);
   const [isLocked, setIsLocked] = useState(false);
 
-  // Other variables.
+  // --- Other ---
   const token = localStorage.getItem("token");
-  const { notify } = useNotification();
+  const { notify } = useToast();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (!props.isOpen) return;
+    if (!props.isOpen) {
+      return;
+    }
 
     if (props.userId !== null && props.userId !== undefined) {
       fetchUser();
@@ -51,9 +55,8 @@ const UserModal = (props: Props) => {
     }
   }, [props.isOpen, props.userId]);
 
-  // Handle user editing/adding.
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
+  // --- BACKEND ---
+  // --- Add user ---
   const addUser = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -68,7 +71,7 @@ const UserModal = (props: Props) => {
           username,
           name,
           password,
-          email,
+          email: email.trim() === "" ? null : email,
           roles: newUserRoles,
           isLocked,
         }),
@@ -82,8 +85,28 @@ const UserModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
-        return;
+        if (result.errors) {
+          let firstError: string | null = null;
+          let lowestOrder = Number.MAX_SAFE_INTEGER;
+
+          for (const field in result.errors) {
+            const fieldErrors = result.errors[field];
+
+            for (const msg of fieldErrors) {
+              const match = msg.match(/\[(\d+)\]/);
+              const order = match ? parseInt(match[1], 10) : 99;
+
+              if (order < lowestOrder) {
+                lowestOrder = order;
+                firstError = msg.replace(/\[\d+\]\s*/, "");
+              }
+            }
+          }
+          if (firstError) {
+            notify("error", firstError);
+          }
+          return;
+        }
       }
 
       props.onClose();
@@ -94,6 +117,7 @@ const UserModal = (props: Props) => {
     }
   };
 
+  // --- Fetch user ---
   const fetchUser = async () => {
     try {
       const response = await fetch(
@@ -127,6 +151,7 @@ const UserModal = (props: Props) => {
     setIsLocked(result.isLocked ?? false);
   };
 
+  // --- Update user ---
   const updateUser = async (event: FormEvent, id: number) => {
     event.preventDefault();
 
@@ -179,7 +204,11 @@ const UserModal = (props: Props) => {
       {props.isOpen && (
         <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
           <FocusTrap
-            focusTrapOptions={{ initialFocus: false, allowOutsideClick: true }}
+            focusTrapOptions={{
+              initialFocus: false,
+              allowOutsideClick: true,
+              escapeDeactivates: false,
+            }}
           >
             <form
               ref={formRef}
@@ -261,7 +290,6 @@ const UserModal = (props: Props) => {
                   value={email}
                   onChange={(val) => setEmail(String(val))}
                   onModal={true}
-                  required
                 />
               </div>
 

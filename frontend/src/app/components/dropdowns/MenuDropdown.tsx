@@ -1,4 +1,4 @@
-import { ReactNode, RefObject, useEffect, useRef } from "react";
+import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
 
 type Props = {
   children: ReactNode;
@@ -8,14 +8,54 @@ type Props = {
 };
 
 const MenuDropdown = (props: Props) => {
-  // Refs.
   const innerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState<string | undefined>("16rem");
 
-  // Close dropdown when clicking outside.
+  const updateWidth = () => {
+    const element = innerRef.current;
+
+    if (!element) {
+      return;
+    }
+
+    const rect = element.getBoundingClientRect();
+    const maxWidthRight = window.innerWidth - rect.left;
+    const maxWidthLeft = rect.right - 80;
+    const availableWidth = Math.min(maxWidthRight, maxWidthLeft, 256);
+    setWidth(`${availableWidth}px`);
+  };
+
+  useEffect(() => {
+    if (!props.isOpen || !innerRef.current) {
+      return;
+    }
+
+    const raf = requestAnimationFrame(updateWidth);
+
+    return () => cancelAnimationFrame(raf);
+  }, [props.isOpen]);
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(updateWidth);
+
+    if (innerRef.current) {
+      resizeObserver.observe(innerRef.current);
+    }
+
+    window.addEventListener("resize", updateWidth);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, []);
+
   useEffect(() => {
     if (!props.isOpen) {
       return;
     }
+
+    updateWidth();
 
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       const menuElement = innerRef.current;
@@ -46,7 +86,8 @@ const MenuDropdown = (props: Props) => {
       ref={innerRef}
       role="dialog"
       aria-hidden={!props.isOpen}
-      className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex w-64 flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+      className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 break-words shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+      style={{ width }}
     >
       {props.children}
     </div>

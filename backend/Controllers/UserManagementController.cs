@@ -207,9 +207,16 @@ namespace backend.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateUser(CreateUserDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.Username))
+            if (!ModelState.IsValid)
             {
-                return BadRequest(new { message = "Fyll i användarnamn" });
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                return BadRequest(new { message = "Valideringsfel", errors });
             }
 
             var existingUser = await _context.Users.FirstOrDefaultAsync(u =>
@@ -219,21 +226,6 @@ namespace backend.Controllers
             if (existingUser != null)
             {
                 return BadRequest(new { message = "Användarnamnet är upptaget" });
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.Password))
-            {
-                return BadRequest(new { message = "Fyll i lösenord" });
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.Email))
-            {
-                return BadRequest(new { message = "Fyll i mejladress" });
-            }
-
-            if (dto.Roles == null || dto.Roles.Length == 0)
-            {
-                return BadRequest(new { message = "Välj minst en roll" });
             }
 
             // Parse from string to enum.
@@ -255,7 +247,7 @@ namespace backend.Controllers
                 Username = dto.Username,
                 Name = dto.Name ?? "",
                 Password = dto.Password,
-                Email = dto.Email,
+                Email = dto.Email ?? "",
                 Roles = userRoles,
                 IsLocked = dto.IsLocked,
                 CreationDate = DateTime.UtcNow,

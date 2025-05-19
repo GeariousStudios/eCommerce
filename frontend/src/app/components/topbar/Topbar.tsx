@@ -17,16 +17,9 @@ import {
   MoonIcon as OutlineMoonIcon,
   SunIcon as OutlineSunIcon,
 } from "@heroicons/react/24/outline";
-// import {
-//   ArrowLeftEndOnRectangleIcon as SolidArrowLeftEndOnRectangleIcon,
-//   ArrowRightEndOnRectangleIcon as SolidArrowRightEndOnRectangleIcon,
-//   Cog6ToothIcon as SolidCog6ToothIcon,
-//   MoonIcon as SolidMoonIcon,
-//   SunIcon as SolidSunIcon,
-// } from "@heroicons/react/20/solid";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useNotification } from "../notification/NotificationProvider";
+import { useToast } from "../toast/ToastProvider";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
 import Message from "../message/Message";
 import MenuDropdown from "../dropdowns/MenuDropdown";
@@ -38,24 +31,25 @@ type Props = {
 };
 
 const Topbar = (props: Props) => {
-  // Refs.
+  // --- VARIABLES ---
+  // --- Refs ---
   const userIconRef = useRef<HTMLButtonElement>(null);
   const bellIconRef = useRef<HTMLButtonElement>(null);
 
-  // States.
+  // --- States ---
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [userIconClicked, setUserIconClicked] = useState(false);
   const [bellIconClicked, setBellIconClicked] = useState(false);
 
-  // Other variables.
+  // --- Other ---
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
-  const { notify } = useNotification();
+  const { notify } = useToast();
   const { username, name, isLoggedIn, isAuthReady } = useAuthStatus();
   const { toggleTheme, currentTheme } = useTheme();
 
-  //   Hide topbar on scroll.
+  // --- HIDE TOPBAR ON SCROLL ---
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -74,16 +68,7 @@ const Topbar = (props: Props) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
 
-  // Display logout message.
-  useEffect(() => {
-    const message = localStorage.getItem("postLogoutNotification");
-    if (message) {
-      notify("info", message, 6000);
-      localStorage.removeItem("postLogoutNotification");
-    }
-  }, []);
-
-  /* --- BACKEND COMMUNICATION --- */
+  /* --- BACKEND --- */
   const handleLogout = async () => {
     try {
       await fetch(`${apiUrl}/user/logout`, {
@@ -96,12 +81,21 @@ const Topbar = (props: Props) => {
     } catch (err) {
     } finally {
       localStorage.removeItem("token");
-      localStorage.setItem("postLogoutNotification", "Du är nu utloggad!");
+      localStorage.setItem("postLogoutToast", "Du är nu utloggad!");
       window.location.reload();
     }
   };
-  /* --- BACKEND COMMUNICATION --- */
 
+  // --- LOGOUT MESSAGE ---
+  useEffect(() => {
+    const message = localStorage.getItem("postLogoutToast");
+    if (message) {
+      notify("info", message, 6000);
+      localStorage.removeItem("postLogoutToast");
+    }
+  }, []);
+
+  // --- CLOSE ALL MENUS ---
   const closeAllMenus = () => {
     setUserIconClicked(false);
     setBellIconClicked(false);
@@ -111,7 +105,7 @@ const Topbar = (props: Props) => {
     <>
       <div
         inert={!isVisible}
-        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} ${props.hasScrollbar ? "pl-26 md:pl-71" : "pl-23 md:pl-68"} fixed top-0 right-0 z-[calc(var(--z-overlay)-2)] flex h-18 w-full border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] p-4 transition-transform duration-[var(--slow)]`}
+        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} ${props.hasScrollbar ? "w-[calc(100%-6.5rem)] md:w-[calc(100%-17.75rem)]" : "max-w-[calc(100%-4.75rem)] md:max-w-[calc(100%-16rem)]"} transition-transforn fixed top-0 right-0 z-[calc(var(--z-overlay)-2)] flex h-18 w-full border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] p-4 duration-[var(--slow)]`}
       >
         {!isAuthReady ? (
           <div className="inline">
@@ -119,24 +113,35 @@ const Topbar = (props: Props) => {
               <Message
                 icon="loading"
                 content="Hämtar innehåll..."
-                sideMessage={true}
-                fullscreen={true}
+                sideMessage
+                fullscreen
               />
             </span>
             <span className="inline md:hidden">
-              <Message icon="loading" fullscreen={true} />
+              <Message icon="loading" fullscreen />
             </span>
           </div>
         ) : (
           <>
-            {/* Buttons */}
-            <div className="flex h-full w-full items-center justify-end gap-4">
-              {/* Alerts */}
+            {/* --- WELCOME MESSAGE --- */}
+            {isLoggedIn && (
+              <div className="xs:flex whitespace-nowrap w-full items-center hidden text-lg">
+                <span className="">Välkommen tillbaka,&nbsp;</span>
+                <span className="font-semibold text-[var(--accent-color)]">
+                  {name}
+                </span>
+                !
+              </div>
+            )}
+
+            {/* --- BUTTONS AND THEIR CONTENT --- */}
+            <div className="flex w-full items-center justify-end gap-4">
+              {/* --- Alerts --- */}
               {isLoggedIn && (
-                <div className="group relative">
+                <div className="relative">
                   <button
                     ref={bellIconRef}
-                    className={`${roundedButtonClass}`}
+                    className={`${roundedButtonClass} group`}
                     onClick={() => {
                       closeAllMenus();
                       setBellIconClicked(!bellIconClicked);
@@ -151,6 +156,7 @@ const Topbar = (props: Props) => {
                       />
                     </span>
                   </button>
+
                   <MenuDropdown
                     triggerRef={bellIconRef}
                     isOpen={bellIconClicked}
@@ -161,11 +167,11 @@ const Topbar = (props: Props) => {
                 </div>
               )}
 
-              {/* User */}
+              {/* --- User --- */}
               <div className="relative">
                 <button
                   ref={userIconRef}
-                  className={`${roundedButtonClass}`}
+                  className={`${roundedButtonClass} group`}
                   onClick={() => {
                     closeAllMenus();
                     setUserIconClicked(!userIconClicked);
@@ -180,6 +186,7 @@ const Topbar = (props: Props) => {
                     />
                   </span>
                 </button>
+
                 <MenuDropdown
                   triggerRef={userIconRef}
                   isOpen={userIconClicked}
