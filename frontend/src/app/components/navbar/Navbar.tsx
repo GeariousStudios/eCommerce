@@ -53,7 +53,6 @@ const Navbar = (props: Props) => {
 
   return (
     <>
-      {/* <div className="overflow-y-auto" /> */}
       <nav
         className={`${props.hasScrollbar ? "max-w-22 md:max-w-67" : "max-w-19 md:max-w-64"} transtion-[max-width] fixed z-[calc(var(--z-overlay)-1)] flex h-full w-full flex-col bg-[var(--bg-navbar)] duration-[var(--slow)]`}
       >
@@ -98,9 +97,12 @@ const Navbar = (props: Props) => {
                     </picture>
                   </Link>
                 </div>
+
+                <hr className="mb-4 rounded-full text-[var(--border-main)] md:mb-8" />
+
                 {isDev && (
                   <div>
-                    <span className="hidden pb-1 text-xs font-semibold text-[var(--accent-color)] uppercase md:flex">
+                    <span className="hidden pb-1 text-xs font-semibold whitespace-nowrap uppercase md:flex">
                       Utvecklare
                     </span>
                     <NavbarSubmenu
@@ -121,18 +123,17 @@ const Navbar = (props: Props) => {
                       ]}
                       hasScrollbar={props.hasScrollbar}
                     />
+                    <hr className="mt-4 mb-4 rounded-full text-[var(--border-main)] md:mb-8" />
                   </div>
                 )}
 
-                <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
-
-                <span className="hidden pb-1 text-xs font-semibold text-[var(--accent-color)] uppercase md:flex">
+                <span className="hidden pb-1 text-xs font-semibold whitespace-nowrap uppercase md:flex">
                   Din dashboard
                 </span>
 
                 <NavbarLink
-                  href={""}
-                  label="Användare"
+                  href="/"
+                  label="Startsida"
                   icon={OutlineHomeIcon}
                   iconHover={SolidHomeIcon}
                 />

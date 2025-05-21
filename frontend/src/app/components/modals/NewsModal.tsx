@@ -182,7 +182,11 @@ const NewsModal = (props: Props) => {
       {props.isOpen && (
         <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
           <FocusTrap
-            focusTrapOptions={{ initialFocus: false, allowOutsideClick: true, escapeDeactivates: false, }}
+            focusTrapOptions={{
+              initialFocus: false,
+              allowOutsideClick: true,
+              escapeDeactivates: false,
+            }}
           >
             <form
               ref={formRef}

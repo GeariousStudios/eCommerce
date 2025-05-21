@@ -56,7 +56,8 @@ namespace backend.Controllers
                 var lowered = search.ToLower();
                 query = query.Where(u =>
                     u.Username.ToLower().Contains(lowered)
-                    || u.Name.ToLower().Contains(lowered)
+                    || u.FirstName.ToLower().Contains(lowered)
+                    || u.LastName.ToLower().Contains(lowered)
                     || u.Email.ToLower().Contains(lowered)
                 );
             }
@@ -73,9 +74,12 @@ namespace backend.Controllers
                 "username" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Username)
                     : query.OrderBy(u => u.Username),
-                "name" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.Name)
-                    : query.OrderBy(u => u.Name),
+                "firstName" => sortOrder == "desc"
+                    ? query.OrderByDescending(u => u.FirstName)
+                    : query.OrderBy(u => u.FirstName),
+                "lastName" => sortOrder == "desc"
+                    ? query.OrderByDescending(u => u.LastName)
+                    : query.OrderBy(u => u.LastName),
                 "email" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Email)
                     : query.OrderBy(u => u.Email),
@@ -127,7 +131,8 @@ namespace backend.Controllers
                 {
                     Id = u.Id,
                     Username = u.Username,
-                    Name = u.Name,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
                     Email = u.Email,
                     Roles = u.GetRoleStrings(),
                     IsLocked = u.IsLocked,
@@ -169,7 +174,8 @@ namespace backend.Controllers
             {
                 Id = user.Id,
                 Username = user.Username,
-                Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Email = user.Email,
                 Roles = user.GetRoleStrings(),
                 IsLocked = user.IsLocked,
@@ -245,7 +251,8 @@ namespace backend.Controllers
             var user = new User
             {
                 Username = dto.Username,
-                Name = dto.Name ?? "",
+                FirstName = dto.FirstName ?? "",
+                LastName = dto.LastName ?? "",
                 Password = dto.Password,
                 Email = dto.Email ?? "",
                 Roles = userRoles,
@@ -260,7 +267,8 @@ namespace backend.Controllers
             {
                 Id = user.Id,
                 Username = user.Username,
-                Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Email = user.Email,
                 Roles = user.GetRoleStrings(),
                 IsLocked = user.IsLocked,
@@ -282,6 +290,18 @@ namespace backend.Controllers
                 return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
             }
 
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                return BadRequest(new { message = "Valideringsfel", errors });
+            }
+
             var existingUser = await _context.Users.FirstOrDefaultAsync(u =>
                 u.Username.ToLower() == dto.Username.ToLower() && u.Id != id
             );
@@ -289,21 +309,6 @@ namespace backend.Controllers
             if (existingUser != null)
             {
                 return BadRequest(new { message = "Användarnamnet är upptaget" });
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.Username))
-            {
-                return BadRequest(new { message = "Fyll i användarnamn" });
-            }
-
-            if (string.IsNullOrWhiteSpace(dto.Email))
-            {
-                return BadRequest(new { message = "Fyll i mejladress" });
-            }
-
-            if (dto.Roles == null || dto.Roles.Length == 0)
-            {
-                return BadRequest(new { message = "Välj minst en roll" });
             }
 
             // Parse from string to enum.
@@ -320,9 +325,34 @@ namespace backend.Controllers
                 }
             }
 
+            if (user.IsOnline)
+            {
+                if (user.Username != dto.Username)
+                {
+                    return BadRequest(
+                        new { message = "Kan inte byta användarnamn på ett konto som är online!" }
+                    );
+                }
+
+                if (!string.IsNullOrWhiteSpace(dto.Password))
+                {
+                    return BadRequest(
+                        new { message = "Kan inte byta lösenord på ett konto som är online!" }
+                    );
+                }
+
+                if (user.Roles != userRoles)
+                {
+                    return BadRequest(
+                        new { message = "Kan inte ändra roller på ett konto som är online!" }
+                    );
+                }
+            }
+
             user.Username = dto.Username;
-            user.Name = dto.Name;
-            user.Email = dto.Email;
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            user.Email = dto.Email ?? "";
             user.Roles = userRoles;
             user.IsLocked = dto.IsLocked;
 
@@ -335,7 +365,8 @@ namespace backend.Controllers
             {
                 Id = user.Id,
                 Username = user.Username,
-                Name = user.Name,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Email = user.Email,
                 Roles = user.GetRoleStrings(),
                 IsLocked = user.IsLocked,

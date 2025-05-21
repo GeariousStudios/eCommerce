@@ -17,7 +17,6 @@ import {
   MoonIcon as OutlineMoonIcon,
   SunIcon as OutlineSunIcon,
 } from "@heroicons/react/24/outline";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../toast/ToastProvider";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
@@ -46,7 +45,8 @@ const Topbar = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
   const { notify } = useToast();
-  const { username, name, isLoggedIn, isAuthReady } = useAuthStatus();
+  const { username, firstName, lastName, isLoggedIn, isAuthReady } =
+    useAuthStatus();
   const { toggleTheme, currentTheme } = useTheme();
 
   // --- HIDE TOPBAR ON SCROLL ---
@@ -129,7 +129,7 @@ const Topbar = (props: Props) => {
               <div className="xs:flex hidden w-full items-center text-lg whitespace-nowrap">
                 <span className="">Välkommen tillbaka,&nbsp;</span>
                 <span className="font-semibold text-[var(--accent-color)]">
-                  {name}
+                  {firstName ? firstName : username}
                 </span>
                 !
               </div>
@@ -196,7 +196,9 @@ const Topbar = (props: Props) => {
                   {isLoggedIn && (
                     <div className="relative">
                       <span className="font-semibold break-words text-[var(--accent-color)]">
-                        {name || username}
+                        {firstName && lastName
+                          ? firstName + " " + lastName
+                          : firstName || username}
                       </span>
                       <hr className="absolute mt-4 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
                     </div>
@@ -223,7 +225,7 @@ const Topbar = (props: Props) => {
                     />
                     {isLoggedIn && (
                       <TopbarLink
-                        href="/"
+                        onClick={() => notify("error", "Ej implementerat!")}
                         label="Inställningar"
                         icon={OutlineCog6ToothIcon}
                         iconHover={SolidCog6ToothIcon}

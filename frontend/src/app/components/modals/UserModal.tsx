@@ -27,7 +27,8 @@ const UserModal = (props: Props) => {
 
   // --- States ---
   const [username, setUsername] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [newUserRoles, setNewUserRoles] = useState<string[]>([]);
@@ -47,7 +48,8 @@ const UserModal = (props: Props) => {
       fetchUser();
     } else {
       setUsername("");
-      setName("");
+      setFirstName("");
+      setLastName("");
       setPassword("");
       setEmail("");
       setNewUserRoles([]);
@@ -69,7 +71,8 @@ const UserModal = (props: Props) => {
         },
         body: JSON.stringify({
           username,
-          name,
+          firstName,
+          lastName,
           password,
           email: email.trim() === "" ? null : email,
           roles: newUserRoles,
@@ -107,6 +110,14 @@ const UserModal = (props: Props) => {
           }
           return;
         }
+
+        if (result.message) {
+          notify("error", result.message);
+          return;
+        }
+
+        notify("error", "Ett okänt fel inträffade");
+        return;
       }
 
       props.onClose();
@@ -144,7 +155,8 @@ const UserModal = (props: Props) => {
 
   const fillUserData = (result: any) => {
     setUsername(result.username ?? "");
-    setName(result.name ?? "");
+    setFirstName(result.firstName ?? "");
+    setLastName(result.lastName ?? "");
     setPassword("");
     setEmail(result.email ?? "");
     setNewUserRoles(result.roles ?? []);
@@ -166,9 +178,10 @@ const UserModal = (props: Props) => {
           },
           body: JSON.stringify({
             username,
-            name,
+            firstName,
+            lastName,
             password,
-            email,
+            email: email.trim() === "" ? null : email,
             roles: newUserRoles,
             isLocked,
           }),
@@ -183,7 +196,35 @@ const UserModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        if (result.errors) {
+          let firstError: string | null = null;
+          let lowestOrder = Number.MAX_SAFE_INTEGER;
+
+          for (const field in result.errors) {
+            const fieldErrors = result.errors[field];
+
+            for (const msg of fieldErrors) {
+              const match = msg.match(/\[(\d+)\]/);
+              const order = match ? parseInt(match[1], 10) : 99;
+
+              if (order < lowestOrder) {
+                lowestOrder = order;
+                firstError = msg.replace(/\[\d+\]\s*/, "");
+              }
+            }
+          }
+          if (firstError) {
+            notify("error", firstError);
+          }
+          return;
+        }
+
+        if (result.message) {
+          notify("error", result.message);
+          return;
+        }
+
+        notify("error", "Ett okänt fel inträffade");
         return;
       }
 
@@ -277,20 +318,30 @@ const UserModal = (props: Props) => {
 
               <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
                 <Input
-                  id="name"
-                  label={"Namn"}
-                  value={name}
-                  onChange={(val) => setName(String(val))}
-                  onModal={true}
-                />
-
-                <Input
                   id="email"
                   label={"Mejladress"}
                   value={email}
                   onChange={(val) => setEmail(String(val))}
                   onModal={true}
                 />
+
+                <div className="flex w-full gap-6 sm:gap-4">
+                  <Input
+                    id="firstName"
+                    label={"Förnamn"}
+                    value={firstName}
+                    onChange={(val) => setFirstName(String(val))}
+                    onModal={true}
+                  />
+
+                  <Input
+                    id="lastName"
+                    label={"Efternamn"}
+                    value={lastName}
+                    onChange={(val) => setLastName(String(val))}
+                    onModal={true}
+                  />
+                </div>
               </div>
 
               <div className="mt-8 flex items-center gap-2">

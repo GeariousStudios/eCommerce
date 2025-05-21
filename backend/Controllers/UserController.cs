@@ -91,7 +91,35 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = user.Name, token = jwt });
+            var returnedMessage = "";
+
+            if (
+                !string.IsNullOrWhiteSpace(user.FirstName)
+                && string.IsNullOrWhiteSpace(user.LastName)
+            )
+            {
+                returnedMessage = user.FirstName;
+            }
+            else if (
+                !string.IsNullOrWhiteSpace(user.LastName)
+                && string.IsNullOrWhiteSpace(user.FirstName)
+            )
+            {
+                returnedMessage = user.LastName;
+            }
+            else if (
+                !string.IsNullOrWhiteSpace(user.FirstName)
+                && !string.IsNullOrWhiteSpace(user.LastName)
+            )
+            {
+                returnedMessage = user.FirstName + " " + user.LastName;
+            }
+            else
+            {
+                returnedMessage = user.Username;
+            }
+
+            return Ok(new { message = returnedMessage, token = jwt });
         }
 
         [HttpGet("check-login")]
@@ -150,7 +178,8 @@ namespace backend.Controllers
             return Ok(
                 new
                 {
-                    name = user.Name,
+                    firstName = user.FirstName,
+                    lastName = user.LastName,
                     username = user.Username,
                     roles,
                 }

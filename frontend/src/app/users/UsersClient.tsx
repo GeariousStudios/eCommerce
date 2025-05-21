@@ -203,7 +203,8 @@ type FilterData = {
 type Item = {
   id: number;
   username: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   roles: string[];
@@ -977,10 +978,18 @@ const UsersClient = (props: Props) => {
                   />
 
                   <ThCell
-                    sortingItem="name"
-                    label="Namn"
-                    labelAsc="namn Ö-A"
-                    labelDesc="namn A-Ö"
+                    sortingItem="firstName"
+                    label="Förnamn"
+                    labelAsc="förnamn Ö-A"
+                    labelDesc="förnamn A-Ö"
+                    classNameAddition="hidden xs:table-cell"
+                  />
+
+                  <ThCell
+                    sortingItem="lastName"
+                    label="Efternamn"
+                    labelAsc="efternamn Ö-A"
+                    labelDesc="efternamn A-Ö"
                     classNameAddition="hidden sm:table-cell"
                   />
 
@@ -1083,8 +1092,13 @@ const UsersClient = (props: Props) => {
                           </td>
 
                           <TdCell>{item.username}</TdCell>
+
+                          <TdCell classNameAddition="hidden xs:table-cell">
+                            {item.firstName}
+                          </TdCell>
+
                           <TdCell classNameAddition="hidden sm:table-cell">
-                            {item.name}
+                            {item.lastName}
                           </TdCell>
 
                           <TdCell classNameAddition="hidden lg:table-cell">
@@ -1222,8 +1236,13 @@ const UsersClient = (props: Props) => {
                         </p>
 
                         <p>
-                          <strong>Namn: </strong>
-                          {item.name}
+                          <strong>Förnamn: </strong>
+                          {item.firstName}
+                        </p>
+
+                        <p>
+                          <strong>Efternamn: </strong>
+                          {item.lastName}
                         </p>
 
                         <p>

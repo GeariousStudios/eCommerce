@@ -180,7 +180,9 @@ namespace backend.Controllers
                 return null;
             }
 
-            var author = string.IsNullOrEmpty(user.Name) ? user.Username : user.Name;
+            var author = string.IsNullOrEmpty(user.FirstName + user.LastName)
+                ? user.Username
+                : user.FirstName + " " + user.LastName;
             return (author, user.Id);
         }
     }

@@ -1,12 +1,8 @@
 import useAuthStatus from "@/app/hooks/useAuthStatus";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
-import {
-  ElementType,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { usePathname } from "next/navigation";
+import { ElementType, useEffect, useRef, useState } from "react";
 
 // --- PROPS ---
 type SubmenuItem = {
@@ -53,6 +49,11 @@ const NavbarSubmenu = (props: Props) => {
 
   // --- Other ---
   const { isLoggedIn, isAdmin, isDev } = useAuthStatus();
+  const pathname = usePathname();
+  const isSubmenuItemActive = props.menus
+    .flatMap((menu) => menu.items)
+    .some((item) => item.href && pathname.startsWith(item.href));
+  const isActive = isSubmenuItemActive;
 
   // --- COLUMN AMOUNT ---
   const visibleMenus = props.menus.filter(
@@ -197,18 +198,20 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} group flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-lg p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
+                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} ${isActive ? "text-[var(--accent-color)]" : ""} group flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-lg p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
               >
                 <div className="flex items-center gap-4">
                   <span className="relative flex h-6 w-6 items-center">
                     <props.icon
-                      className={`${isOpen ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                      className={`${isOpen || isActive ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
                     />
                     <props.iconHover
-                      className={`${isOpen ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                      className={`${isOpen || isActive ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
                     />
                   </span>
-                  <span className="hidden truncate overflow-hidden md:flex">
+                  <span
+                    className={`${isActive ? "font-semibold" : ""} hidden truncate overflow-hidden md:flex`}
+                  >
                     {props.label}
                   </span>
                 </div>
@@ -256,46 +259,49 @@ const NavbarSubmenu = (props: Props) => {
                             <hr className="text-[var(--border-main)]" />
                             {/* --- /Border --- */}
 
-                            {menu.items.map((item, index) => (
-                              <div key={index}>
-                                {(!item.requiresLogin || isLoggedIn) &&
-                                  (!item.requiresAdmin || isAdmin) &&
-                                  (!item.requiresDev || isDev) && (
-                                    <div>
-                                      <li
-                                        className={`${item.title ? "truncate pt-4 pb-1 text-xs font-semibold" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
-                                      >
-                                        {item.title ?? ""}
-                                      </li>
+                            {menu.items.map((item, index) => {
+                              const itemIsActive =
+                                item.href && pathname.startsWith(item.href);
 
-                                      <li className="w-34 rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
-                                        {item.href ? (
-                                          <Link
-                                            onClick={() => setIsOpen(false)}
-                                            href={item.href}
-                                            tabIndex={isOpen ? 0 : -1}
-                                            className={
-                                              "flex h-full w-full truncate p-2 text-sm text-[var(--text-navbar)]"
-                                            }
-                                          >
-                                            {item.label}
-                                          </Link>
-                                        ) : (
-                                          <button
-                                            onClick={item.onClick}
-                                            tabIndex={isOpen ? 0 : -1}
-                                            className={
-                                              "flex h-full w-full cursor-pointer truncate p-2 text-sm text-[var(--text-navbar)]"
-                                            }
-                                          >
-                                            {item.label}
-                                          </button>
-                                        )}
-                                      </li>
-                                    </div>
-                                  )}
-                              </div>
-                            ))}
+                              return (
+                                <div key={index}>
+                                  {(!item.requiresLogin || isLoggedIn) &&
+                                    (!item.requiresAdmin || isAdmin) &&
+                                    (!item.requiresDev || isDev) && (
+                                      <div>
+                                        <li
+                                          className={`${item.title ? "truncate pt-4 pb-1 text-xs font-semibold" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
+                                        >
+                                          {item.title ?? ""}
+                                        </li>
+
+                                        <li className="w-34 rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
+                                          {item.href ? (
+                                            <Link
+                                              onClick={() => setIsOpen(false)}
+                                              href={item.href}
+                                              tabIndex={isOpen ? 0 : -1}
+                                              className={`${itemIsActive ? "text-[var(--accent-color)]" : "text-[var(--text-navbar)]"} flex h-full w-full truncate p-2 text-sm`}
+                                            >
+                                              {item.label}
+                                            </Link>
+                                          ) : (
+                                            <button
+                                              onClick={item.onClick}
+                                              tabIndex={isOpen ? 0 : -1}
+                                              className={
+                                                "flex h-full w-full cursor-pointer truncate p-2 text-sm text-[var(--text-navbar)]"
+                                              }
+                                            >
+                                              {item.label}
+                                            </button>
+                                          )}
+                                        </li>
+                                      </div>
+                                    )}
+                                </div>
+                              );
+                            })}
                           </ul>
                         )}
                     </div>

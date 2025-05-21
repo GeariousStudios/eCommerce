@@ -9,7 +9,8 @@ const useAuthStatus = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [username, setUsername] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
@@ -20,7 +21,8 @@ const useAuthStatus = () => {
   const resetInfo = () => {
     setUserRoles([]);
     setUsername("");
-    setName("");
+    setFirstName("");
+    setLastName("");
   };
 
   /* --- BACKEND --- */
@@ -80,7 +82,8 @@ const useAuthStatus = () => {
           const infoResult = await infoResponse.json();
           setUserRoles(infoResult.roles);
           setUsername(infoResult.username);
-          setName(infoResult.name);
+          setFirstName(infoResult.firstName);
+          setLastName(infoResult.lastName);
         } else {
           resetInfo();
         }
@@ -104,7 +107,8 @@ const useAuthStatus = () => {
     isConnected,
     isAuthReady,
     username,
-    name,
+    firstName,
+    lastName,
   };
 };
 

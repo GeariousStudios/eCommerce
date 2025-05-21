@@ -94,9 +94,7 @@ using (var scope = app.Services.CreateScope())
     {
         var user = new User
         {
-            Name = "Liam Fritzson",
             Username = "dev",
-            Email = "liam0765@outlook.com",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("123"),
             Roles = UserRoles.Developer,
             UserPreferences = new UserPreferences { },

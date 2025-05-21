@@ -45,11 +45,12 @@ const HomeClient = (props: Props) => {
   const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
+  const [isLoadingNews, setIsLoadingNews] = useState(false);
 
   // --- States: Login ---
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoadingNews, setIsLoadingNews] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // --- Other ---
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -116,6 +117,12 @@ const HomeClient = (props: Props) => {
   // --- Login ---
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
     localStorage.removeItem("token");
 
     try {
@@ -132,18 +139,16 @@ const HomeClient = (props: Props) => {
 
       if (!response.ok) {
         notify("error", result.message);
+        setIsSubmitting(false);
       } else {
         localStorage.setItem("token", result.token);
-        if (result.message) {
-          localStorage.setItem("postLoginToast", result.message);
-        } else {
-          localStorage.setItem("postLoginToast", username);
-        }
+        localStorage.setItem("postLoginToast", result.message);
 
         window.location.reload();
       }
     } catch (err) {
       notify("error", String(err));
+      setIsSubmitting(false);
     }
   };
 
@@ -172,7 +177,7 @@ const HomeClient = (props: Props) => {
 
   return (
     <>
-    {/* --- MODALS --- */}
+      {/* --- MODALS --- */}
       <NewsModal
         isOpen={isNewsModalOpen}
         onClose={closeNewsModal}
@@ -226,13 +231,21 @@ const HomeClient = (props: Props) => {
                   <button
                     type="submit"
                     className={`${buttonPrimaryClass} w-full`}
+                    disabled={isSubmitting}
                   >
                     Logga in
                   </button>
                   <span className="-mt-4 flex justify-center text-center">
-                    <Link href="/" className={`${hyperLinkButtonClass} `}>
+                    <button
+                      type="button"
+                      onClick={() => notify("error", "Ej implementerat!")}
+                      className={`${hyperLinkButtonClass} `}
+                    >
                       Glömt ditt lösenord?
-                    </Link>
+                    </button>
+                    {/* <Link href="/" className={`${hyperLinkButtonClass} `}>
+                      Glömt ditt lösenord?
+                    </Link> */}
                   </span>
                 </form>
               ) : (
@@ -248,7 +261,7 @@ const HomeClient = (props: Props) => {
         >
           {/* --- News header --- */}
           <div className="flex h-[40px] items-center justify-between rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
-            <span className="font-semibold truncate">Nyheter</span>
+            <span className="truncate font-semibold">Nyheter</span>
 
             {props.isLoggedIn !== false && props.isAdmin && (
               <CustomTooltip content="Lägg till nyhet" hideOnClick={true}>
