@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copy csproj -> reset dependencies.
-COPY ./backend.csproj ./backend.csproj
+COPY *.csproj ./
 RUN dotnet restore
 
 # Copy rest and build.
@@ -21,4 +21,4 @@ COPY --from=build /out .
 ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
 
 # Start app
-ENTRYPOINT ["dotnet", "backend.dll"]
+ENTRYPOINT ["dotnet", "eCommerce.dll"]
