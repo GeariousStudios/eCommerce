@@ -1,11 +1,17 @@
 "use client";
 
-import { UserIcon as OutlineUserIcon } from "@heroicons/react/24/outline";
-import { UserIcon as SolidUserIcon } from "@heroicons/react/24/solid";
+import {
+  UserIcon as OutlineUserIcon,
+  HomeIcon as OutlineHomeIcon,
+} from "@heroicons/react/24/outline";
+import {
+  UserIcon as SolidUserIcon,
+  HomeIcon as SolidHomeIcon,
+} from "@heroicons/react/24/solid";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
 import useTheme from "../../hooks/useTheme";
-import { ReactNode, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Message from "../message/Message";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
@@ -23,6 +29,7 @@ const Navbar = (props: Props) => {
   // --- Other ---
   const { isAuthReady, isDev } = useAuthStatus();
   const { currentTheme } = useTheme();
+  const prefix = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
   // --- SCROLLBAR OBSERVER ---
   useEffect(() => {
@@ -46,7 +53,7 @@ const Navbar = (props: Props) => {
 
   return (
     <>
-      <div className="overflow-y-auto" />
+      {/* <div className="overflow-y-auto" /> */}
       <nav
         className={`${props.hasScrollbar ? "max-w-22 md:max-w-67" : "max-w-19 md:max-w-64"} transtion-[max-width] fixed z-[calc(var(--z-overlay)-1)] flex h-full w-full flex-col bg-[var(--bg-navbar)] duration-[var(--slow)]`}
       >
@@ -80,11 +87,11 @@ const Navbar = (props: Props) => {
                   >
                     <picture>
                       <source
-                        srcSet={`${currentTheme === "dark" ? "/images/logo_expnd_dark.svg" : "/images/logo_expnd_light.svg"}`}
+                        srcSet={`${prefix}/images/logo_expnd_${currentTheme === "dark" ? "dark" : "light"}.svg`}
                         media="(min-width: 768px)"
                       />
                       <img
-                        src={`${currentTheme === "dark" ? "/images/logo_clpsd_dark.svg" : "/images/logo_clpsd_light.svg"}`}
+                        src={`${prefix}/images/logo_clpsd_${currentTheme === "dark" ? "dark" : "light"}.svg`}
                         alt="Logga"
                         className="h-full w-full"
                       />
@@ -93,7 +100,7 @@ const Navbar = (props: Props) => {
                 </div>
                 {isDev && (
                   <div>
-                    <span className="hidden pb-1 text-sm font-semibold md:flex">
+                    <span className="hidden pb-1 text-xs font-semibold text-[var(--accent-color)] uppercase md:flex">
                       Utvecklare
                     </span>
                     <NavbarSubmenu
@@ -116,12 +123,19 @@ const Navbar = (props: Props) => {
                     />
                   </div>
                 )}
-                {/* <NavbarLink
+
+                <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
+
+                <span className="hidden pb-1 text-xs font-semibold text-[var(--accent-color)] uppercase md:flex">
+                  Din dashboard
+                </span>
+
+                <NavbarLink
                   href={""}
                   label="Användare"
-                  icon={OutlineUserIcon}
-                  iconHover={SolidUserIcon}
-                /> */}
+                  icon={OutlineHomeIcon}
+                  iconHover={SolidHomeIcon}
+                />
               </div>
 
               <div className="mb-3" />

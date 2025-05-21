@@ -1,16 +1,11 @@
-@import "tailwindcss";
+
+@import url("https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400..700;1,400..700&display=swap");
 
 :root {
   background: var(--bg-main);
   color: var(--text-main);
   font-size: 0.875rem;
-  
-  /* --- CUSTOM BREAKPOINTS --- */
-  --breakpoint-ml: 56rem;
-  --breakpoint-xs: 32rem;
-  --breakpoint-2xs: 24rem;
-  --breakpoint-3xs: 16rem;
-  --breakpoint-4xs: 8rem;
+  font-family: "Karla", sans-serif;
 }
 
 :-webkit-autofill {

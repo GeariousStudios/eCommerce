@@ -266,6 +266,13 @@ const UsersClient = (props: Props) => {
   const token = localStorage.getItem("token");
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const { notify } = useToast();
+  const lastItemIndex = currentPage * itemsPerPage;
+  const firstItemIndex = lastItemIndex - itemsPerPage;
+  const visibleRowCount = Math.max(
+    0,
+    Math.min(itemsPerPage, (totalItems ?? 0) - firstItemIndex),
+  );
+  const rowCount = Math.max(0, Math.min(itemsPerPage, visibleRowCount));
 
   // --- SMALL FILTER ---
   // --- Variables ---
@@ -1029,32 +1036,20 @@ const UsersClient = (props: Props) => {
                   </tr>
                 ) : isLoadingContent ? (
                   <>
-                    {Array.from({
-                      length: Math.min(
-                        itemsPerPage,
-                        totalItems ?? itemsPerPage,
-                      ),
-                    }).map((_, i) => (
-                      <tr key={`loading-${i}`} className="bg-[var(--bg-grid)]">
-                        <td colSpan={colSpan} className="h-[40px]">
-                          {i ===
-                            Math.floor(
-                              Math.min(
-                                itemsPerPage,
-                                totalItems ?? itemsPerPage,
-                              ) / 2,
-                            ) && (
-                            <div className="flex h-[40px]">
-                              <Message
-                                sideMessage={(totalItems ?? 0) <= 2}
-                                icon="loading"
-                                content="Hämtar innehåll..."
-                              />
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                    <tr className="bg-[var(--bg-grid)]">
+                      <td
+                        colSpan={colSpan}
+                        style={{ height: `${rowCount * 40}px` }}
+                      >
+                        <div className="flex h-[40px]">
+                          <Message
+                            icon="loading"
+                            content="Hämtar innehåll..."
+                            sideMessage={(visibleRowCount ?? 0) <= 2}
+                          />
+                        </div>
+                      </td>
+                    </tr>
                   </>
                 ) : (
                   <>

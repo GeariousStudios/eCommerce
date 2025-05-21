@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import "./styles/tailwind.css";
 import "./styles/globals.scss";
 import "./styles/variables.css";
 import LayoutWrapper from "./components/helpers/LayoutWrapper";

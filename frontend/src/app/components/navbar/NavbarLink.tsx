@@ -15,7 +15,7 @@ const NavbarLink = (props: Props) => {
         href={props.href}
         className="group flex h-[40px] w-[40px] items-center justify-center gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-between"
       >
-        <div className="flex items-center gap-4" overflow-hidden>
+        <div className="flex items-center gap-4 overflow-hidden">
           <span className="relative flex min-h-6 min-w-6 items-center">
             <props.icon className="absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0" />
             <props.iconHover className="absolute text-[var(--accent-color)] opacity-0 transition-opacity duration-[var(--fast)] group-hover:opacity-100" />

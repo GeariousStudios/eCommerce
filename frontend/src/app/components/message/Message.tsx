@@ -15,6 +15,7 @@ type Props = {
   content?: string;
   icon?: string;
   fullscreen?: boolean;
+  withinContainer?: boolean;
   sideMessage?: boolean;
 };
 
@@ -55,7 +56,7 @@ const Message = (props: Props) => {
 
   return (
     <div
-      className={`${props.fullscreen ? "fixed inset-0 ml-18 overflow-auto md:ml-64" : "h-full grow"} flex items-center justify-center`}
+      className={`${props.fullscreen ? "fixed inset-0 overflow-auto" : "h-full grow"} ${!props.withinContainer && props.fullscreen ? "ml-18 md:ml-64" : props.withinContainer && props.fullscreen && ""} flex items-center justify-center`}
     >
       <div
         className={`${props.sideMessage ? "" : "flex-col"} flex items-center gap-3 opacity-75`}
