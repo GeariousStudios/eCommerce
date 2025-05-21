@@ -112,4 +112,4 @@ using (var scope = app.Services.CreateScope())
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
-app.Run();
+await app.RunAsync();
