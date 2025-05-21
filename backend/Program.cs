@@ -88,11 +88,10 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
 
     if (!db.Users.Any())
     {
-        db.Database.Migrate();
-
         var user = new User
         {
             Name = "Liam Fritzson",
