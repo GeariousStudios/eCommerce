@@ -55,7 +55,8 @@ builder.Services.AddCors(options =>
                 .WithOrigins(
                     "http://localhost:3000",
                     "http://192.168.1.75:3000",
-                    "http://10.160.14.124:3000"
+                    "http://10.160.14.124:3000",
+                    "https://geariousstudios.github.io"
                 ) // Change to live url after dev.
                 .AllowAnyHeader()
                 .AllowAnyMethod()
@@ -106,6 +107,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Urls.Add("http://0.0.0.0:5000");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+app.Urls.Add($"http://0.0.0.0:{port}");
 
 app.Run();

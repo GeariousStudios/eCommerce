@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import "./styles/globals.css";
+import "./styles/globals.scss";
 import "./styles/variables.css";
 import LayoutWrapper from "./components/helpers/LayoutWrapper";
 import StorageProvider from "./components/helpers/StorageProvider";
@@ -34,7 +34,6 @@ const RootLayout = (props: Props) => {
             <LayoutWrapper>{props.children}</LayoutWrapper>
           </ToastProvider>
         </StorageProvider>
-        
       </body>
     </html>
   );

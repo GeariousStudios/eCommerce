@@ -1,18 +1,16 @@
 @import "tailwindcss";
 
-/* --- CUSTOM BREAKPOINTS --- */
-@theme {
+:root {
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-size: 0.875rem;
+  
+  /* --- CUSTOM BREAKPOINTS --- */
   --breakpoint-ml: 56rem;
   --breakpoint-xs: 32rem;
   --breakpoint-2xs: 24rem;
   --breakpoint-3xs: 16rem;
   --breakpoint-4xs: 8rem;
-}
-
-:root {
-  background: var(--bg-main);
-  color: var(--text-main);
-  font-size: 0.875rem;
 }
 
 :-webkit-autofill {
@@ -25,7 +23,7 @@
 input:focus ~ label,
 input[type="date"]:valid ~ label,
 input:not([type="date"]):not(:placeholder-shown) ~ label,
-input[placeholder]:not([placeholder=" "]) ~ label,
+// input[placeholder]:not([placeholder=" "]) ~ label,
 input:-webkit-autofill ~ label {
   color: var(--accent-color);
   top: 0;
