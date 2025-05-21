@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
-/* --- CUSTOM BREAKPOINTS --- */
 @theme {
+  /* --- CUSTOM BREAKPOINTS --- */
   --breakpoint-ml: 56rem;
   --breakpoint-xs: 32rem;
   --breakpoint-2xs: 24rem;
@@ -12,7 +12,7 @@
 :root {
   background: var(--bg-main);
   color: var(--text-main);
-  font-size: 0.875rem;
+  font-family: "Karla", sans-serif;
 }
 
 :-webkit-autofill {
@@ -63,10 +63,10 @@ input[type="radio"] {
   &:checked::after {
     content: "";
     position: absolute;
-    top: 2px;
-    left: 5px;
-    width: 4px;
-    height: 8px;
+    top: 2.5px;
+    left: 6px;
+    width: 5px;
+    height: 9px;
     border: solid var(--accent-color);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
@@ -76,9 +76,9 @@ input[type="radio"] {
 input[type="checkbox"]:indeterminate::after {
   content: "";
   position: absolute;
-  top: 6.5px;
+  top: 7px;
   left: 3.5px;
-  width: 7px;
+  width: 9px;
   height: 8px;
   border: solid var(--accent-color);
   border-width: 2px 0 0 0;

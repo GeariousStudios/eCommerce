@@ -1,16 +1,11 @@
 import useAuthStatus from "@/app/hooks/useAuthStatus";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
-import {
-  ElementType,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ElementType, useEffect, useRef, useState } from "react";
+import ReactDOM from "react-dom";
 
 // --- PROPS ---
 type SubmenuItem = {
-  title?: string;
   href?: string;
   onClick?: () => void;
   label: string;
@@ -21,7 +16,6 @@ type SubmenuItem = {
 };
 
 type Submenu = {
-  label: string;
   items: SubmenuItem[];
 
   requiresLogin?: boolean;
@@ -118,65 +112,69 @@ const NavbarSubmenu = (props: Props) => {
     };
   }, [isOpen]);
 
-  // --- CLASSES ---
-  // --- Submenu width ---
-  let widthClasses = "";
-
-  if (hasScrollbar) {
-    widthClasses = "w-45";
-  } else {
-    widthClasses = "w-42";
-  }
-
-  if (isOpen) {
-    widthClasses += " max-w-45";
-  } else {
-    widthClasses = " max-w-0";
-  }
-
-  if (cols === 1) {
-    if (isOpen) {
-      if (hasScrollbar) {
-        widthClasses += " sm:w-45 sm:max-w-45";
-      } else {
-        widthClasses += " sm:w-42 sm:max-w-42";
-      }
-    } else {
-      if (hasScrollbar) {
-        widthClasses += " sm:w-42";
-      } else {
-        widthClasses += " sm:w-45";
-      }
-    }
-  } else if (cols === 2) {
-    if (isOpen) {
-      if (hasScrollbar) {
-        widthClasses += " sm:w-85 sm:max-w-85";
-      } else {
-        widthClasses += " sm:w-82 sm:max-w-82";
-      }
-    } else {
-      if (hasScrollbar) {
-        widthClasses += " sm:w-82";
-      } else {
-        widthClasses += " sm:w-85";
-      }
-    }
-  } else if (cols >= 3) {
-    if (isOpen) {
-      if (hasScrollbar) {
-        widthClasses += " sm:w-125 sm:max-w-125";
-      } else {
-        widthClasses += " sm:w-122 sm:max-w-122";
-      }
-    } else {
-      if (hasScrollbar) {
-        widthClasses += " sm:w-122";
-      } else {
-        widthClasses += " sm:w-125";
-      }
-    }
-  }
+  const submenu = (
+    <div
+      ref={innerRef}
+      id="submenu-menu"
+      inert={!isOpen}
+      className={`${isOpen ? "visible max-w-49" : "invisible max-w-2"} fixed top-1/2 z-[calc(var(--z-overlay)-3)] h-[calc(100%-3rem)] w-49 -translate-y-1/2 overflow-x-hidden rounded-r-2xl bg-[var(--bg-navbar-submenu)] text-[var(--text-navbar)] transition-all duration-[var(--slow)] left-60`}
+    >
+      <div
+        className={`grid gap-2 ${
+          cols === 1
+            ? "grid-cols-1"
+            : cols === 2
+              ? "sm:grid-cols-2"
+              : "sm:grid-cols-3"
+        }`}
+      >
+        {props.menus.map((menu, index) => (
+          <div key={index}>
+            {(!menu.requiresLogin || isLoggedIn) &&
+              (!menu.requiresAdmin || isAdmin) &&
+              (!menu.requiresDev || isDev) && (
+                <ul
+                  className={`${isOpen ? "opacity-100" : "opacity-0"} w-full p-6 pl-8 transition-opacity duration-[var(--fast)]`}
+                >
+                  {menu.items.map((item, index) => (
+                    <div key={index}>
+                      {(!item.requiresLogin || isLoggedIn) &&
+                        (!item.requiresAdmin || isAdmin) &&
+                        (!item.requiresDev || isDev) && (
+                          <div>
+                            <li className="w-34 rounded-lg transition-colors hover:text-[var(--accent-color)]">
+                              {item.href ? (
+                                <Link
+                                  onClick={() => setIsOpen(false)}
+                                  href={item.href}
+                                  tabIndex={isOpen ? 0 : -1}
+                                  className={"flex h-full w-full truncate p-2"}
+                                >
+                                  {item.label}
+                                </Link>
+                              ) : (
+                                <button
+                                  onClick={item.onClick}
+                                  tabIndex={isOpen ? 0 : -1}
+                                  className={
+                                    "flex h-full w-full cursor-pointer truncate p-2 hover:text-[var(--accent-color)]"
+                                  }
+                                >
+                                  {item.label}
+                                </button>
+                              )}
+                            </li>
+                          </div>
+                        )}
+                    </div>
+                  ))}
+                </ul>
+              )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -197,9 +195,9 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} group flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-lg p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
+                className="group flex w-full cursor-pointer items-center py-2 transition-colors duration-[var(--fast)] justify-between"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
                   <span className="relative flex h-6 w-6 items-center">
                     <props.icon
                       className={`${isOpen ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
@@ -208,7 +206,9 @@ const NavbarSubmenu = (props: Props) => {
                       className={`${isOpen ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
                     />
                   </span>
-                  <span className="hidden truncate overflow-hidden md:flex">
+                  <span
+                    className={`${isOpen ? "text-[var(--accent-color)]" : ""} truncate overflow-hidden font-semibold duration-[var(--fast)] group-hover:text-[var(--accent-color)]`}
+                  >
                     {props.label}
                   </span>
                 </div>
@@ -216,95 +216,13 @@ const NavbarSubmenu = (props: Props) => {
                 <ChevronRightIcon
                   className={`${
                     isOpen ? "rotate-180 text-[var(--accent-color)]" : ""
-                  } h-0 w-0 rotate-0 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)] md:h-6 md:w-6`}
+                  } rotate-0 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)] h-6 w-6`}
                 />
               </button>
             </div>
-            <div
-              ref={innerRef}
-              id="submenu-menu"
-              inert={!isOpen}
-              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-22 md:left-67" : "left-19 md:left-64"} fixed top-0 h-full overflow-x-hidden border-r-1 border-[var(--border-main)] bg-[var(--bg-navbar)] transition-all duration-[var(--slow)]`}
-            >
-              <div className="my-4 ml-4">
-                <div className="flex gap-2">
-                  <props.iconHover className="flex max-h-4 min-h-4 max-w-4 min-w-4 text-[var(--accent-color)]" />
-                  <span className="truncate text-xs">{props.label}</span>
-                </div>
-                <div
-                  className={`grid gap-2 ${
-                    cols === 1
-                      ? "grid-cols-1"
-                      : cols === 2
-                        ? "sm:grid-cols-2"
-                        : "sm:grid-cols-3"
-                  }`}
-                >
-                  {props.menus.map((menu, index) => (
-                    <div key={index}>
-                      {(!menu.requiresLogin || isLoggedIn) &&
-                        (!menu.requiresAdmin || isAdmin) &&
-                        (!menu.requiresDev || isDev) && (
-                          <ul
-                            className={`${isOpen ? "opacity-100" : "opacity-0"} w-34 transition-opacity duration-[var(--fast)]`}
-                          >
-                            <li className="truncate border-[var(--border-main)] pt-6 pb-1">
-                              {menu.label}
-                            </li>
-
-                            {/* --- Border --- */}
-                            <hr className="text-[var(--border-main)]" />
-                            {/* --- /Border --- */}
-
-                            {menu.items.map((item, index) => (
-                              <div key={index}>
-                                {(!item.requiresLogin || isLoggedIn) &&
-                                  (!item.requiresAdmin || isAdmin) &&
-                                  (!item.requiresDev || isDev) && (
-                                    <div>
-                                      <li
-                                        className={`${item.title ? "truncate pt-4 pb-1 text-xs font-semibold" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
-                                      >
-                                        {item.title ?? ""}
-                                      </li>
-
-                                      <li className="w-34 rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
-                                        {item.href ? (
-                                          <Link
-                                            onClick={() => setIsOpen(false)}
-                                            href={item.href}
-                                            tabIndex={isOpen ? 0 : -1}
-                                            className={
-                                              "flex h-full w-full truncate p-2 text-sm text-[var(--text-navbar)]"
-                                            }
-                                          >
-                                            {item.label}
-                                          </Link>
-                                        ) : (
-                                          <button
-                                            onClick={item.onClick}
-                                            tabIndex={isOpen ? 0 : -1}
-                                            className={
-                                              "flex h-full w-full cursor-pointer truncate p-2 text-sm text-[var(--text-navbar)]"
-                                            }
-                                          >
-                                            {item.label}
-                                          </button>
-                                        )}
-                                      </li>
-                                    </div>
-                                  )}
-                              </div>
-                            ))}
-                          </ul>
-                        )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
         )}
+      {ReactDOM.createPortal(submenu, document.body)}
     </>
   );
 };

@@ -1,4 +1,8 @@
-import { roundedButtonClass } from "@/app/styles/buttonClasses";
+import {
+  buttonNeutralClass,
+  iconClass16,
+  roundedButtonClass,
+} from "@/app/styles/buttonClasses";
 import {
   BellIcon as SolidBellIcon,
   UserIcon as SolidUserIcon,
@@ -17,6 +21,7 @@ import {
   MoonIcon as OutlineMoonIcon,
   SunIcon as OutlineSunIcon,
 } from "@heroicons/react/24/outline";
+import { ArrowTopRightOnSquareIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../toast/ToastProvider";
@@ -101,41 +106,44 @@ const Topbar = (props: Props) => {
     setBellIconClicked(false);
   };
 
+  // --- CLASSES ---
+  let titleClass =
+    "text-xs font-bold text-[var(--text-navbar-header)] uppercase";
+
   return (
     <>
       <div
         inert={!isVisible}
-        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} ${props.hasScrollbar ? "w-[calc(100%-6.5rem)] md:w-[calc(100%-17.75rem)]" : "max-w-[calc(100%-4.75rem)] md:max-w-[calc(100%-16rem)]"} transition-transforn fixed top-0 right-0 z-[calc(var(--z-overlay)-2)] flex h-18 w-full border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] p-4 duration-[var(--slow)]`}
+        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} fixed right-6 z-[calc(var(--z-overlay)-3)] flex min-h-10 w-full max-w-[calc(100%-19rem)] bg-[var(--bg-main)] py-6 transition-transform duration-[var(--slow)]`}
       >
         {!isAuthReady ? (
           <div className="inline">
-            <span className="hidden md:inline">
-              <Message
-                icon="loading"
-                content="Hämtar innehåll..."
-                sideMessage
-                fullscreen
-              />
-            </span>
-            <span className="inline md:hidden">
-              <Message icon="loading" fullscreen />
-            </span>
+            <Message
+              icon="loading"
+              content="Hämtar innehåll..."
+              sideMessage
+              fullscreen
+            />
           </div>
         ) : (
           <>
             {/* --- WELCOME MESSAGE --- */}
             {isLoggedIn && (
-              <div className="xs:flex whitespace-nowrap w-full items-center hidden text-lg">
-                <span className="">Välkommen tillbaka,&nbsp;</span>
-                <span className="font-semibold text-[var(--accent-color)]">
-                  {name}
-                </span>
-                !
+              <div className="hidden w-full items-center text-[26px] whitespace-nowrap lg:flex">
+                Välkommen, {name}!
               </div>
             )}
 
             {/* --- BUTTONS AND THEIR CONTENT --- */}
             <div className="flex w-full items-center justify-end gap-4">
+              {/* --- Website --- */}
+              {isLoggedIn && (
+                <button className={`${buttonNeutralClass} 2xs:min-w-36 mr-4`}>
+                  <ArrowTopRightOnSquareIcon className={iconClass16} />
+                  <span className="2xs:flex hidden">Visa hemsida</span>
+                </button>
+              )}
+
               {/* --- Alerts --- */}
               {isLoggedIn && (
                 <div className="relative">
@@ -152,7 +160,7 @@ const Topbar = (props: Props) => {
                         className={`${bellIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
                       />
                       <SolidBellIcon
-                        className={`${bellIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                        className={`${bellIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--button-rounded-stroke)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
                       />
                     </span>
                   </button>
@@ -182,7 +190,7 @@ const Topbar = (props: Props) => {
                       className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
                     />
                     <SolidUserIcon
-                      className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                      className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--button-rounded-stroke)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
                     />
                   </span>
                 </button>
@@ -193,17 +201,17 @@ const Topbar = (props: Props) => {
                   onClose={() => setUserIconClicked(false)}
                 >
                   {isLoggedIn && (
-                    <div className="relative">
-                      <span className="font-semibold break-words text-[var(--accent-color)]">
+                    <div>
+                      <span className="font-semibold text-[var(--text-navbar-header)]">
                         {name || username}
                       </span>
-                      <hr className="absolute mt-4 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
                     </div>
                   )}
-                  <div>
-                    <span className="flex pb-1 text-sm font-semibold">
-                      Hantera
-                    </span>
+
+                  {isLoggedIn && <hr className="my-6 text-[var(--hr-fill)]" />}
+
+                  <div className="flex flex-col gap-2">
+                    <span className={titleClass}>Hantera</span>
                     <TopbarLink
                       onClick={toggleTheme}
                       label={
@@ -230,9 +238,10 @@ const Topbar = (props: Props) => {
                     )}
                   </div>
 
-                  <div className="relative">
-                    <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-[var(--border-main)]" />
-                    <span className="pb-1 text-sm font-semibold">Session</span>
+                  <hr className="mt-4 mb-6 text-[var(--hr-fill)]" />
+
+                  <div className="flex flex-col">
+                    <span className={titleClass}>Session</span>
                     {isLoggedIn ? (
                       <TopbarLink
                         onClick={handleLogout}

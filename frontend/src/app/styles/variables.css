@@ -7,7 +7,10 @@
 
   /*  --- MAIN --- */
   --bg-main-dark: #121212;
-  --bg-main-light: #fafafa;
+  --bg-main-light: #e6f2d9;
+
+  --text-main-light: #0d1813;
+  --text-main-dark: #0d1813;
 
   --border-main-dark: #e0e0e040;
   --border-main-light: #21212140;
@@ -20,13 +23,13 @@
 
   /* --- ACCENT COLOR --- */
   --accent-color-dark: #6faa7f;
-  --accent-color-light: #4b815b;
+  --accent-color-light: hsl(75, 64%, 52%);
 
   --accent-color-hover-dark: #4b815b;
-  --accent-color-hover-light: #6faa7f;
+  --accent-color-hover-light: hsl(75, 64%, 67%);
 
   --accent-color-active-dark: #3e6e4e;
-  --accent-color-active-light: #5e966e;
+  --accent-color-active-light: hsl(75, 64%, 47%);
 }
 
 [data-theme="dark"] {
@@ -95,23 +98,23 @@
 [data-theme="light"] {
   /* --- MAIN --- */
   --bg-main: var(--bg-main-light);
-  --text-main: #212121;
+  --text-main: var(--text-main-light);
   --text-main-reverse: #e0e0e0;
   --text-secondary: #212121aa;
   --border-main: var(--border-main-light);
   --border-secondary: var(--border-secondary-light);
+
+  --hr-fill: #e6f2d926;
 
   --accent-color: var(--accent-color-light);
   --accent-color-hover: var(--accent-color-hover-light);
   --accent-color-active: var(--accent-color-active-light);
 
   /* --- NAVBAR --- */
-  --bg-navbar: #f0f0f0;
-  --bg-navbar-link: #d6d6d6;
-
-  /* --- TOPBAR --- */
-  --bg-topbar: #d6d6d6;
-  --bg-topbar-link: #f0f0f0;
+  --bg-navbar: #0d1813;
+  --bg-navbar-submenu: #1d342a;
+  --text-navbar: #e6f2d9;
+  --text-navbar-header: #d5ef8a;
 
   /* --- MODAL --- */
   --bg-modal: var(--bg-main);
@@ -135,9 +138,18 @@
   --button-secondary-hover: var(--text-main);
   --button-secondary-active: var(--border-main);
 
+  --button-neutral: var(--bg-navbar);
+  --button-neutral-hover: var(--bg-navbar);
+  --button-neutral-active: var(--bg-navbar);
+
   --button-delete: #814b4b;
   --button-delete-hover: #aa6f6f;
   --button-delete-active: #c28888;
+
+  --button-rounded: #0d181333;
+  --button-rounded-hover: #0d18131a;
+  --button-rounded-active: #0d18134d;
+  --button-rounded-stroke: var(--bg-navbar);
 
   /* --- TOASTS --- */
   --note-error: #814b4b;

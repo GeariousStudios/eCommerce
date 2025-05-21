@@ -26,6 +26,7 @@ import {
   buttonPrimaryClass,
   buttonSecondaryClass,
   iconButtonPrimaryClass,
+  iconClass24,
   roundedButtonClass,
 } from "../styles/buttonClasses";
 import Message from "../components/message/Message";
@@ -41,11 +42,9 @@ let thClass =
 let tdClass =
   "py-2 px-4 min-w-48 h-[40px] border-1 border-b-0 border-[var(--border-secondary)] text-left break-all";
 
-let filterClass =
-  "truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
+let filterClass = "truncate font-semibold";
 
-let filterIconClass =
-  "h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
+let filterIconClass = "h-6 w-6 transition-[color,rotate]";
 
 // --- COMPONENTS ---
 // --- Filter ---
@@ -696,7 +695,7 @@ const UsersClient = (props: Props) => {
               lgHidden={selectedItems.length > 0}
             >
               <button
-                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-56 lg:min-w-56`}
+                className={`${buttonDeleteSecondaryClass} ml-auto sm:w-56 sm:min-w-56`}
                 onClick={() => toggleDeleteItemModal(selectedItems)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -708,8 +707,8 @@ const UsersClient = (props: Props) => {
                 disabled={selectedItems.length === 0}
               >
                 <div className="flex items-center justify-center gap-2 truncate">
-                  <TrashIcon className="h-6" />
-                  <span className="hidden lg:block">
+                  <TrashIcon className={iconClass24} />
+                  <span className="hidden sm:block">
                     Ta bort användare
                     <span>
                       {selectedItems.length > 0

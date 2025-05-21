@@ -1,7 +1,13 @@
 "use client";
 
-import { UserIcon as OutlineUserIcon } from "@heroicons/react/24/outline";
-import { UserIcon as SolidUserIcon } from "@heroicons/react/24/solid";
+import {
+  UserCircleIcon as OutlineUserCircleIcon,
+  HomeIcon as OutlineHomeIcon,
+} from "@heroicons/react/24/outline";
+import {
+  UserCircleIcon as SolidUserCircleIcon,
+  HomeIcon as SolidHomeIcon,
+} from "@heroicons/react/24/solid";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
 import useTheme from "../../hooks/useTheme";
@@ -44,24 +50,17 @@ const Navbar = (props: Props) => {
     };
   }, [isAuthReady]);
 
+  // --- CLASSES ---
+  let titleClass =
+    "flex pb-2 text-xs font-bold text-[var(--text-navbar-header)] uppercase";
+
   return (
     <>
-      <div className="overflow-y-auto" />
-      <nav
-        className={`${props.hasScrollbar ? "max-w-22 md:max-w-67" : "max-w-19 md:max-w-64"} transtion-[max-width] fixed z-[calc(var(--z-overlay)-1)] flex h-full w-full flex-col bg-[var(--bg-navbar)] duration-[var(--slow)]`}
-      >
-        {/* Simulated border. */}
-        <div className="relative h-full w-full pt-18">
-          <div className="pointer-events-none absolute top-0 left-0 h-full w-full border-r-1 border-[var(--border-main)]" />
-          {/* Simulated border */}
+      <nav className="transtion-[max-width] fixed top-1/2 z-[calc(var(--z-overlay)-2)] ml-6 h-[calc(100%-3rem)] max-w-58 min-w-58 -translate-y-1/2 flex-col rounded-2xl bg-[var(--bg-navbar)] p-6 whitespace-nowrap text-[var(--text-navbar)] duration-[var(--slow)]">
+        <div className="relative h-full w-full">
           {!isAuthReady ? (
             <div className="inline">
-              <span className="hidden md:inline">
-                <Message icon="loading" content="Hämtar innehåll..." />
-              </span>
-              <span className="inline md:hidden">
-                <Message icon="loading" />
-              </span>
+              <Message icon="loading" content="Hämtar innehåll..." />
             </div>
           ) : (
             <div
@@ -69,62 +68,70 @@ const Navbar = (props: Props) => {
               id="navbar-menu"
               role="navigation"
               aria-label="Huvudmeny"
-              className={"flex h-full flex-col gap-4 overflow-x-hidden p-4"}
+              className={"flex h-full flex-col overflow-x-hidden"}
             >
+              {/* --- LOGO --- */}
               <div className="flex flex-col">
-                <div className="fixed top-0 flex h-18 transition-transform duration-[var(--slow)]">
+                <div className="mb-2 flex transition-transform duration-[var(--slow)]">
                   <Link
                     href="/"
-                    className="mt-1.25 -ml-2.25 flex h-15 max-w-17 min-w-17 md:max-w-17 md:min-w-40"
+                    className="flex h-10 max-w-38 min-w-38"
                     aria-label="Startsida"
                   >
                     <picture>
-                      <source
+                      {/* <source
                         srcSet={`${currentTheme === "dark" ? "/images/logo_expnd_dark.svg" : "/images/logo_expnd_light.svg"}`}
                         media="(min-width: 768px)"
-                      />
+                      /> */}
                       <img
-                        src={`${currentTheme === "dark" ? "/images/logo_clpsd_dark.svg" : "/images/logo_clpsd_light.svg"}`}
+                        src={`${currentTheme === "dark" ? "/images/logo_expnd_dark.svg" : "/images/logo_expnd_light.svg"}`}
                         alt="Logga"
                         className="h-full w-full"
                       />
                     </picture>
                   </Link>
                 </div>
-                {isDev && (
-                  <div>
-                    <span className="hidden pb-1 text-sm font-semibold md:flex">
-                      Utvecklare
-                    </span>
-                    <NavbarSubmenu
-                      label="Användare"
-                      icon={OutlineUserIcon}
-                      iconHover={SolidUserIcon}
-                      menus={[
-                        {
-                          label: "För utvecklare",
-                          items: [
-                            {
-                              title: "Hantera",
-                              href: "/users",
-                              label: "Användare",
-                            },
-                          ],
-                        },
-                      ]}
-                      hasScrollbar={props.hasScrollbar}
-                    />
-                  </div>
-                )}
-                {/* <NavbarLink
-                  href={""}
-                  label="Användare"
-                  icon={OutlineUserIcon}
-                  iconHover={SolidUserIcon}
-                /> */}
-              </div>
 
-              <div className="mb-3" />
+                <hr className="mt-4 mb-6 rounded-full text-[var(--hr-fill)]" />
+
+                {/* --- LINK CONTAINER 1 --- */}
+                <div className="flex flex-col">
+                  {isDev && (
+                    <div>
+                      <span className={titleClass}>Utvecklare</span>
+                      <NavbarSubmenu
+                        label="Användare"
+                        icon={OutlineUserCircleIcon}
+                        iconHover={SolidUserCircleIcon}
+                        menus={[
+                          {
+                            items: [
+                              {
+                                href: "/users",
+                                label: "Användare",
+                              },
+                            ],
+                          },
+                        ]}
+                        hasScrollbar={props.hasScrollbar}
+                      />
+
+                      <hr className="mt-4 mb-6 rounded-full text-[var(--hr-fill)]" />
+                    </div>
+                  )}
+                </div>
+
+                {/* --- LINK CONTAINER 2 --- */}
+                <div className="flex flex-col">
+                  <span className={titleClass}>Din dashboard</span>
+                  <NavbarLink
+                    href="/"
+                    label="Startsida"
+                    icon={OutlineHomeIcon}
+                    iconHover={SolidHomeIcon}
+                  />
+                </div>
+              </div>
             </div>
           )}
         </div>

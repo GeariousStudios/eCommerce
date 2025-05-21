@@ -35,16 +35,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 /* --- Home --- */
-// builder.Services.AddDbContext<AppDbContext>(options =>
-//     options.UseSqlServer(
-//         "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
-//     )
-// );
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
+    )
+);
 
 /* --- Work --- */
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=eCommerce.db")
-);
+// builder.Services.AddDbContext<AppDbContext>(options =>
+//     options.UseSqlite("Data Source=eCommerce.db")
+// );
 
 builder.Services.AddCors(options =>
 {
