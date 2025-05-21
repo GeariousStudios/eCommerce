@@ -91,6 +91,8 @@ using (var scope = app.Services.CreateScope())
 
     if (!db.Users.Any())
     {
+        db.Database.Migrate();
+
         var user = new User
         {
             Name = "Liam Fritzson",
