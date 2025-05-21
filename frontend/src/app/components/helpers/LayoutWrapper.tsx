@@ -16,7 +16,7 @@ const LayoutWrapper = (props: Props) => {
       <Navbar hasScrollbar={hasScrollbar} setHasScrollbar={setHasScrollbar} />
       <Topbar hasScrollbar={hasScrollbar} />
       <div className="flex">
-        <div className="w-full max-w-[1920px] overflow-x-hidden p-6 pt-22 duration-[var(--medium)] md:ml-64">
+        <div className="w-full max-w-[1920px] overflow-x-hidden p-6 pt-24 duration-[var(--medium)] md:ml-64">
           {props.children}
         </div>
       </div>

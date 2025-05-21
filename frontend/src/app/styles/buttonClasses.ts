@@ -9,10 +9,10 @@ export const buttonNeutralClass =
   "h-10 w-10 cursor-pointer rounded-xl bg-[var(--button-neutral)] text-[var(--text-main-reverse)] px-4 py-3 font-medium text-sm transition-colors hover:bg-[var(--button-neutral-hover)] active:bg-[var(--button-neutral-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-[var(--button-neutral)] z-[calc(var(--z-base)+1)] duration-[var(--fast)] flex gap-2 justify-center items-center whitespace-nowrap";
 
 export const buttonDeletePrimaryClass =
-  "h-10 w-10 cursor-pointer rounded bg-[var(--button-delete)] px-4 py-3 font-semibold text-[var(--text-main-reverse)] transition-colors hover:bg-[var(--button-delete-hover)] hover:text-[var(--text-main)] active:bg-[var(--button-delete-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-[var(--button-delete)] z-[calc(var(--z-base)+1)] duration-[var(--fast)]";
+  "h-10 w-10 cursor-pointer rounded bg-[var(--button-delete)] px-4 py-3 font-semibold text-[var(--text-main-reverse)] transition-colors hover:bg-[var(--button-delete-hover)] hover:text-[var(--text-main)] active:bg-[var(--button-delete-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-[var(--button-delete)] z-[calc(var(--z-base)+1)] duration-[var(--fast)] flex gap-2 justify-center items-center whitespace-nowrap";
 
 export const buttonDeleteSecondaryClass =
-  "h-10 w-10 cursor-pointer rounded border-1 border-[var(--button-secondary)] px-4 py-3 font-semibold transition-colors hover:border-[var(--button-delete)] active:border-[var(--button-delete-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:border-[var(--border-main)] z-[calc(var(--z-base)+1)] duration-[var(--fast)]";
+  "h-10 w-10 cursor-pointer rounded border-1 border-[var(--button-secondary)] px-4 py-3 font-semibold transition-colors hover:border-[var(--button-delete)] active:border-[var(--button-delete-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:border-[var(--border-main)] z-[calc(var(--z-base)+1)] duration-[var(--fast)] flex gap-2 justify-center items-center whitespace-nowrap";
 
 // --- ICON ---
 export const iconButtonPrimaryClass =
