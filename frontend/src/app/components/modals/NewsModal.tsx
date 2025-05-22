@@ -188,77 +188,80 @@ const NewsModal = (props: Props) => {
               escapeDeactivates: false,
             }}
           >
-            <form
-              ref={formRef}
-              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-8 overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
-              onSubmit={(e) =>
-                props.newsId ? updateNews(e, props.newsId) : addNews(e)
-              }
-            >
-              <h2 className="mb-4 flex items-center text-2xl font-semibold">
-                <span className="mr-2 h-6 w-6 text-[var(--accent-color)]">
-                  {props.newsId ? <PencilSquareIcon /> : <PlusIcon />}
-                </span>
-                <span>
-                  {props.newsId ? "Redigera nyhet" : "Lägg till nyhet"}
-                </span>
-              </h2>
+            <div className="relative top-1/2">
+              <div id="portal-root" />
+              <form
+                ref={formRef}
+                className="relative left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-8 overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
+                onSubmit={(e) =>
+                  props.newsId ? updateNews(e, props.newsId) : addNews(e)
+                }
+              >
+                <h2 className="mb-4 flex items-center text-2xl font-semibold">
+                  <span className="mr-2 h-6 w-6 text-[var(--accent-color)]">
+                    {props.newsId ? <PencilSquareIcon /> : <PlusIcon />}
+                  </span>
+                  <span>
+                    {props.newsId ? "Redigera nyhet" : "Lägg till nyhet"}
+                  </span>
+                </h2>
 
-              <Input
-                id="date"
-                type="date"
-                label={"Datum"}
-                value={date}
-                onChange={(val) => setDate(String(val))}
-                onModal={true}
-                required
-              />
+                <Input
+                  id="date"
+                  type="date"
+                  label={"Datum"}
+                  value={date}
+                  onChange={(val) => setDate(String(val))}
+                  onModal={true}
+                  required
+                />
 
-              <SingleDropdown
-                label="Nyhetstyp"
-                value={type}
-                onChange={setType}
-                options={[
-                  { value: "Release", label: "Release" },
-                  { value: "Hotfix", label: "Hotfix" },
-                ]}
-                onModal={true}
-                required
-              />
+                <SingleDropdown
+                  label="Nyhetstyp"
+                  value={type}
+                  onChange={setType}
+                  options={[
+                    { value: "Release", label: "Release" },
+                    { value: "Hotfix", label: "Hotfix" },
+                  ]}
+                  onModal={true}
+                  required
+                />
 
-              <Input
-                id="headline"
-                label={"Rubrik"}
-                value={headline}
-                onChange={(val) => setHeadline(String(val))}
-                onModal={true}
-                required
-              />
+                <Input
+                  id="headline"
+                  label={"Rubrik"}
+                  value={headline}
+                  onChange={(val) => setHeadline(String(val))}
+                  onModal={true}
+                  required
+                />
 
-              <RichTextEditor
-                ref={editorRef}
-                value={content}
-                name="content"
-                required
-              />
+                <RichTextEditor
+                  ref={editorRef}
+                  value={content}
+                  name="content"
+                  required
+                />
 
-              <div className="flex justify-between gap-4">
-                <button
-                  type="button"
-                  onClick={props.onClose}
-                  className={`${buttonSecondaryClass} grow`}
-                >
-                  Ångra
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveClick}
-                  className={`${buttonPrimaryClass} grow-2`}
-                >
-                  {props.newsId ? "Uppdatera" : "Lägg till"}
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-between gap-4">
+                  <button
+                    type="button"
+                    onClick={props.onClose}
+                    className={`${buttonSecondaryClass} grow`}
+                  >
+                    Ångra
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveClick}
+                    className={`${buttonPrimaryClass} grow-2`}
+                  >
+                    {props.newsId ? "Uppdatera" : "Lägg till"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </FocusTrap>
         </div>
       )}

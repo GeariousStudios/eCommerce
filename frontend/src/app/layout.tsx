@@ -27,6 +27,10 @@ const RootLayout = (props: Props) => {
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400..700;1,400..700&display=swap"
+        />
         <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
       </head>
       <body>

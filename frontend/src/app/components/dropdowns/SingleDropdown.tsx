@@ -85,6 +85,14 @@ const SingleDropdown = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (isOpen && optionRefs.current[0]) {
+      setTimeout(() => {
+        optionRefs.current[0]?.focus();
+      }, 0);
+    }
+  }, [isOpen]);
+
   const selectedLabel = options.find((opt) => opt.value === value)?.label || "";
 
   return (
@@ -100,8 +108,8 @@ const SingleDropdown = ({
             setIsOpen(false);
           }
         }}
-        tabIndex={0}
         role="button"
+        tabIndex={0}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
@@ -133,7 +141,7 @@ const SingleDropdown = ({
             dropdownRef.current = el;
             portalContentRef.current = el;
           }}
-          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} fixed z-10 ml-2 list-none rounded-b border-1 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} fixed z-[var(--z-tooltip)] ml-2 list-none rounded-b border-1 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
           role="listbox"
           inert={!isOpen || undefined}
         >
@@ -155,11 +163,16 @@ const SingleDropdown = ({
                 if (e.key === "Escape") {
                   setIsOpen(false);
                 } else if (e.key === "Tab") {
-                  e.preventDefault();
                   const dir = e.shiftKey ? -1 : 1;
                   const total = options.length;
-                  const nextIndex = (index + dir + total) % total;
-                  optionRefs.current[nextIndex]?.focus();
+                  const nextIndex = index + dir;
+
+                  if (nextIndex < 0 || nextIndex >= total) {
+                    setIsOpen(false);
+                  } else {
+                    e.preventDefault();
+                    optionRefs.current[nextIndex]?.focus();
+                  }
                 } else if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   onChange && onChange(opt.value);

@@ -251,153 +251,156 @@ const UserModal = (props: Props) => {
               escapeDeactivates: false,
             }}
           >
-            <form
-              ref={formRef}
-              className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-4 overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
-              onSubmit={(e) =>
-                props.userId ? updateUser(e, props.userId) : addUser(e)
-              }
-            >
-              <h2 className="mb-4 flex items-center text-2xl font-semibold">
-                <span className="mr-2 h-6 w-6 text-[var(--accent-color)]">
-                  {props.userId ? <PencilSquareIcon /> : <PlusIcon />}
-                </span>
-                <span>
-                  {props.userId
-                    ? "Redigera användare"
-                    : "Lägg till ny användare"}
-                </span>
-              </h2>
+            <div className="relative top-1/2">
+              <div id="portal-root" />
+              <form
+                ref={formRef}
+                className="relative left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-4 overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
+                onSubmit={(e) =>
+                  props.userId ? updateUser(e, props.userId) : addUser(e)
+                }
+              >
+                <h2 className="mb-4 flex items-center text-2xl font-semibold">
+                  <span className="mr-2 h-6 w-6 text-[var(--accent-color)]">
+                    {props.userId ? <PencilSquareIcon /> : <PlusIcon />}
+                  </span>
+                  <span>
+                    {props.userId
+                      ? "Redigera användare"
+                      : "Lägg till ny användare"}
+                  </span>
+                </h2>
 
-              <div className="flex items-center gap-2">
-                <hr className="w-12 whitespace-nowrap text-[var(--border-main)]" />
-                <h3 className="flex text-sm text-[var(--text-secondary)]">
-                  Inloggningsuppgifter
-                </h3>
-                <hr className="w-full text-[var(--border-main)]" />
-              </div>
+                <div className="flex items-center gap-2">
+                  <hr className="w-12 whitespace-nowrap text-[var(--border-main)]" />
+                  <h3 className="flex text-sm text-[var(--text-secondary)]">
+                    Inloggningsuppgifter
+                  </h3>
+                  <hr className="w-full text-[var(--border-main)]" />
+                </div>
 
-              <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
-                <Input
-                  id="username"
-                  label={"Användarnamn"}
-                  value={username}
-                  onChange={(val) => setUsername(String(val))}
-                  onModal={true}
-                  required
-                />
-
-                {props.userId !== null ? (
+                <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
                   <Input
-                    id="password"
-                    label={"Lösenord"}
-                    value={password}
-                    placeholder="*********"
-                    onChange={(val) => setPassword(String(val))}
-                    onModal={true}
-                  />
-                ) : (
-                  <Input
-                    id="password"
-                    label={"Lösenord"}
-                    value={password}
-                    onChange={(val) => setPassword(String(val))}
+                    id="username"
+                    label={"Användarnamn"}
+                    value={username}
+                    onChange={(val) => setUsername(String(val))}
                     onModal={true}
                     required
                   />
-                )}
-              </div>
 
-              <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-main)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                  Användardetaljer
-                </h3>
-                <hr className="w-full text-[var(--border-main)]" />
-              </div>
-
-              <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
-                <Input
-                  id="email"
-                  label={"Mejladress"}
-                  value={email}
-                  onChange={(val) => setEmail(String(val))}
-                  onModal={true}
-                />
-
-                <div className="flex w-full gap-6 sm:gap-4">
-                  <Input
-                    id="firstName"
-                    label={"Förnamn"}
-                    value={firstName}
-                    onChange={(val) => setFirstName(String(val))}
-                    onModal={true}
-                  />
-
-                  <Input
-                    id="lastName"
-                    label={"Efternamn"}
-                    value={lastName}
-                    onChange={(val) => setLastName(String(val))}
-                    onModal={true}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-main)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                  Behörigheter och status
-                </h3>
-                <hr className="w-full text-[var(--border-main)]" />
-              </div>
-
-              <div className="mb-8 flex justify-between gap-4">
-                <div className="flex w-[calc(50%-0.375rem)] min-w-36">
-                  <MultiDropdown
-                    label="Behörigheter"
-                    options={[
-                      { label: "Admin", value: "Admin" },
-                      { label: "Developer", value: "Developer" },
-                    ]}
-                    value={newUserRoles}
-                    onChange={setNewUserRoles}
-                    onModal={true}
-                    required
-                  />
+                  {props.userId !== null ? (
+                    <Input
+                      id="password"
+                      label={"Lösenord"}
+                      value={password}
+                      placeholder="*********"
+                      onChange={(val) => setPassword(String(val))}
+                      onModal={true}
+                    />
+                  ) : (
+                    <Input
+                      id="password"
+                      label={"Lösenord"}
+                      value={password}
+                      onChange={(val) => setPassword(String(val))}
+                      onModal={true}
+                      required
+                    />
+                  )}
                 </div>
 
-                <div className="flex items-center gap-2 truncate">
+                <div className="mt-8 flex items-center gap-2">
+                  <hr className="w-12 text-[var(--border-main)]" />
+                  <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    Användardetaljer
+                  </h3>
+                  <hr className="w-full text-[var(--border-main)]" />
+                </div>
+
+                <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+                  <Input
+                    id="email"
+                    label={"Mejladress"}
+                    value={email}
+                    onChange={(val) => setEmail(String(val))}
+                    onModal={true}
+                  />
+
+                  <div className="flex w-full gap-6 sm:gap-4">
+                    <Input
+                      id="firstName"
+                      label={"Förnamn"}
+                      value={firstName}
+                      onChange={(val) => setFirstName(String(val))}
+                      onModal={true}
+                    />
+
+                    <Input
+                      id="lastName"
+                      label={"Efternamn"}
+                      value={lastName}
+                      onChange={(val) => setLastName(String(val))}
+                      onModal={true}
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-8 flex items-center gap-2">
+                  <hr className="w-12 text-[var(--border-main)]" />
+                  <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    Behörigheter och status
+                  </h3>
+                  <hr className="w-full text-[var(--border-main)]" />
+                </div>
+
+                <div className="mb-8 flex justify-between gap-4">
+                  <div className="flex w-[calc(50%-0.375rem)] min-w-36">
+                    <MultiDropdown
+                      label="Behörigheter"
+                      options={[
+                        { label: "Admin", value: "Admin" },
+                        { label: "Developer", value: "Developer" },
+                      ]}
+                      value={newUserRoles}
+                      onChange={setNewUserRoles}
+                      onModal={true}
+                      required
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 truncate">
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isLocked}
+                      className={switchClass(isLocked)}
+                      onClick={() => setIsLocked((prev) => !prev)}
+                    >
+                      <div className={switchKnobClass(isLocked)} />
+                    </button>
+                    <span className="mb-0.5">Lås konto</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-between gap-4">
                   <button
                     type="button"
-                    role="switch"
-                    aria-checked={isLocked}
-                    className={switchClass(isLocked)}
-                    onClick={() => setIsLocked((prev) => !prev)}
+                    onClick={props.onClose}
+                    className={`${buttonSecondaryClass} grow`}
                   >
-                    <div className={switchKnobClass(isLocked)} />
+                    Ångra
                   </button>
-                  <span className="mb-0.5">Lås konto</span>
+                  <button
+                    type="button"
+                    onClick={handleSaveClick}
+                    className={`${buttonPrimaryClass} grow-2`}
+                  >
+                    {props.userId ? "Uppdatera" : "Lägg till"}
+                  </button>
                 </div>
-              </div>
-
-              <div className="flex justify-between gap-4">
-                <button
-                  type="button"
-                  onClick={props.onClose}
-                  className={`${buttonSecondaryClass} grow`}
-                >
-                  Ångra
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveClick}
-                  className={`${buttonPrimaryClass} grow-2`}
-                >
-                  {props.userId ? "Uppdatera" : "Lägg till"}
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </FocusTrap>
         </div>
       )}

@@ -6,17 +6,20 @@ type Props = {
 };
 
 const PortalWrapper = (props: Props) => {
-  const [mounted, setMounted] = useState(false);
+  const [portalElement, setPortalElement] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    const element = document.getElementById("portal-root");
+    if (element) {
+      setPortalElement(element);
+    }
   }, []);
 
-  if (!mounted) {
+  if (!portalElement) {
     return null;
   }
 
-  return createPortal(props.children, document.body);
+  return createPortal(props.children, portalElement);
 };
 
 export default PortalWrapper;

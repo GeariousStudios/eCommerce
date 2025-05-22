@@ -49,7 +49,7 @@ const MultiDropdown = ({
         const rect = wrapperRef.current.getBoundingClientRect();
         dropdownRef.current.style.top = `${rect.bottom}px`;
         dropdownRef.current.style.left = `${rect.left}px`;
-        dropdownRef.current.style.width = `${rect.width-16}px`;
+        dropdownRef.current.style.width = `${rect.width - 16}px`;
       }
 
       animationFrameId = requestAnimationFrame(update);
@@ -84,6 +84,14 @@ const MultiDropdown = ({
       document.removeEventListener("touchstart", close);
     };
   }, []);
+
+  useEffect(() => {
+    if (isOpen && optionRefs.current[0]) {
+      setTimeout(() => {
+        optionRefs.current[0]?.focus();
+      }, 0);
+    }
+  }, [isOpen]);
 
   const selectedLabels = options
     .filter((opt) => value.includes(opt.value))
@@ -136,7 +144,7 @@ const MultiDropdown = ({
             dropdownRef.current = el;
             portalContentRef.current = el;
           }}
-          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} fixed ml-2 z-[var(--z-tooltip)] list-none rounded-b border-1 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} fixed z-[var(--z-tooltip)] ml-2 list-none rounded-b border-1 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
           role="listbox"
           inert={!isOpen || undefined}
         >
@@ -170,8 +178,14 @@ const MultiDropdown = ({
                   e.preventDefault();
                   const dir = e.shiftKey ? -1 : 1;
                   const total = options.length;
-                  const nextIndex = (index + dir + total) % total;
-                  optionRefs.current[nextIndex]?.focus();
+                  const nextIndex = index + dir;
+
+                  if (nextIndex < 0 || nextIndex >= total) {
+                    setIsOpen(false);
+                  } else {
+                    e.preventDefault();
+                    optionRefs.current[nextIndex]?.focus();
+                  }
                 } else if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   let newValue: string[];
