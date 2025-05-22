@@ -439,11 +439,20 @@ const UsersClient = (props: Props) => {
   // --- ITEM SELECTION ---
   const visibleContentIds = items.map((item) => item.id);
 
+  const selectableIds = items
+    .filter((item) => !item.roles.includes("Master"))
+    .map((item) => item.id);
+
   const allSelected =
-    visibleContentIds.length > 0 &&
-    visibleContentIds.every((id) => selectedItems.includes(id));
+    selectableIds.length > 0 &&
+    selectableIds.every((id) => selectedItems.includes(id));
 
   const selectUser = (itemId: number) => {
+    const item = items.find((u) => u.id === itemId);
+    if (!item || item.roles.includes("Master")) {
+      return;
+    }
+
     if (selectedItems.includes(itemId)) {
       setSelectedItems(selectedItems.filter((id) => id !== itemId));
     } else {
@@ -454,10 +463,10 @@ const UsersClient = (props: Props) => {
   const selectAll = () => {
     if (allSelected) {
       setSelectedItems(
-        selectedItems.filter((id) => !visibleContentIds.includes(id)),
+        selectedItems.filter((id) => !selectableIds.includes(id)),
       );
     } else {
-      setSelectedItems([...new Set([...selectedItems, ...visibleContentIds])]);
+      setSelectedItems([...new Set([...selectedItems, ...selectableIds])]);
     }
   };
 
@@ -1071,7 +1080,7 @@ const UsersClient = (props: Props) => {
                       return (
                         <tr key={item.id} className={rowClass}>
                           <td
-                            className={`${tdClass} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0 transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
+                            className={`${tdClass} ${item.roles.includes("Master") ? "pointer-events-none" : ""} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0 transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
                             onClick={() => selectUser(item.id)}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
@@ -1085,6 +1094,11 @@ const UsersClient = (props: Props) => {
                                 <Input
                                   type="checkbox"
                                   checked={selectedItems.includes(item.id)}
+                                  id={
+                                    item.roles.includes("Master")
+                                      ? "disabled"
+                                      : ""
+                                  }
                                   readOnly
                                 />
                               </div>

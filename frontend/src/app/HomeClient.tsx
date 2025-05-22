@@ -220,7 +220,6 @@ const HomeClient = (props: Props) => {
                     onChange={(val) => setUsername(String(val))}
                     required
                   />
-
                   <Input
                     id="password"
                     type="password"
@@ -247,6 +246,10 @@ const HomeClient = (props: Props) => {
                       Glömt ditt lösenord?
                     </Link> */}
                   </span>
+                  <div className="flex flex-col">
+                    <span>Användarnamn: master</span>
+                    <span>Lösenord: master</span>
+                  </div>
                 </form>
               ) : (
                 <Message icon="server" content="server" />

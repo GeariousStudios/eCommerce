@@ -11,8 +11,8 @@ using backend.Data;
 namespace eCommerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250519135713_DataAnnotationsAdded")]
-    partial class DataAnnotationsAdded
+    [Migration("20250522204701_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -69,6 +69,10 @@ namespace eCommerce.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsLocked")
                         .HasColumnType("INTEGER");
 
@@ -78,7 +82,7 @@ namespace eCommerce.Migrations
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

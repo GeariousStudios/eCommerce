@@ -1,12 +1,20 @@
 "use client";
 
 import {
-  UserIcon as OutlineUserIcon,
+  UserCircleIcon as OutlineUserCircleIcon,
   HomeIcon as OutlineHomeIcon,
+  InboxStackIcon as OutlineInboxStackIcon,
+  ArrowTrendingUpIcon as OutlineArrowTrendingUpIcon,
+  UsersIcon as OutlineUsersIcon,
+  TagIcon as OutlineTagIcon,
 } from "@heroicons/react/24/outline";
 import {
-  UserIcon as SolidUserIcon,
+  UserCircleIcon as SolidUserCircleIcon,
   HomeIcon as SolidHomeIcon,
+  InboxStackIcon as SolidInboxStackIcon,
+  ArrowTrendingUpIcon as SolidArrowTrendingUpIcon,
+  UsersIcon as SolidUsersIcon,
+  TagIcon as SolidTagIcon,
 } from "@heroicons/react/24/solid";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
@@ -15,6 +23,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import Message from "../message/Message";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
+import CustomTooltip from "../customTooltip/CustomTooltip";
 
 type Props = {
   hasScrollbar: boolean;
@@ -27,7 +36,7 @@ const Navbar = (props: Props) => {
   const innerRef = useRef<HTMLDivElement>(null);
 
   // --- Other ---
-  const { isAuthReady, isDev } = useAuthStatus();
+  const { isAuthReady, isDev, isAdmin } = useAuthStatus();
   const { currentTheme } = useTheme();
   const prefix = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -107,8 +116,8 @@ const Navbar = (props: Props) => {
                     </span>
                     <NavbarSubmenu
                       label="Användare"
-                      icon={OutlineUserIcon}
-                      iconHover={SolidUserIcon}
+                      icon={OutlineUserCircleIcon}
+                      iconHover={SolidUserCircleIcon}
                       menus={[
                         {
                           label: "För utvecklare",
@@ -137,9 +146,54 @@ const Navbar = (props: Props) => {
                   icon={OutlineHomeIcon}
                   iconHover={SolidHomeIcon}
                 />
+
+                {isAdmin && (
+                  <div>
+                    <NavbarLink
+                      tooltip="Ej implementerad!"
+                      disabled
+                      href="#"
+                      label="Beställningar"
+                      icon={OutlineInboxStackIcon}
+                      iconHover={SolidInboxStackIcon}
+                    />
+
+                    <NavbarLink
+                      tooltip="Ej implementerad!"
+                      disabled
+                      href="#"
+                      label="Försäljningsstatistik"
+                      icon={OutlineArrowTrendingUpIcon}
+                      iconHover={SolidArrowTrendingUpIcon}
+                    />
+
+                    <hr className="mt-4 mb-4 rounded-full text-[var(--border-main)] md:mb-8" />
+
+                    <span className="hidden pb-1 text-xs font-semibold whitespace-nowrap uppercase md:flex">
+                      LÖPANDE
+                    </span>
+                    <NavbarLink
+                      tooltip="Ej implementerad!"
+                      disabled
+                      href="#"
+                      label="Kunder"
+                      icon={OutlineUsersIcon}
+                      iconHover={SolidUsersIcon}
+                    />
+
+                    <NavbarLink
+                      tooltip="Ej implementerad!"
+                      disabled
+                      href="#"
+                      label="Produkter"
+                      icon={OutlineTagIcon}
+                      iconHover={SolidTagIcon}
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="mb-3" />
+              <div className="mb-4" />
             </div>
           )}
         </div>

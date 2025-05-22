@@ -8,6 +8,7 @@ namespace backend.Models
         None = 0,
         Admin = 1,
         Developer = 2,
+        Master = 4,
     }
 
     public class User
