@@ -119,7 +119,7 @@ const Topbar = (props: Props) => {
               />
             </span>
             <span className="inline md:hidden">
-              <Message icon="loading" fullscreen />
+              <Message icon="loading" fullscreen withinContainer />
             </span>
           </div>
         ) : (

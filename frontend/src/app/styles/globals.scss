@@ -15,7 +15,7 @@
 input:focus ~ label,
 input[type="date"]:valid ~ label,
 input:not([type="date"]):not(:placeholder-shown) ~ label,
-// input[placeholder]:not([placeholder=" "]) ~ label,
+input.placeholder ~ label,
 input:-webkit-autofill ~ label {
   color: var(--accent-color);
   top: 0;

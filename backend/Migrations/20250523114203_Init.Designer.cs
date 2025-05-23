@@ -11,7 +11,7 @@ using backend.Data;
 namespace eCommerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250522204701_Init")]
+    [Migration("20250523114203_Init")]
     partial class Init
     {
         /// <inheritdoc />

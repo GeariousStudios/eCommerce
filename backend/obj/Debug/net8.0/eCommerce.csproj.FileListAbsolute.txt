@@ -324,12 +324,6 @@ C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\
 C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets.development.json
 C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets\msbuild.eCommerce.Microsoft.AspNetCore.StaticWebAssets.props
-C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets\msbuild.eCommerce.Microsoft.AspNetCore.StaticWebAssetEndpoints.props
-C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets\msbuild.build.eCommerce.props
-C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.eCommerce.props
-C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.eCommerce.props
-C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets.pack.json
 C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\eCommerce.csproj.Up2Date
 C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\eCommerce.dll
 C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\refint\eCommerce.dll
@@ -388,3 +382,4 @@ D:\repos\eCommerce\backend\bin\Debug\net8.0\runtimes\win-arm\native\e_sqlite3.dl
 D:\repos\eCommerce\backend\bin\Debug\net8.0\runtimes\win-arm64\native\e_sqlite3.dll
 D:\repos\eCommerce\backend\bin\Debug\net8.0\runtimes\win-x64\native\e_sqlite3.dll
 D:\repos\eCommerce\backend\bin\Debug\net8.0\runtimes\win-x86\native\e_sqlite3.dll
+C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets.build.json.cache

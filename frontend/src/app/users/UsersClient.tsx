@@ -1150,6 +1150,7 @@ const UsersClient = (props: Props) => {
           <div className="flex flex-wrap items-center gap-2">
             <span className="">Antal per sida:</span>
             <div className="3xs:min-w-20">
+              <div id="portal-root" />
               <SingleDropdown
                 options={[
                   { label: "5", value: "5" },

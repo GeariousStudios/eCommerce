@@ -78,7 +78,7 @@ const Input = ({
           }
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
+          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
           readOnly={readOnly}
         />
         {icon && (
