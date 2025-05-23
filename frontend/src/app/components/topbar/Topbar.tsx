@@ -24,6 +24,7 @@ import Message from "../message/Message";
 import MenuDropdown from "../dropdowns/MenuDropdown";
 import TopbarLink from "./TopbarLink";
 import useTheme from "@/app/hooks/useTheme";
+import SettingsModal from "../modals/SettingsModal";
 
 type Props = {
   hasScrollbar: boolean;
@@ -36,6 +37,7 @@ const Topbar = (props: Props) => {
   const bellIconRef = useRef<HTMLButtonElement>(null);
 
   // --- States ---
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [userIconClicked, setUserIconClicked] = useState(false);
@@ -103,6 +105,12 @@ const Topbar = (props: Props) => {
 
   return (
     <>
+      {/* --- MODAL(S) --- */}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+      />
+
       <div
         inert={!isVisible}
         className={`${isVisible ? "translate-y-0" : "-translate-y-full"} ${props.hasScrollbar ? "max-w-[calc(100%-5.5rem)] md:max-w-[calc(100%-17.75rem)]" : "max-w-[calc(100%-4.75rem)] md:max-w-[calc(100%-16rem)]"} transition-transforn fixed top-0 right-0 z-[calc(var(--z-overlay)-2)] flex h-18 w-full border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] p-4 duration-[var(--slow)]`}
@@ -225,7 +233,10 @@ const Topbar = (props: Props) => {
                     />
                     {isLoggedIn && (
                       <TopbarLink
-                        onClick={() => notify("error", "Ej implementerat!")}
+                        onClick={() => {
+                          closeAllMenus();
+                          setIsSettingsModalOpen(true);
+                        }}
                         label="Inställningar"
                         icon={OutlineCog6ToothIcon}
                         iconHover={SolidCog6ToothIcon}
