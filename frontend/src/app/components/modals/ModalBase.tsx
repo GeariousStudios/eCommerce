@@ -51,30 +51,35 @@ const ModalBase = (props: Props) => {
             }}
           >
             <div className="relative top-1/2">
+              <div id="portal-root" />
               <div
                 ref={innerRef}
                 role="dialog"
                 aria-hidden={!props.isOpen}
-                className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} relative left-1/2 z-[calc(var(--z-modal))] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+                className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-3xl -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
               >
-                {!props.disableCloseButton && (
-                  <div className="relative flex items-center justify-between">
-                    <div className="flex gap-4">
-                      {Icon && <Icon className="h-8 w-8 text-[var(--accent-color)]" />}
-                      <span className="text-2xl font-semibold">
-                        {props.label}
-                      </span>
+                <div className="flex max-h-[90svh] flex-col gap-12 overflow-x-hidden overflow-y-auto p-4">
+                  {!props.disableCloseButton && (
+                    <div className="relative flex items-center justify-between">
+                      <div className="flex gap-4">
+                        {Icon && (
+                          <Icon className="h-8 w-8 text-[var(--accent-color)]" />
+                        )}
+                        <span className="text-2xl font-semibold">
+                          {props.label}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => props.onClose()}
+                        className="h-[32px] w-[32px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
+                      >
+                        <XMarkIcon />
+                      </button>
+                      <hr className="absolute mt-16 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
                     </div>
-                    <button
-                      onClick={() => props.onClose()}
-                      className="h-[32px] w-[32px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
-                    >
-                      <XMarkIcon />
-                    </button>
-                    <hr className="absolute mt-16 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
-                  </div>
-                )}
-                {props.children}
+                  )}
+                  {props.children}
+                </div>
               </div>
             </div>
           </FocusTrap>

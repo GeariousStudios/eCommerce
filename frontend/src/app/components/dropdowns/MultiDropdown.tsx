@@ -144,7 +144,7 @@ const MultiDropdown = ({
             dropdownRef.current = el;
             portalContentRef.current = el;
           }}
-          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} fixed z-[var(--z-tooltip)] ml-2 list-none rounded-b border-1 border-t-0 border-[var(--border-main)] bg-[var(--bg-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} fixed z-[var(--z-tooltip)] ml-2 list-none rounded-b border-1 border-t-0 border-[var(--border-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
           role="listbox"
           inert={!isOpen || undefined}
         >

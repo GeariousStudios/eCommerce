@@ -51,7 +51,7 @@
   --bg-topbar-link: #5a5a5a;
 
   /* --- MODAL --- */
-  --bg-modal: var(--bg-main);
+  --bg-modal: var(--bg-topbar);
 
   /* --- GRID --- */
   --bg-grid: #121212;
@@ -114,7 +114,7 @@
   --bg-topbar-link: #f0f0f0;
 
   /* --- MODAL --- */
-  --bg-modal: var(--bg-main);
+  --bg-modal: var(--bg-topbar);
 
   /* --- GRID --- */
   --bg-grid: #fafafa;

@@ -13,6 +13,7 @@ import {
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
 import { useToast } from "../toast/ToastProvider";
+import ModalBase from "./ModalBase";
 
 type Props = {
   isOpen: boolean;
@@ -180,90 +181,75 @@ const NewsModal = (props: Props) => {
       )}
 
       {props.isOpen && (
-        <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
-          <FocusTrap
-            focusTrapOptions={{
-              initialFocus: false,
-              allowOutsideClick: true,
-              escapeDeactivates: false,
-            }}
+        <ModalBase
+          isOpen={props.isOpen}
+          onClose={() => props.onClose()}
+          icon={props.newsId ? PencilSquareIcon : PlusIcon}
+          label={props.newsId ? "Redigera nyhet" : "Lägg till nyhet"}
+        >
+          <form
+            ref={formRef}
+            className="relative flex flex-col gap-8"
+            onSubmit={(e) =>
+              props.newsId ? updateNews(e, props.newsId) : addNews(e)
+            }
           >
-            <div className="relative top-1/2">
-              <div id="portal-root" />
-              <form
-                ref={formRef}
-                className="relative left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-8 overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
-                onSubmit={(e) =>
-                  props.newsId ? updateNews(e, props.newsId) : addNews(e)
-                }
+            <Input
+              id="date"
+              type="date"
+              label={"Datum"}
+              value={date}
+              onChange={(val) => setDate(String(val))}
+              onModal
+              required
+            />
+
+            <SingleDropdown
+              label="Nyhetstyp"
+              value={type}
+              onChange={setType}
+              options={[
+                { value: "Release", label: "Release" },
+                { value: "Hotfix", label: "Hotfix" },
+              ]}
+              onModal
+              required
+            />
+
+            <Input
+              id="headline"
+              label={"Rubrik"}
+              value={headline}
+              onChange={(val) => setHeadline(String(val))}
+              onModal
+              required
+            />
+
+            <RichTextEditor
+              ref={editorRef}
+              value={content}
+              name="content"
+              required
+            />
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+              <button
+                type="button"
+                onClick={handleSaveClick}
+                className={`${buttonPrimaryClass} w-full sm:w-auto grow-2`}
               >
-                <h2 className="mb-4 flex items-center text-2xl font-semibold">
-                  <span className="mr-2 h-6 w-6 text-[var(--accent-color)]">
-                    {props.newsId ? <PencilSquareIcon /> : <PlusIcon />}
-                  </span>
-                  <span>
-                    {props.newsId ? "Redigera nyhet" : "Lägg till nyhet"}
-                  </span>
-                </h2>
-
-                <Input
-                  id="date"
-                  type="date"
-                  label={"Datum"}
-                  value={date}
-                  onChange={(val) => setDate(String(val))}
-                  onModal={true}
-                  required
-                />
-
-                <SingleDropdown
-                  label="Nyhetstyp"
-                  value={type}
-                  onChange={setType}
-                  options={[
-                    { value: "Release", label: "Release" },
-                    { value: "Hotfix", label: "Hotfix" },
-                  ]}
-                  onModal={true}
-                  required
-                />
-
-                <Input
-                  id="headline"
-                  label={"Rubrik"}
-                  value={headline}
-                  onChange={(val) => setHeadline(String(val))}
-                  onModal={true}
-                  required
-                />
-
-                <RichTextEditor
-                  ref={editorRef}
-                  value={content}
-                  name="content"
-                  required
-                />
-
-                <div className="flex justify-between gap-4">
-                  <button
-                    type="button"
-                    onClick={props.onClose}
-                    className={`${buttonSecondaryClass} grow`}
-                  >
-                    Ångra
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveClick}
-                    className={`${buttonPrimaryClass} grow-2`}
-                  >
-                    {props.newsId ? "Uppdatera" : "Lägg till"}
-                  </button>
-                </div>
-              </form>
+                {props.newsId ? "Uppdatera" : "Lägg till"}
+              </button>
+              <button
+                type="button"
+                onClick={props.onClose}
+                className={`${buttonSecondaryClass} w-full sm:w-auto grow`}
+              >
+                Ångra
+              </button>
             </div>
-          </FocusTrap>
-        </div>
+          </form>
+        </ModalBase>
       )}
     </>
   );
