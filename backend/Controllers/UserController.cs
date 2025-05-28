@@ -198,5 +198,71 @@ namespace backend.Controllers
                 await _context.SaveChangesAsync();
             }
         }
+
+        [HttpPut("update-profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                return BadRequest(new { message = "Valideringsfel", errors });
+            }
+
+            var username = User.Identity?.Name;
+            if (username == null)
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null)
+            {
+                return NotFound(new { message = "Användaren kunde inte hittas" });
+            }
+
+            // Username.
+            if (!string.IsNullOrWhiteSpace(dto.Username) && dto.Username != user.Username)
+            {
+                var existingUser = await _context.Users.FirstOrDefaultAsync(u =>
+                    u.Username.ToLower() == dto.Username.ToLower()
+                );
+
+                if (existingUser != null)
+                {
+                    return BadRequest(new { message = "Användarnamnet är upptaget" });
+                }
+
+                user.Username = dto.Username;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                user.Password = dto.Password;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.FirstName))
+            {
+                user.FirstName = dto.FirstName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.LastName))
+            {
+                user.LastName = dto.LastName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                user.Email = dto.Email;
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Profil uppdaterad!" });
+        }
     }
 }

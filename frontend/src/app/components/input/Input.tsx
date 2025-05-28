@@ -1,4 +1,5 @@
-import React, { ReactNode, useEffect, useRef } from "react";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import React, { ReactNode, useEffect, useRef, useState } from "react";
 
 type InputProps = {
   id?: string;
@@ -48,6 +49,8 @@ const Input = ({
   const isDate = type === "date";
   const isDisabled = id === "disabled";
 
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <>
       <div
@@ -60,7 +63,7 @@ const Input = ({
               inputRef.current = el;
             }
           }}
-          type={type}
+          type={type === "password" && showPassword ? "text" : type}
           id={id}
           name={id}
           placeholder={
@@ -82,10 +85,28 @@ const Input = ({
           readOnly={readOnly}
         />
         {icon && (
-          <div className="pointer-events-none absolute top-1/2 left-4 h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
+          <div className="pointer-events-none absolute top-1/2 left-4 flex h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
             {icon}
           </div>
         )}
+
+        {type === "password" && (
+          <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center bg-[var(--bg-modal)] pl-2">
+            <button
+              type="button"
+              tabIndex={-1}
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="flex cursor-pointer transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+            >
+              {showPassword ? (
+                <EyeSlashIcon className="h-4 w-4" />
+              ) : (
+                <EyeIcon className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+        )}
+
         {label?.trim() &&
           (!isCheckbox && !isRadio ? (
             <label
@@ -98,7 +119,7 @@ const Input = ({
           ) : (
             <label
               htmlFor={id}
-              className={`${readOnly ? "!pointer-events-none" : ""} ${isDisabled ? "opacity-25" : "opacity-100"} "cursor-pointer"`}
+              className={`${readOnly ? "!pointer-events-none" : ""} ${isDisabled ? "opacity-25" : "opacity-100"} cursor-pointer`}
             >
               <input
                 type={type}

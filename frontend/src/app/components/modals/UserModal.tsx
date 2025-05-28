@@ -277,15 +277,17 @@ const UserModal = (props: Props) => {
 
               {props.userId !== null ? (
                 <Input
+                  type="password"
                   id="password"
                   label={"Lösenord"}
                   value={password}
-                  placeholder="*********"
+                  placeholder="•••••••••"
                   onChange={(val) => setPassword(String(val))}
                   onModal={true}
                 />
               ) : (
                 <Input
+                  type="password"
                   id="password"
                   label={"Lösenord"}
                   value={password}

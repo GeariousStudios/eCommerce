@@ -10,6 +10,7 @@ type Props = {
   icon?: ElementType;
   disableClickOutside?: boolean;
   disableCloseButton?: boolean;
+  smallGap?: boolean;
 };
 
 const ModalBase = (props: Props) => {
@@ -19,12 +20,14 @@ const ModalBase = (props: Props) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       const menuElement = innerRef.current;
-      const target = event.target as Node;
+      const target = event.target;
 
       if (
         !props.disableClickOutside &&
         menuElement &&
-        !menuElement.contains(target)
+        !menuElement.contains(target as Node) &&
+        target instanceof Element &&
+        !target.closest('[data-inside-modal="true"]')
       ) {
         props.onClose();
       }
@@ -58,7 +61,9 @@ const ModalBase = (props: Props) => {
                 aria-hidden={!props.isOpen}
                 className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-3xl -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
               >
-                <div className="flex max-h-[90svh] flex-col gap-12 overflow-x-hidden overflow-y-auto p-4">
+                <div
+                  className={`${props.smallGap ? "gap-8" : "gap-12"} flex max-h-[90svh] flex-col overflow-x-hidden overflow-y-auto p-4`}
+                >
                   {!props.disableCloseButton && (
                     <div className="relative flex items-center justify-between">
                       <div className="flex gap-4">

@@ -52,6 +52,7 @@
 
   /* --- MODAL --- */
   --bg-modal: var(--bg-topbar);
+  --bg-modal-link: var(--bg-topbar-link);
 
   /* --- GRID --- */
   --bg-grid: #121212;
@@ -115,6 +116,7 @@
 
   /* --- MODAL --- */
   --bg-modal: var(--bg-topbar);
+  --bg-modal-link: var(--bg-topbar-link);
 
   /* --- GRID --- */
   --bg-grid: #fafafa;

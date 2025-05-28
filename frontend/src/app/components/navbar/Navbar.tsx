@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  UserCircleIcon as OutlineUserCircleIcon,
+  UserGroupIcon as OutlineUserGroupIcon,
   HomeIcon as OutlineHomeIcon,
   InboxStackIcon as OutlineInboxStackIcon,
   ArrowTrendingUpIcon as OutlineArrowTrendingUpIcon,
@@ -9,7 +9,7 @@ import {
   TagIcon as OutlineTagIcon,
 } from "@heroicons/react/24/outline";
 import {
-  UserCircleIcon as SolidUserCircleIcon,
+  UserGroupIcon as SolidUserGroupIcon,
   HomeIcon as SolidHomeIcon,
   InboxStackIcon as SolidInboxStackIcon,
   ArrowTrendingUpIcon as SolidArrowTrendingUpIcon,
@@ -116,8 +116,8 @@ const Navbar = (props: Props) => {
                     </span>
                     <NavbarSubmenu
                       label="Användare"
-                      icon={OutlineUserCircleIcon}
-                      iconHover={SolidUserCircleIcon}
+                      icon={OutlineUserGroupIcon}
+                      iconHover={SolidUserGroupIcon}
                       menus={[
                         {
                           label: "För utvecklare",
@@ -150,7 +150,7 @@ const Navbar = (props: Props) => {
                 {isAdmin && (
                   <div>
                     <NavbarLink
-                      tooltip="Ej implementerad!"
+                      tooltip="Ej implementerat!"
                       disabled
                       href="#"
                       label="Beställningar"
@@ -159,7 +159,7 @@ const Navbar = (props: Props) => {
                     />
 
                     <NavbarLink
-                      tooltip="Ej implementerad!"
+                      tooltip="Ej implementerat!"
                       disabled
                       href="#"
                       label="Försäljningsstatistik"
@@ -173,7 +173,7 @@ const Navbar = (props: Props) => {
                       LÖPANDE
                     </span>
                     <NavbarLink
-                      tooltip="Ej implementerad!"
+                      tooltip="Ej implementerat!"
                       disabled
                       href="#"
                       label="Kunder"
@@ -182,7 +182,7 @@ const Navbar = (props: Props) => {
                     />
 
                     <NavbarLink
-                      tooltip="Ej implementerad!"
+                      tooltip="Ej implementerat!"
                       disabled
                       href="#"
                       label="Produkter"

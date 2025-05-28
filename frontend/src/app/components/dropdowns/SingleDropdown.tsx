@@ -137,6 +137,7 @@ const SingleDropdown = ({
 
       <PortalWrapper>
         <ul
+          data-inside-modal="true"
           ref={(el) => {
             dropdownRef.current = el;
             portalContentRef.current = el;
