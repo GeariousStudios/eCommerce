@@ -120,7 +120,7 @@ const Topbar = (props: Props) => {
 
       <div
         inert={!isVisible}
-        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} ${props.hasScrollbar ? "max-w-[calc(100%-5.5rem)] md:max-w-[calc(100%-17.75rem)]" : "max-w-[calc(100%-4.75rem)] md:max-w-[calc(100%-16rem)]"} transition-transforn fixed top-0 right-0 z-[calc(var(--z-overlay)-2)] flex h-18 w-full border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] p-4 duration-[var(--slow)]`}
+        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} ${props.hasScrollbar ? "max-w-[calc(100%-5.5rem)] md:max-w-[calc(100%-16.75rem)]" : "max-w-[calc(100%-4.75rem)] md:max-w-[calc(100%-16rem)]"} transition-transforn fixed top-0 right-0 z-[calc(var(--z-overlay)-2)] flex h-18 w-full border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] p-4 duration-[var(--slow)]`}
       >
         {!isAuthReady ? (
           <div className="inline">
