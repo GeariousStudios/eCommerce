@@ -206,7 +206,7 @@ const HomeClient = (props: Props) => {
               <span className="font-semibold">Logga in</span>
             </div>
             {/* --- Login content --- */}
-            <div className="flex max-h-96 min-h-96 items-center justify-center rounded-b border-1 border-t-0 border-[var(--border-main)] p-4">
+            <div className="flex max-h-144 min-h-144 items-center justify-center rounded-b border-1 border-t-0 border-[var(--border-main)] p-4">
               {/* --- Login form --- */}
               {props.isConnected ? (
                 <form
@@ -280,7 +280,7 @@ const HomeClient = (props: Props) => {
           </div>
 
           {/* --- News content --- */}
-          <div className="flex max-h-96 min-h-96 flex-col overflow-y-auto rounded-b border-1 border-t-0 border-[var(--border-main)] p-2">
+          <div className="flex max-h-144 min-h-144 flex-col overflow-y-auto rounded-b border-1 border-t-0 border-[var(--border-main)] p-2">
             {!props.isAuthReady ? (
               ""
             ) : isLoadingNews ? (

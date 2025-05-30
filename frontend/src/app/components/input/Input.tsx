@@ -15,6 +15,7 @@ type InputProps = {
   spellCheck?: boolean;
   onModal?: boolean;
   readOnly?: boolean;
+  autoComplete?: string;
 };
 
 const isDarkTheme = () => {
@@ -41,6 +42,7 @@ const Input = ({
   spellCheck = false,
   onModal = false,
   readOnly = false,
+  autoComplete = "on",
 }: InputProps & { icon?: ReactNode }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -81,8 +83,9 @@ const Input = ({
           }
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
+          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
           readOnly={readOnly}
+          autoComplete={autoComplete}
         />
         {icon && (
           <div className="pointer-events-none absolute top-1/2 left-4 flex h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
@@ -91,7 +94,7 @@ const Input = ({
         )}
 
         {type === "password" && (
-          <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center bg-[var(--bg-modal)] pl-2">
+          <div className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center pl-2">
             <button
               type="button"
               tabIndex={-1}

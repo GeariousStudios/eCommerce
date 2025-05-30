@@ -47,8 +47,14 @@ const Topbar = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
   const { notify } = useToast();
-  const { username, firstName, lastName, isLoggedIn, isAuthReady } =
-    useAuthStatus();
+  const {
+    username,
+    firstName,
+    lastName,
+    isLoggedIn,
+    isAuthReady,
+    fetchAuthData,
+  } = useAuthStatus();
   const { toggleTheme, currentTheme } = useTheme();
 
   // --- HIDE TOPBAR ON SCROLL ---
@@ -109,6 +115,7 @@ const Topbar = (props: Props) => {
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
+        onProfileUpdated={fetchAuthData}
       />
 
       <div

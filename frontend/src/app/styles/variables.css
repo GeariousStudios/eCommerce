@@ -61,8 +61,8 @@
   --bg-grid-header-hover: #3a3a3a;
 
   /* --- TOOLTIP --- */
-  --bg-tooltip: #5a5a5a;
-  --text-tooltip: var(--text-main);
+  --bg-tooltip: var(--note-info);
+  --text-tooltip: var(--text-main-reverse);
 
   /* --- BUTTONS --- */
   --button-primary: var(--accent-color);
@@ -125,8 +125,8 @@
   --bg-grid-header-hover: #d6d6d6;
 
   /* --- TOOLTIP --- */
-  --bg-tooltip: #d9d9d9;
-  --text-tooltip: var(--text-main);
+  --bg-tooltip: var(--note-info);
+  --text-tooltip: var(--text-main-reverse);
 
   /* --- BUTTONS --- */
   --button-primary: var(--accent-color);

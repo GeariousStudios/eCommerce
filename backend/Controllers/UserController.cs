@@ -181,6 +181,7 @@ namespace backend.Controllers
                     firstName = user.FirstName,
                     lastName = user.LastName,
                     username = user.Username,
+                    email = user.Email,
                     roles,
                 }
             );

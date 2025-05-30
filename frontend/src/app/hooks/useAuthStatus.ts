@@ -12,6 +12,7 @@ const useAuthStatus = () => {
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
   const [isConnected, setIsConnected] = useState<boolean | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
@@ -25,81 +26,83 @@ const useAuthStatus = () => {
     setUserId(null);
     setFirstName("");
     setLastName("");
+    setEmail("");
   };
 
   /* --- BACKEND --- */
-  useEffect(() => {
-    const fetchAuthData = async () => {
-      try {
-        setIsLoadingAuthStatus(true);
+  const fetchAuthData = async () => {
+    try {
+      setIsLoadingAuthStatus(true);
 
-        // --- Test API connection ---
-        const connectionResponse = await fetch(`${apiUrl}/ping`);
-        setIsConnected(connectionResponse.ok);
+      // --- Test API connection ---
+      const connectionResponse = await fetch(`${apiUrl}/ping`);
+      setIsConnected(connectionResponse.ok);
 
-        // --- Return if not connected ---
-        if (!connectionResponse.ok) {
-          setIsLoggedIn(false);
-          resetInfo();
-          return;
-        }
+      // --- Return if not connected ---
+      if (!connectionResponse.ok) {
+        setIsLoggedIn(false);
+        resetInfo();
+        return;
+      }
 
-        // --- Return if not logged in ---
-        if (!token) {
-          setIsLoggedIn(false);
-          resetInfo();
-          return;
-        }
+      // --- Return if not logged in ---
+      if (!token) {
+        setIsLoggedIn(false);
+        resetInfo();
+        return;
+      }
 
-        const loginResponse = await fetch(`${apiUrl}/user/check-login`, {
+      const loginResponse = await fetch(`${apiUrl}/user/check-login`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!loginResponse.ok) {
+        setIsLoggedIn(false);
+        resetInfo();
+        return;
+      }
+
+      const loginResult = await loginResponse.json();
+      const loggedIn = loginResult.isLoggedIn === true;
+      setIsLoggedIn(loggedIn);
+
+      // --- User info ---
+      if (loggedIn) {
+        const infoResponse = await fetch(`${apiUrl}/user/info`, {
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!loginResponse.ok) {
-          setIsLoggedIn(false);
+        if (!infoResponse.ok) {
           resetInfo();
           return;
         }
 
-        const loginResult = await loginResponse.json();
-        const loggedIn = loginResult.isLoggedIn === true;
-        setIsLoggedIn(loggedIn);
-
-        // --- User info ---
-        if (loggedIn) {
-          const infoResponse = await fetch(`${apiUrl}/user/info`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (!infoResponse.ok) {
-            resetInfo();
-            return;
-          }
-
-          const infoResult = await infoResponse.json();
-          setUserRoles(infoResult.roles);
-          setUsername(infoResult.username);
-          setUserId(infoResult.userId);
-          setFirstName(infoResult.firstName);
-          setLastName(infoResult.lastName);
-        } else {
-          resetInfo();
-        }
-      } catch (err) {
-        setIsConnected(false);
-        setIsLoggedIn(false);
+        const infoResult = await infoResponse.json();
+        setUserRoles(infoResult.roles);
+        setUsername(infoResult.username);
+        setUserId(infoResult.userId);
+        setFirstName(infoResult.firstName);
+        setLastName(infoResult.lastName);
+        setEmail(infoResult.email);
+      } else {
         resetInfo();
-      } finally {
-        setIsLoadingAuthStatus(false);
-        setIsAuthReady(true);
       }
-    };
+    } catch (err) {
+      setIsConnected(false);
+      setIsLoggedIn(false);
+      resetInfo();
+    } finally {
+      setIsLoadingAuthStatus(false);
+      setIsAuthReady(true);
+    }
+  };
 
+  useEffect(() => {
     fetchAuthData();
   }, []);
 
@@ -113,6 +116,8 @@ const useAuthStatus = () => {
     userId,
     firstName,
     lastName,
+    email,
+    fetchAuthData,
   };
 };
 

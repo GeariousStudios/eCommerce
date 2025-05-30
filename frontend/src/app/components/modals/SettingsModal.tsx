@@ -27,6 +27,7 @@ import CustomTooltip from "../customTooltip/CustomTooltip";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  onProfileUpdated?: () => void;
 };
 
 const SettingsModal = (props: Props) => {
@@ -49,7 +50,15 @@ const SettingsModal = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
   const { notify } = useToast();
-  const { username, firstName, lastName, isLoggedIn, userId } = useAuthStatus();
+  const {
+    username,
+    firstName,
+    lastName,
+    email,
+    isLoggedIn,
+    userId,
+    fetchAuthData,
+  } = useAuthStatus();
 
   /* --- BACKEND --- */
   // --- Handle logout ---
@@ -83,6 +92,18 @@ const SettingsModal = (props: Props) => {
         inputValue !== firstName
       ) {
         updatedFields.firstName = inputValue;
+      } else if (
+        editingField === "lastName" &&
+        inputValue.trim() !== "" &&
+        inputValue !== lastName
+      ) {
+        updatedFields.lastName = inputValue;
+      } else if (
+        editingField === "email" &&
+        inputValue.trim() !== "" &&
+        inputValue !== email
+      ) {
+        updatedFields.email = inputValue;
       }
 
       if (Object.keys(updatedFields).length === 0) {
@@ -142,6 +163,10 @@ const SettingsModal = (props: Props) => {
 
       notify("success", "Profil uppdaterad!", 4000);
       setEditingField(null);
+
+      if (props.onProfileUpdated) {
+        props.onProfileUpdated();
+      }
     } catch (err) {
       notify("error", String(err));
       setEditingField(null);
@@ -287,7 +312,11 @@ const SettingsModal = (props: Props) => {
                 <div className={`${itemRowClass}`}>
                   <span>Användarnamn</span>
                   <div className="flex items-center gap-4">
-                    <span className="w-48">{username}</span>
+                    <CustomTooltip side="left" content={username}>
+                      <span className="w-48 truncate overflow-x-hidden">
+                        {username}
+                      </span>
+                    </CustomTooltip>
                     <CustomTooltip content="Ej redigerbar!">
                       <button
                         className={`${iconButtonPrimaryClass} !h-6 !w-6`}
@@ -311,6 +340,7 @@ const SettingsModal = (props: Props) => {
                         value={inputValue}
                         onChange={(val) => setInputValue(val as string)}
                         type="password"
+                        autoComplete="new-password"
                       />
                       <button
                         onClick={() => updateProfile()}
@@ -336,6 +366,132 @@ const SettingsModal = (props: Props) => {
                 </div>
 
                 <hr className={`${hrClass}`} />
+
+                <div className={`${itemRowClass}`}>
+                  <span>Förnamn</span>
+
+                  {editingField === "firstName" ? (
+                    <div className="flex items-center gap-4">
+                      <Input
+                        placeholder={firstName}
+                        value={inputValue}
+                        onChange={(val) => setInputValue(val as string)}
+                      />
+                      <button
+                        onClick={() => {
+                          updateProfile();
+                          fetchAuthData();
+                        }}
+                        className={`${iconButtonPrimaryClass}`}
+                      >
+                        <CheckIcon />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <CustomTooltip side="left" content={firstName}>
+                        <span className="w-48 truncate overflow-x-hidden">
+                          {firstName}
+                        </span>
+                      </CustomTooltip>
+                      <button
+                        onClick={() => {
+                          setEditingField("firstName");
+                          setInputValue("");
+                        }}
+                        className={`${iconButtonPrimaryClass} !h-6 !w-6`}
+                      >
+                        <PencilIcon />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <hr className={`${hrClass}`} />
+
+                <div className={`${itemRowClass}`}>
+                  <span>Efternamn</span>
+
+                  {editingField === "lastName" ? (
+                    <div className="flex items-center gap-4">
+                      <Input
+                        placeholder={lastName}
+                        value={inputValue}
+                        onChange={(val) => setInputValue(val as string)}
+                      />
+                      <button
+                        onClick={() => {
+                          updateProfile();
+                          fetchAuthData();
+                        }}
+                        className={`${iconButtonPrimaryClass}`}
+                      >
+                        <CheckIcon />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <CustomTooltip side="left" content={lastName}>
+                        <span className="w-48 truncate overflow-x-hidden">
+                          {lastName}
+                        </span>
+                      </CustomTooltip>
+                      <button
+                        onClick={() => {
+                          setEditingField("lastName");
+                          setInputValue("");
+                        }}
+                        className={`${iconButtonPrimaryClass} !h-6 !w-6`}
+                      >
+                        <PencilIcon />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <hr className={`${hrClass}`} />
+
+                <div className={`${itemRowClass}`}>
+                  <span>Mejladress</span>
+
+                  {editingField === "email" ? (
+                    <div className="flex items-center gap-4">
+                      <Input
+                        placeholder={email}
+                        value={inputValue}
+                        onChange={(val) => setInputValue(val as string)}
+                        type="email"
+                        id="email"
+                      />
+                      <button
+                        onClick={() => {
+                          updateProfile();
+                          fetchAuthData();
+                        }}
+                        className={`${iconButtonPrimaryClass}`}
+                      >
+                        <CheckIcon />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <CustomTooltip side="left" content={email}>
+                        <span className="w-48 truncate overflow-x-hidden">
+                          {email}
+                        </span>
+                      </CustomTooltip>
+                      <button
+                        onClick={() => {
+                          setEditingField("email");
+                          setInputValue("");
+                        }}
+                        className={`${iconButtonPrimaryClass} !h-6 !w-6`}
+                      >
+                        <PencilIcon />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               ""

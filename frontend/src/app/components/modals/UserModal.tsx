@@ -273,6 +273,7 @@ const UserModal = (props: Props) => {
                 onChange={(val) => setUsername(String(val))}
                 onModal={true}
                 required
+                autoComplete="new-username"
               />
 
               {props.userId !== null ? (
@@ -294,6 +295,7 @@ const UserModal = (props: Props) => {
                   onChange={(val) => setPassword(String(val))}
                   onModal={true}
                   required
+                  autoComplete="new-password"
                 />
               )}
             </div>
