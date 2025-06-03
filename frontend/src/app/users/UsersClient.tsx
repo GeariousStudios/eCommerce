@@ -274,6 +274,7 @@ const UsersClient = (props: Props) => {
     Math.min(itemsPerPage, (totalItems ?? 0) - firstItemIndex),
   );
   const rowCount = Math.max(0, Math.min(itemsPerPage, visibleRowCount));
+  const totalPages = Math.max(1, Math.ceil((totalItems ?? 0) / itemsPerPage));
 
   // --- SMALL FILTER ---
   // --- Variables ---
@@ -287,6 +288,49 @@ const UsersClient = (props: Props) => {
   const allFilterTwoRef = useRef<HTMLDivElement>(null);
 
   const [filterAllOpen, setFilterAllOpen] = useState(false);
+
+  // --- PAGINATION HELPGER ---
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+
+    // If less than 7 pages, show all.
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+      return pages;
+    }
+
+    // Don't show "..." before first page if page is 3 or less.
+    if (currentPage <= 3) {
+      for (let i = 1; i <= 4; i++) {
+        pages.push(i);
+      }
+      pages.push("...");
+      pages.push(totalPages);
+      // 1. Show "1 ..." if page is at least 2 below total pages.
+    } else if (currentPage >= totalPages - 2) {
+      pages.push(1);
+      pages.push("...");
+      // 2. And then show the remaining pages.
+      for (let i = totalPages - 3; i <= totalPages; i++) {
+        pages.push(i);
+      }
+      // Show "1 ... X, X, X ... X" if none of the criterias above match.
+    } else {
+      pages.push(1);
+      pages.push("...");
+
+      for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+        pages.push(i);
+      }
+
+      pages.push("...");
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
 
   // --- BACKEND ---
   // --- Fetch items ---
@@ -938,11 +982,11 @@ const UsersClient = (props: Props) => {
           )}
 
           {/* --- Showing info --- */}
-          <span className="-mb-2 flex items-end text-[var(--text-secondary)]">
+          {/* <span className="-mb-2 flex items-end text-[var(--text-secondary)]">
             Visar {(currentPage - 1) * itemsPerPage + 1}-
             {Math.min(currentPage * itemsPerPage, totalItems ?? 0)} av{" "}
             {totalItems ?? 0}
-          </span>
+          </span> */}
         </div>
 
         {/* --- TABLE --- */}
@@ -1145,9 +1189,69 @@ const UsersClient = (props: Props) => {
           </div>
         </div>
 
-        {/* --- Pagination --- */}
-        <div className="flex w-full flex-wrap justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-2">
+        {/* --- PAGINATION --- */}
+        <div className="xs:justify-between flex w-full flex-wrap gap-4">
+          {/* --- Showing info --- */}
+          <span className="flex w-32 text-[var(--text-secondary)]">
+            Visar {(currentPage - 1) * itemsPerPage + 1}-
+            {Math.min(currentPage * itemsPerPage, totalItems ?? 0)} av{" "}
+            {totalItems ?? 0}
+          </span>
+
+          {/* --- Change pages --- */}
+          <div className="xs:w-auto flex w-full items-center">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedItems([]);
+                setCurrentPage((prev) => Math.max(prev - 1, 1));
+              }}
+              disabled={currentPage === 1}
+              className={`${iconButtonPrimaryClass}`}
+            >
+              <ChevronLeftIcon className="min-h-full min-w-full" />
+            </button>
+            <div className="flex flex-wrap items-center justify-center">
+              {getPageNumbers().map((page, index) =>
+                page === "..." ? (
+                  <span key={index} className="flex px-2">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setSelectedItems([]);
+                      setCurrentPage(Number(page));
+                    }}
+                    className={`${currentPage === page ? "bg-[var(--accent-color)] text-[var(--text-main-reverse)]" : "hover:text-[var(--accent-color)]"} ${currentPage === page && page >= 100 ? "px-5" : ""} max-w-7 min-w-7 cursor-pointer rounded-full px-1 text-lg transition-colors duration-[var(--fast)] flex justify-center `}
+                  >
+                    {page}
+                  </button>
+                ),
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedItems([]);
+                setCurrentPage((prev) =>
+                  prev <
+                  Math.max(1, Math.ceil((totalItems ?? 0) / itemsPerPage))
+                    ? prev + 1
+                    : prev,
+                );
+              }}
+              disabled={
+                currentPage >= Math.ceil((totalItems ?? 0) / itemsPerPage)
+              }
+              className={`${iconButtonPrimaryClass}`}
+            >
+              <ChevronRightIcon className="min-h-full min-w-full" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
             <span className="">Antal per sida:</span>
             <div className="3xs:min-w-20">
               <div id="portal-root" />
@@ -1170,40 +1274,6 @@ const UsersClient = (props: Props) => {
                   }
                 }}
               />
-            </div>
-          </div>
-
-          <div className="gap-4">
-            <div className="-mt-2 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className={`${iconButtonPrimaryClass}`}
-              >
-                <ChevronLeftIcon className="min-h-full min-w-full" />
-              </button>
-              <span className="truncate text-[var(--text-secondary)]">
-                Sida {currentPage} av{" "}
-                {Math.max(1, Math.ceil((totalItems ?? 0) / itemsPerPage))}
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  setCurrentPage((prev) =>
-                    prev <
-                    Math.max(1, Math.ceil((totalItems ?? 0) / itemsPerPage))
-                      ? prev + 1
-                      : prev,
-                  )
-                }
-                disabled={
-                  currentPage >= Math.ceil((totalItems ?? 0) / itemsPerPage)
-                }
-                className={`${iconButtonPrimaryClass}`}
-              >
-                <ChevronRightIcon className="min-h-full min-w-full" />
-              </button>
             </div>
           </div>
         </div>
