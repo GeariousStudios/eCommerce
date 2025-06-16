@@ -7,6 +7,7 @@ import {
   ArrowTrendingUpIcon as OutlineArrowTrendingUpIcon,
   UsersIcon as OutlineUsersIcon,
   TagIcon as OutlineTagIcon,
+  RectangleGroupIcon as OutlineRectangleGroupIcon,
 } from "@heroicons/react/24/outline";
 import {
   UserGroupIcon as SolidUserGroupIcon,
@@ -15,6 +16,7 @@ import {
   ArrowTrendingUpIcon as SolidArrowTrendingUpIcon,
   UsersIcon as SolidUsersIcon,
   TagIcon as SolidTagIcon,
+  RectangleGroupIcon as SolidRectangleGroupIcon,
 } from "@heroicons/react/24/solid";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
@@ -179,6 +181,13 @@ const Navbar = (props: Props) => {
                       label="Kunder"
                       icon={OutlineUsersIcon}
                       iconHover={SolidUsersIcon}
+                    />
+
+                    <NavbarLink
+                      href="/categories"
+                      label="Kategorier"
+                      icon={OutlineRectangleGroupIcon}
+                      iconHover={SolidRectangleGroupIcon}
                     />
 
                     <NavbarLink

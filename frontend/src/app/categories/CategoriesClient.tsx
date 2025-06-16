@@ -30,7 +30,7 @@ import {
 } from "../styles/buttonClasses";
 import Message from "../components/message/Message";
 import SingleDropdown from "../components/dropdowns/SingleDropdown";
-import UserModal from "../components/modals/UserModal";
+import CategoryModal from "../components/modals/CategoryModal";
 import MenuDropdown from "../components/dropdowns/MenuDropdown";
 import SideMenu from "../components/sideMenu/SideMenu";
 
@@ -191,7 +191,7 @@ const AllFilter = ({
 };
 
 // --- PROPS ---
-// --- Outside UsersClient ---
+// --- Outside CategoriesClient ---
 type FilterData = {
   label: string;
   show: boolean;
@@ -199,7 +199,7 @@ type FilterData = {
   count?: number;
 };
 
-// --- Inside UsersClient ---
+// --- Inside CategoriesClient ---
 type Item = {
   id: number;
   username: string;
@@ -219,7 +219,7 @@ type Props = {
   isConnected: boolean | null;
 };
 
-const UsersClient = (props: Props) => {
+const CategoriesClient = (props: Props) => {
   // --- VARIABLES ---
   const [colSpan, setColSpan] = useState(8);
 
@@ -241,7 +241,7 @@ const UsersClient = (props: Props) => {
   const [items, setItems] = useState<Item[]>([]);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [isUserModalOpen, setIsEditItemModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsEditItemModalOpen] = useState(false);
 
   const [deletingItemIds, setDeletingItemIds] = useState<number[]>([]);
   const [isDeleteModalOpen, setIsDeleteItemModalOpen] = useState(false);
@@ -355,30 +355,27 @@ const UsersClient = (props: Props) => {
         search: searchTerm,
       });
 
-      if (showLocked && !showUnlocked) {
-        params.append("isLocked", "true");
-      } else if (!showLocked && showUnlocked) {
-        params.append("isLocked", "false");
-      }
+      // if (showLocked && !showUnlocked) {
+      //   params.append("isLocked", "true");
+      // } else if (!showLocked && showUnlocked) {
+      //   params.append("isLocked", "false");
+      // }
 
-      if (showAdmins) {
-        params.append("roles", "Admin");
-      }
+      // if (showAdmins) {
+      //   params.append("roles", "Admin");
+      // }
 
-      if (showDevelopers) {
-        params.append("roles", "Developer");
-      }
+      // if (showDevelopers) {
+      //   params.append("roles", "Developer");
+      // }
 
       // --- Data ---
-      const response = await fetch(
-        `${apiUrl}/user-management?${params.toString()}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${apiUrl}/category?${params.toString()}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       // --- Fail ---
       if (response.status === 401) {
@@ -409,7 +406,7 @@ const UsersClient = (props: Props) => {
   const finishDeleteItem = async (id: number) => {
     try {
       // --- Delete data ---
-      const response = await fetch(`${apiUrl}/user-management/delete/${id}`, {
+      const response = await fetch(`${apiUrl}/category/delete/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -432,7 +429,7 @@ const UsersClient = (props: Props) => {
 
       // --- Success ---
       await fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
-      notify("success", "Användare borttagen!", 4000);
+      notify("success", "Kategori borttagen!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -491,7 +488,7 @@ const UsersClient = (props: Props) => {
     selectableIds.length > 0 &&
     selectableIds.every((id) => selectedItems.includes(id));
 
-  const selectUser = (itemId: number) => {
+  const selectCategory = (itemId: number) => {
     const item = items.find((u) => u.id === itemId);
     if (!item || item.roles.includes("Master")) {
       return;
@@ -657,8 +654,8 @@ const UsersClient = (props: Props) => {
   return (
     <>
       {/* --- MODALS --- */}
-      <UserModal
-        isOpen={isUserModalOpen}
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
         onClose={closeItemEditModal}
         userId={editingItemId}
         onUserUpdated={() => {
@@ -690,7 +687,7 @@ const UsersClient = (props: Props) => {
           {/* --- ITEM EDITING --- */}
           <div className="flex flex-wrap gap-4">
             {/* --- Add item --- */}
-            <CustomTooltip content="Lägg till ny användare" lgHidden={true}>
+            <CustomTooltip content="Lägg till ny kategori" lgHidden={true}>
               <button
                 className={`${buttonPrimaryClass} sm:w-56 sm:min-w-56`}
                 onClick={() => {
@@ -706,9 +703,7 @@ const UsersClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PlusIcon className="h-6" />
-                  <span className="hidden sm:block">
-                    Lägg till ny användare
-                  </span>
+                  <span className="hidden sm:block">Lägg till ny kategori</span>
                 </div>
               </button>
             </CustomTooltip>
@@ -717,10 +712,10 @@ const UsersClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en användare"
+                  ? "Välj en kategori"
                   : selectedItems.length === 1
-                    ? "Redigera användare"
-                    : "Du kan bara redigera en användare i taget!"
+                    ? "Redigera kategori"
+                    : "Du kan bara redigera en kategori i taget!"
               }
               lgHidden={selectedItems.length === 1}
             >
@@ -742,7 +737,7 @@ const UsersClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PencilSquareIcon className="h-6 min-h-6 w-6 min-w-6" />
-                  <span className="hidden sm:block">Redigera användare</span>
+                  <span className="hidden sm:block">Redigera kategori</span>
                 </div>
               </button>
             </CustomTooltip>
@@ -751,8 +746,8 @@ const UsersClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en eller fler användare"
-                  : `Ta bort användare (${selectedItems.length})`
+                  ? "Välj en eller fler kategori"
+                  : `Ta bort kategori (${selectedItems.length})`
               }
               lgHidden={selectedItems.length > 0}
             >
@@ -771,7 +766,7 @@ const UsersClient = (props: Props) => {
                 <div className="flex items-center justify-center gap-2 truncate">
                   <TrashIcon className="h-6" />
                   <span className="hidden lg:block">
-                    Ta bort användare
+                    Ta bort kategori
                     <span>
                       {selectedItems.length > 0
                         ? ` (${selectedItems.length})`
@@ -790,7 +785,7 @@ const UsersClient = (props: Props) => {
               <div className="flex w-full items-center justify-start">
                 <Input
                   icon={<MagnifyingGlassIcon />}
-                  placeholder="Sök användare"
+                  placeholder="Sök kategori"
                   value={searchTerm}
                   onChange={(val) => setSearchTerm(String(val).toLowerCase())}
                 />
@@ -1089,8 +1084,8 @@ const UsersClient = (props: Props) => {
                             showDevelopers ||
                             showLocked ||
                             showUnlocked
-                              ? "Inga användare kunde hittas med det sökkriteriet."
-                              : "Det finns inga användare."
+                              ? "Inga kategorier kunde hittas med det sökkriteriet."
+                              : "Det finns inga kategorier."
                           }
                         />
                       )}
@@ -1125,11 +1120,11 @@ const UsersClient = (props: Props) => {
                         <tr key={item.id} className={rowClass}>
                           <td
                             className={`${tdClass} ${item.roles.includes("Master") ? "pointer-events-none" : ""} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0 transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
-                            onClick={() => selectUser(item.id)}
+                            onClick={() => selectCategory(item.id)}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
                                 e.preventDefault();
-                                selectUser(item.id);
+                                selectCategory(item.id);
                               }
                             }}
                           >
@@ -1251,7 +1246,7 @@ const UsersClient = (props: Props) => {
             </button>
           </div>
 
-          <div className="flex w-64 items-center justify-end gap-4">
+          <div className="flex w-64 justify-end items-center gap-4">
             <span className="">Antal per sida:</span>
             <div className="3xs:min-w-20">
               <div id="portal-root" />
@@ -1291,12 +1286,12 @@ const UsersClient = (props: Props) => {
             {selectedItems.length === 0 ? (
               <Message
                 icon="user"
-                content="Här kan du se information om vald användare. Välj en i tabellen ovan!"
+                content="Här kan du se information om vald kategori. Välj en i tabellen ovan!"
               />
             ) : selectedItems.length > 1 ? (
               <Message
                 icon="beware"
-                content="Kan inte visa information om flera användare samtidigt."
+                content="Kan inte visa information om flera kategori samtidigt."
               />
             ) : (
               <div className="flex">
@@ -1378,4 +1373,4 @@ const UsersClient = (props: Props) => {
   );
 };
 
-export default UsersClient;
+export default CategoriesClient;

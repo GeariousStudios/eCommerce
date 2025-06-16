@@ -2,15 +2,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace backend.Models
 {
-    [Flags]
-    public enum UserRoles
-    {
-        None = 0,
-        Admin = 1,
-        Developer = 2,
-        Master = 4,
-    }
-
     public class User
     {
         public int Id { get; set; }
@@ -39,5 +30,22 @@ namespace backend.Models
         public bool IsLocked { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime? LastLogin { get; set; }
+    }
+
+    [Flags]
+    public enum UserRoles
+    {
+        None = 0,
+        Admin = 1,
+        Developer = 2,
+        Master = 4,
+    }
+
+    public class UserPreferences
+    {
+        public int Id { get; set; }
+        public string Theme { get; set; } = "light";
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
     }
 }
