@@ -1024,7 +1024,7 @@ const UsersClient = (props: Props) => {
                   </th>
 
                   <ThCell
-                    sortingItem="itemname"
+                    sortingItem="username"
                     label="Användarnamn"
                     labelAsc="användarnamn Ö-A"
                     labelDesc="användarnamn A-Ö"
@@ -1190,9 +1190,9 @@ const UsersClient = (props: Props) => {
         </div>
 
         {/* --- PAGINATION --- */}
-        <div className="xs:justify-between flex w-full flex-wrap gap-4">
+        <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
           {/* --- Showing info --- */}
-          <span className="flex w-64 text-[var(--text-secondary)]">
+          <span className="flex w-[175.23px] text-[var(--text-secondary)]">
             Visar {(currentPage - 1) * itemsPerPage + 1}-
             {Math.min(currentPage * itemsPerPage, totalItems ?? 0)} av{" "}
             {totalItems ?? 0}
@@ -1251,7 +1251,7 @@ const UsersClient = (props: Props) => {
             </button>
           </div>
 
-          <div className="flex w-64 items-center justify-end gap-4">
+          <div className="flex items-center gap-4">
             <span className="">Antal per sida:</span>
             <div className="3xs:min-w-20">
               <div id="portal-root" />
@@ -1347,7 +1347,7 @@ const UsersClient = (props: Props) => {
 
                         <div className="mt-2">
                           <span
-                            className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-20 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
+                            className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-28 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
                           >
                             {item.isLocked ? "Låst" : "Upplåst"}
                           </span>

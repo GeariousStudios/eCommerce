@@ -19,14 +19,14 @@
   --fast: 150ms;
 
   /* --- ACCENT COLOR --- */
-  --accent-color-dark: #6faa7f;
-  --accent-color-light: #4b815b;
+  --accent-color-dark: #3d95f4;
+  --accent-color-light: #0063be;
 
-  --accent-color-hover-dark: #4b815b;
-  --accent-color-hover-light: #6faa7f;
+  --accent-color-hover-dark: #0063be;
+  --accent-color-hover-light: #3d95f4;
 
-  --accent-color-active-dark: #3e6e4e;
-  --accent-color-active-light: #5e966e;
+  --accent-color-active-dark: #007cf0;
+  --accent-color-active-light: #6eb0f7;
 }
 
 [data-theme="dark"] {
@@ -89,8 +89,8 @@
   --note-success-active: #6faa7f;
 
   /* --- OTHER --- */
-  --locked: var(--button-delete);
-  --unlocked: var(--button-primary);
+  --locked: var(--note-error);
+  --unlocked: var(--note-success);
 }
 
 [data-theme="light"] {
@@ -153,8 +153,8 @@
   --note-success-active: #4b815bbf;
 
   /* --- OTHER --- */
-  --locked: var(--button-delete);
-  --unlocked: var(--button-primary);
+  --locked: var(--note-error);
+  --unlocked: var(--note-success);
 }
 
 /* --- SCROLLBAR --- */

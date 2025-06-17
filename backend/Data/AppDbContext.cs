@@ -11,7 +11,9 @@ namespace backend.Data
         public DbSet<User> Users { get; set; }
         public DbSet<UserPreferences> UserPreferences { get; set; }
         public DbSet<News> News { get; set; }
-        public DbSet<Category> Categories => Set<Category>();
+        public DbSet<Unit> Units { get; set; }
+        public DbSet<UnitGroup> UnitGroups { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

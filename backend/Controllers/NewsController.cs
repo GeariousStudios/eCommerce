@@ -1,6 +1,7 @@
 using backend.Data;
 using backend.Dtos.News;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,21 +13,23 @@ namespace backend.Controllers
     public class NewsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly UserService _userService;
 
-        public NewsController(AppDbContext context)
+        public NewsController(AppDbContext context, UserService userService)
         {
             _context = context;
+            _userService = userService;
         }
 
         [Authorize(Roles = "Developer")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateNewsItem(CreateNewsDto dto)
         {
-            var authorInfo = await GetAuthorInfo();
+            var userInfo = await _userService.GetUserInfoAsync();
 
-            if (authorInfo == null)
+            if (userInfo == null)
             {
-                return BadRequest(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
             }
 
             if (dto.Type == "")
@@ -50,8 +53,8 @@ namespace backend.Controllers
                 Type = dto.Type ?? "",
                 Headline = dto.Headline ?? "",
                 Content = dto.Content ?? "",
-                Author = authorInfo.Value.Author,
-                AuthorId = authorInfo.Value.AuthorId,
+                Author = userInfo.Value.User,
+                AuthorId = userInfo.Value.UserId,
             };
 
             _context.News.Add(newsItem);
@@ -96,11 +99,11 @@ namespace backend.Controllers
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateNews(int id, UpdateNewsDto dto)
         {
-            var authorInfo = await GetAuthorInfo();
+            var userInfo = await _userService.GetUserInfoAsync();
 
-            if (authorInfo == null)
+            if (userInfo == null)
             {
-                return BadRequest(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
             }
 
             var newsItem = await _context.News.FindAsync(id);
@@ -128,8 +131,8 @@ namespace backend.Controllers
             newsItem.Type = dto.Type ?? "";
             newsItem.Headline = dto.Headline ?? "";
             newsItem.Content = dto.Content ?? "";
-            newsItem.Author = authorInfo.Value.Author;
-            newsItem.AuthorId = authorInfo.Value.AuthorId;
+            newsItem.Author = userInfo.Value.User;
+            newsItem.AuthorId = userInfo.Value.UserId;
 
             var result = new NewsDto
             {
@@ -162,28 +165,6 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Nyhet borttagen!" });
-        }
-
-        private async Task<(string Author, int AuthorId)?> GetAuthorInfo()
-        {
-            var username = User.Identity?.Name;
-
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                return null;
-            }
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-
-            if (user == null)
-            {
-                return null;
-            }
-
-            var author = string.IsNullOrEmpty(user.FirstName + user.LastName)
-                ? user.Username
-                : user.FirstName + " " + user.LastName;
-            return (author, user.Id);
         }
     }
 }

@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using backend.Data;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -62,6 +63,10 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod()
     );
 });
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 

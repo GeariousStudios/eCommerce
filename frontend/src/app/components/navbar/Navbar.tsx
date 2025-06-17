@@ -3,33 +3,40 @@
 import {
   UserGroupIcon as OutlineUserGroupIcon,
   HomeIcon as OutlineHomeIcon,
-  InboxStackIcon as OutlineInboxStackIcon,
-  ArrowTrendingUpIcon as OutlineArrowTrendingUpIcon,
-  UsersIcon as OutlineUsersIcon,
-  TagIcon as OutlineTagIcon,
-  RectangleGroupIcon as OutlineRectangleGroupIcon,
+  PresentationChartLineIcon as OutlinePresentationChartLineIcon,
+  ChatBubbleBottomCenterTextIcon as OutlineChatBubbleBottomCenterTextIcon,
 } from "@heroicons/react/24/outline";
 import {
   UserGroupIcon as SolidUserGroupIcon,
   HomeIcon as SolidHomeIcon,
-  InboxStackIcon as SolidInboxStackIcon,
-  ArrowTrendingUpIcon as SolidArrowTrendingUpIcon,
-  UsersIcon as SolidUsersIcon,
-  TagIcon as SolidTagIcon,
-  RectangleGroupIcon as SolidRectangleGroupIcon,
+  PresentationChartLineIcon as SolidPresentationChartLineIcon,
+  ChatBubbleBottomCenterTextIcon as SolidChatBubbleBottomCenterTextIcon,
 } from "@heroicons/react/24/solid";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
 import useTheme from "../../hooks/useTheme";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Message from "../message/Message";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
 import CustomTooltip from "../customTooltip/CustomTooltip";
+import { useToast } from "../toast/ToastProvider";
 
 type Props = {
   hasScrollbar: boolean;
   setHasScrollbar: (value: boolean) => void;
+};
+
+// --- UNITS IN SUBMENU ---
+type SubmenuItem = {
+  title?: string;
+  label: string;
+  href: string;
+};
+
+type SubmenuGroup = {
+  label: string;
+  items: SubmenuItem[];
 };
 
 const Navbar = (props: Props) => {
@@ -37,10 +44,73 @@ const Navbar = (props: Props) => {
   // --- Refs ---
   const innerRef = useRef<HTMLDivElement>(null);
 
+  // --- States ---
+  const [units, setUnits] = useState<SubmenuGroup[]>([]);
+
   // --- Other ---
   const { isAuthReady, isDev, isAdmin } = useAuthStatus();
   const { currentTheme } = useTheme();
+  const { notify } = useToast();
   const prefix = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  const token = localStorage.getItem("token");
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  // --- BACKEND ---
+  // --- Fetch units ---
+  const fetchUnits = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/unit`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      // --- Fail ---
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+        return;
+      }
+
+      const visibleUnits = result.items.filter((unit: any) => !unit.isHidden);
+
+      // --- Success ---
+      const grouped: Record<string, SubmenuItem[]> = visibleUnits.reduce(
+        (acc: Record<string, SubmenuItem[]>, unit: any) => {
+          const groupName = unit.unitGroupName;
+
+          if (!acc[groupName]) {
+            acc[groupName] = [];
+          }
+
+          acc[groupName].push({
+            label: unit.name,
+            href: `#`,
+          });
+
+          return acc;
+        },
+        {},
+      );
+
+      const itemsWithTitles: SubmenuItem[] = Object.entries(grouped).flatMap(
+        ([groupName, items]) => [
+          ...items.map((item, index) => ({
+            ...item,
+            title: index === 0 ? groupName : undefined,
+          })),
+        ],
+      );
+
+      if (itemsWithTitles.length > 0) {
+        setUnits([{ label: "Enheter", items: itemsWithTitles }]);
+      } else {
+        setUnits([]);
+      }
+    } catch (err) {}
+  };
 
   // --- SCROLLBAR OBSERVER ---
   useEffect(() => {
@@ -116,23 +186,11 @@ const Navbar = (props: Props) => {
                     <span className="hidden pb-1 text-xs font-semibold whitespace-nowrap uppercase md:flex">
                       Utvecklare
                     </span>
-                    <NavbarSubmenu
-                      label="Användare"
+                    <NavbarLink
+                      href="/users/"
+                      label="Hantera användare"
                       icon={OutlineUserGroupIcon}
                       iconHover={SolidUserGroupIcon}
-                      menus={[
-                        {
-                          label: "För utvecklare",
-                          items: [
-                            {
-                              title: "Hantera",
-                              href: "/users",
-                              label: "Användare",
-                            },
-                          ],
-                        },
-                      ]}
-                      hasScrollbar={props.hasScrollbar}
                     />
                     <hr className="mt-4 mb-4 rounded-full text-[var(--border-main)] md:mb-8" />
                   </div>
@@ -149,57 +207,48 @@ const Navbar = (props: Props) => {
                   iconHover={SolidHomeIcon}
                 />
 
-                {isAdmin && (
-                  <div>
-                    <NavbarLink
-                      tooltip="Ej implementerat!"
-                      disabled
-                      href="#"
-                      label="Beställningar"
-                      icon={OutlineInboxStackIcon}
-                      iconHover={SolidInboxStackIcon}
-                    />
+                <NavbarSubmenu
+                  label="Rapportering"
+                  icon={OutlineChatBubbleBottomCenterTextIcon}
+                  iconHover={SolidChatBubbleBottomCenterTextIcon}
+                  menus={[
+                    ...units,
+                    {
+                      label: "Administrera",
+                      requiresAdmin: true,
+                      items: [
+                        {
+                          title: "Hantera",
+                          href: "/categories/",
+                          label: "Kategorier",
+                        },
+                        {
+                          href: "/units/",
+                          label: "Enheter",
+                        },
+                        {
+                          href: "/unitGroups/",
+                          label: "Enhetsgrupper",
+                        },
+                      ],
+                    },
+                  ]}
+                  hasScrollbar={props.hasScrollbar}
+                  onOpen={() => {
+                    if (isAuthReady && units.length === 0) {
+                      fetchUnits();
+                    }
+                  }}
+                />
 
-                    <NavbarLink
-                      tooltip="Ej implementerat!"
-                      disabled
-                      href="#"
-                      label="Försäljningsstatistik"
-                      icon={OutlineArrowTrendingUpIcon}
-                      iconHover={SolidArrowTrendingUpIcon}
-                    />
-
-                    <hr className="mt-4 mb-4 rounded-full text-[var(--border-main)] md:mb-8" />
-
-                    <span className="hidden pb-1 text-xs font-semibold whitespace-nowrap uppercase md:flex">
-                      LÖPANDE
-                    </span>
-                    <NavbarLink
-                      tooltip="Ej implementerat!"
-                      disabled
-                      href="#"
-                      label="Kunder"
-                      icon={OutlineUsersIcon}
-                      iconHover={SolidUsersIcon}
-                    />
-
-                    <NavbarLink
-                      href="/categories"
-                      label="Kategorier"
-                      icon={OutlineRectangleGroupIcon}
-                      iconHover={SolidRectangleGroupIcon}
-                    />
-
-                    <NavbarLink
-                      tooltip="Ej implementerat!"
-                      disabled
-                      href="#"
-                      label="Produkter"
-                      icon={OutlineTagIcon}
-                      iconHover={SolidTagIcon}
-                    />
-                  </div>
-                )}
+                <NavbarLink
+                  tooltip="Ej implementerat!"
+                  disabled
+                  href="#"
+                  label="Pulstavlor"
+                  icon={OutlinePresentationChartLineIcon}
+                  iconHover={SolidPresentationChartLineIcon}
+                />
               </div>
 
               <div className="mb-4" />

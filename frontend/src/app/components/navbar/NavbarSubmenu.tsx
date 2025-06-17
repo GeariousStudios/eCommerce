@@ -35,6 +35,8 @@ type Props = {
   requiresLogin?: boolean;
   requiresAdmin?: boolean;
   requiresDev?: boolean;
+
+  onOpen?: () => void;
 };
 
 const NavbarSubmenu = (props: Props) => {
@@ -191,6 +193,7 @@ const NavbarSubmenu = (props: Props) => {
                 onClick={() => {
                   if (!isOpen) {
                     setIsOpen(true);
+                    props.onOpen?.();
                   } else {
                     setIsOpen(false);
                   }
@@ -210,7 +213,7 @@ const NavbarSubmenu = (props: Props) => {
                     />
                   </span>
                   <span
-                    className={`${isActive ? "font-semibold" : ""} hidden truncate overflow-hidden md:flex`}
+                    className={`${isActive ? "font-bold" : ""} hidden truncate overflow-hidden md:flex`}
                   >
                     {props.label}
                   </span>
@@ -281,7 +284,7 @@ const NavbarSubmenu = (props: Props) => {
                                               onClick={() => setIsOpen(false)}
                                               href={item.href}
                                               tabIndex={isOpen ? 0 : -1}
-                                              className={`${itemIsActive ? "text-[var(--accent-color)]" : "text-[var(--text-navbar)]"} flex h-full w-full truncate p-2 text-sm`}
+                                              className={`${itemIsActive ? "font-bold text-[var(--accent-color)]" : "text-[var(--text-navbar)]"} flex h-full w-full truncate p-2 text-sm`}
                                             >
                                               {item.label}
                                             </Link>

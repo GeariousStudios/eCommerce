@@ -27,6 +27,9 @@ namespace eCommerce.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Units")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
@@ -83,6 +86,72 @@ namespace eCommerce.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("SubCategory");
+                });
+
+            modelBuilder.Entity("backend.Models.Unit", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UnitGroupId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UnitGroupId");
+
+                    b.ToTable("Units");
+                });
+
+            modelBuilder.Entity("backend.Models.UnitGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UnitGroups");
                 });
 
             modelBuilder.Entity("backend.Models.User", b =>
@@ -162,6 +231,17 @@ namespace eCommerce.Migrations
                         .HasForeignKey("CategoryId");
                 });
 
+            modelBuilder.Entity("backend.Models.Unit", b =>
+                {
+                    b.HasOne("backend.Models.UnitGroup", "UnitGroup")
+                        .WithMany("Units")
+                        .HasForeignKey("UnitGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UnitGroup");
+                });
+
             modelBuilder.Entity("backend.Models.UserPreferences", b =>
                 {
                     b.HasOne("backend.Models.User", "User")
@@ -176,6 +256,11 @@ namespace eCommerce.Migrations
             modelBuilder.Entity("backend.Models.Category", b =>
                 {
                     b.Navigation("SubCategories");
+                });
+
+            modelBuilder.Entity("backend.Models.UnitGroup", b =>
+                {
+                    b.Navigation("Units");
                 });
 
             modelBuilder.Entity("backend.Models.User", b =>

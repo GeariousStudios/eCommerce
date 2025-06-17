@@ -37,12 +37,12 @@ const ModalLink = (props: Props) => {
                     className={`${isActive ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
                   />
                 </span>
-                <span className={`${isActive ? "font-semibold" : ""} truncate`}>
+                <span className={`${isActive ? "font-bold" : ""} truncate`}>
                   {props.label}
                 </span>
               </div>
             ) : (
-              <span className={`${isActive ? "font-semibold" : ""} truncate`}>
+              <span className={`${isActive ? "font-bold" : ""} truncate`}>
                 {props.label}
               </span>
             )}
@@ -63,12 +63,12 @@ const ModalLink = (props: Props) => {
                     className={`${isActive ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
                   />
                 </span>
-                <span className={`${isActive ? "font-semibold" : ""} truncate`}>
+                <span className={`${isActive ? "font-bold" : ""} truncate`}>
                   {props.label}
                 </span>
               </div>
             ) : (
-              <span className={`${isActive ? "font-semibold" : ""} truncate`}>
+              <span className={`${isActive ? "font-bold" : ""} truncate`}>
                 {props.label}
               </span>
             )}

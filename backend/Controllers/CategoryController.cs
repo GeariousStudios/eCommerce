@@ -1,5 +1,5 @@
 using backend.Data;
-using backend.Dtos.User;
+using backend.Dtos.Category;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +23,8 @@ namespace backend.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
+            [FromQuery] string[]? subCategories = null,
+            [FromQuery] string[]? units = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
@@ -42,6 +44,8 @@ namespace backend.Controllers
             var filteredSubCategoryCount = await query
                 .SelectMany(c => c.SubCategories)
                 .CountAsync();
+
+            var filteredUnitCount = await query.SelectMany(c => c.Units).CountAsync();
 
             query = sortBy.ToLower() switch
             {
@@ -68,7 +72,6 @@ namespace backend.Controllers
 
             List<Category> categories;
 
-            totalCount = await query.CountAsync();
             categories = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             var totalSubCategoryCount = await _context

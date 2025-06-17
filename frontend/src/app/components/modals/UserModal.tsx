@@ -258,8 +258,8 @@ const UserModal = (props: Props) => {
             }
           >
             <div className="flex items-center gap-2">
-              <hr className="w-12 whitespace-nowrap text-[var(--border-main)]" />
-              <h3 className="flex text-sm text-[var(--text-secondary)]">
+              <hr className="w-12 text-[var(--border-main)]" />
+              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
                 Inloggningsuppgifter
               </h3>
               <hr className="w-full text-[var(--border-main)]" />

@@ -202,6 +202,15 @@ type FilterData = {
 // --- Inside CategoriesClient ---
 type Item = {
   id: number;
+  name: string;
+  subCategories: string[];
+  units: string[];
+
+  creationDate: string;
+  lastUpdated: string;
+  createdBy: string;
+  updatedBy: string;
+
   username: string;
   firstName: string;
   lastName: string;
@@ -209,9 +218,7 @@ type Item = {
   password: string;
   roles: string[];
   isLocked: boolean;
-
   isOnline: boolean;
-  creationDate: string;
   lastLogin: string | null;
 };
 
@@ -221,7 +228,7 @@ type Props = {
 
 const CategoriesClient = (props: Props) => {
   // --- VARIABLES ---
-  const [colSpan, setColSpan] = useState(8);
+  const [colSpan, setColSpan] = useState(2);
 
   // --- States: Backend ---
   const [isLoadingContent, setIsLoadingItems] = useState(false);
@@ -241,7 +248,7 @@ const CategoriesClient = (props: Props) => {
   const [items, setItems] = useState<Item[]>([]);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [isCategoryModalOpen, setIsEditItemModalOpen] = useState(false);
+  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
 
   const [deletingItemIds, setDeletingItemIds] = useState<number[]>([]);
   const [isDeleteModalOpen, setIsDeleteItemModalOpen] = useState(false);
@@ -516,14 +523,14 @@ const CategoriesClient = (props: Props) => {
     const updateColSpan = () => {
       const width = window.innerWidth;
 
-      let span = 4;
+      let span = 2;
+      // if (width >= 384) {
+      //   span += 1;
+      // }
       if (width >= 640) {
         span += 1;
       }
       if (width >= 1024) {
-        span += 1;
-      }
-      if (width >= 1280) {
         span += 1;
       }
 
@@ -655,7 +662,7 @@ const CategoriesClient = (props: Props) => {
     <>
       {/* --- MODALS --- */}
       <CategoryModal
-        isOpen={isCategoryModalOpen}
+        isOpen={isEditItemModalOpen}
         onClose={closeItemEditModal}
         userId={editingItemId}
         onUserUpdated={() => {
@@ -746,7 +753,7 @@ const CategoriesClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en eller fler kategori"
+                  ? "Välj en eller fler kategorier"
                   : `Ta bort kategori (${selectedItems.length})`
               }
               lgHidden={selectedItems.length > 0}
@@ -975,13 +982,6 @@ const CategoriesClient = (props: Props) => {
               </button>
             </div>
           )}
-
-          {/* --- Showing info --- */}
-          {/* <span className="-mb-2 flex items-end text-[var(--text-secondary)]">
-            Visar {(currentPage - 1) * itemsPerPage + 1}-
-            {Math.min(currentPage * itemsPerPage, totalItems ?? 0)} av{" "}
-            {totalItems ?? 0}
-          </span> */}
         </div>
 
         {/* --- TABLE --- */}
@@ -1019,50 +1019,26 @@ const CategoriesClient = (props: Props) => {
                   </th>
 
                   <ThCell
-                    sortingItem="itemname"
-                    label="Användarnamn"
-                    labelAsc="användarnamn Ö-A"
-                    labelDesc="användarnamn A-Ö"
+                    sortingItem="name"
+                    label="Namn"
+                    labelAsc="namn Ö-A"
+                    labelDesc="namn A-Ö"
                   />
 
                   <ThCell
-                    sortingItem="firstName"
-                    label="Förnamn"
-                    labelAsc="förnamn Ö-A"
-                    labelDesc="förnamn A-Ö"
-                    classNameAddition="hidden xs:table-cell"
-                  />
-
-                  <ThCell
-                    sortingItem="lastName"
-                    label="Efternamn"
-                    labelAsc="efternamn Ö-A"
-                    labelDesc="efternamn A-Ö"
-                    classNameAddition="hidden sm:table-cell"
-                  />
-
-                  <ThCell
-                    sortingItem="email"
-                    label="Mejladress"
-                    labelAsc="mejladress Ö-A"
-                    labelDesc="mejladress A-Ö"
+                    sortingItem="subCategories"
+                    label="Underkategorier"
+                    labelAsc="underkategorier Ö-A"
+                    labelDesc="underkategorier A-Ö"
                     classNameAddition="hidden lg:table-cell"
                   />
 
                   <ThCell
-                    sortingItem="roles"
-                    label="Behörigheter"
-                    labelAsc="behörigheter Ö-A"
-                    labelDesc="behörigheter A-Ö"
-                    classNameAddition="hidden xl:table-cell"
-                  />
-
-                  <ThCell
-                    sortingItem="isLocked"
-                    label="Status"
-                    labelAsc="låsta konton"
-                    labelDesc="upplåsta konton"
-                    classNameAddition="w-28 min-w-28 border-r-0 hidden 2xs:table-cell"
+                    sortingItem="units"
+                    label="Enheter"
+                    labelAsc="enheter Ö-A"
+                    labelDesc="enheter A-Ö"
+                    classNameAddition="hidden sm:table-cell"
                   />
                 </tr>
               </thead>
@@ -1185,9 +1161,9 @@ const CategoriesClient = (props: Props) => {
         </div>
 
         {/* --- PAGINATION --- */}
-        <div className="xs:justify-between flex w-full flex-wrap gap-4">
+        <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
           {/* --- Showing info --- */}
-          <span className="flex w-64 text-[var(--text-secondary)]">
+          <span className="flex w-[175.23px] text-[var(--text-secondary)]">
             Visar {(currentPage - 1) * itemsPerPage + 1}-
             {Math.min(currentPage * itemsPerPage, totalItems ?? 0)} av{" "}
             {totalItems ?? 0}
@@ -1246,7 +1222,7 @@ const CategoriesClient = (props: Props) => {
             </button>
           </div>
 
-          <div className="flex w-64 justify-end items-center gap-4">
+          <div className="flex items-center gap-4">
             <span className="">Antal per sida:</span>
             <div className="3xs:min-w-20">
               <div id="portal-root" />
@@ -1285,13 +1261,13 @@ const CategoriesClient = (props: Props) => {
           >
             {selectedItems.length === 0 ? (
               <Message
-                icon="user"
+                icon="category"
                 content="Här kan du se information om vald kategori. Välj en i tabellen ovan!"
               />
             ) : selectedItems.length > 1 ? (
               <Message
                 icon="beware"
-                content="Kan inte visa information om flera kategori samtidigt."
+                content="Kan inte visa information om flera kategorier samtidigt."
               />
             ) : (
               <div className="flex">
@@ -1311,12 +1287,12 @@ const CategoriesClient = (props: Props) => {
                         )}
 
                         <p>
-                          <strong>Användarnamn: </strong>
+                          <strong>Namn: </strong>
                           {item.username}
                         </p>
 
                         <p>
-                          <strong>Förnamn: </strong>
+                          <strong>Underkategorier: </strong>
                           {item.firstName}
                         </p>
 
@@ -1342,7 +1318,7 @@ const CategoriesClient = (props: Props) => {
 
                         <div className="mt-2">
                           <span
-                            className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-20 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
+                            className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-28 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
                           >
                             {item.isLocked ? "Låst" : "Upplåst"}
                           </span>

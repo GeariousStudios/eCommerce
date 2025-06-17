@@ -33,7 +33,7 @@ const NavbarLink = (props: Props) => {
               />
             </span>
             <span
-              className={`${isActive ? "font-semibold" : ""} hidden truncate md:flex`}
+              className={`${isActive ? "font-bold" : ""} hidden truncate md:flex`}
             >
               {props.label}
             </span>

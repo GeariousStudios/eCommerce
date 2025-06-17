@@ -7,6 +7,9 @@ import {
   MagnifyingGlassCircleIcon,
   NoSymbolIcon,
   UserIcon,
+  TagIcon,
+  InboxIcon,
+  InboxStackIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { ElementType, ReactNode, useEffect, useState } from "react";
@@ -24,6 +27,9 @@ const iconMap: Record<string, ElementType> = {
   deny: IdentificationIcon,
   server: NoSymbolIcon,
   user: UserIcon,
+  category: TagIcon,
+  unit: InboxIcon,
+  unitGroup: InboxStackIcon,
   beware: ExclamationCircleIcon,
   search: MagnifyingGlassCircleIcon,
 };

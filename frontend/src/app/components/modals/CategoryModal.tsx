@@ -8,17 +8,20 @@ import { useToast } from "../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
-  switchClass,
-  switchKnobClass,
 } from "@/app/styles/buttonClasses";
-import MultiDropdown from "../dropdowns/MultiDropdown";
 import ModalBase from "./ModalBase";
+import MultiDropdown from "../dropdowns/MultiDropdown";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  userId?: number | null;
-  onUserUpdated: () => void;
+  categoryId?: number | null;
+  onCategoryUpdated: () => void;
+};
+
+type UnitOptions = {
+  id: number;
+  name: string;
 };
 
 const CategoryModal = (props: Props) => {
@@ -27,13 +30,11 @@ const CategoryModal = (props: Props) => {
   const formRef = useRef<HTMLFormElement>(null);
 
   // --- States ---
-  const [username, setUsername] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [newUserRoles, setNewUserRoles] = useState<string[]>([]);
-  const [isLocked, setIsLocked] = useState(false);
+  const [name, setName] = useState("");
+  const [unit, setUnit] = useState<string[]>([]);
+  const [isHidden, setIsHidden] = useState(false);
+
+  const [units, setUnits] = useState<UnitOptions[]>([]);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -45,39 +46,29 @@ const CategoryModal = (props: Props) => {
       return;
     }
 
-    if (props.userId !== null && props.userId !== undefined) {
-      fetchUser();
+    fetchUnits();
+
+    if (props.categoryId !== null && props.categoryId !== undefined) {
+      fetchCategory();
     } else {
-      setUsername("");
-      setFirstName("");
-      setLastName("");
-      setPassword("");
-      setEmail("");
-      setNewUserRoles([]);
-      setIsLocked(false);
+      setName("");
     }
-  }, [props.isOpen, props.userId]);
+  }, [props.isOpen, props.categoryId]);
 
   // --- BACKEND ---
-  // --- Add user ---
-  const addUser = async (event: FormEvent) => {
+  // --- Add unit ---
+  const addCategory = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/user-management/create`, {
+      const response = await fetch(`${apiUrl}/category/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          username,
-          firstName,
-          lastName,
-          password,
-          email: email.trim() === "" ? null : email,
-          roles: newUserRoles,
-          isLocked,
+          name,
         }),
       });
 
@@ -122,18 +113,40 @@ const CategoryModal = (props: Props) => {
       }
 
       props.onClose();
-      props.onUserUpdated();
-      notify("success", "Användare skapad!", 4000);
+      props.onCategoryUpdated();
+      notify("success", "Kategori skapad!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
   };
 
-  // --- Fetch user ---
-  const fetchUser = async () => {
+  // --- Fetch units ---
+  const fetchUnits = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/unit`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        setUnits(result.items);
+      }
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  // --- Fetch category ---
+  const fetchCategory = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/user-management/fetch/${props.userId}`,
+        `${apiUrl}/category/fetch/${props.categoryId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -147,30 +160,24 @@ const CategoryModal = (props: Props) => {
       if (!response.ok) {
         notify("error", result.message);
       } else {
-        fillUserData(result);
+        fillCategoryData(result);
       }
     } catch (err) {
       notify("error", String(err));
     }
   };
 
-  const fillUserData = (result: any) => {
-    setUsername(result.username ?? "");
-    setFirstName(result.firstName ?? "");
-    setLastName(result.lastName ?? "");
-    setPassword("");
-    setEmail(result.email ?? "");
-    setNewUserRoles(result.roles ?? []);
-    setIsLocked(result.isLocked ?? false);
+  const fillCategoryData = (result: any) => {
+    setName(result.name ?? "");
   };
 
-  // --- Update user ---
-  const updateUser = async (event: FormEvent, id: number) => {
+  // --- Update category ---
+  const updateCategory = async (event: FormEvent, id: number) => {
     event.preventDefault();
 
     try {
       const response = await fetch(
-        `${apiUrl}/user-management/update/${props.userId}`,
+        `${apiUrl}/category/update/${props.categoryId}`,
         {
           method: "PUT",
           headers: {
@@ -178,13 +185,7 @@ const CategoryModal = (props: Props) => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            username,
-            firstName,
-            lastName,
-            password,
-            email: email.trim() === "" ? null : email,
-            roles: newUserRoles,
-            isLocked,
+            name,
           }),
         },
       );
@@ -230,8 +231,8 @@ const CategoryModal = (props: Props) => {
       }
 
       props.onClose();
-      props.onUserUpdated();
-      notify("success", "Användare uppdaterad!", 4000);
+      props.onCategoryUpdated();
+      notify("success", "Kategori uppdaterad!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -247,130 +248,67 @@ const CategoryModal = (props: Props) => {
         <ModalBase
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
-          icon={props.userId ? PencilSquareIcon : PlusIcon}
-          label={props.userId ? "Redigera användare" : "Lägg till ny användare"}
+          icon={props.categoryId ? PencilSquareIcon : PlusIcon}
+          label={
+            props.categoryId ? "Redigera kategori" : "Lägg till ny kategori"
+          }
         >
           <form
             ref={formRef}
             className="relative flex flex-col gap-4"
             onSubmit={(e) =>
-              props.userId ? updateUser(e, props.userId) : addUser(e)
+              props.categoryId
+                ? updateCategory(e, props.categoryId)
+                : addCategory(e)
             }
           >
             <div className="flex items-center gap-2">
-              <hr className="w-12 whitespace-nowrap text-[var(--border-main)]" />
-              <h3 className="flex text-sm text-[var(--text-secondary)]">
-                Inloggningsuppgifter
-              </h3>
-              <hr className="w-full text-[var(--border-main)]" />
-            </div>
-
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
-              <Input
-                id="username"
-                label={"Användarnamn"}
-                value={username}
-                onChange={(val) => setUsername(String(val))}
-                onModal={true}
-                required
-                autoComplete="new-username"
-              />
-
-              {props.userId !== null ? (
-                <Input
-                  type="password"
-                  id="password"
-                  label={"Lösenord"}
-                  value={password}
-                  placeholder="•••••••••"
-                  onChange={(val) => setPassword(String(val))}
-                  onModal={true}
-                />
-              ) : (
-                <Input
-                  type="password"
-                  id="password"
-                  label={"Lösenord"}
-                  value={password}
-                  onChange={(val) => setPassword(String(val))}
-                  onModal={true}
-                  required
-                  autoComplete="new-password"
-                />
-              )}
-            </div>
-
-            <div className="mt-8 flex items-center gap-2">
               <hr className="w-12 text-[var(--border-main)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Användardetaljer
+                Uppgifter om kategorin
               </h3>
               <hr className="w-full text-[var(--border-main)]" />
             </div>
 
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
               <Input
-                id="email"
-                label={"Mejladress"}
-                value={email}
-                onChange={(val) => setEmail(String(val))}
+                label={"Namn"}
+                value={name}
+                onChange={(val) => setName(String(val))}
                 onModal={true}
+                required
               />
 
               <div className="flex w-full gap-6 sm:gap-4">
-                <Input
-                  id="firstName"
-                  label={"Förnamn"}
-                  value={firstName}
-                  onChange={(val) => setFirstName(String(val))}
-                  onModal={true}
-                />
-
-                <Input
-                  id="lastName"
-                  label={"Efternamn"}
-                  value={lastName}
-                  onChange={(val) => setLastName(String(val))}
-                  onModal={true}
+                <MultiDropdown
+                  id="unitGroup"
+                  label={"Enheter med åtkomst"}
+                  value={unit}
+                  onChange={(val: string[]) => setUnit(val)}
+                  onModal
+                  options={units.map((u) => ({
+                    label: u.name,
+                    value: String(u.id),
+                  }))}
                 />
               </div>
             </div>
 
-            <div className="mt-8 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-main)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Behörigheter och status
+                Underkategorier
               </h3>
               <hr className="w-full text-[var(--border-main)]" />
             </div>
 
-            <div className="mb-8 flex justify-between gap-4">
-              <div className="flex w-[calc(50%-0.375rem)] min-w-36">
-                <MultiDropdown
-                  label="Behörigheter"
-                  options={[
-                    { label: "Admin", value: "Admin" },
-                    { label: "Developer", value: "Developer" },
-                  ]}
-                  value={newUserRoles}
-                  onChange={setNewUserRoles}
-                  onModal={true}
-                  required
-                />
-              </div>
-
-              <div className="flex items-center gap-2 truncate">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isLocked}
-                  className={switchClass(isLocked)}
-                  onClick={() => setIsLocked((prev) => !prev)}
-                >
-                  <div className={switchKnobClass(isLocked)} />
-                </button>
-                <span className="mb-0.5">Lås konto</span>
-              </div>
+            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
+              <Input
+                label={"Underkategori"}
+                value={name}
+                onChange={(val) => setName(String(val))}
+                onModal={true}
+              />
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
@@ -379,7 +317,7 @@ const CategoryModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.userId ? "Uppdatera" : "Lägg till"}
+                {props.categoryId ? "Uppdatera" : "Lägg till"}
               </button>
               <button
                 type="button"

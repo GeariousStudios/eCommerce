@@ -4,6 +4,7 @@ namespace backend.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string? Units { get; set; }
         public SubCategory[]? SubCategories { get; set; }
     }
 
