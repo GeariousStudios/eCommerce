@@ -1,18 +1,15 @@
-import UnitClient from "../UnitClient";
 import { notFound } from "next/navigation";
 import UnitWrapper from "../UnitWrapper";
 
-type Props = {
+type PageProps = {
   params: {
     id: string;
   };
 };
 
-const UnitPage = (props: Props) => {
-  return <UnitWrapper id={props.params.id} />;
-};
-
-export default UnitPage;
+export default function Page({ params }: PageProps) {
+  return <UnitWrapper id={params.id} />;
+}
 
 export async function generateStaticParams() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -26,7 +23,7 @@ export async function generateStaticParams() {
 
   const data = await response.json();
 
-  if (!data) {
+  if (!data?.items) {
     notFound();
   }
 
