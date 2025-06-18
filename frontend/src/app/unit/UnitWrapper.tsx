@@ -15,7 +15,7 @@ const UnitClient = dynamic(() => import("./UnitClient"), {
   ),
 });
 
-const UnitWrapper = ({ id }: { id: string }) => {
+const UnitWrapper = () => {
   const { isAuthReady, isConnected } = useAuthStatus();
 
   if (!isAuthReady) {
