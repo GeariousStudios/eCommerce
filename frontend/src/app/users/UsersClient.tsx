@@ -723,6 +723,9 @@ const UsersClient = (props: Props) => {
                     : "Du kan bara redigera en användare i taget!"
               }
               lgHidden={selectedItems.length === 1}
+              showOnTouch={
+                selectedItems.length === 0 || selectedItems.length > 1
+              }
             >
               <button
                 className={`${buttonSecondaryClass} sm:w-56 sm:min-w-56`}
@@ -755,6 +758,7 @@ const UsersClient = (props: Props) => {
                   : `Ta bort användare (${selectedItems.length})`
               }
               lgHidden={selectedItems.length > 0}
+              showOnTouch={selectedItems.length === 0}
             >
               <button
                 className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-56 lg:min-w-56`}

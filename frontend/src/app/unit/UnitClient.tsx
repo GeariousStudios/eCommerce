@@ -49,7 +49,6 @@ const UnitClient = (props: Props) => {
         const response = await fetch(`${apiUrl}/unit/fetch/${unitId}`, {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -89,7 +88,6 @@ const UnitClient = (props: Props) => {
           {
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
             },
           },
         );

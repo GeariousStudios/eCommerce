@@ -241,7 +241,7 @@ const SettingsModal = (props: Props) => {
           </li>
 
           {/* --- Notifications --- */}
-          <CustomTooltip content="Ej implementerat!">
+          <CustomTooltip content="Ej implementerat!" showOnTouch>
             <li>
               <ModalLink
                 disabled
@@ -312,12 +312,12 @@ const SettingsModal = (props: Props) => {
                 <div className={`${itemRowClass}`}>
                   <span>Användarnamn</span>
                   <div className="flex items-center gap-4">
-                    <CustomTooltip side="left" content={username}>
+                    <CustomTooltip side="left" content={username} showOnTouch>
                       <span className="w-48 truncate overflow-x-hidden">
                         {username}
                       </span>
                     </CustomTooltip>
-                    <CustomTooltip content="Ej redigerbar!">
+                    <CustomTooltip content="Ej redigerbar!" showOnTouch>
                       <button
                         className={`${iconButtonPrimaryClass} !h-6 !w-6`}
                         disabled
@@ -389,7 +389,7 @@ const SettingsModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <CustomTooltip side="left" content={firstName}>
+                      <CustomTooltip side="left" content={firstName} showOnTouch>
                         <span className="w-48 truncate overflow-x-hidden">
                           {firstName}
                         </span>
@@ -431,7 +431,7 @@ const SettingsModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <CustomTooltip side="left" content={lastName}>
+                      <CustomTooltip side="left" content={lastName} showOnTouch>
                         <span className="w-48 truncate overflow-x-hidden">
                           {lastName}
                         </span>
@@ -475,7 +475,7 @@ const SettingsModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <CustomTooltip side="left" content={email}>
+                      <CustomTooltip side="left" content={email} showOnTouch>
                         <span className="w-48 truncate overflow-x-hidden">
                           {email}
                         </span>

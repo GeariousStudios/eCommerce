@@ -20,7 +20,11 @@ const ModalLink = (props: Props) => {
 
   return (
     <>
-      <CustomTooltip content={props.tooltip ? props.tooltip : ""} side="right">
+      <CustomTooltip
+        content={props.tooltip ? props.tooltip : ""}
+        side="right"
+        showOnTouch
+      >
         {props.href ? (
           <Link
             href={props.href}

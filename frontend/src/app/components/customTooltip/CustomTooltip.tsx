@@ -7,6 +7,7 @@ type TooltipProps = {
   side?: "top" | "right" | "bottom" | "left";
   hideOnClick?: boolean;
   lgHidden?: boolean;
+  showOnTouch?: boolean;
 };
 
 const CustomTooltip = ({
@@ -15,12 +16,13 @@ const CustomTooltip = ({
   side = "top",
   hideOnClick = false,
   lgHidden = false,
+  showOnTouch = false,
 }: TooltipProps) => {
   const closeTimeout = useRef<NodeJS.Timeout | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   const handlePointerEnter = (e: PointerEvent | any) => {
-    if (e.pointerType === "touch") {
+    if (e.pointerType === "touch" && !showOnTouch) {
       return;
     }
 
@@ -32,13 +34,25 @@ const CustomTooltip = ({
   };
 
   const handlePointerLeave = (e: PointerEvent | any) => {
-    if (e.pointerType === "touch") {
+    if (e.pointerType === "touch" && !showOnTouch) {
       return;
     }
 
     closeTimeout.current = setTimeout(() => {
       setIsOpen(false);
     }, 0);
+  };
+
+  const handleTouchStart = () => {
+    if (showOnTouch) {
+      setIsOpen(true);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (showOnTouch && hideOnClick) {
+      setIsOpen(false);
+    }
   };
 
   useEffect(() => {
@@ -68,6 +82,8 @@ const CustomTooltip = ({
           asChild
           onPointerEnter={handlePointerEnter}
           onPointerLeave={handlePointerLeave}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
           {children}
         </Tooltip.Trigger>
