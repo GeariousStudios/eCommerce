@@ -361,6 +361,8 @@ namespace backend.Controllers
                 user.Password = dto.Password;
             }
 
+            await _context.SaveChangesAsync();
+
             var result = new UserDto
             {
                 Id = user.Id,
@@ -375,7 +377,6 @@ namespace backend.Controllers
                 LastLogin = user.LastLogin,
             };
 
-            await _context.SaveChangesAsync();
             return Ok(result);
         }
     }

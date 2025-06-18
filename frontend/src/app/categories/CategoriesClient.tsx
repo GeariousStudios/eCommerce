@@ -207,23 +207,18 @@ type Item = {
   units: string[];
 
   creationDate: string;
-  lastUpdated: string;
+  updateDate: string;
   createdBy: string;
   updatedBy: string;
-
-  username: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  roles: string[];
-  isLocked: boolean;
-  isOnline: boolean;
-  lastLogin: string | null;
 };
 
 type Props = {
   isConnected: boolean | null;
+};
+
+type UnitOptions = {
+  id: number;
+  name: string;
 };
 
 const CategoriesClient = (props: Props) => {
@@ -233,15 +228,9 @@ const CategoriesClient = (props: Props) => {
   // --- States: Backend ---
   const [isLoadingContent, setIsLoadingItems] = useState(false);
   const [totalCounts, setTotalCounts] = useState<{
-    admins: number;
-    developers: number;
-    locked: number;
-    unlocked: number;
-
-    filteredAdmins: number;
-    filteredDevelopers: number;
-    filteredLocked: number;
-    filteredUnlocked: number;
+    unitCounts: Record<string, number>;
+    withSubCategories?: number;
+    withoutSubCategories?: number;
   } | null>(null);
 
   // --- States: Edit/Delete ---
@@ -265,10 +254,12 @@ const CategoriesClient = (props: Props) => {
   // --- States: Filter/Search ---
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [showAdmins, setShowAdmins] = useState(false);
-  const [showDevelopers, setShowDevelopers] = useState(false);
-  const [showLocked, setShowLocked] = useState(false);
-  const [showUnlocked, setShowUnlocked] = useState(false);
+  const [selectedUnitIds, setSelectedUnitIds] = useState<number[]>([]);
+  const [hasSubCategories, setHasSubCategories] = useState<boolean | null>(
+    null,
+  );
+
+  const [units, setUnits] = useState<UnitOptions[]>([]);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -362,19 +353,15 @@ const CategoriesClient = (props: Props) => {
         search: searchTerm,
       });
 
-      // if (showLocked && !showUnlocked) {
-      //   params.append("isLocked", "true");
-      // } else if (!showLocked && showUnlocked) {
-      //   params.append("isLocked", "false");
-      // }
+      if (selectedUnitIds.length > 0) {
+        selectedUnitIds.forEach((id) => {
+          params.append("units", id.toString());
+        });
+      }
 
-      // if (showAdmins) {
-      //   params.append("roles", "Admin");
-      // }
-
-      // if (showDevelopers) {
-      //   params.append("roles", "Developer");
-      // }
+      if (hasSubCategories !== null) {
+        params.append("hasSubCategories", String(hasSubCategories));
+      }
 
       // --- Data ---
       const response = await fetch(`${apiUrl}/category?${params.toString()}`, {
@@ -442,6 +429,33 @@ const CategoriesClient = (props: Props) => {
     }
   };
 
+  // --- Fetch units ---
+  const fetchUnits = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/unit`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        setUnits(result.items);
+      }
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  // --- FETCH UNITS INITIALIZATION ---
+  useEffect(() => {
+    fetchUnits();
+  }, []);
+
   // --- FETCH FREQUENCY ---
   useEffect(() => {
     fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
@@ -451,16 +465,14 @@ const CategoriesClient = (props: Props) => {
     sortBy,
     sortOrder,
     searchTerm,
-    showAdmins,
-    showDevelopers,
-    showLocked,
-    showUnlocked,
+    selectedUnitIds,
+    hasSubCategories,
   ]);
 
   // --- When filter, go to page 1 ---
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, showAdmins, showDevelopers, showLocked, showUnlocked]);
+  }, [searchTerm, hasSubCategories, selectedUnitIds]);
 
   // --- SORTING ---
   const handleSort = (field: string) => {
@@ -487,9 +499,7 @@ const CategoriesClient = (props: Props) => {
   // --- ITEM SELECTION ---
   const visibleContentIds = items.map((item) => item.id);
 
-  const selectableIds = items
-    .filter((item) => !item.roles.includes("Master"))
-    .map((item) => item.id);
+  const selectableIds = items.map((item) => item.id);
 
   const allSelected =
     selectableIds.length > 0 &&
@@ -497,7 +507,7 @@ const CategoriesClient = (props: Props) => {
 
   const selectCategory = (itemId: number) => {
     const item = items.find((u) => u.id === itemId);
-    if (!item || item.roles.includes("Master")) {
+    if (!item) {
       return;
     }
 
@@ -664,8 +674,8 @@ const CategoriesClient = (props: Props) => {
       <CategoryModal
         isOpen={isEditItemModalOpen}
         onClose={closeItemEditModal}
-        userId={editingItemId}
-        onUserUpdated={() => {
+        categoryId={editingItemId}
+        onCategoryUpdated={() => {
           fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
         }}
       />
@@ -804,20 +814,20 @@ const CategoriesClient = (props: Props) => {
               {/* --- Filter: One --- */}
               <Filter
                 filterRef={filterOneRef}
-                label="Behörigheter"
+                label="Underkategorier"
                 breakpoint="sm"
                 filterData={[
                   {
-                    label: "Admin",
-                    show: showAdmins,
-                    setShow: setShowAdmins,
-                    count: totalCounts?.filteredAdmins,
+                    label: "Har underkategorier",
+                    show: hasSubCategories === true,
+                    setShow: (val) => setHasSubCategories(val ? true : null),
+                    count: totalCounts?.withSubCategories ?? 0,
                   },
                   {
-                    label: "Developer",
-                    show: showDevelopers,
-                    setShow: setShowDevelopers,
-                    count: totalCounts?.filteredDevelopers,
+                    label: "Inga underkategorier",
+                    show: hasSubCategories === false,
+                    setShow: (val) => setHasSubCategories(val ? false : null),
+                    count: totalCounts?.withoutSubCategories ?? 0,
                   },
                 ]}
               />
@@ -825,22 +835,20 @@ const CategoriesClient = (props: Props) => {
               {/* --- Filter: Two --- */}
               <Filter
                 filterRef={filterTwoRef}
-                label="Status"
+                label="Enheter med åtkomst"
                 breakpoint="ml"
-                filterData={[
-                  {
-                    label: "Låst",
-                    show: showLocked,
-                    setShow: setShowLocked,
-                    count: totalCounts?.filteredLocked,
+                filterData={units.map((unit) => ({
+                  label: unit.name,
+                  show: selectedUnitIds.includes(unit.id),
+                  setShow: (val) => {
+                    setSelectedUnitIds((prev) =>
+                      val
+                        ? [...prev, unit.id]
+                        : prev.filter((u) => u !== unit.id),
+                    );
                   },
-                  {
-                    label: "Upplåst",
-                    show: showUnlocked,
-                    setShow: setShowUnlocked,
-                    count: totalCounts?.filteredUnlocked,
-                  },
-                ]}
+                  count: totalCounts?.unitCounts?.[unit.name] ?? 0,
+                }))}
               />
 
               {/* --- Filter: All --- */}
@@ -868,40 +876,37 @@ const CategoriesClient = (props: Props) => {
                       {/* --- All filter: One --- */}
                       <AllFilter
                         filterRef={allFilterOneRef}
-                        label="Behörigheter"
+                        label="Underkategorier"
                         filterData={[
                           {
-                            label: "Admin",
-                            show: showAdmins,
-                            setShow: setShowAdmins,
-                            count: totalCounts?.filteredAdmins,
+                            label: "Har underkategorier",
+                            show: hasSubCategories === true,
+                            setShow: (val) =>
+                              setHasSubCategories(val ? true : null),
                           },
                           {
-                            label: "Developer",
-                            show: showDevelopers,
-                            setShow: setShowDevelopers,
-                            count: totalCounts?.filteredDevelopers,
+                            label: "Inga underkategorier",
+                            show: hasSubCategories === false,
+                            setShow: (val) =>
+                              setHasSubCategories(val ? false : null),
                           },
                         ]}
                       />
 
                       <AllFilter
                         filterRef={allFilterTwoRef}
-                        label="Status"
-                        filterData={[
-                          {
-                            label: "Låst",
-                            show: showLocked,
-                            setShow: setShowLocked,
-                            count: totalCounts?.filteredLocked,
+                        label="Enheter med åtkomst"
+                        filterData={units.map((unit) => ({
+                          label: unit.name,
+                          show: selectedUnitIds.includes(unit.id),
+                          setShow: (val) => {
+                            setSelectedUnitIds((prev) =>
+                              val
+                                ? [...prev, unit.id]
+                                : prev.filter((u) => u !== unit.id),
+                            );
                           },
-                          {
-                            label: "Upplåst",
-                            show: showUnlocked,
-                            setShow: setShowUnlocked,
-                            count: totalCounts?.filteredUnlocked,
-                          },
-                        ]}
+                        }))}
                       />
                     </div>
 
@@ -915,17 +920,13 @@ const CategoriesClient = (props: Props) => {
                       </button>
                       <button
                         onClick={() => {
-                          setShowDevelopers(false);
-                          setShowAdmins(false);
-                          setShowLocked(false);
-                          setShowUnlocked(false);
+                          setHasSubCategories(null);
+                          setSelectedUnitIds([]);
                         }}
                         className={`${buttonSecondaryClass} w-full`}
                         disabled={
-                          !showDevelopers &&
-                          !showAdmins &&
-                          !showLocked &&
-                          !showUnlocked
+                          hasSubCategories === null &&
+                          selectedUnitIds.length === 0
                         }
                       >
                         Rensa alla
@@ -938,42 +939,44 @@ const CategoriesClient = (props: Props) => {
           </div>
 
           {/* --- Filter chips --- */}
-          {(showAdmins || showDevelopers || showLocked || showUnlocked) && (
+          {(hasSubCategories !== null || selectedUnitIds.length > 0) && (
             <div className="flex flex-wrap gap-4">
               <span className="flex items-center font-semibold text-[var(--text-secondary)]">
                 Aktiva filter:
               </span>
               <FilterChip
-                visible={showAdmins}
-                onClickEvent={setShowAdmins}
-                label="Admin"
+                visible={hasSubCategories === true}
+                onClickEvent={setHasSubCategories}
+                label="Har underkategorier"
               />
 
               <FilterChip
-                visible={showDevelopers}
-                onClickEvent={setShowDevelopers}
-                label="Developer"
+                visible={hasSubCategories === false}
+                onClickEvent={setHasSubCategories}
+                label="Inga underkategorier"
               />
 
-              <FilterChip
-                visible={showLocked}
-                onClickEvent={setShowLocked}
-                label="Låst"
-              />
-
-              <FilterChip
-                visible={showUnlocked}
-                onClickEvent={setShowUnlocked}
-                label="Upplåst"
-              />
+              {selectedUnitIds.map((unitId) => {
+                const unit = units.find((u) => u.id === unitId);
+                return (
+                  <FilterChip
+                    key={unitId}
+                    visible={true}
+                    onClickEvent={() =>
+                      setSelectedUnitIds((prev) =>
+                        prev.filter((u) => u !== unitId),
+                      )
+                    }
+                    label={unit?.name ?? ""}
+                  />
+                );
+              })}
 
               <button
                 className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]"
                 onClick={() => {
-                  setShowAdmins(false);
-                  setShowDevelopers(false);
-                  setShowLocked(false);
-                  setShowUnlocked(false);
+                  setHasSubCategories(null);
+                  setSelectedUnitIds([]);
                 }}
               >
                 <span className="font-semibold text-[var(--accent-color)]">
@@ -1026,19 +1029,19 @@ const CategoriesClient = (props: Props) => {
                   />
 
                   <ThCell
-                    sortingItem="subCategories"
-                    label="Underkategorier"
-                    labelAsc="underkategorier Ö-A"
-                    labelDesc="underkategorier A-Ö"
+                    sortingItem="units"
+                    label="Enheter med åtkomst"
+                    labelAsc="enheter med åtkomst Ö-A"
+                    labelDesc="enheter med åtkomst A-Ö"
                     classNameAddition="hidden lg:table-cell"
                   />
 
                   <ThCell
-                    sortingItem="units"
-                    label="Enheter"
-                    labelAsc="enheter Ö-A"
-                    labelDesc="enheter A-Ö"
-                    classNameAddition="hidden sm:table-cell"
+                    sortingItem="subCategories"
+                    label="Underkategorier"
+                    labelAsc="underkategorier Ö-A"
+                    labelDesc="underkategorier A-Ö"
+                    classNameAddition="hidden xs:table-cell"
                   />
                 </tr>
               </thead>
@@ -1056,10 +1059,8 @@ const CategoriesClient = (props: Props) => {
                           icon="search"
                           content={
                             searchTerm ||
-                            showAdmins ||
-                            showDevelopers ||
-                            showLocked ||
-                            showUnlocked
+                            selectedUnitIds.length > 0 ||
+                            hasSubCategories !== null
                               ? "Inga kategorier kunde hittas med det sökkriteriet."
                               : "Det finns inga kategorier."
                           }
@@ -1095,7 +1096,7 @@ const CategoriesClient = (props: Props) => {
                       return (
                         <tr key={item.id} className={rowClass}>
                           <td
-                            className={`${tdClass} ${item.roles.includes("Master") ? "pointer-events-none" : ""} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0 transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
+                            className={`${tdClass} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0 transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
                             onClick={() => selectCategory(item.id)}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
@@ -1109,45 +1110,37 @@ const CategoriesClient = (props: Props) => {
                                 <Input
                                   type="checkbox"
                                   checked={selectedItems.includes(item.id)}
-                                  id={
-                                    item.roles.includes("Master")
-                                      ? "disabled"
-                                      : ""
-                                  }
                                   readOnly
                                 />
                               </div>
                             </div>
                           </td>
 
-                          <TdCell>{item.username}</TdCell>
+                          <TdCell>{item.name}</TdCell>
 
                           <TdCell classNameAddition="hidden xs:table-cell">
-                            {item.firstName}
-                          </TdCell>
-
-                          <TdCell classNameAddition="hidden sm:table-cell">
-                            {item.lastName}
+                            <div className="flex flex-wrap gap-2">
+                              {item.units.map((unit, i) => (
+                                <span
+                                  key={i}
+                                  className="flex h-6 items-center justify-center rounded-xl bg-[var(--bg-navbar-link)] px-4 text-sm font-semibold"
+                                >
+                                  {unit}
+                                </span>
+                              ))}
+                            </div>
                           </TdCell>
 
                           <TdCell classNameAddition="hidden lg:table-cell">
-                            {item.email}
-                          </TdCell>
-
-                          <TdCell classNameAddition="hidden xl:table-cell">
-                            {(Array.isArray(item.roles)
-                              ? item.roles
-                              : [item.roles || ""]
-                            ).join(", ")}
-                          </TdCell>
-
-                          <TdCell classNameAddition=" w-28 min-w-28 border-r-0 2xs:table-cell hidden">
-                            <div className="flex items-center justify-center">
-                              <span
-                                className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-64 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
-                              >
-                                {item.isLocked ? "Låst" : "Upplåst"}
-                              </span>
+                            <div className="flex flex-wrap gap-2">
+                              {item.subCategories.map((subCategory, i) => (
+                                <span
+                                  key={i}
+                                  className="flex h-6 items-center justify-center rounded-xl bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-reverse)]"
+                                >
+                                  {subCategory}
+                                </span>
+                              ))}
                             </div>
                           </TdCell>
                         </tr>
@@ -1275,67 +1268,64 @@ const CategoriesClient = (props: Props) => {
                   .filter((u) => u.id === selectedItems[0])
                   .map((item) => (
                     <div key={item.id} className="flex flex-col gap-8">
-                      <div>
-                        {item.isOnline ? (
-                          <span className="font-semibold text-[var(--unlocked)]">
-                            Online
-                          </span>
-                        ) : (
-                          <span className="font-semibold text-[var(--locked)]">
-                            Offline
-                          </span>
-                        )}
-
+                      <div className="flex flex-col gap-8">
                         <p>
                           <strong>Namn: </strong>
-                          {item.username}
+                          {item.name}
                         </p>
 
-                        <p>
-                          <strong>Underkategorier: </strong>
-                          {item.firstName}
-                        </p>
-
-                        <p>
-                          <strong>Efternamn: </strong>
-                          {item.lastName}
-                        </p>
-
-                        <p>
-                          <strong>Mejladress: </strong>
-                          {item.email}
-                        </p>
-
-                        <p className="flex">
-                          <strong>Behörigheter:&nbsp;</strong>
-                          {item.roles.map((role, i) => (
-                            <span key={i}>
-                              {role}
-                              {i < item.roles.length - 1 ? ",\u00A0" : ""}
-                            </span>
-                          ))}
-                        </p>
-
-                        <div className="mt-2">
-                          <span
-                            className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-28 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
+                        <div
+                          className={`${item.units.length > 0 ? "gap-2" : ""} flex flex-col`}
+                        >
+                          <div
+                            className={`${item.units.length > 0 ? "flex-col gap-2" : ""} flex`}
                           >
-                            {item.isLocked ? "Låst" : "Upplåst"}
-                          </span>
+                            <strong>Enheter med åtkomst: </strong>
+                            <div className="flex flex-wrap gap-2">
+                              {item.units.length > 0
+                                ? item.units.map((unit, i) => (
+                                    <span
+                                      key={i}
+                                      className="flex h-6 items-center justify-center rounded-xl bg-[var(--bg-navbar-link)] px-4 text-sm font-semibold"
+                                    >
+                                      {unit}
+                                    </span>
+                                  ))
+                                : "\u00A0-"}
+                            </div>
+                          </div>
+
+                          <div
+                            className={`${item.subCategories.length > 0 ? "flex-col gap-2" : ""} flex`}
+                          >
+                            <strong>Underkategorier: </strong>
+                            <div className="flex flex-wrap gap-2">
+                              {item.subCategories.length > 0
+                                ? item.subCategories.map((subCategory, i) => (
+                                    <span
+                                      key={i}
+                                      className="flex h-6 items-center justify-center rounded-xl bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-reverse)]"
+                                    >
+                                      {subCategory}
+                                    </span>
+                                  ))
+                                : "\u00A0-"}
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                       <div>
                         <p>
-                          <strong>Senast inloggad: </strong>
-                          {item.lastLogin
-                            ? new Date(item.lastLogin).toLocaleString()
-                            : "Aldrig"}
+                          <strong>Skapad: </strong>
+                          {new Date(item.creationDate).toLocaleString()} av{" "}
+                          {item.createdBy}
                         </p>
 
                         <p>
-                          <strong>Konto skapat: </strong>
-                          {new Date(item.creationDate).toLocaleString()}
+                          <strong>Uppdaterad: </strong>
+                          {new Date(item.updateDate).toLocaleString()} av{" "}
+                          {item.updatedBy}
                         </p>
                       </div>
                     </div>

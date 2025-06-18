@@ -134,6 +134,8 @@ namespace backend.Controllers
             newsItem.Author = userInfo.Value.User;
             newsItem.AuthorId = userInfo.Value.UserId;
 
+            await _context.SaveChangesAsync();
+
             var result = new NewsDto
             {
                 Id = newsItem.Id,
@@ -144,8 +146,6 @@ namespace backend.Controllers
                 Author = newsItem.Author,
                 AuthorId = newsItem.AuthorId,
             };
-
-            await _context.SaveChangesAsync();
 
             return Ok(result);
         }

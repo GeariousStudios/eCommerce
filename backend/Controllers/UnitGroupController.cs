@@ -245,6 +245,8 @@ namespace backend.Controllers
             unitGroup.UpdateDate = now;
             unitGroup.UpdatedBy = updatedBy;
 
+            await _context.SaveChangesAsync();
+
             var result = new UnitGroupDto
             {
                 Id = unitGroup.Id,
@@ -255,7 +257,6 @@ namespace backend.Controllers
                 UpdatedBy = unitGroup.UpdatedBy,
             };
 
-            await _context.SaveChangesAsync();
             return Ok(result);
         }
     }

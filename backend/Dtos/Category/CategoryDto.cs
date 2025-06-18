@@ -4,7 +4,13 @@ namespace backend.Dtos.Category
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string[]? Units { get; set; }
-        public string[]? SubCategories { get; set; }
+        public List<string> Units { get; set; } = new();
+        public List<string> SubCategories { get; set; } = new();
+
+        // Meta data.
+        public DateTime CreationDate { get; set; }
+        public DateTime UpdateDate { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
+        public string UpdatedBy { get; set; } = string.Empty;
     }
 }

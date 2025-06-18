@@ -14,12 +14,24 @@ namespace backend.Data
         public DbSet<Unit> Units { get; set; }
         public DbSet<UnitGroup> UnitGroups { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<SubCategory> SubCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // UserPreferences <-> User is 1-to-1 relationship.
+            // Category <-> Unit many-to-many relationship.
+            modelBuilder.Entity<Category>().HasMany(c => c.Units).WithMany();
+
+            // Category <-> SubCategory 1-to-1 relationship.
+            modelBuilder
+                .Entity<Category>()
+                .HasMany(c => c.SubCategories)
+                .WithOne(sc => sc.Category)
+                .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // UserPreferences <-> User 1-to-1 relationship.
             modelBuilder
                 .Entity<User>()
                 .HasOne(u => u.UserPreferences)

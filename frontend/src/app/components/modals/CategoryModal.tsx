@@ -8,9 +8,11 @@ import { useToast } from "../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
+  roundedButtonClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase from "./ModalBase";
 import MultiDropdown from "../dropdowns/MultiDropdown";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 
 type Props = {
   isOpen: boolean;
@@ -32,8 +34,10 @@ const CategoryModal = (props: Props) => {
   // --- States ---
   const [name, setName] = useState("");
   const [unit, setUnit] = useState<string[]>([]);
+  const [subCategory, setSubCategory] = useState<string[]>([]);
   const [isHidden, setIsHidden] = useState(false);
 
+  const [newSubCategory, setNewSubCategory] = useState("");
   const [units, setUnits] = useState<UnitOptions[]>([]);
 
   // --- Other ---
@@ -42,21 +46,29 @@ const CategoryModal = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (!props.isOpen) {
-      return;
+    if (props.isOpen) {
+      fetchUnits();
     }
+  }, [props.isOpen]);
 
-    fetchUnits();
-
-    if (props.categoryId !== null && props.categoryId !== undefined) {
+  useEffect(() => {
+    if (
+      props.isOpen &&
+      props.categoryId !== null &&
+      props.categoryId !== undefined &&
+      units.length > 0
+    ) {
       fetchCategory();
     } else {
       setName("");
+      setUnit([]);
+      setSubCategory([]);
+      setNewSubCategory("");
     }
-  }, [props.isOpen, props.categoryId]);
+  }, [props.isOpen, props.categoryId, units]);
 
   // --- BACKEND ---
-  // --- Add unit ---
+  // --- Add category ---
   const addCategory = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -69,6 +81,8 @@ const CategoryModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
+          units: unit.map(Number),
+          subCategories: subCategory,
         }),
       });
 
@@ -169,6 +183,16 @@ const CategoryModal = (props: Props) => {
 
   const fillCategoryData = (result: any) => {
     setName(result.name ?? "");
+
+    const unitIds = result.units
+      ?.map((unitName: string) => {
+        const found = units.find((u) => u.name === unitName);
+        return found ? String(found.id) : null;
+      })
+      .filter(Boolean) as string[];
+
+    setUnit(unitIds);
+    setSubCategory(result.subCategories ?? []);
   };
 
   // --- Update category ---
@@ -186,6 +210,8 @@ const CategoryModal = (props: Props) => {
           },
           body: JSON.stringify({
             name,
+            units: unit.map(Number),
+            subCategories: subCategory,
           }),
         },
       );
@@ -240,6 +266,47 @@ const CategoryModal = (props: Props) => {
 
   const handleSaveClick = () => {
     formRef.current?.requestSubmit();
+  };
+
+  const addSubCategory = () => {
+    const trimmed = newSubCategory.trim();
+
+    if (trimmed) {
+      if (!subCategory.includes(trimmed)) {
+        setSubCategory((prev) =>
+          [...prev, trimmed].sort((a, b) => a.localeCompare(b, "sv")),
+        );
+        setNewSubCategory("");
+      } else {
+        notify("error", "En underkategori med samma namn finns redan");
+      }
+    } else {
+      notify("error", "Ange namnet på underkategorin först");
+    }
+  };
+
+  // --- COMPONENTS ---
+  // --- SubCategoryChip ---
+  const SubCategoryChip = ({
+    label,
+    onDelete,
+  }: {
+    label: string;
+    onDelete: () => void;
+  }) => {
+    return (
+      <>
+        <button
+          className={`${roundedButtonClass} group w-auto gap-2 !bg-[var(--bg-modal-link)] px-4`}
+          onClick={onDelete}
+        >
+          <span className="truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]">
+            {label}
+          </span>
+          <XMarkIcon className="h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]" />
+        </button>
+      </>
+    );
   };
 
   return (
@@ -302,16 +369,48 @@ const CategoryModal = (props: Props) => {
               <hr className="w-full text-[var(--border-main)]" />
             </div>
 
-            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
+            <div className="flex gap-4">
               <Input
-                label={"Underkategori"}
-                value={name}
-                onChange={(val) => setName(String(val))}
+                value={newSubCategory}
+                onChange={(val) => setNewSubCategory(String(val))}
                 onModal={true}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addSubCategory();
+                  }
+                }}
               />
+
+              <button
+                type="button"
+                onClick={addSubCategory}
+                className={`${buttonPrimaryClass}`}
+              >
+                <PlusIcon />
+              </button>
             </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+            {subCategory.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {subCategory
+                  .slice()
+                  .sort((a, b) => a.localeCompare(b, "sv"))
+                  .map((sub, index) => (
+                    <SubCategoryChip
+                      key={index}
+                      label={sub}
+                      onDelete={() =>
+                        setSubCategory((prev) =>
+                          prev.filter((_, i) => i !== prev.indexOf(sub)),
+                        )
+                      }
+                    />
+                  ))}
+              </div>
+            )}
+
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-between">
               <button
                 type="button"
                 onClick={handleSaveClick}

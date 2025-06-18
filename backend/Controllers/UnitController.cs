@@ -288,6 +288,8 @@ namespace backend.Controllers
             unit.UpdateDate = now;
             unit.UpdatedBy = updatedBy;
 
+            await _context.SaveChangesAsync();
+
             var result = new UnitDto
             {
                 Id = unit.Id,
@@ -300,7 +302,6 @@ namespace backend.Controllers
                 UpdatedBy = unit.UpdatedBy,
             };
 
-            await _context.SaveChangesAsync();
             return Ok(result);
         }
     }
