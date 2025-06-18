@@ -273,7 +273,7 @@ const NavbarSubmenu = (props: Props) => {
                                     (!item.requiresDev || isDev) && (
                                       <div>
                                         <li
-                                          className={`${item.title ? "truncate pt-4 pb-1 text-xs font-semibold" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
+                                          className={`${item.title ? "truncate pt-4 pb-1 text-xs font-semibold uppercase" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
                                         >
                                           {item.title ?? ""}
                                         </li>

@@ -1,3 +1,5 @@
+"use client";
+
 import { hyperLinkButtonClass } from "@/app/styles/buttonClasses";
 import {
   ArrowPathIcon,
@@ -10,6 +12,8 @@ import {
   TagIcon,
   InboxIcon,
   InboxStackIcon,
+  LockClosedIcon,
+  WrenchScrewdriverIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { ElementType, ReactNode, useEffect, useState } from "react";
@@ -32,6 +36,8 @@ const iconMap: Record<string, ElementType> = {
   unitGroup: InboxStackIcon,
   beware: ExclamationCircleIcon,
   search: MagnifyingGlassCircleIcon,
+  lock: LockClosedIcon,
+  work: WrenchScrewdriverIcon,
 };
 
 const contentMap: Record<string, ReactNode> = {
@@ -49,6 +55,17 @@ const contentMap: Record<string, ReactNode> = {
     </div>
   ),
   server: "Ingen kontakt med servern, försök igen senare!",
+  lock: (
+    <div className="flex flex-col">
+      <span>Sidan är ej tillgänglig för tillfället!</span>{" "}
+      <span>Försök igen senare.</span>
+    </div>
+  ),
+  fof: (
+    <div className="flex flex-col">
+      <span>Sidan kunde inte hittas.</span>
+    </div>
+  ),
 };
 
 const Message = (props: Props) => {

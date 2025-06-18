@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Route("unit")]
     public class UnitController : ControllerBase
     {
@@ -139,6 +138,7 @@ namespace backend.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUnit(int id)
         {
             var unit = await _context.Units.FindAsync(id);
@@ -160,6 +160,7 @@ namespace backend.Controllers
         }
 
         [HttpPost("create")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateUnit(CreateUnitDto dto)
         {
             if (!ModelState.IsValid)
@@ -233,6 +234,7 @@ namespace backend.Controllers
         }
 
         [HttpPut("update/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUnit(int id, UpdateUnitDto dto)
         {
             var unit = await _context.Units.FindAsync(id);

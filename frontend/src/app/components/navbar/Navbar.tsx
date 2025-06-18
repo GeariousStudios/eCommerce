@@ -62,7 +62,6 @@ const Navbar = (props: Props) => {
       const response = await fetch(`${apiUrl}/unit`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -87,7 +86,7 @@ const Navbar = (props: Props) => {
 
           acc[groupName].push({
             label: unit.name,
-            href: `#`,
+            href: `/unit/${unit.id}`,
           });
 
           return acc;
@@ -111,6 +110,11 @@ const Navbar = (props: Props) => {
       }
     } catch (err) {}
   };
+
+  // --- INITIALLY FETCH UNITS ---
+  useEffect(() => {
+    fetchUnits();
+  }, [isAuthReady]);
 
   // --- SCROLLBAR OBSERVER ---
   useEffect(() => {
@@ -234,11 +238,6 @@ const Navbar = (props: Props) => {
                     },
                   ]}
                   hasScrollbar={props.hasScrollbar}
-                  onOpen={() => {
-                    if (isAuthReady && units.length === 0) {
-                      fetchUnits();
-                    }
-                  }}
                 />
 
                 <NavbarLink

@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Route("unit-group")]
     public class UnitGroupController : ControllerBase
     {
@@ -114,6 +113,7 @@ namespace backend.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUnitGroup(int id)
         {
             var unitGroup = await _context
@@ -137,6 +137,7 @@ namespace backend.Controllers
         }
 
         [HttpPost("create")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateUnitGroup(CreateUnitGroupDto dto)
         {
             if (!ModelState.IsValid)
@@ -199,6 +200,7 @@ namespace backend.Controllers
         }
 
         [HttpPut("update/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUnitGroup(int id, UpdateUnitGroupDto dto)
         {
             var unitGroup = await _context.UnitGroups.FindAsync(id);

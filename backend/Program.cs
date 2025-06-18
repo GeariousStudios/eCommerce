@@ -100,10 +100,10 @@ using (var scope = app.Services.CreateScope())
         var newsItem = new News
         {
             Date = DateTime.Today,
-            Type = "Information",
-            Headline = "Välkommen",
+            Type = "Välkomna hit",
+            Headline = "Testa, klicka runt och upptäck!",
             Content =
-                "<div><p>Webb-ie är ett work-in-progress som kanske eller kanske inte blir något. I dagsläget kan du lägga till och redigera nyheter i denna vy och under <strong style='color: rgb(102, 185, 102);'>Användare</strong> kan du filtrera, skapa och redigera användare. Och så klart så kan du växla mellan mörkt eller ljust tema. </p><p><br></p><p>All data som läggs in i databasen vid en session försvinner efter 15 minuters inaktivitet på hemsidan. Hoppas vi hörs! 😊</p><p><br></p><p><strong>Kontaktuppgifter</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>liam0765@outlook.com</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>0765948648</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>https://www.linkedin.com/in/liam-fritzson-540206362/</li></ol><p><br></p><p><strong>Maskineri</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Frontend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span>Bibliotek/ramverk: React (Next.js)</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span>Språk: Tailwind 🧡, CSS och TypeScript</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span>Komponentsbibliotek: Inget</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span>Ikonbibliotek: Heroicons</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Backend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span>Ramverk: ASP NET Core</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span>Språk: C#</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span>Databas: SQLite</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span>Server: Render</li></ol></div>",
+                "<div><p>Den här webbapplikationen är ett exempel på mina färdigheter inom frontend- och backendutveckling. Mycket funktionalitet och finess saknas, men kärnan finns på plats.</p><p><br></p><p>I dagsläget kan du göra följande:</p><p><br></p><p><strong style='color: rgb(102, 163, 224);'>ANVÄNDARE</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Logga in</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Ändra enkla inställningar kopplat till ditt konto</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Hantera användare</li></ol><p><br></p><p><strong style='color: rgb(102, 163, 224);'>RAPPORTERING</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa enhetsgrupp (t.ex. Fyllning)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa enhet och knyta till enhetsgrupp (t.ex. Lina I)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa kategori + underkategori och knyta till enhet (t.ex. Innerpåstillverkning -&gt; Maskindel 1A)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Gå in på din enhet (och i framtiden även kunn rapportera såklart)</li></ol><p><br></p><p><strong style='color: rgb(102, 163, 224);'>ÖVRIGT</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Administrera nyheter här på startsidan</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Mörkt/ljust tema</li></ol><p><br></p><p>!!!</p><p><strong><em>Notera</em></strong> att när servern har haft inaktivitet i över 15 minuter så raderas databasen, vilket betyder att om du återvänder hit så kommer du ha en ny databas. Detta eftersom jag använder en gratis databashantering med ett gratis serveralternativ.</p><p>!!!</p><p><br></p><p><strong style='color: rgb(194, 133, 255);'>MASKINERI</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Frontend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Bibliotek/ramverk:</strong> React (Next.js)</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> TypeScript, Tailwind, CSS</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Komponentsbibliotek:</strong> Inget, samtliga komponenter är skapade av mig</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ikonbibliotek:</strong> heroicons.com</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Backend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ramverk:</strong> ASP NET Core</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> C#</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Databas:</strong> SQLite</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Server:</strong> Render</li></ol><p><br></p><p><strong style='color: rgb(194, 133, 255);'>KONTAKTUPPGIFTER</strong></p><p>liam0765@outlook.com</p><p>0765948648</p><p>https://www.linkedin.com/in/liam-fritzson-540206362/</p></div>",
             Author = "Liam Fritzson",
             AuthorId = 1996,
         };
@@ -111,8 +111,8 @@ using (var scope = app.Services.CreateScope())
         var masterUser = new User
         {
             Username = "master",
-            FirstName = "Mästare",
-            LastName = "Mästersson",
+            FirstName = "Förnamn",
+            LastName = "Efternamn",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("master"),
             Roles = UserRoles.Developer | UserRoles.Admin | UserRoles.Master,
             UserPreferences = new UserPreferences { Theme = "dark" },
@@ -140,10 +140,86 @@ using (var scope = app.Services.CreateScope())
             CreationDate = DateTime.UtcNow,
         };
 
+        var unitGroupOne = new UnitGroup
+        {
+            Name = "Fyllning",
+            Units = new List<Unit>(),
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "Liam Fritzson",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "Liam Fritzson",
+        };
+
+        var unitOne = new Unit
+        {
+            Name = "Lina I",
+            IsHidden = false,
+            UnitGroup = unitGroupOne,
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "Liam Fritzson",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "Liam Fritzson",
+        };
+
+        var unitTwo = new Unit
+        {
+            Name = "Lina II",
+            IsHidden = false,
+            UnitGroup = unitGroupOne,
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "Liam Fritzson",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "Liam Fritzson",
+        };
+
+        var unitGroupTwo = new UnitGroup
+        {
+            Name = "Paketering",
+            Units = new List<Unit>(),
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "Liam Fritzson",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "Liam Fritzson",
+        };
+
+        var unitThree = new Unit
+        {
+            Name = "Lina IV",
+            IsHidden = false,
+            UnitGroup = unitGroupTwo,
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "Liam Fritzson",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "Liam Fritzson",
+        };
+
+        var categoryOne = new Category
+        {
+            Name = "Innerpåstillverkning",
+            Units = new List<Unit> { unitOne, unitTwo },
+            SubCategories = new List<SubCategory>
+            {
+                new SubCategory { Name = "Maskindel 1A" },
+                new SubCategory { Name = "Maskindel 2B" },
+            },
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "Liam Fritzson",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "Liam Fritzson",
+        };
+
+        unitGroupOne.Units.Add(unitOne);
+        unitGroupOne.Units.Add(unitTwo);
+        unitGroupTwo.Units.Add(unitThree);
+
         db.News.Add(newsItem);
         db.Users.Add(masterUser);
         db.Users.Add(testUserOne);
         db.Users.Add(testUserTwo);
+        db.UnitGroups.Add(unitGroupOne);
+        db.UnitGroups.Add(unitGroupTwo);
+        db.Categories.Add(categoryOne);
+
         await db.SaveChangesAsync();
     }
 }

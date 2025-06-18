@@ -990,21 +990,28 @@ const UnitsClient = (props: Props) => {
                   <>
                     {items.map((item, index) => {
                       const isEven = index % 2 === 0;
-                      const rowClass = isEven
-                        ? "bg-[var(--bg-grid)]"
-                        : "bg-[var(--bg-grid-zebra)]";
+                      const isSelected = selectedItems.includes(item.id);
+                      const rowClass = `${
+                        isEven
+                          ? "bg-[var(--bg-grid)]"
+                          : "bg-[var(--bg-grid-zebra)]"
+                      } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""}
+                        hover:bg-[var(--bg-grid-header-hover)] cursor-pointer transition-[background] duration-[var(--fast)]`;
 
                       return (
-                        <tr key={item.id} className={rowClass}>
+                        <tr
+                          key={item.id}
+                          className={rowClass}
+                          onClick={() => selectUnit(item.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              selectUnit(item.id);
+                            }
+                          }}
+                        >
                           <td
-                            className={`${tdClass} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0 transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
-                            onClick={() => selectUnit(item.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                selectUnit(item.id);
-                              }
-                            }}
+                            className={`${tdClass} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0`}
                           >
                             <div className="flex items-center justify-center">
                               <div className="flex items-center justify-center">

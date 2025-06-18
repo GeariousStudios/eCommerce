@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Message from "../components/message/Message";
 import useAuthStatus from "../hooks/useAuthStatus";
 
-const CategoriesClient = dynamic(() => import("./UnitsClient"), {
+const UnitsClient = dynamic(() => import("./UnitsClient"), {
   ssr: false,
   loading: () => (
     <Message icon="loading" content="Laddar in sidan..." fullscreen={true} />
@@ -22,7 +22,7 @@ const UnitsWrapper = () => {
     return <Message icon="deny" content="deny" fullscreen={true} />;
   }
 
-  return <CategoriesClient isConnected={isConnected} />;
+  return <UnitsClient isConnected={isConnected} />;
 };
 
 export default UnitsWrapper;
