@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\se52374\\OneDrive - Fresenius\\PC\\Documents\\GitHub\\eCommerce\\backend\\eCommerce.csproj": {}
+    "C:\\dev\\eCommerce\\backend\\eCommerce.csproj": {}
   },
   "projects": {
-    "C:\\Users\\se52374\\OneDrive - Fresenius\\PC\\Documents\\GitHub\\eCommerce\\backend\\eCommerce.csproj": {
+    "C:\\dev\\eCommerce\\backend\\eCommerce.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\se52374\\OneDrive - Fresenius\\PC\\Documents\\GitHub\\eCommerce\\backend\\eCommerce.csproj",
+        "projectUniqueName": "C:\\dev\\eCommerce\\backend\\eCommerce.csproj",
         "projectName": "eCommerce",
-        "projectPath": "C:\\Users\\se52374\\OneDrive - Fresenius\\PC\\Documents\\GitHub\\eCommerce\\backend\\eCommerce.csproj",
+        "projectPath": "C:\\dev\\eCommerce\\backend\\eCommerce.csproj",
         "packagesPath": "C:\\Users\\se52374\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\se52374\\OneDrive - Fresenius\\PC\\Documents\\GitHub\\eCommerce\\backend\\obj\\",
+        "outputPath": "C:\\dev\\eCommerce\\backend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
