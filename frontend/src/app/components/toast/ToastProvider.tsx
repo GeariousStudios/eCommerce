@@ -14,13 +14,17 @@ type ToastType = "success" | "error" | "info";
 
 type ToastItem = {
   id: string;
-  content: string;
+  content: string | ReactNode;
   type: ToastType;
   duration?: number;
 };
 
 type ToastContextType = {
-  notify: (type: ToastType, content: string, duration?: number) => void;
+  notify: (
+    type: ToastType,
+    content: string | ReactNode,
+    duration?: number,
+  ) => void;
 };
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -39,7 +43,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const notify = useCallback(
-    (type: ToastType, content: string, duration?: number) => {
+    (type: ToastType, content: string | ReactNode, duration?: number) => {
       const id = uuid();
       setToasts((prev) => [...prev, { id, type, content, duration }]);
 
@@ -60,7 +64,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ToastContext.Provider value={{ notify }}>
       {children}
-      <div className="fixed bottom-4 z-[calc(var(--z-tooltip)-1)] mx-4 flex w-[calc(100%-2rem)] flex-col sm:mx-0 gap-4 sm:right-4 sm:w-72 sm:min-w-72">
+      <div className="fixed bottom-4 z-[calc(var(--z-tooltip)-1)] mx-4 flex w-[calc(100%-2rem)] flex-col gap-4 sm:right-4 sm:mx-0 sm:w-72 sm:min-w-72">
         {toasts.map((n) => (
           <Toast
             key={n.id}

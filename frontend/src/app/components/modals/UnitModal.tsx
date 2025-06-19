@@ -121,7 +121,13 @@ const UnitModal = (props: Props) => {
 
       props.onClose();
       props.onUnitUpdated();
-      notify("success", "Enhet skapad!", 4000);
+      notify(
+        "success",
+        <>
+          Enhet skapad! <p>Uppdatera sidan (F5) för att hitta den i menyn</p>
+        </>,
+        4000,
+      );
     } catch (err) {
       notify("error", String(err));
     }
