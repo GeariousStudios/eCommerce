@@ -333,7 +333,22 @@ const SettingsModal = (props: Props) => {
                 <div className={`${itemRowClass}`}>
                   <span>Lösenord</span>
 
-                  {editingField === "password" ? (
+                  {username === "master" ? (
+                    <div className="flex items-center gap-4">
+                      <span className="w-48">•••••••••</span>
+                      <CustomTooltip
+                        content="Kan inte redigera lösenord för master-konto!"
+                        showOnTouch
+                      >
+                        <button
+                          className={`${iconButtonPrimaryClass} !h-6 !w-6`}
+                          disabled
+                        >
+                          <PencilIcon />
+                        </button>
+                      </CustomTooltip>
+                    </div>
+                  ) : editingField === "password" ? (
                     <div className="flex items-center gap-4">
                       <Input
                         placeholder="•••••••••"
@@ -389,7 +404,11 @@ const SettingsModal = (props: Props) => {
                     </div>
                   ) : (
                     <div className="flex items-center gap-4">
-                      <CustomTooltip side="left" content={firstName} showOnTouch>
+                      <CustomTooltip
+                        side="left"
+                        content={firstName}
+                        showOnTouch
+                      >
                         <span className="w-48 truncate overflow-x-hidden">
                           {firstName}
                         </span>

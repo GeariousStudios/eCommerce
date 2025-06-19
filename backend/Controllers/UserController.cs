@@ -31,9 +31,11 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Användarnamn och lösenord måste fyllas i" });
             }
 
+            var loweredUsername = dto.Username.ToLower();
+
             var user = await _context
                 .Users.Include(u => u.UserPreferences)
-                .FirstOrDefaultAsync(u => u.Username == dto.Username);
+                .FirstOrDefaultAsync(u => u.Username.ToLower() == loweredUsername);
 
             if (user == null)
             {
