@@ -14,6 +14,7 @@ import {
 import MultiDropdown from "../dropdowns/MultiDropdown";
 import ModalBase from "./ModalBase";
 import SingleDropdown from "../dropdowns/SingleDropdown";
+import router from "next/router";
 
 type Props = {
   isOpen: boolean;
@@ -128,6 +129,7 @@ const UnitModal = (props: Props) => {
         </>,
         4000,
       );
+      router.push(`/unit/${result.id}`);
     } catch (err) {
       notify("error", String(err));
     }

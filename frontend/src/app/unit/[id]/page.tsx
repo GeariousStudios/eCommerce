@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation";
 import UnitWrapper from "../UnitWrapper";
 
+// export const dynamic = "force-dynamic";
+
 export default function Page() {
   return <UnitWrapper />;
 }
 
 // export async function generateStaticParams(): Promise<{ id: string }[]> {
 //   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  
+
 //   const response = await fetch(`${apiUrl}/unit`, {
 //     headers: { "Content-Type": "application/json" },
 //   });
