@@ -887,12 +887,14 @@ const CategoriesClient = (props: Props) => {
                             show: hasSubCategories === true,
                             setShow: (val) =>
                               setHasSubCategories(val ? true : null),
+                            count: totalCounts?.withSubCategories ?? 0,
                           },
                           {
                             label: "Inga underkategorier",
                             show: hasSubCategories === false,
                             setShow: (val) =>
                               setHasSubCategories(val ? false : null),
+                            count: totalCounts?.withoutSubCategories ?? 0,
                           },
                         ]}
                       />
@@ -910,6 +912,7 @@ const CategoriesClient = (props: Props) => {
                                 : prev.filter((u) => u !== unit.id),
                             );
                           },
+                          count: totalCounts?.unitCounts?.[unit.name] ?? 0,
                         }))}
                       />
                     </div>
@@ -1093,21 +1096,28 @@ const CategoriesClient = (props: Props) => {
                   <>
                     {items.map((item, index) => {
                       const isEven = index % 2 === 0;
-                      const rowClass = isEven
-                        ? "bg-[var(--bg-grid)]"
-                        : "bg-[var(--bg-grid-zebra)]";
+                      const isSelected = selectedItems.includes(item.id);
+                      const rowClass = `${
+                        isEven
+                          ? "bg-[var(--bg-grid)]"
+                          : "bg-[var(--bg-grid-zebra)]"
+                      } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""}
+                        hover:bg-[var(--bg-grid-header-hover)] cursor-pointer transition-[background] duration-[var(--fast)]`;
 
                       return (
-                        <tr key={item.id} className={rowClass}>
+                        <tr
+                          key={item.id}
+                          className={rowClass}
+                          onClick={() => selectCategory(item.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              selectCategory(item.id);
+                            }
+                          }}
+                        >
                           <td
-                            className={`${tdClass} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0 transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
-                            onClick={() => selectCategory(item.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                selectCategory(item.id);
-                              }
-                            }}
+                            className={`${tdClass} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0`}
                           >
                             <div className="flex items-center justify-center">
                               <div className="flex items-center justify-center">
@@ -1122,7 +1132,7 @@ const CategoriesClient = (props: Props) => {
 
                           <TdCell>{item.name}</TdCell>
 
-                          <TdCell classNameAddition="hidden xs:table-cell">
+                          <TdCell classNameAddition="hidden lg:table-cell">
                             <div className="flex flex-wrap gap-2">
                               {item.units.map((unit, i) => (
                                 <span
@@ -1135,7 +1145,7 @@ const CategoriesClient = (props: Props) => {
                             </div>
                           </TdCell>
 
-                          <TdCell classNameAddition="hidden lg:table-cell">
+                          <TdCell classNameAddition="hidden xs:table-cell">
                             <div className="flex flex-wrap gap-2">
                               {item.subCategories.map((subCategory, i) => (
                                 <span

@@ -5,10 +5,10 @@ import {
   InformationCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 type Props = {
-  content: string;
+  content: string | ReactNode;
   duration?: number;
   type?: "success" | "error" | "info";
   onDone?: () => void;
@@ -54,7 +54,7 @@ const Toast = (props: Props) => {
       onClick={handleClose}
     >
       <Icon className="h-8 w-8" />
-      <span className="w-2/3">{props.content}</span>
+      <div className="w-2/3">{props.content}</div>
     </div>
   );
 };
