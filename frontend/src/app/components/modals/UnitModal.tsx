@@ -129,7 +129,6 @@ const UnitModal = (props: Props) => {
         </>,
         4000,
       );
-      router.push(`/unit/${result.id}`);
     } catch (err) {
       notify("error", String(err));
     }

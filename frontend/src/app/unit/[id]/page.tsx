@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import UnitWrapper from "../UnitWrapper";
 
-export const dynamic = "force-dynamic";
+// export const dynamic = "force-dynamic";
 
 export default function Page() {
   return <UnitWrapper />;
