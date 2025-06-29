@@ -1,10 +1,10 @@
 "use client";
 
 import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
-import Input from "../components/input/Input";
-import DeleteModal from "../components/modals/DeleteModal";
-import { useToast } from "../components/toast/ToastProvider";
-import CustomTooltip from "../components/customTooltip/CustomTooltip";
+import Input from "../../../components/input/Input";
+import DeleteModal from "../../../components/modals/DeleteModal";
+import { useToast } from "../../../components/toast/ToastProvider";
+import CustomTooltip from "../../../components/customTooltip/CustomTooltip";
 import {
   AdjustmentsHorizontalIcon,
   ChevronDownIcon,
@@ -27,12 +27,12 @@ import {
   buttonSecondaryClass,
   iconButtonPrimaryClass,
   roundedButtonClass,
-} from "../styles/buttonClasses";
-import Message from "../components/message/Message";
-import SingleDropdown from "../components/dropdowns/SingleDropdown";
-import CategoryModal from "../components/modals/CategoryModal";
-import MenuDropdown from "../components/dropdowns/MenuDropdown";
-import SideMenu from "../components/sideMenu/SideMenu";
+} from "../../../styles/buttonClasses";
+import Message from "../../../components/message/Message";
+import SingleDropdown from "../../../components/dropdowns/SingleDropdown";
+import UnitModal from "../../../components/modals/UnitModal";
+import MenuDropdown from "../../../components/dropdowns/MenuDropdown";
+import SideMenu from "../../../components/sideMenu/SideMenu";
 
 // --- CLASSES ---
 let thClass =
@@ -191,7 +191,7 @@ const AllFilter = ({
 };
 
 // --- PROPS ---
-// --- Outside CategoriesClient ---
+// --- Outside UnitsClient ---
 type FilterData = {
   label: string;
   show: boolean;
@@ -199,12 +199,12 @@ type FilterData = {
   count?: number;
 };
 
-// --- Inside CategoriesClient ---
+// --- Inside UnitsClient ---
 type Item = {
   id: number;
   name: string;
-  subCategories: string[];
-  units: string[];
+  unitGroupName: string;
+  isHidden: boolean;
 
   creationDate: string;
   updateDate: string;
@@ -216,21 +216,18 @@ type Props = {
   isConnected: boolean | null;
 };
 
-type UnitOptions = {
-  id: number;
-  name: string;
-};
-
-const CategoriesClient = (props: Props) => {
+const UnitsClient = (props: Props) => {
   // --- VARIABLES ---
   const [colSpan, setColSpan] = useState(2);
 
   // --- States: Backend ---
   const [isLoadingContent, setIsLoadingItems] = useState(false);
   const [totalCounts, setTotalCounts] = useState<{
-    unitCounts: Record<string, number>;
-    withSubCategories?: number;
-    withoutSubCategories?: number;
+    locked: number;
+    unlocked: number;
+
+    filteredHidden: number;
+    filteredVisible: number;
   } | null>(null);
 
   // --- States: Edit/Delete ---
@@ -254,12 +251,8 @@ const CategoriesClient = (props: Props) => {
   // --- States: Filter/Search ---
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [selectedUnitIds, setSelectedUnitIds] = useState<number[]>([]);
-  const [hasSubCategories, setHasSubCategories] = useState<boolean | null>(
-    null,
-  );
-
-  const [units, setUnits] = useState<UnitOptions[]>([]);
+  const [showHidden, setShowHidden] = useState(false);
+  const [showVisible, setShowVisible] = useState(false);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -277,13 +270,11 @@ const CategoriesClient = (props: Props) => {
   // --- SMALL FILTER ---
   // --- Variables ---
   const filterOneRef = useRef<HTMLButtonElement>(null);
-  const filterTwoRef = useRef<HTMLButtonElement>(null);
   const filterAllRef = useRef<HTMLButtonElement>(null);
 
   // --- BIG FILTER ---
   // --- Variables ---
   const allFilterOneRef = useRef<HTMLDivElement>(null);
-  const allFilterTwoRef = useRef<HTMLDivElement>(null);
 
   const [filterAllOpen, setFilterAllOpen] = useState(false);
 
@@ -353,18 +344,14 @@ const CategoriesClient = (props: Props) => {
         search: searchTerm,
       });
 
-      if (selectedUnitIds.length > 0) {
-        selectedUnitIds.forEach((id) => {
-          params.append("units", id.toString());
-        });
-      }
-
-      if (hasSubCategories !== null) {
-        params.append("hasSubCategories", String(hasSubCategories));
+      if (showHidden && !showVisible) {
+        params.append("isHidden", "true");
+      } else if (!showHidden && showVisible) {
+        params.append("isHidden", "false");
       }
 
       // --- Data ---
-      const response = await fetch(`${apiUrl}/category?${params.toString()}`, {
+      const response = await fetch(`${apiUrl}/unit?${params.toString()}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -400,7 +387,7 @@ const CategoriesClient = (props: Props) => {
   const finishDeleteItem = async (id: number) => {
     try {
       // --- Delete data ---
-      const response = await fetch(`${apiUrl}/category/delete/${id}`, {
+      const response = await fetch(`${apiUrl}/unit/delete/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -423,38 +410,11 @@ const CategoriesClient = (props: Props) => {
 
       // --- Success ---
       await fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
-      notify("success", "Kategori borttagen!", 4000);
+      notify("success", "Enhet borttagen!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
   };
-
-  // --- Fetch units ---
-  const fetchUnits = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/unit`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        notify("error", result.message);
-      } else {
-        setUnits(result.items);
-      }
-    } catch (err) {
-      notify("error", String(err));
-    }
-  };
-
-  // --- FETCH UNITS INITIALIZATION ---
-  useEffect(() => {
-    fetchUnits();
-  }, []);
 
   // --- FETCH FREQUENCY ---
   useEffect(() => {
@@ -465,14 +425,14 @@ const CategoriesClient = (props: Props) => {
     sortBy,
     sortOrder,
     searchTerm,
-    selectedUnitIds,
-    hasSubCategories,
+    showHidden,
+    showVisible,
   ]);
 
   // --- When filter, go to page 1 ---
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, hasSubCategories, selectedUnitIds]);
+  }, [searchTerm, showHidden, showVisible]);
 
   // --- SORTING ---
   const handleSort = (field: string) => {
@@ -505,7 +465,7 @@ const CategoriesClient = (props: Props) => {
     selectableIds.length > 0 &&
     selectableIds.every((id) => selectedItems.includes(id));
 
-  const selectCategory = (itemId: number) => {
+  const selectUnit = (itemId: number) => {
     const item = items.find((u) => u.id === itemId);
     if (!item) {
       return;
@@ -534,13 +494,10 @@ const CategoriesClient = (props: Props) => {
       const width = window.innerWidth;
 
       let span = 2;
-      // if (width >= 384) {
-      //   span += 1;
-      // }
-      if (width >= 640) {
+      if (width >= 384) {
         span += 1;
       }
-      if (width >= 1024) {
+      if (width >= 640) {
         span += 1;
       }
 
@@ -671,11 +628,11 @@ const CategoriesClient = (props: Props) => {
   return (
     <>
       {/* --- MODALS --- */}
-      <CategoryModal
+      <UnitModal
         isOpen={isEditItemModalOpen}
         onClose={closeItemEditModal}
-        categoryId={editingItemId}
-        onCategoryUpdated={() => {
+        unitId={editingItemId}
+        onUnitUpdated={() => {
           fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
         }}
       />
@@ -704,9 +661,9 @@ const CategoriesClient = (props: Props) => {
           {/* --- ITEM EDITING --- */}
           <div className="flex flex-wrap gap-4">
             {/* --- Add item --- */}
-            <CustomTooltip content="Lägg till ny kategori" lgHidden={true}>
+            <CustomTooltip content="Lägg till ny enhet" lgHidden={true}>
               <button
-                className={`${buttonPrimaryClass} sm:w-56 sm:min-w-56`}
+                className={`${buttonPrimaryClass} lg:w-auto lg:px-4`}
                 onClick={() => {
                   openItemEditModal();
                 }}
@@ -720,7 +677,7 @@ const CategoriesClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PlusIcon className="h-6" />
-                  <span className="hidden sm:block">Lägg till ny kategori</span>
+                  <span className="hidden lg:block">Lägg till ny enhet</span>
                 </div>
               </button>
             </CustomTooltip>
@@ -729,10 +686,10 @@ const CategoriesClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en kategori"
+                  ? "Välj en enhet"
                   : selectedItems.length === 1
-                    ? "Redigera kategori"
-                    : "Du kan bara redigera en kategori i taget!"
+                    ? "Redigera enhet"
+                    : "Du kan bara redigera en enhet i taget!"
               }
               lgHidden={selectedItems.length === 1}
               showOnTouch={
@@ -740,7 +697,7 @@ const CategoriesClient = (props: Props) => {
               }
             >
               <button
-                className={`${buttonSecondaryClass} sm:w-56 sm:min-w-56`}
+                className={`${buttonSecondaryClass} lg:w-auto lg:px-4`}
                 onClick={() => {
                   openItemEditModal(selectedItems[0]);
                 }}
@@ -757,7 +714,7 @@ const CategoriesClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PencilSquareIcon className="h-6 min-h-6 w-6 min-w-6" />
-                  <span className="hidden sm:block">Redigera kategori</span>
+                  <span className="hidden lg:block">Redigera enhet</span>
                 </div>
               </button>
             </CustomTooltip>
@@ -766,14 +723,14 @@ const CategoriesClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en eller fler kategorier"
-                  : `Ta bort kategori (${selectedItems.length})`
+                  ? "Välj en eller fler enheter"
+                  : `Ta bort enhet (${selectedItems.length})`
               }
               lgHidden={selectedItems.length > 0}
               showOnTouch={selectedItems.length === 0}
             >
               <button
-                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-56 lg:min-w-56`}
+                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-auto lg:px-4`}
                 onClick={() => toggleDeleteItemModal(selectedItems)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -787,7 +744,7 @@ const CategoriesClient = (props: Props) => {
                 <div className="flex items-center justify-center gap-2 truncate">
                   <TrashIcon className="h-6" />
                   <span className="hidden lg:block">
-                    Ta bort kategori
+                    Ta bort enhet
                     <span>
                       {selectedItems.length > 0
                         ? ` (${selectedItems.length})`
@@ -806,7 +763,7 @@ const CategoriesClient = (props: Props) => {
               <div className="flex w-full items-center justify-start">
                 <Input
                   icon={<MagnifyingGlassIcon />}
-                  placeholder="Sök kategori"
+                  placeholder="Sök enhet"
                   value={searchTerm}
                   onChange={(val) => setSearchTerm(String(val).toLowerCase())}
                 />
@@ -818,41 +775,22 @@ const CategoriesClient = (props: Props) => {
               {/* --- Filter: One --- */}
               <Filter
                 filterRef={filterOneRef}
-                label="Underkategorier"
-                breakpoint="sm"
+                label="Status"
+                breakpoint="md"
                 filterData={[
                   {
-                    label: "Har underkategorier",
-                    show: hasSubCategories === true,
-                    setShow: (val) => setHasSubCategories(val ? true : null),
-                    count: totalCounts?.withSubCategories ?? 0,
+                    label: "Gömd",
+                    show: showHidden,
+                    setShow: setShowHidden,
+                    count: totalCounts?.filteredHidden,
                   },
                   {
-                    label: "Inga underkategorier",
-                    show: hasSubCategories === false,
-                    setShow: (val) => setHasSubCategories(val ? false : null),
-                    count: totalCounts?.withoutSubCategories ?? 0,
+                    label: "Synlig",
+                    show: showVisible,
+                    setShow: setShowVisible,
+                    count: totalCounts?.filteredVisible,
                   },
                 ]}
-              />
-
-              {/* --- Filter: Two --- */}
-              <Filter
-                filterRef={filterTwoRef}
-                label="Enheter med åtkomst"
-                breakpoint="ml"
-                filterData={units.map((unit) => ({
-                  label: unit.name,
-                  show: selectedUnitIds.includes(unit.id),
-                  setShow: (val) => {
-                    setSelectedUnitIds((prev) =>
-                      val
-                        ? [...prev, unit.id]
-                        : prev.filter((u) => u !== unit.id),
-                    );
-                  },
-                  count: totalCounts?.unitCounts?.[unit.name] ?? 0,
-                }))}
               />
 
               {/* --- Filter: All --- */}
@@ -880,40 +818,21 @@ const CategoriesClient = (props: Props) => {
                       {/* --- All filter: One --- */}
                       <AllFilter
                         filterRef={allFilterOneRef}
-                        label="Underkategorier"
+                        label="Status"
                         filterData={[
                           {
-                            label: "Har underkategorier",
-                            show: hasSubCategories === true,
-                            setShow: (val) =>
-                              setHasSubCategories(val ? true : null),
-                            count: totalCounts?.withSubCategories ?? 0,
+                            label: "Gömd",
+                            show: showHidden,
+                            setShow: setShowHidden,
+                            count: totalCounts?.filteredHidden,
                           },
                           {
-                            label: "Inga underkategorier",
-                            show: hasSubCategories === false,
-                            setShow: (val) =>
-                              setHasSubCategories(val ? false : null),
-                            count: totalCounts?.withoutSubCategories ?? 0,
+                            label: "Synlig",
+                            show: showVisible,
+                            setShow: setShowVisible,
+                            count: totalCounts?.filteredVisible,
                           },
                         ]}
-                      />
-
-                      <AllFilter
-                        filterRef={allFilterTwoRef}
-                        label="Enheter med åtkomst"
-                        filterData={units.map((unit) => ({
-                          label: unit.name,
-                          show: selectedUnitIds.includes(unit.id),
-                          setShow: (val) => {
-                            setSelectedUnitIds((prev) =>
-                              val
-                                ? [...prev, unit.id]
-                                : prev.filter((u) => u !== unit.id),
-                            );
-                          },
-                          count: totalCounts?.unitCounts?.[unit.name] ?? 0,
-                        }))}
                       />
                     </div>
 
@@ -927,14 +846,11 @@ const CategoriesClient = (props: Props) => {
                       </button>
                       <button
                         onClick={() => {
-                          setHasSubCategories(null);
-                          setSelectedUnitIds([]);
+                          setShowHidden(false);
+                          setShowVisible(false);
                         }}
                         className={`${buttonSecondaryClass} w-full`}
-                        disabled={
-                          hasSubCategories === null &&
-                          selectedUnitIds.length === 0
-                        }
+                        disabled={!showHidden && !showVisible}
                       >
                         Rensa alla
                       </button>
@@ -946,44 +862,28 @@ const CategoriesClient = (props: Props) => {
           </div>
 
           {/* --- Filter chips --- */}
-          {(hasSubCategories !== null || selectedUnitIds.length > 0) && (
+          {(showHidden || showVisible) && (
             <div className="flex flex-wrap gap-4">
               <span className="flex items-center font-semibold text-[var(--text-secondary)]">
                 Aktiva filter:
               </span>
               <FilterChip
-                visible={hasSubCategories === true}
-                onClickEvent={setHasSubCategories}
-                label="Har underkategorier"
+                visible={showHidden}
+                onClickEvent={setShowHidden}
+                label="Gömd"
               />
 
               <FilterChip
-                visible={hasSubCategories === false}
-                onClickEvent={setHasSubCategories}
-                label="Inga underkategorier"
+                visible={showVisible}
+                onClickEvent={setShowVisible}
+                label="Synlig"
               />
-
-              {selectedUnitIds.map((unitId) => {
-                const unit = units.find((u) => u.id === unitId);
-                return (
-                  <FilterChip
-                    key={unitId}
-                    visible={true}
-                    onClickEvent={() =>
-                      setSelectedUnitIds((prev) =>
-                        prev.filter((u) => u !== unitId),
-                      )
-                    }
-                    label={unit?.name ?? ""}
-                  />
-                );
-              })}
 
               <button
                 className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]"
                 onClick={() => {
-                  setHasSubCategories(null);
-                  setSelectedUnitIds([]);
+                  setShowHidden(false);
+                  setShowVisible(false);
                 }}
               >
                 <span className="font-semibold text-[var(--accent-color)]">
@@ -1036,19 +936,19 @@ const CategoriesClient = (props: Props) => {
                   />
 
                   <ThCell
-                    sortingItem="units"
-                    label="Enheter med åtkomst"
-                    labelAsc="enheter med åtkomst Ö-A"
-                    labelDesc="enheter med åtkomst A-Ö"
-                    classNameAddition="hidden lg:table-cell"
+                    sortingItem="unitGroupName"
+                    label="Tillhör enhetsgrupp"
+                    labelAsc="enhetsgrupp Ö-A"
+                    labelDesc="enhetsgrupp A-Ö"
+                    classNameAddition="hidden sm:table-cell"
                   />
 
                   <ThCell
-                    sortingItem="subCategories"
-                    label="Underkategorier"
-                    labelAsc="underkategorier Ö-A"
-                    labelDesc="underkategorier A-Ö"
-                    classNameAddition="hidden xs:table-cell"
+                    sortingItem="isHidden"
+                    label="Status"
+                    labelAsc="gömda enheter"
+                    labelDesc="synliga enheter"
+                    classNameAddition="w-28 min-w-28 border-r-0 hidden 2xs:table-cell"
                   />
                 </tr>
               </thead>
@@ -1065,11 +965,9 @@ const CategoriesClient = (props: Props) => {
                         <Message
                           icon="search"
                           content={
-                            searchTerm ||
-                            selectedUnitIds.length > 0 ||
-                            hasSubCategories !== null
-                              ? "Inga kategorier kunde hittas med det sökkriteriet."
-                              : "Det finns inga kategorier."
+                            searchTerm || showHidden || showVisible
+                              ? "Inga enheter kunde hittas med det sökkriteriet."
+                              : "Det finns inga enheter."
                           }
                         />
                       )}
@@ -1108,11 +1006,11 @@ const CategoriesClient = (props: Props) => {
                         <tr
                           key={item.id}
                           className={rowClass}
-                          onClick={() => selectCategory(item.id)}
+                          onClick={() => selectUnit(item.id)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
-                              selectCategory(item.id);
+                              selectUnit(item.id);
                             }
                           }}
                         >
@@ -1132,29 +1030,17 @@ const CategoriesClient = (props: Props) => {
 
                           <TdCell>{item.name}</TdCell>
 
-                          <TdCell classNameAddition="hidden lg:table-cell">
-                            <div className="flex flex-wrap gap-2">
-                              {item.units.map((unit, i) => (
-                                <span
-                                  key={i}
-                                  className="flex h-6 items-center justify-center rounded-xl bg-[var(--bg-navbar-link)] px-4 text-sm font-semibold"
-                                >
-                                  {unit}
-                                </span>
-                              ))}
-                            </div>
+                          <TdCell classNameAddition="hidden sm:table-cell">
+                            {item.unitGroupName}
                           </TdCell>
 
-                          <TdCell classNameAddition="hidden xs:table-cell">
-                            <div className="flex flex-wrap gap-2">
-                              {item.subCategories.map((subCategory, i) => (
-                                <span
-                                  key={i}
-                                  className="flex h-6 items-center justify-center rounded-xl bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-reverse)]"
-                                >
-                                  {subCategory}
-                                </span>
-                              ))}
+                          <TdCell classNameAddition=" w-28 min-w-28 border-r-0 2xs:table-cell hidden">
+                            <div className="flex items-center justify-center">
+                              <span
+                                className={`${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-64 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
+                              >
+                                {item.isHidden ? "Gömd" : "Synlig"}
+                              </span>
                             </div>
                           </TdCell>
                         </tr>
@@ -1260,7 +1146,9 @@ const CategoriesClient = (props: Props) => {
         <div className="flex w-full flex-col">
           {/* --- Header --- */}
           <div className="flex items-center rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
-            <span className="truncate font-semibold">Användarinformation</span>
+            <span className="truncate font-semibold">
+              Information om vald enhet
+            </span>
           </div>
           {/* --- Items --- */}
           <div
@@ -1268,13 +1156,13 @@ const CategoriesClient = (props: Props) => {
           >
             {selectedItems.length === 0 ? (
               <Message
-                icon="category"
-                content="Här kan du se information om vald kategori. Välj en i tabellen ovan!"
+                icon="unit"
+                content="Här kan du se information om vald enhet. Välj en i tabellen ovan!"
               />
             ) : selectedItems.length > 1 ? (
               <Message
                 icon="beware"
-                content="Kan inte visa information om flera kategorier samtidigt."
+                content="Kan inte visa information om flera enheter samtidigt."
               />
             ) : (
               <div className="flex">
@@ -1282,50 +1170,23 @@ const CategoriesClient = (props: Props) => {
                   .filter((u) => u.id === selectedItems[0])
                   .map((item) => (
                     <div key={item.id} className="flex flex-col gap-8">
-                      <div className="flex flex-col gap-8">
+                      <div>
                         <p>
                           <strong>Namn: </strong>
                           {item.name}
                         </p>
 
-                        <div
-                          className={`${item.units.length > 0 ? "gap-2" : ""} flex flex-col`}
-                        >
-                          <div
-                            className={`${item.units.length > 0 ? "flex-col gap-2" : ""} flex`}
-                          >
-                            <strong>Enheter med åtkomst: </strong>
-                            <div className="flex flex-wrap gap-2">
-                              {item.units.length > 0
-                                ? item.units.map((unit, i) => (
-                                    <span
-                                      key={i}
-                                      className="flex h-6 items-center justify-center rounded-xl bg-[var(--bg-navbar-link)] px-4 text-sm font-semibold"
-                                    >
-                                      {unit}
-                                    </span>
-                                  ))
-                                : "\u00A0-"}
-                            </div>
-                          </div>
+                        <p>
+                          <strong>Tillhör enhetsgrupp: </strong>
+                          {item.unitGroupName ? item.unitGroupName : "-"}
+                        </p>
 
-                          <div
-                            className={`${item.subCategories.length > 0 ? "flex-col gap-2" : ""} flex`}
+                        <div className="mt-2">
+                          <span
+                            className={`${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-28 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
                           >
-                            <strong>Underkategorier: </strong>
-                            <div className="flex flex-wrap gap-2">
-                              {item.subCategories.length > 0
-                                ? item.subCategories.map((subCategory, i) => (
-                                    <span
-                                      key={i}
-                                      className="flex h-6 items-center justify-center rounded-xl bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-reverse)]"
-                                    >
-                                      {subCategory}
-                                    </span>
-                                  ))
-                                : "\u00A0-"}
-                            </div>
-                          </div>
+                            {item.isHidden ? "Gömd" : "Synlig"}
+                          </span>
                         </div>
                       </div>
 
@@ -1353,4 +1214,4 @@ const CategoriesClient = (props: Props) => {
   );
 };
 
-export default CategoriesClient;
+export default UnitsClient;

@@ -1,10 +1,10 @@
 "use client";
 
 import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
-import Input from "../components/input/Input";
-import DeleteModal from "../components/modals/DeleteModal";
-import { useToast } from "../components/toast/ToastProvider";
-import CustomTooltip from "../components/customTooltip/CustomTooltip";
+import Input from "../../../components/input/Input";
+import DeleteModal from "../../../components/modals/DeleteModal";
+import { useToast } from "../../../components/toast/ToastProvider";
+import CustomTooltip from "../../../components/customTooltip/CustomTooltip";
 import {
   AdjustmentsHorizontalIcon,
   ChevronDownIcon,
@@ -27,12 +27,12 @@ import {
   buttonSecondaryClass,
   iconButtonPrimaryClass,
   roundedButtonClass,
-} from "../styles/buttonClasses";
-import Message from "../components/message/Message";
-import SingleDropdown from "../components/dropdowns/SingleDropdown";
-import UnitGroupModal from "../components/modals/UnitGroupModal";
-import MenuDropdown from "../components/dropdowns/MenuDropdown";
-import SideMenu from "../components/sideMenu/SideMenu";
+} from "../../../styles/buttonClasses";
+import Message from "../../../components/message/Message";
+import SingleDropdown from "../../../components/dropdowns/SingleDropdown";
+import UserModal from "../../../components/modals/UserModal";
+import MenuDropdown from "../../../components/dropdowns/MenuDropdown";
+import SideMenu from "../../../components/sideMenu/SideMenu";
 
 // --- CLASSES ---
 let thClass =
@@ -191,7 +191,7 @@ const AllFilter = ({
 };
 
 // --- PROPS ---
-// --- Outside UnitGroupsClient ---
+// --- Outside UsersClient ---
 type FilterData = {
   label: string;
   show: boolean;
@@ -199,39 +199,49 @@ type FilterData = {
   count?: number;
 };
 
-// --- Inside UnitGroupsClient ---
+// --- Inside UsersClient ---
 type Item = {
   id: number;
-  name: string;
-  unitGroup: string;
-  hasUnits: boolean;
+  username: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  roles: string[];
+  isLocked: boolean;
 
+  isOnline: boolean;
   creationDate: string;
-  updateDate: string;
-  createdBy: string;
-  updatedBy: string;
+  lastLogin: string | null;
 };
 
 type Props = {
   isConnected: boolean | null;
 };
 
-const UnitGroupsClient = (props: Props) => {
+const UsersClient = (props: Props) => {
   // --- VARIABLES ---
   const [colSpan, setColSpan] = useState(2);
 
   // --- States: Backend ---
   const [isLoadingContent, setIsLoadingItems] = useState(false);
   const [totalCounts, setTotalCounts] = useState<{
-    filteredHasUnits: number;
-    filteredNoUnits: number;
+    admins: number;
+    developers: number;
+    locked: number;
+    unlocked: number;
+
+    filteredAdmins: number;
+    filteredDevelopers: number;
+    filteredLocked: number;
+    filteredUnlocked: number;
   } | null>(null);
 
   // --- States: Edit/Delete ---
   const [items, setItems] = useState<Item[]>([]);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
+  const [isUserModalOpen, setIsEditItemModalOpen] = useState(false);
 
   const [deletingItemIds, setDeletingItemIds] = useState<number[]>([]);
   const [isDeleteModalOpen, setIsDeleteItemModalOpen] = useState(false);
@@ -248,8 +258,10 @@ const UnitGroupsClient = (props: Props) => {
   // --- States: Filter/Search ---
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [showHasUnits, setShowHasUnits] = useState(false);
-  const [showNoUnits, setShowNoUnits] = useState(false);
+  const [showAdmins, setShowAdmins] = useState(false);
+  const [showDevelopers, setShowDevelopers] = useState(false);
+  const [showLocked, setShowLocked] = useState(false);
+  const [showUnlocked, setShowUnlocked] = useState(false);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -267,11 +279,13 @@ const UnitGroupsClient = (props: Props) => {
   // --- SMALL FILTER ---
   // --- Variables ---
   const filterOneRef = useRef<HTMLButtonElement>(null);
+  const filterTwoRef = useRef<HTMLButtonElement>(null);
   const filterAllRef = useRef<HTMLButtonElement>(null);
 
   // --- BIG FILTER ---
   // --- Variables ---
   const allFilterOneRef = useRef<HTMLDivElement>(null);
+  const allFilterTwoRef = useRef<HTMLDivElement>(null);
 
   const [filterAllOpen, setFilterAllOpen] = useState(false);
 
@@ -341,15 +355,23 @@ const UnitGroupsClient = (props: Props) => {
         search: searchTerm,
       });
 
-      if (showHasUnits && !showNoUnits) {
-        params.append("hasUnits", "true");
-      } else if (!showHasUnits && showNoUnits) {
-        params.append("hasUnits", "false");
+      if (showLocked && !showUnlocked) {
+        params.append("isLocked", "true");
+      } else if (!showLocked && showUnlocked) {
+        params.append("isLocked", "false");
+      }
+
+      if (showAdmins) {
+        params.append("roles", "Admin");
+      }
+
+      if (showDevelopers) {
+        params.append("roles", "Developer");
       }
 
       // --- Data ---
       const response = await fetch(
-        `${apiUrl}/unit-group?${params.toString()}`,
+        `${apiUrl}/user-management?${params.toString()}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -387,7 +409,7 @@ const UnitGroupsClient = (props: Props) => {
   const finishDeleteItem = async (id: number) => {
     try {
       // --- Delete data ---
-      const response = await fetch(`${apiUrl}/unit-group/delete/${id}`, {
+      const response = await fetch(`${apiUrl}/user-management/delete/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -410,7 +432,7 @@ const UnitGroupsClient = (props: Props) => {
 
       // --- Success ---
       await fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
-      notify("success", "Enhetsgrupp borttagen!", 4000);
+      notify("success", "Användare borttagen!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -425,14 +447,16 @@ const UnitGroupsClient = (props: Props) => {
     sortBy,
     sortOrder,
     searchTerm,
-    showHasUnits,
-    showNoUnits,
+    showAdmins,
+    showDevelopers,
+    showLocked,
+    showUnlocked,
   ]);
 
   // --- When filter, go to page 1 ---
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, showHasUnits, showNoUnits]);
+  }, [searchTerm, showAdmins, showDevelopers, showLocked, showUnlocked]);
 
   // --- SORTING ---
   const handleSort = (field: string) => {
@@ -459,15 +483,17 @@ const UnitGroupsClient = (props: Props) => {
   // --- ITEM SELECTION ---
   const visibleContentIds = items.map((item) => item.id);
 
-  const selectableIds = items.map((item) => item.id);
+  const selectableIds = items
+    .filter((item) => !item.roles.includes("Master"))
+    .map((item) => item.id);
 
   const allSelected =
     selectableIds.length > 0 &&
     selectableIds.every((id) => selectedItems.includes(id));
 
-  const selectUnitGroup = (itemId: number) => {
+  const selectUser = (itemId: number) => {
     const item = items.find((u) => u.id === itemId);
-    if (!item) {
+    if (!item || item.roles.includes("Master")) {
       return;
     }
 
@@ -495,6 +521,18 @@ const UnitGroupsClient = (props: Props) => {
 
       let span = 2;
       if (width >= 384) {
+        span += 1;
+      }
+      if (width >= 512) {
+        span += 1;
+      }
+      if (width >= 640) {
+        span += 1;
+      }
+      if (width >= 1024) {
+        span += 1;
+      }
+      if (width >= 1280) {
         span += 1;
       }
 
@@ -625,11 +663,11 @@ const UnitGroupsClient = (props: Props) => {
   return (
     <>
       {/* --- MODALS --- */}
-      <UnitGroupModal
-        isOpen={isEditItemModalOpen}
+      <UserModal
+        isOpen={isUserModalOpen}
         onClose={closeItemEditModal}
-        unitGroupId={editingItemId}
-        onUnitGroupUpdated={() => {
+        userId={editingItemId}
+        onUserUpdated={() => {
           fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
         }}
       />
@@ -658,9 +696,9 @@ const UnitGroupsClient = (props: Props) => {
           {/* --- ITEM EDITING --- */}
           <div className="flex flex-wrap gap-4">
             {/* --- Add item --- */}
-            <CustomTooltip content="Lägg till ny grupp" lgHidden={true}>
+            <CustomTooltip content="Lägg till ny användare" lgHidden={true}>
               <button
-                className={`${buttonPrimaryClass} sm:w-56 sm:min-w-56`}
+                className={`${buttonPrimaryClass} lg:w-auto lg:px-4`}
                 onClick={() => {
                   openItemEditModal();
                 }}
@@ -674,7 +712,9 @@ const UnitGroupsClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PlusIcon className="h-6" />
-                  <span className="hidden sm:block">Lägg till ny grupp</span>
+                  <span className="hidden lg:block">
+                    Lägg till ny användare
+                  </span>
                 </div>
               </button>
             </CustomTooltip>
@@ -683,10 +723,10 @@ const UnitGroupsClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en enhetsgrupp"
+                  ? "Välj en användare"
                   : selectedItems.length === 1
-                    ? "Redigera grupp"
-                    : "Du kan bara redigera en enhetsgrupp i taget!"
+                    ? "Redigera användare"
+                    : "Du kan bara redigera en användare i taget!"
               }
               lgHidden={selectedItems.length === 1}
               showOnTouch={
@@ -694,7 +734,7 @@ const UnitGroupsClient = (props: Props) => {
               }
             >
               <button
-                className={`${buttonSecondaryClass} sm:w-56 sm:min-w-56`}
+                className={`${buttonSecondaryClass} lg:w-auto lg:px-4`}
                 onClick={() => {
                   openItemEditModal(selectedItems[0]);
                 }}
@@ -711,7 +751,7 @@ const UnitGroupsClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PencilSquareIcon className="h-6 min-h-6 w-6 min-w-6" />
-                  <span className="hidden sm:block">Redigera grupp</span>
+                  <span className="hidden lg:block">Redigera användare</span>
                 </div>
               </button>
             </CustomTooltip>
@@ -720,14 +760,14 @@ const UnitGroupsClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en eller fler enhetsgrupper"
-                  : `Ta bort grupp (${selectedItems.length})`
+                  ? "Välj en eller fler användare"
+                  : `Ta bort användare (${selectedItems.length})`
               }
               lgHidden={selectedItems.length > 0}
               showOnTouch={selectedItems.length === 0}
             >
               <button
-                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-56 lg:min-w-56`}
+                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-auto lg:px-4`}
                 onClick={() => toggleDeleteItemModal(selectedItems)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -741,7 +781,7 @@ const UnitGroupsClient = (props: Props) => {
                 <div className="flex items-center justify-center gap-2 truncate">
                   <TrashIcon className="h-6" />
                   <span className="hidden lg:block">
-                    Ta bort grupp
+                    Ta bort användare
                     <span>
                       {selectedItems.length > 0
                         ? ` (${selectedItems.length})`
@@ -760,7 +800,7 @@ const UnitGroupsClient = (props: Props) => {
               <div className="flex w-full items-center justify-start">
                 <Input
                   icon={<MagnifyingGlassIcon />}
-                  placeholder="Sök enhetsgrupp"
+                  placeholder="Sök användare"
                   value={searchTerm}
                   onChange={(val) => setSearchTerm(String(val).toLowerCase())}
                 />
@@ -772,20 +812,41 @@ const UnitGroupsClient = (props: Props) => {
               {/* --- Filter: One --- */}
               <Filter
                 filterRef={filterOneRef}
-                label="Status"
-                breakpoint="sm"
+                label="Behörigheter"
+                breakpoint="md"
                 filterData={[
                   {
-                    label: "Används",
-                    show: showHasUnits,
-                    setShow: setShowHasUnits,
-                    count: totalCounts?.filteredHasUnits,
+                    label: "Admin",
+                    show: showAdmins,
+                    setShow: setShowAdmins,
+                    count: totalCounts?.filteredAdmins,
                   },
                   {
-                    label: "Används inte",
-                    show: showNoUnits,
-                    setShow: setShowNoUnits,
-                    count: totalCounts?.filteredNoUnits,
+                    label: "Developer",
+                    show: showDevelopers,
+                    setShow: setShowDevelopers,
+                    count: totalCounts?.filteredDevelopers,
+                  },
+                ]}
+              />
+
+              {/* --- Filter: Two --- */}
+              <Filter
+                filterRef={filterTwoRef}
+                label="Status"
+                breakpoint="lg"
+                filterData={[
+                  {
+                    label: "Låst",
+                    show: showLocked,
+                    setShow: setShowLocked,
+                    count: totalCounts?.filteredLocked,
+                  },
+                  {
+                    label: "Upplåst",
+                    show: showUnlocked,
+                    setShow: setShowUnlocked,
+                    count: totalCounts?.filteredUnlocked,
                   },
                 ]}
               />
@@ -815,19 +876,38 @@ const UnitGroupsClient = (props: Props) => {
                       {/* --- All filter: One --- */}
                       <AllFilter
                         filterRef={allFilterOneRef}
+                        label="Behörigheter"
+                        filterData={[
+                          {
+                            label: "Admin",
+                            show: showAdmins,
+                            setShow: setShowAdmins,
+                            count: totalCounts?.filteredAdmins,
+                          },
+                          {
+                            label: "Developer",
+                            show: showDevelopers,
+                            setShow: setShowDevelopers,
+                            count: totalCounts?.filteredDevelopers,
+                          },
+                        ]}
+                      />
+
+                      <AllFilter
+                        filterRef={allFilterTwoRef}
                         label="Status"
                         filterData={[
                           {
-                            label: "Används",
-                            show: showHasUnits,
-                            setShow: setShowHasUnits,
-                            count: totalCounts?.filteredHasUnits,
+                            label: "Låst",
+                            show: showLocked,
+                            setShow: setShowLocked,
+                            count: totalCounts?.filteredLocked,
                           },
                           {
-                            label: "Används inte",
-                            show: showNoUnits,
-                            setShow: setShowNoUnits,
-                            count: totalCounts?.filteredNoUnits,
+                            label: "Upplåst",
+                            show: showUnlocked,
+                            setShow: setShowUnlocked,
+                            count: totalCounts?.filteredUnlocked,
                           },
                         ]}
                       />
@@ -843,11 +923,18 @@ const UnitGroupsClient = (props: Props) => {
                       </button>
                       <button
                         onClick={() => {
-                          setShowHasUnits(false);
-                          setShowNoUnits(false);
+                          setShowDevelopers(false);
+                          setShowAdmins(false);
+                          setShowLocked(false);
+                          setShowUnlocked(false);
                         }}
                         className={`${buttonSecondaryClass} w-full`}
-                        disabled={!showHasUnits && !showNoUnits}
+                        disabled={
+                          !showDevelopers &&
+                          !showAdmins &&
+                          !showLocked &&
+                          !showUnlocked
+                        }
                       >
                         Rensa alla
                       </button>
@@ -859,28 +946,42 @@ const UnitGroupsClient = (props: Props) => {
           </div>
 
           {/* --- Filter chips --- */}
-          {(showHasUnits || showNoUnits) && (
+          {(showAdmins || showDevelopers || showLocked || showUnlocked) && (
             <div className="flex flex-wrap gap-4">
               <span className="flex items-center font-semibold text-[var(--text-secondary)]">
                 Aktiva filter:
               </span>
               <FilterChip
-                visible={showHasUnits}
-                onClickEvent={setShowHasUnits}
-                label="Används"
+                visible={showAdmins}
+                onClickEvent={setShowAdmins}
+                label="Admin"
               />
 
               <FilterChip
-                visible={showNoUnits}
-                onClickEvent={setShowNoUnits}
-                label="Används inte"
+                visible={showDevelopers}
+                onClickEvent={setShowDevelopers}
+                label="Developer"
+              />
+
+              <FilterChip
+                visible={showLocked}
+                onClickEvent={setShowLocked}
+                label="Låst"
+              />
+
+              <FilterChip
+                visible={showUnlocked}
+                onClickEvent={setShowUnlocked}
+                label="Upplåst"
               />
 
               <button
                 className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]"
                 onClick={() => {
-                  setShowHasUnits(false);
-                  setShowNoUnits(false);
+                  setShowAdmins(false);
+                  setShowDevelopers(false);
+                  setShowLocked(false);
+                  setShowUnlocked(false);
                 }}
               >
                 <span className="font-semibold text-[var(--accent-color)]">
@@ -889,6 +990,13 @@ const UnitGroupsClient = (props: Props) => {
               </button>
             </div>
           )}
+
+          {/* --- Showing info --- */}
+          {/* <span className="-mb-2 flex items-end text-[var(--text-secondary)]">
+            Visar {(currentPage - 1) * itemsPerPage + 1}-
+            {Math.min(currentPage * itemsPerPage, totalItems ?? 0)} av{" "}
+            {totalItems ?? 0}
+          </span> */}
         </div>
 
         {/* --- TABLE --- */}
@@ -926,18 +1034,50 @@ const UnitGroupsClient = (props: Props) => {
                   </th>
 
                   <ThCell
-                    sortingItem="name"
-                    label="Namn"
-                    labelAsc="namn Ö-A"
-                    labelDesc="namn A-Ö"
+                    sortingItem="username"
+                    label="Användarnamn"
+                    labelAsc="användarnamn Ö-A"
+                    labelDesc="användarnamn A-Ö"
                   />
 
                   <ThCell
-                    sortingItem="hasUnits"
+                    sortingItem="firstName"
+                    label="Förnamn"
+                    labelAsc="förnamn Ö-A"
+                    labelDesc="förnamn A-Ö"
+                    classNameAddition="hidden xs:table-cell"
+                  />
+
+                  <ThCell
+                    sortingItem="lastName"
+                    label="Efternamn"
+                    labelAsc="efternamn Ö-A"
+                    labelDesc="efternamn A-Ö"
+                    classNameAddition="hidden sm:table-cell"
+                  />
+
+                  <ThCell
+                    sortingItem="email"
+                    label="Mejladress"
+                    labelAsc="mejladress Ö-A"
+                    labelDesc="mejladress A-Ö"
+                    classNameAddition="hidden lg:table-cell"
+                  />
+
+                  <ThCell
+                    sortingItem="roles"
+                    label="Behörigheter"
+                    labelAsc="behörigheter Ö-A"
+                    labelDesc="behörigheter A-Ö"
+                    classNameAddition="hidden xl:table-cell"
+                  />
+
+                  <ThCell
+                    sortingItem="isLocked"
                     label="Status"
-                    labelAsc="används inte"
-                    labelDesc="används"
-                    classNameAddition="w-40 min-w-40 border-r-0 hidden 2xs:table-cell"
+                    labelAsc="låsta konton"
+                    labelDesc="upplåsta konton"
+                    classNameAddition="w-28 min-w-28 border-r-0 hidden 2xs:table-cell"
                   />
                 </tr>
               </thead>
@@ -954,9 +1094,13 @@ const UnitGroupsClient = (props: Props) => {
                         <Message
                           icon="search"
                           content={
-                            searchTerm || showHasUnits || showNoUnits
-                              ? "Inga enhetsgrupper kunde hittas med det sökkriteriet."
-                              : "Det finns inga enhetsgrupper."
+                            searchTerm ||
+                            showAdmins ||
+                            showDevelopers ||
+                            showLocked ||
+                            showUnlocked
+                              ? "Inga användare kunde hittas med det sökkriteriet."
+                              : "Det finns inga användare."
                           }
                         />
                       )}
@@ -988,18 +1132,17 @@ const UnitGroupsClient = (props: Props) => {
                         isEven
                           ? "bg-[var(--bg-grid)]"
                           : "bg-[var(--bg-grid-zebra)]"
-                      } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""}
-                        hover:bg-[var(--bg-grid-header-hover)] cursor-pointer transition-[background] duration-[var(--fast)]`;
+                      } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""} ${item.roles.includes("Master") ? "pointer-events-none" : ""} hover:bg-[var(--bg-grid-header-hover)] cursor-pointer transition-[background] duration-[var(--fast)]`;
 
                       return (
                         <tr
                           key={item.id}
                           className={rowClass}
-                          onClick={() => selectUnitGroup(item.id)}
+                          onClick={() => selectUser(item.id)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
-                              selectUnitGroup(item.id);
+                              selectUser(item.id);
                             }
                           }}
                         >
@@ -1011,20 +1154,44 @@ const UnitGroupsClient = (props: Props) => {
                                 <Input
                                   type="checkbox"
                                   checked={selectedItems.includes(item.id)}
+                                  id={
+                                    item.roles.includes("Master")
+                                      ? "disabled"
+                                      : ""
+                                  }
                                   readOnly
                                 />
                               </div>
                             </div>
                           </td>
 
-                          <TdCell>{item.name}</TdCell>
+                          <TdCell>{item.username}</TdCell>
 
-                          <TdCell classNameAddition=" w-40 min-w-40 border-r-0 2xs:table-cell hidden">
+                          <TdCell classNameAddition="hidden xs:table-cell">
+                            {item.firstName}
+                          </TdCell>
+
+                          <TdCell classNameAddition="hidden sm:table-cell">
+                            {item.lastName}
+                          </TdCell>
+
+                          <TdCell classNameAddition="hidden lg:table-cell">
+                            {item.email}
+                          </TdCell>
+
+                          <TdCell classNameAddition="hidden xl:table-cell">
+                            {(Array.isArray(item.roles)
+                              ? item.roles
+                              : [item.roles || ""]
+                            ).join(", ")}
+                          </TdCell>
+
+                          <TdCell classNameAddition=" w-28 min-w-28 border-r-0 2xs:table-cell hidden">
                             <div className="flex items-center justify-center">
                               <span
-                                className={`${item.hasUnits ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-64 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
+                                className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-64 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
                               >
-                                {item.hasUnits ? "Används" : "Används inte"}
+                                {item.isLocked ? "Låst" : "Upplåst"}
                               </span>
                             </div>
                           </TdCell>
@@ -1132,7 +1299,7 @@ const UnitGroupsClient = (props: Props) => {
           {/* --- Header --- */}
           <div className="flex items-center rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
             <span className="truncate font-semibold">
-              Enhetsgruppsinformation
+              Information om vald användare
             </span>
           </div>
           {/* --- Items --- */}
@@ -1141,13 +1308,13 @@ const UnitGroupsClient = (props: Props) => {
           >
             {selectedItems.length === 0 ? (
               <Message
-                icon="unitGroup"
-                content="Här kan du se information om vald enhetsgrupp. Välj en i tabellen ovan!"
+                icon="user"
+                content="Här kan du se information om vald användare. Välj en i tabellen ovan!"
               />
             ) : selectedItems.length > 1 ? (
               <Message
                 icon="beware"
-                content="Kan inte visa information om flera enhetsgrupper samtidigt."
+                content="Kan inte visa information om flera användare samtidigt."
               />
             ) : (
               <div className="flex">
@@ -1156,31 +1323,66 @@ const UnitGroupsClient = (props: Props) => {
                   .map((item) => (
                     <div key={item.id} className="flex flex-col gap-8">
                       <div>
+                        {item.isOnline ? (
+                          <span className="font-semibold text-[var(--unlocked)]">
+                            Online
+                          </span>
+                        ) : (
+                          <span className="font-semibold text-[var(--locked)]">
+                            Offline
+                          </span>
+                        )}
+
                         <p>
-                          <strong>Namn: </strong>
-                          {item.name}
+                          <strong>Användarnamn: </strong>
+                          {item.username}
+                        </p>
+
+                        <p>
+                          <strong>Förnamn: </strong>
+                          {item.firstName}
+                        </p>
+
+                        <p>
+                          <strong>Efternamn: </strong>
+                          {item.lastName}
+                        </p>
+
+                        <p>
+                          <strong>Mejladress: </strong>
+                          {item.email}
+                        </p>
+
+                        <p className="flex">
+                          <strong>Behörigheter:&nbsp;</strong>
+                          {item.roles.map((role, i) => (
+                            <span key={i}>
+                              {role}
+                              {i < item.roles.length - 1 ? ",\u00A0" : ""}
+                            </span>
+                          ))}
                         </p>
 
                         <div className="mt-2">
                           <span
-                            className={`${item.hasUnits ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-40 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
+                            className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-28 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
                           >
-                            {item.hasUnits ? "Används" : "Används inte"}
+                            {item.isLocked ? "Låst" : "Upplåst"}
                           </span>
                         </div>
                       </div>
 
                       <div>
                         <p>
-                          <strong>Skapad: </strong>
-                          {new Date(item.creationDate).toLocaleString()} av{" "}
-                          {item.createdBy}
+                          <strong>Senast inloggad: </strong>
+                          {item.lastLogin
+                            ? new Date(item.lastLogin).toLocaleString()
+                            : "Aldrig"}
                         </p>
 
                         <p>
-                          <strong>Uppdaterad: </strong>
-                          {new Date(item.updateDate).toLocaleString()} av{" "}
-                          {item.updatedBy}
+                          <strong>Konto skapat: </strong>
+                          {new Date(item.creationDate).toLocaleString()}
                         </p>
                       </div>
                     </div>
@@ -1194,4 +1396,4 @@ const UnitGroupsClient = (props: Props) => {
   );
 };
 
-export default UnitGroupsClient;
+export default UsersClient;

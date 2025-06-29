@@ -1,16 +1,16 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import Input from "../components/input/Input";
+import Input from "../../components/input/Input";
 import {
   buttonPrimaryClass,
   hyperLinkButtonClass,
   iconbuttonDeletePrimaryClass,
   iconButtonPrimaryClass,
-} from "../styles/buttonClasses";
-import Message from "../components/message/Message";
-import CustomTooltip from "../components/customTooltip/CustomTooltip";
-import { useToast } from "../components/toast/ToastProvider";
+} from "../../styles/buttonClasses";
+import Message from "../../components/message/Message";
+import CustomTooltip from "../../components/customTooltip/CustomTooltip";
+import { useToast } from "../../components/toast/ToastProvider";
 import { useParams } from "next/navigation";
 
 type Props = {

@@ -25,9 +25,16 @@ import MenuDropdown from "../dropdowns/MenuDropdown";
 import TopbarLink from "./TopbarLink";
 import useTheme from "@/app/hooks/useTheme";
 import SettingsModal from "../modals/SettingsModal";
+import Link from "next/link";
 
 type Props = {
   hasScrollbar: boolean;
+  breadcrumbs?: {
+    label: string;
+    href: string;
+    clickable: boolean;
+    isActive: boolean;
+  }[];
 };
 
 const Topbar = (props: Props) => {
@@ -120,7 +127,7 @@ const Topbar = (props: Props) => {
 
       <div
         inert={!isVisible}
-        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} ${props.hasScrollbar ? "max-w-[calc(100%-5.5rem)] md:max-w-[calc(100%-16.75rem)]" : "max-w-[calc(100%-4.75rem)] md:max-w-[calc(100%-16rem)]"} transition-transforn fixed top-0 right-0 z-[calc(var(--z-overlay)-2)] flex h-18 w-full border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] p-4 duration-[var(--slow)]`}
+        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} ${props.hasScrollbar ? "max-w-[calc(100%-5.5rem)] md:max-w-[calc(100%-16.75rem)]" : "max-w-[calc(100%-4.75rem)] md:max-w-[calc(100%-16rem)]"} fixed top-0 right-0 z-[calc(var(--z-overlay)-2)] flex h-18 w-full justify-between gap-4 border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] px-4 py-2 transition-transform duration-[var(--slow)]`}
       >
         {!isAuthReady ? (
           <div className="inline">
@@ -140,18 +147,69 @@ const Topbar = (props: Props) => {
         ) : (
           <>
             {/* --- WELCOME MESSAGE --- */}
-            {isLoggedIn && (
-              <div className="xs:flex hidden w-full items-center text-lg whitespace-nowrap">
-                <span className="">Välkommen tillbaka,&nbsp;</span>
-                <span className="font-semibold text-[var(--accent-color)]">
-                  {firstName ? firstName : username}
-                </span>
-                !
+            {props.breadcrumbs?.length ? (
+              <div className="flex items-center">
+                <div className="flex flex-wrap md:hidden">
+                  {props.breadcrumbs.length > 1 && (
+                    <>
+                      <span className="xs:inline hidden md:hidden">
+                        ...&nbsp;/&nbsp;
+                      </span>
+                      <span className="font-semibold break-all text-[var(--accent-color)]">
+                        {props.breadcrumbs.at(-1)?.label}
+                      </span>
+                    </>
+                  )}
+                  {props.breadcrumbs.length === 1 && (
+                    <span className="font-semibold text-[var(--accent-color)]">
+                      {props.breadcrumbs[0].label}
+                    </span>
+                  )}
+                </div>
+
+                <div className="hidden flex-wrap items-center md:flex">
+                  {props.breadcrumbs.map((item, idx) => (
+                    <span key={item.href}>
+                      {item.clickable ? (
+                        <Link href={item.href} className="">
+                          {item.label}
+                        </Link>
+                      ) : (
+                        <span
+                          className={
+                            item.isActive
+                              ? "font-semibold text-[var(--accent-color)]"
+                              : !item.clickable
+                                ? "opacity-50"
+                                : ""
+                          }
+                        >
+                          {item.label}
+                        </span>
+                      )}
+                      {idx !== (props.breadcrumbs?.length ?? 0) - 1 && (
+                        <span>&nbsp;/&nbsp;</span>
+                      )}
+                    </span>
+                  ))}
+                </div>
               </div>
+            ) : isLoggedIn ? (
+              <div className="flex flex-wrap items-center">
+                <span className="">Välkommen tillbaka,&nbsp;</span>
+                <div>
+                  <span className="font-semibold text-[var(--accent-color)]">
+                    {firstName ? firstName : username}
+                  </span>
+                  !
+                </div>
+              </div>
+            ) : (
+              <span></span>
             )}
 
             {/* --- BUTTONS AND THEIR CONTENT --- */}
-            <div className="flex w-full items-center justify-end gap-4">
+            <div className="flex items-center justify-end gap-4">
               {/* --- Alerts --- */}
               {isLoggedIn && (
                 <div className="relative">
@@ -194,12 +252,25 @@ const Topbar = (props: Props) => {
                   }}
                 >
                   <span className="group relative flex h-6 w-6 items-center justify-center">
-                    <OutlineUserIcon
-                      className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
-                    />
-                    <SolidUserIcon
-                      className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
-                    />
+                    {isLoggedIn ? (
+                      <>
+                        <OutlineUserIcon
+                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                        />
+                        <SolidUserIcon
+                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <OutlineCog6ToothIcon
+                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                        />
+                        <SolidCog6ToothIcon
+                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                        />
+                      </>
+                    )}
                   </span>
                 </button>
 
@@ -219,7 +290,7 @@ const Topbar = (props: Props) => {
                     </div>
                   )}
                   <div>
-                    <span className="flex pb-1 text-sm font-semibold">
+                    <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                       Hantera
                     </span>
                     <TopbarLink
@@ -253,7 +324,9 @@ const Topbar = (props: Props) => {
 
                   <div className="relative">
                     <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-[var(--border-main)]" />
-                    <span className="pb-1 text-sm font-semibold">Session</span>
+                    <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
+                      Session
+                    </span>
                     {isLoggedIn ? (
                       <TopbarLink
                         onClick={handleLogout}

@@ -1,10 +1,10 @@
 "use client";
 
 import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
-import Input from "../components/input/Input";
-import DeleteModal from "../components/modals/DeleteModal";
-import { useToast } from "../components/toast/ToastProvider";
-import CustomTooltip from "../components/customTooltip/CustomTooltip";
+import Input from "../../../components/input/Input";
+import DeleteModal from "../../../components/modals/DeleteModal";
+import { useToast } from "../../../components/toast/ToastProvider";
+import CustomTooltip from "../../../components/customTooltip/CustomTooltip";
 import {
   AdjustmentsHorizontalIcon,
   ChevronDownIcon,
@@ -27,12 +27,12 @@ import {
   buttonSecondaryClass,
   iconButtonPrimaryClass,
   roundedButtonClass,
-} from "../styles/buttonClasses";
-import Message from "../components/message/Message";
-import SingleDropdown from "../components/dropdowns/SingleDropdown";
-import UnitModal from "../components/modals/UnitModal";
-import MenuDropdown from "../components/dropdowns/MenuDropdown";
-import SideMenu from "../components/sideMenu/SideMenu";
+} from "../../../styles/buttonClasses";
+import Message from "../../../components/message/Message";
+import SingleDropdown from "../../../components/dropdowns/SingleDropdown";
+import UnitGroupModal from "../../../components/modals/UnitGroupModal";
+import MenuDropdown from "../../../components/dropdowns/MenuDropdown";
+import SideMenu from "../../../components/sideMenu/SideMenu";
 
 // --- CLASSES ---
 let thClass =
@@ -191,7 +191,7 @@ const AllFilter = ({
 };
 
 // --- PROPS ---
-// --- Outside UnitsClient ---
+// --- Outside UnitGroupsClient ---
 type FilterData = {
   label: string;
   show: boolean;
@@ -199,12 +199,12 @@ type FilterData = {
   count?: number;
 };
 
-// --- Inside UnitsClient ---
+// --- Inside UnitGroupsClient ---
 type Item = {
   id: number;
   name: string;
-  unitGroupName: string;
-  isHidden: boolean;
+  unitGroup: string;
+  hasUnits: boolean;
 
   creationDate: string;
   updateDate: string;
@@ -216,18 +216,15 @@ type Props = {
   isConnected: boolean | null;
 };
 
-const UnitsClient = (props: Props) => {
+const UnitGroupsClient = (props: Props) => {
   // --- VARIABLES ---
   const [colSpan, setColSpan] = useState(2);
 
   // --- States: Backend ---
   const [isLoadingContent, setIsLoadingItems] = useState(false);
   const [totalCounts, setTotalCounts] = useState<{
-    locked: number;
-    unlocked: number;
-
-    filteredHidden: number;
-    filteredVisible: number;
+    filteredHasUnits: number;
+    filteredNoUnits: number;
   } | null>(null);
 
   // --- States: Edit/Delete ---
@@ -251,8 +248,8 @@ const UnitsClient = (props: Props) => {
   // --- States: Filter/Search ---
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [showHidden, setShowHidden] = useState(false);
-  const [showVisible, setShowVisible] = useState(false);
+  const [showHasUnits, setShowHasUnits] = useState(false);
+  const [showNoUnits, setShowNoUnits] = useState(false);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -344,19 +341,22 @@ const UnitsClient = (props: Props) => {
         search: searchTerm,
       });
 
-      if (showHidden && !showVisible) {
-        params.append("isHidden", "true");
-      } else if (!showHidden && showVisible) {
-        params.append("isHidden", "false");
+      if (showHasUnits && !showNoUnits) {
+        params.append("hasUnits", "true");
+      } else if (!showHasUnits && showNoUnits) {
+        params.append("hasUnits", "false");
       }
 
       // --- Data ---
-      const response = await fetch(`${apiUrl}/unit?${params.toString()}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/unit-group?${params.toString()}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       // --- Fail ---
       if (response.status === 401) {
@@ -387,7 +387,7 @@ const UnitsClient = (props: Props) => {
   const finishDeleteItem = async (id: number) => {
     try {
       // --- Delete data ---
-      const response = await fetch(`${apiUrl}/unit/delete/${id}`, {
+      const response = await fetch(`${apiUrl}/unit-group/delete/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -410,7 +410,7 @@ const UnitsClient = (props: Props) => {
 
       // --- Success ---
       await fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
-      notify("success", "Enhet borttagen!", 4000);
+      notify("success", "Enhetsgrupp borttagen!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -425,14 +425,14 @@ const UnitsClient = (props: Props) => {
     sortBy,
     sortOrder,
     searchTerm,
-    showHidden,
-    showVisible,
+    showHasUnits,
+    showNoUnits,
   ]);
 
   // --- When filter, go to page 1 ---
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, showHidden, showVisible]);
+  }, [searchTerm, showHasUnits, showNoUnits]);
 
   // --- SORTING ---
   const handleSort = (field: string) => {
@@ -465,7 +465,7 @@ const UnitsClient = (props: Props) => {
     selectableIds.length > 0 &&
     selectableIds.every((id) => selectedItems.includes(id));
 
-  const selectUnit = (itemId: number) => {
+  const selectUnitGroup = (itemId: number) => {
     const item = items.find((u) => u.id === itemId);
     if (!item) {
       return;
@@ -495,9 +495,6 @@ const UnitsClient = (props: Props) => {
 
       let span = 2;
       if (width >= 384) {
-        span += 1;
-      }
-      if (width >= 640) {
         span += 1;
       }
 
@@ -628,11 +625,11 @@ const UnitsClient = (props: Props) => {
   return (
     <>
       {/* --- MODALS --- */}
-      <UnitModal
+      <UnitGroupModal
         isOpen={isEditItemModalOpen}
         onClose={closeItemEditModal}
-        unitId={editingItemId}
-        onUnitUpdated={() => {
+        unitGroupId={editingItemId}
+        onUnitGroupUpdated={() => {
           fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
         }}
       />
@@ -661,9 +658,9 @@ const UnitsClient = (props: Props) => {
           {/* --- ITEM EDITING --- */}
           <div className="flex flex-wrap gap-4">
             {/* --- Add item --- */}
-            <CustomTooltip content="Lägg till ny enhet" lgHidden={true}>
+            <CustomTooltip content="Lägg till ny enhetsgrupp" lgHidden={true}>
               <button
-                className={`${buttonPrimaryClass} sm:w-56 sm:min-w-56`}
+                className={`${buttonPrimaryClass} lg:w-auto lg:px-4`}
                 onClick={() => {
                   openItemEditModal();
                 }}
@@ -677,7 +674,9 @@ const UnitsClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PlusIcon className="h-6" />
-                  <span className="hidden sm:block">Lägg till ny enhet</span>
+                  <span className="hidden lg:block">
+                    Lägg till ny enhetsgrupp
+                  </span>
                 </div>
               </button>
             </CustomTooltip>
@@ -686,10 +685,10 @@ const UnitsClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en enhet"
+                  ? "Välj en enhetsgrupp"
                   : selectedItems.length === 1
-                    ? "Redigera enhet"
-                    : "Du kan bara redigera en enhet i taget!"
+                    ? "Redigera enhetsgrupp"
+                    : "Du kan bara redigera en enhetsgrupp i taget!"
               }
               lgHidden={selectedItems.length === 1}
               showOnTouch={
@@ -697,7 +696,7 @@ const UnitsClient = (props: Props) => {
               }
             >
               <button
-                className={`${buttonSecondaryClass} sm:w-56 sm:min-w-56`}
+                className={`${buttonSecondaryClass} lg:w-auto lg:px-4`}
                 onClick={() => {
                   openItemEditModal(selectedItems[0]);
                 }}
@@ -714,7 +713,7 @@ const UnitsClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PencilSquareIcon className="h-6 min-h-6 w-6 min-w-6" />
-                  <span className="hidden sm:block">Redigera enhet</span>
+                  <span className="hidden lg:block">Redigera enhetsgrupp</span>
                 </div>
               </button>
             </CustomTooltip>
@@ -723,14 +722,14 @@ const UnitsClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en eller fler enheter"
-                  : `Ta bort enhet (${selectedItems.length})`
+                  ? "Välj en eller fler enhetsgrupper"
+                  : `Ta bort enhetsgrupp (${selectedItems.length})`
               }
               lgHidden={selectedItems.length > 0}
               showOnTouch={selectedItems.length === 0}
             >
               <button
-                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-56 lg:min-w-56`}
+                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-auto lg:px-4`}
                 onClick={() => toggleDeleteItemModal(selectedItems)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -744,7 +743,7 @@ const UnitsClient = (props: Props) => {
                 <div className="flex items-center justify-center gap-2 truncate">
                   <TrashIcon className="h-6" />
                   <span className="hidden lg:block">
-                    Ta bort enhet
+                    Ta bort enhetsgrupp
                     <span>
                       {selectedItems.length > 0
                         ? ` (${selectedItems.length})`
@@ -763,7 +762,7 @@ const UnitsClient = (props: Props) => {
               <div className="flex w-full items-center justify-start">
                 <Input
                   icon={<MagnifyingGlassIcon />}
-                  placeholder="Sök enhet"
+                  placeholder="Sök enhetsgrupp"
                   value={searchTerm}
                   onChange={(val) => setSearchTerm(String(val).toLowerCase())}
                 />
@@ -776,19 +775,19 @@ const UnitsClient = (props: Props) => {
               <Filter
                 filterRef={filterOneRef}
                 label="Status"
-                breakpoint="sm"
+                breakpoint="md"
                 filterData={[
                   {
-                    label: "Gömd",
-                    show: showHidden,
-                    setShow: setShowHidden,
-                    count: totalCounts?.filteredHidden,
+                    label: "Används",
+                    show: showHasUnits,
+                    setShow: setShowHasUnits,
+                    count: totalCounts?.filteredHasUnits,
                   },
                   {
-                    label: "Synlig",
-                    show: showVisible,
-                    setShow: setShowVisible,
-                    count: totalCounts?.filteredVisible,
+                    label: "Används inte",
+                    show: showNoUnits,
+                    setShow: setShowNoUnits,
+                    count: totalCounts?.filteredNoUnits,
                   },
                 ]}
               />
@@ -821,16 +820,16 @@ const UnitsClient = (props: Props) => {
                         label="Status"
                         filterData={[
                           {
-                            label: "Gömd",
-                            show: showHidden,
-                            setShow: setShowHidden,
-                            count: totalCounts?.filteredHidden,
+                            label: "Används",
+                            show: showHasUnits,
+                            setShow: setShowHasUnits,
+                            count: totalCounts?.filteredHasUnits,
                           },
                           {
-                            label: "Synlig",
-                            show: showVisible,
-                            setShow: setShowVisible,
-                            count: totalCounts?.filteredVisible,
+                            label: "Används inte",
+                            show: showNoUnits,
+                            setShow: setShowNoUnits,
+                            count: totalCounts?.filteredNoUnits,
                           },
                         ]}
                       />
@@ -846,11 +845,11 @@ const UnitsClient = (props: Props) => {
                       </button>
                       <button
                         onClick={() => {
-                          setShowHidden(false);
-                          setShowVisible(false);
+                          setShowHasUnits(false);
+                          setShowNoUnits(false);
                         }}
                         className={`${buttonSecondaryClass} w-full`}
-                        disabled={!showHidden && !showVisible}
+                        disabled={!showHasUnits && !showNoUnits}
                       >
                         Rensa alla
                       </button>
@@ -862,28 +861,28 @@ const UnitsClient = (props: Props) => {
           </div>
 
           {/* --- Filter chips --- */}
-          {(showHidden || showVisible) && (
+          {(showHasUnits || showNoUnits) && (
             <div className="flex flex-wrap gap-4">
               <span className="flex items-center font-semibold text-[var(--text-secondary)]">
                 Aktiva filter:
               </span>
               <FilterChip
-                visible={showHidden}
-                onClickEvent={setShowHidden}
-                label="Gömd"
+                visible={showHasUnits}
+                onClickEvent={setShowHasUnits}
+                label="Används"
               />
 
               <FilterChip
-                visible={showVisible}
-                onClickEvent={setShowVisible}
-                label="Synlig"
+                visible={showNoUnits}
+                onClickEvent={setShowNoUnits}
+                label="Används inte"
               />
 
               <button
                 className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]"
                 onClick={() => {
-                  setShowHidden(false);
-                  setShowVisible(false);
+                  setShowHasUnits(false);
+                  setShowNoUnits(false);
                 }}
               >
                 <span className="font-semibold text-[var(--accent-color)]">
@@ -936,19 +935,11 @@ const UnitsClient = (props: Props) => {
                   />
 
                   <ThCell
-                    sortingItem="unitGroupName"
-                    label="Tillhör enhetsgrupp"
-                    labelAsc="enhetsgrupp Ö-A"
-                    labelDesc="enhetsgrupp A-Ö"
-                    classNameAddition="hidden sm:table-cell"
-                  />
-
-                  <ThCell
-                    sortingItem="isHidden"
+                    sortingItem="hasUnits"
                     label="Status"
-                    labelAsc="gömda enheter"
-                    labelDesc="synliga enheter"
-                    classNameAddition="w-28 min-w-28 border-r-0 hidden 2xs:table-cell"
+                    labelAsc="används inte"
+                    labelDesc="används"
+                    classNameAddition="w-40 min-w-40 border-r-0 hidden 2xs:table-cell"
                   />
                 </tr>
               </thead>
@@ -965,9 +956,9 @@ const UnitsClient = (props: Props) => {
                         <Message
                           icon="search"
                           content={
-                            searchTerm || showHidden || showVisible
-                              ? "Inga enheter kunde hittas med det sökkriteriet."
-                              : "Det finns inga enheter."
+                            searchTerm || showHasUnits || showNoUnits
+                              ? "Inga enhetsgrupper kunde hittas med det sökkriteriet."
+                              : "Det finns inga enhetsgrupper."
                           }
                         />
                       )}
@@ -1006,11 +997,11 @@ const UnitsClient = (props: Props) => {
                         <tr
                           key={item.id}
                           className={rowClass}
-                          onClick={() => selectUnit(item.id)}
+                          onClick={() => selectUnitGroup(item.id)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
-                              selectUnit(item.id);
+                              selectUnitGroup(item.id);
                             }
                           }}
                         >
@@ -1030,16 +1021,12 @@ const UnitsClient = (props: Props) => {
 
                           <TdCell>{item.name}</TdCell>
 
-                          <TdCell classNameAddition="hidden sm:table-cell">
-                            {item.unitGroupName}
-                          </TdCell>
-
-                          <TdCell classNameAddition=" w-28 min-w-28 border-r-0 2xs:table-cell hidden">
+                          <TdCell classNameAddition=" w-40 min-w-40 border-r-0 2xs:table-cell hidden">
                             <div className="flex items-center justify-center">
                               <span
-                                className={`${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-64 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
+                                className={`${item.hasUnits ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-64 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
                               >
-                                {item.isHidden ? "Gömd" : "Synlig"}
+                                {item.hasUnits ? "Används" : "Används inte"}
                               </span>
                             </div>
                           </TdCell>
@@ -1146,7 +1133,9 @@ const UnitsClient = (props: Props) => {
         <div className="flex w-full flex-col">
           {/* --- Header --- */}
           <div className="flex items-center rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
-            <span className="truncate font-semibold">Enhetsinformation</span>
+            <span className="truncate font-semibold">
+              Information om vald enhetsgrupp
+            </span>
           </div>
           {/* --- Items --- */}
           <div
@@ -1154,13 +1143,13 @@ const UnitsClient = (props: Props) => {
           >
             {selectedItems.length === 0 ? (
               <Message
-                icon="unit"
-                content="Här kan du se information om vald enhet. Välj en i tabellen ovan!"
+                icon="unitGroup"
+                content="Här kan du se information om vald enhetsgrupp. Välj en i tabellen ovan!"
               />
             ) : selectedItems.length > 1 ? (
               <Message
                 icon="beware"
-                content="Kan inte visa information om flera enheter samtidigt."
+                content="Kan inte visa information om flera enhetsgrupper samtidigt."
               />
             ) : (
               <div className="flex">
@@ -1174,16 +1163,11 @@ const UnitsClient = (props: Props) => {
                           {item.name}
                         </p>
 
-                        <p>
-                          <strong>Tillhör enhetsgrupp: </strong>
-                          {item.unitGroupName ? item.unitGroupName : "-"}
-                        </p>
-
                         <div className="mt-2">
                           <span
-                            className={`${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-28 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
+                            className={`${item.hasUnits ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-40 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
                           >
-                            {item.isHidden ? "Gömd" : "Synlig"}
+                            {item.hasUnits ? "Används" : "Används inte"}
                           </span>
                         </div>
                       </div>
@@ -1212,4 +1196,4 @@ const UnitsClient = (props: Props) => {
   );
 };
 
-export default UnitsClient;
+export default UnitGroupsClient;

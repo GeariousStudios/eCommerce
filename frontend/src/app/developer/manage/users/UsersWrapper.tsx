@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Message from "../components/message/Message";
-import useAuthStatus from "../hooks/useAuthStatus";
+import Message from "../../../components/message/Message";
+import useAuthStatus from "../../../hooks/useAuthStatus";
 
 const UsersClient = dynamic(() => import("./UsersClient"), {
   ssr: false,

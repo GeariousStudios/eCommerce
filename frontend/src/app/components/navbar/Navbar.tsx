@@ -86,7 +86,7 @@ const Navbar = (props: Props) => {
 
           acc[groupName].push({
             label: unit.name,
-            href: `/unit/${unit.id}`,
+            href: `/report/unit/${unit.id}`,
           });
 
           return acc;
@@ -191,7 +191,7 @@ const Navbar = (props: Props) => {
                       Utvecklare
                     </span>
                     <NavbarLink
-                      href="/users/"
+                      href="/developer/manage/users/"
                       label="Hantera användare"
                       icon={OutlineUserGroupIcon}
                       iconHover={SolidUserGroupIcon}
@@ -223,15 +223,15 @@ const Navbar = (props: Props) => {
                       items: [
                         {
                           title: "Hantera",
-                          href: "/categories/",
+                          href: "/report/manage/categories/",
                           label: "Kategorier",
                         },
                         {
-                          href: "/units/",
+                          href: "/report/manage/units/",
                           label: "Enheter",
                         },
                         {
-                          href: "/unitGroups/",
+                          href: "/report/manage/unitGroups/",
                           label: "Enhetsgrupper",
                         },
                       ],

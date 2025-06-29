@@ -1,10 +1,10 @@
 "use client";
 
 import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
-import Input from "../components/input/Input";
-import DeleteModal from "../components/modals/DeleteModal";
-import { useToast } from "../components/toast/ToastProvider";
-import CustomTooltip from "../components/customTooltip/CustomTooltip";
+import Input from "../../../components/input/Input";
+import DeleteModal from "../../../components/modals/DeleteModal";
+import { useToast } from "../../../components/toast/ToastProvider";
+import CustomTooltip from "../../../components/customTooltip/CustomTooltip";
 import {
   AdjustmentsHorizontalIcon,
   ChevronDownIcon,
@@ -27,12 +27,12 @@ import {
   buttonSecondaryClass,
   iconButtonPrimaryClass,
   roundedButtonClass,
-} from "../styles/buttonClasses";
-import Message from "../components/message/Message";
-import SingleDropdown from "../components/dropdowns/SingleDropdown";
-import UserModal from "../components/modals/UserModal";
-import MenuDropdown from "../components/dropdowns/MenuDropdown";
-import SideMenu from "../components/sideMenu/SideMenu";
+} from "../../../styles/buttonClasses";
+import Message from "../../../components/message/Message";
+import SingleDropdown from "../../../components/dropdowns/SingleDropdown";
+import CategoryModal from "../../../components/modals/CategoryModal";
+import MenuDropdown from "../../../components/dropdowns/MenuDropdown";
+import SideMenu from "../../../components/sideMenu/SideMenu";
 
 // --- CLASSES ---
 let thClass =
@@ -191,7 +191,7 @@ const AllFilter = ({
 };
 
 // --- PROPS ---
-// --- Outside UsersClient ---
+// --- Outside CategoriesClient ---
 type FilterData = {
   label: string;
   show: boolean;
@@ -199,49 +199,45 @@ type FilterData = {
   count?: number;
 };
 
-// --- Inside UsersClient ---
+// --- Inside CategoriesClient ---
 type Item = {
   id: number;
-  username: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  roles: string[];
-  isLocked: boolean;
+  name: string;
+  subCategories: string[];
+  units: string[];
 
-  isOnline: boolean;
   creationDate: string;
-  lastLogin: string | null;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
 };
 
 type Props = {
   isConnected: boolean | null;
 };
 
-const UsersClient = (props: Props) => {
+type UnitOptions = {
+  id: number;
+  name: string;
+};
+
+const CategoriesClient = (props: Props) => {
   // --- VARIABLES ---
-  const [colSpan, setColSpan] = useState(8);
+  const [colSpan, setColSpan] = useState(2);
 
   // --- States: Backend ---
   const [isLoadingContent, setIsLoadingItems] = useState(false);
   const [totalCounts, setTotalCounts] = useState<{
-    admins: number;
-    developers: number;
-    locked: number;
-    unlocked: number;
-
-    filteredAdmins: number;
-    filteredDevelopers: number;
-    filteredLocked: number;
-    filteredUnlocked: number;
+    unitCounts: Record<string, number>;
+    withSubCategories?: number;
+    withoutSubCategories?: number;
   } | null>(null);
 
   // --- States: Edit/Delete ---
   const [items, setItems] = useState<Item[]>([]);
   const [editingItemId, setEditingItemId] = useState<number | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [isUserModalOpen, setIsEditItemModalOpen] = useState(false);
+  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
 
   const [deletingItemIds, setDeletingItemIds] = useState<number[]>([]);
   const [isDeleteModalOpen, setIsDeleteItemModalOpen] = useState(false);
@@ -258,10 +254,12 @@ const UsersClient = (props: Props) => {
   // --- States: Filter/Search ---
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [showAdmins, setShowAdmins] = useState(false);
-  const [showDevelopers, setShowDevelopers] = useState(false);
-  const [showLocked, setShowLocked] = useState(false);
-  const [showUnlocked, setShowUnlocked] = useState(false);
+  const [selectedUnitIds, setSelectedUnitIds] = useState<number[]>([]);
+  const [hasSubCategories, setHasSubCategories] = useState<boolean | null>(
+    null,
+  );
+
+  const [units, setUnits] = useState<UnitOptions[]>([]);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -355,30 +353,23 @@ const UsersClient = (props: Props) => {
         search: searchTerm,
       });
 
-      if (showLocked && !showUnlocked) {
-        params.append("isLocked", "true");
-      } else if (!showLocked && showUnlocked) {
-        params.append("isLocked", "false");
+      if (selectedUnitIds.length > 0) {
+        selectedUnitIds.forEach((id) => {
+          params.append("units", id.toString());
+        });
       }
 
-      if (showAdmins) {
-        params.append("roles", "Admin");
-      }
-
-      if (showDevelopers) {
-        params.append("roles", "Developer");
+      if (hasSubCategories !== null) {
+        params.append("hasSubCategories", String(hasSubCategories));
       }
 
       // --- Data ---
-      const response = await fetch(
-        `${apiUrl}/user-management?${params.toString()}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${apiUrl}/category?${params.toString()}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       // --- Fail ---
       if (response.status === 401) {
@@ -409,7 +400,7 @@ const UsersClient = (props: Props) => {
   const finishDeleteItem = async (id: number) => {
     try {
       // --- Delete data ---
-      const response = await fetch(`${apiUrl}/user-management/delete/${id}`, {
+      const response = await fetch(`${apiUrl}/category/delete/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -432,11 +423,38 @@ const UsersClient = (props: Props) => {
 
       // --- Success ---
       await fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
-      notify("success", "Användare borttagen!", 4000);
+      notify("success", "Kategori borttagen!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
   };
+
+  // --- Fetch units ---
+  const fetchUnits = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/unit`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        setUnits(result.items);
+      }
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  // --- FETCH UNITS INITIALIZATION ---
+  useEffect(() => {
+    fetchUnits();
+  }, []);
 
   // --- FETCH FREQUENCY ---
   useEffect(() => {
@@ -447,16 +465,14 @@ const UsersClient = (props: Props) => {
     sortBy,
     sortOrder,
     searchTerm,
-    showAdmins,
-    showDevelopers,
-    showLocked,
-    showUnlocked,
+    selectedUnitIds,
+    hasSubCategories,
   ]);
 
   // --- When filter, go to page 1 ---
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, showAdmins, showDevelopers, showLocked, showUnlocked]);
+  }, [searchTerm, hasSubCategories, selectedUnitIds]);
 
   // --- SORTING ---
   const handleSort = (field: string) => {
@@ -483,17 +499,15 @@ const UsersClient = (props: Props) => {
   // --- ITEM SELECTION ---
   const visibleContentIds = items.map((item) => item.id);
 
-  const selectableIds = items
-    .filter((item) => !item.roles.includes("Master"))
-    .map((item) => item.id);
+  const selectableIds = items.map((item) => item.id);
 
   const allSelected =
     selectableIds.length > 0 &&
     selectableIds.every((id) => selectedItems.includes(id));
 
-  const selectUser = (itemId: number) => {
+  const selectCategory = (itemId: number) => {
     const item = items.find((u) => u.id === itemId);
-    if (!item || item.roles.includes("Master")) {
+    if (!item) {
       return;
     }
 
@@ -519,14 +533,11 @@ const UsersClient = (props: Props) => {
     const updateColSpan = () => {
       const width = window.innerWidth;
 
-      let span = 4;
-      if (width >= 640) {
+      let span = 2;
+      if (width >= 512) {
         span += 1;
       }
       if (width >= 1024) {
-        span += 1;
-      }
-      if (width >= 1280) {
         span += 1;
       }
 
@@ -657,11 +668,11 @@ const UsersClient = (props: Props) => {
   return (
     <>
       {/* --- MODALS --- */}
-      <UserModal
-        isOpen={isUserModalOpen}
+      <CategoryModal
+        isOpen={isEditItemModalOpen}
         onClose={closeItemEditModal}
-        userId={editingItemId}
-        onUserUpdated={() => {
+        categoryId={editingItemId}
+        onCategoryUpdated={() => {
           fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
         }}
       />
@@ -690,9 +701,9 @@ const UsersClient = (props: Props) => {
           {/* --- ITEM EDITING --- */}
           <div className="flex flex-wrap gap-4">
             {/* --- Add item --- */}
-            <CustomTooltip content="Lägg till ny användare" lgHidden={true}>
+            <CustomTooltip content="Lägg till ny kategori" lgHidden={true}>
               <button
-                className={`${buttonPrimaryClass} sm:w-56 sm:min-w-56`}
+                className={`${buttonPrimaryClass} lg:w-auto lg:px-4`}
                 onClick={() => {
                   openItemEditModal();
                 }}
@@ -706,9 +717,7 @@ const UsersClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PlusIcon className="h-6" />
-                  <span className="hidden sm:block">
-                    Lägg till ny användare
-                  </span>
+                  <span className="hidden lg:block">Lägg till ny kategori</span>
                 </div>
               </button>
             </CustomTooltip>
@@ -717,10 +726,10 @@ const UsersClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en användare"
+                  ? "Välj en kategori"
                   : selectedItems.length === 1
-                    ? "Redigera användare"
-                    : "Du kan bara redigera en användare i taget!"
+                    ? "Redigera kategori"
+                    : "Du kan bara redigera en kategori i taget!"
               }
               lgHidden={selectedItems.length === 1}
               showOnTouch={
@@ -728,7 +737,7 @@ const UsersClient = (props: Props) => {
               }
             >
               <button
-                className={`${buttonSecondaryClass} sm:w-56 sm:min-w-56`}
+                className={`${buttonSecondaryClass} lg:w-auto lg:px-4`}
                 onClick={() => {
                   openItemEditModal(selectedItems[0]);
                 }}
@@ -745,7 +754,7 @@ const UsersClient = (props: Props) => {
               >
                 <div className="flex items-center justify-center gap-2 truncate">
                   <PencilSquareIcon className="h-6 min-h-6 w-6 min-w-6" />
-                  <span className="hidden sm:block">Redigera användare</span>
+                  <span className="hidden lg:block">Redigera kategori</span>
                 </div>
               </button>
             </CustomTooltip>
@@ -754,14 +763,14 @@ const UsersClient = (props: Props) => {
             <CustomTooltip
               content={
                 selectedItems.length === 0
-                  ? "Välj en eller fler användare"
-                  : `Ta bort användare (${selectedItems.length})`
+                  ? "Välj en eller fler kategorier"
+                  : `Ta bort kategori (${selectedItems.length})`
               }
               lgHidden={selectedItems.length > 0}
               showOnTouch={selectedItems.length === 0}
             >
               <button
-                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-56 lg:min-w-56`}
+                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-auto lg:px-4`}
                 onClick={() => toggleDeleteItemModal(selectedItems)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -775,7 +784,7 @@ const UsersClient = (props: Props) => {
                 <div className="flex items-center justify-center gap-2 truncate">
                   <TrashIcon className="h-6" />
                   <span className="hidden lg:block">
-                    Ta bort användare
+                    Ta bort kategori
                     <span>
                       {selectedItems.length > 0
                         ? ` (${selectedItems.length})`
@@ -794,7 +803,7 @@ const UsersClient = (props: Props) => {
               <div className="flex w-full items-center justify-start">
                 <Input
                   icon={<MagnifyingGlassIcon />}
-                  placeholder="Sök användare"
+                  placeholder="Sök kategori"
                   value={searchTerm}
                   onChange={(val) => setSearchTerm(String(val).toLowerCase())}
                 />
@@ -806,20 +815,20 @@ const UsersClient = (props: Props) => {
               {/* --- Filter: One --- */}
               <Filter
                 filterRef={filterOneRef}
-                label="Behörigheter"
-                breakpoint="sm"
+                label="Underkategorier"
+                breakpoint="md"
                 filterData={[
                   {
-                    label: "Admin",
-                    show: showAdmins,
-                    setShow: setShowAdmins,
-                    count: totalCounts?.filteredAdmins,
+                    label: "Har underkategorier",
+                    show: hasSubCategories === true,
+                    setShow: (val) => setHasSubCategories(val ? true : null),
+                    count: totalCounts?.withSubCategories ?? 0,
                   },
                   {
-                    label: "Developer",
-                    show: showDevelopers,
-                    setShow: setShowDevelopers,
-                    count: totalCounts?.filteredDevelopers,
+                    label: "Inga underkategorier",
+                    show: hasSubCategories === false,
+                    setShow: (val) => setHasSubCategories(val ? false : null),
+                    count: totalCounts?.withoutSubCategories ?? 0,
                   },
                 ]}
               />
@@ -827,22 +836,20 @@ const UsersClient = (props: Props) => {
               {/* --- Filter: Two --- */}
               <Filter
                 filterRef={filterTwoRef}
-                label="Status"
-                breakpoint="ml"
-                filterData={[
-                  {
-                    label: "Låst",
-                    show: showLocked,
-                    setShow: setShowLocked,
-                    count: totalCounts?.filteredLocked,
+                label="Enheter med åtkomst"
+                breakpoint="lg"
+                filterData={units.map((unit) => ({
+                  label: unit.name,
+                  show: selectedUnitIds.includes(unit.id),
+                  setShow: (val) => {
+                    setSelectedUnitIds((prev) =>
+                      val
+                        ? [...prev, unit.id]
+                        : prev.filter((u) => u !== unit.id),
+                    );
                   },
-                  {
-                    label: "Upplåst",
-                    show: showUnlocked,
-                    setShow: setShowUnlocked,
-                    count: totalCounts?.filteredUnlocked,
-                  },
-                ]}
+                  count: totalCounts?.unitCounts?.[unit.name] ?? 0,
+                }))}
               />
 
               {/* --- Filter: All --- */}
@@ -870,40 +877,40 @@ const UsersClient = (props: Props) => {
                       {/* --- All filter: One --- */}
                       <AllFilter
                         filterRef={allFilterOneRef}
-                        label="Behörigheter"
+                        label="Underkategorier"
                         filterData={[
                           {
-                            label: "Admin",
-                            show: showAdmins,
-                            setShow: setShowAdmins,
-                            count: totalCounts?.filteredAdmins,
+                            label: "Har underkategorier",
+                            show: hasSubCategories === true,
+                            setShow: (val) =>
+                              setHasSubCategories(val ? true : null),
+                            count: totalCounts?.withSubCategories ?? 0,
                           },
                           {
-                            label: "Developer",
-                            show: showDevelopers,
-                            setShow: setShowDevelopers,
-                            count: totalCounts?.filteredDevelopers,
+                            label: "Inga underkategorier",
+                            show: hasSubCategories === false,
+                            setShow: (val) =>
+                              setHasSubCategories(val ? false : null),
+                            count: totalCounts?.withoutSubCategories ?? 0,
                           },
                         ]}
                       />
 
                       <AllFilter
                         filterRef={allFilterTwoRef}
-                        label="Status"
-                        filterData={[
-                          {
-                            label: "Låst",
-                            show: showLocked,
-                            setShow: setShowLocked,
-                            count: totalCounts?.filteredLocked,
+                        label="Enheter med åtkomst"
+                        filterData={units.map((unit) => ({
+                          label: unit.name,
+                          show: selectedUnitIds.includes(unit.id),
+                          setShow: (val) => {
+                            setSelectedUnitIds((prev) =>
+                              val
+                                ? [...prev, unit.id]
+                                : prev.filter((u) => u !== unit.id),
+                            );
                           },
-                          {
-                            label: "Upplåst",
-                            show: showUnlocked,
-                            setShow: setShowUnlocked,
-                            count: totalCounts?.filteredUnlocked,
-                          },
-                        ]}
+                          count: totalCounts?.unitCounts?.[unit.name] ?? 0,
+                        }))}
                       />
                     </div>
 
@@ -917,17 +924,13 @@ const UsersClient = (props: Props) => {
                       </button>
                       <button
                         onClick={() => {
-                          setShowDevelopers(false);
-                          setShowAdmins(false);
-                          setShowLocked(false);
-                          setShowUnlocked(false);
+                          setHasSubCategories(null);
+                          setSelectedUnitIds([]);
                         }}
                         className={`${buttonSecondaryClass} w-full`}
                         disabled={
-                          !showDevelopers &&
-                          !showAdmins &&
-                          !showLocked &&
-                          !showUnlocked
+                          hasSubCategories === null &&
+                          selectedUnitIds.length === 0
                         }
                       >
                         Rensa alla
@@ -940,42 +943,44 @@ const UsersClient = (props: Props) => {
           </div>
 
           {/* --- Filter chips --- */}
-          {(showAdmins || showDevelopers || showLocked || showUnlocked) && (
+          {(hasSubCategories !== null || selectedUnitIds.length > 0) && (
             <div className="flex flex-wrap gap-4">
               <span className="flex items-center font-semibold text-[var(--text-secondary)]">
                 Aktiva filter:
               </span>
               <FilterChip
-                visible={showAdmins}
-                onClickEvent={setShowAdmins}
-                label="Admin"
+                visible={hasSubCategories === true}
+                onClickEvent={setHasSubCategories}
+                label="Har underkategorier"
               />
 
               <FilterChip
-                visible={showDevelopers}
-                onClickEvent={setShowDevelopers}
-                label="Developer"
+                visible={hasSubCategories === false}
+                onClickEvent={setHasSubCategories}
+                label="Inga underkategorier"
               />
 
-              <FilterChip
-                visible={showLocked}
-                onClickEvent={setShowLocked}
-                label="Låst"
-              />
-
-              <FilterChip
-                visible={showUnlocked}
-                onClickEvent={setShowUnlocked}
-                label="Upplåst"
-              />
+              {selectedUnitIds.map((unitId) => {
+                const unit = units.find((u) => u.id === unitId);
+                return (
+                  <FilterChip
+                    key={unitId}
+                    visible={true}
+                    onClickEvent={() =>
+                      setSelectedUnitIds((prev) =>
+                        prev.filter((u) => u !== unitId),
+                      )
+                    }
+                    label={unit?.name ?? ""}
+                  />
+                );
+              })}
 
               <button
                 className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]"
                 onClick={() => {
-                  setShowAdmins(false);
-                  setShowDevelopers(false);
-                  setShowLocked(false);
-                  setShowUnlocked(false);
+                  setHasSubCategories(null);
+                  setSelectedUnitIds([]);
                 }}
               >
                 <span className="font-semibold text-[var(--accent-color)]">
@@ -984,13 +989,6 @@ const UsersClient = (props: Props) => {
               </button>
             </div>
           )}
-
-          {/* --- Showing info --- */}
-          {/* <span className="-mb-2 flex items-end text-[var(--text-secondary)]">
-            Visar {(currentPage - 1) * itemsPerPage + 1}-
-            {Math.min(currentPage * itemsPerPage, totalItems ?? 0)} av{" "}
-            {totalItems ?? 0}
-          </span> */}
         </div>
 
         {/* --- TABLE --- */}
@@ -1028,50 +1026,26 @@ const UsersClient = (props: Props) => {
                   </th>
 
                   <ThCell
-                    sortingItem="username"
-                    label="Användarnamn"
-                    labelAsc="användarnamn Ö-A"
-                    labelDesc="användarnamn A-Ö"
+                    sortingItem="name"
+                    label="Namn"
+                    labelAsc="namn Ö-A"
+                    labelDesc="namn A-Ö"
                   />
 
                   <ThCell
-                    sortingItem="firstName"
-                    label="Förnamn"
-                    labelAsc="förnamn Ö-A"
-                    labelDesc="förnamn A-Ö"
-                    classNameAddition="hidden xs:table-cell"
-                  />
-
-                  <ThCell
-                    sortingItem="lastName"
-                    label="Efternamn"
-                    labelAsc="efternamn Ö-A"
-                    labelDesc="efternamn A-Ö"
-                    classNameAddition="hidden sm:table-cell"
-                  />
-
-                  <ThCell
-                    sortingItem="email"
-                    label="Mejladress"
-                    labelAsc="mejladress Ö-A"
-                    labelDesc="mejladress A-Ö"
+                    sortingItem="units"
+                    label="Enheter med åtkomst"
+                    labelAsc="enheter med åtkomst Ö-A"
+                    labelDesc="enheter med åtkomst A-Ö"
                     classNameAddition="hidden lg:table-cell"
                   />
 
                   <ThCell
-                    sortingItem="roles"
-                    label="Behörigheter"
-                    labelAsc="behörigheter Ö-A"
-                    labelDesc="behörigheter A-Ö"
-                    classNameAddition="hidden xl:table-cell"
-                  />
-
-                  <ThCell
-                    sortingItem="isLocked"
-                    label="Status"
-                    labelAsc="låsta konton"
-                    labelDesc="upplåsta konton"
-                    classNameAddition="w-28 min-w-28 border-r-0 hidden 2xs:table-cell"
+                    sortingItem="subCategories"
+                    label="Underkategorier"
+                    labelAsc="underkategorier Ö-A"
+                    labelDesc="underkategorier A-Ö"
+                    classNameAddition="hidden xs:table-cell"
                   />
                 </tr>
               </thead>
@@ -1089,12 +1063,10 @@ const UsersClient = (props: Props) => {
                           icon="search"
                           content={
                             searchTerm ||
-                            showAdmins ||
-                            showDevelopers ||
-                            showLocked ||
-                            showUnlocked
-                              ? "Inga användare kunde hittas med det sökkriteriet."
-                              : "Det finns inga användare."
+                            selectedUnitIds.length > 0 ||
+                            hasSubCategories !== null
+                              ? "Inga kategorier kunde hittas med det sökkriteriet."
+                              : "Det finns inga kategorier."
                           }
                         />
                       )}
@@ -1126,17 +1098,18 @@ const UsersClient = (props: Props) => {
                         isEven
                           ? "bg-[var(--bg-grid)]"
                           : "bg-[var(--bg-grid-zebra)]"
-                      } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""} ${item.roles.includes("Master") ? "pointer-events-none" : ""} hover:bg-[var(--bg-grid-header-hover)] cursor-pointer transition-[background] duration-[var(--fast)]`;
+                      } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""}
+                        hover:bg-[var(--bg-grid-header-hover)] cursor-pointer transition-[background] duration-[var(--fast)]`;
 
                       return (
                         <tr
                           key={item.id}
                           className={rowClass}
-                          onClick={() => selectUser(item.id)}
+                          onClick={() => selectCategory(item.id)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
-                              selectUser(item.id);
+                              selectCategory(item.id);
                             }
                           }}
                         >
@@ -1148,45 +1121,37 @@ const UsersClient = (props: Props) => {
                                 <Input
                                   type="checkbox"
                                   checked={selectedItems.includes(item.id)}
-                                  id={
-                                    item.roles.includes("Master")
-                                      ? "disabled"
-                                      : ""
-                                  }
                                   readOnly
                                 />
                               </div>
                             </div>
                           </td>
 
-                          <TdCell>{item.username}</TdCell>
-
-                          <TdCell classNameAddition="hidden xs:table-cell">
-                            {item.firstName}
-                          </TdCell>
-
-                          <TdCell classNameAddition="hidden sm:table-cell">
-                            {item.lastName}
-                          </TdCell>
+                          <TdCell>{item.name}</TdCell>
 
                           <TdCell classNameAddition="hidden lg:table-cell">
-                            {item.email}
+                            <div className="flex flex-wrap gap-2">
+                              {item.units.map((unit, i) => (
+                                <span
+                                  key={i}
+                                  className="flex h-6 items-center justify-center rounded-xl bg-[var(--bg-navbar-link)] px-4 text-sm font-semibold"
+                                >
+                                  {unit}
+                                </span>
+                              ))}
+                            </div>
                           </TdCell>
 
-                          <TdCell classNameAddition="hidden xl:table-cell">
-                            {(Array.isArray(item.roles)
-                              ? item.roles
-                              : [item.roles || ""]
-                            ).join(", ")}
-                          </TdCell>
-
-                          <TdCell classNameAddition=" w-28 min-w-28 border-r-0 2xs:table-cell hidden">
-                            <div className="flex items-center justify-center">
-                              <span
-                                className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-64 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
-                              >
-                                {item.isLocked ? "Låst" : "Upplåst"}
-                              </span>
+                          <TdCell classNameAddition="hidden xs:table-cell">
+                            <div className="flex flex-wrap gap-2">
+                              {item.subCategories.map((subCategory, i) => (
+                                <span
+                                  key={i}
+                                  className="flex h-6 items-center justify-center rounded-xl bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-reverse)]"
+                                >
+                                  {subCategory}
+                                </span>
+                              ))}
                             </div>
                           </TdCell>
                         </tr>
@@ -1292,7 +1257,9 @@ const UsersClient = (props: Props) => {
         <div className="flex w-full flex-col">
           {/* --- Header --- */}
           <div className="flex items-center rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
-            <span className="truncate font-semibold">Användarinformation</span>
+            <span className="truncate font-semibold">
+              Information om vald kategori
+            </span>
           </div>
           {/* --- Items --- */}
           <div
@@ -1300,13 +1267,13 @@ const UsersClient = (props: Props) => {
           >
             {selectedItems.length === 0 ? (
               <Message
-                icon="user"
-                content="Här kan du se information om vald användare. Välj en i tabellen ovan!"
+                icon="category"
+                content="Här kan du se information om vald kategori. Välj en i tabellen ovan!"
               />
             ) : selectedItems.length > 1 ? (
               <Message
                 icon="beware"
-                content="Kan inte visa information om flera användare samtidigt."
+                content="Kan inte visa information om flera kategorier samtidigt."
               />
             ) : (
               <div className="flex">
@@ -1314,67 +1281,64 @@ const UsersClient = (props: Props) => {
                   .filter((u) => u.id === selectedItems[0])
                   .map((item) => (
                     <div key={item.id} className="flex flex-col gap-8">
-                      <div>
-                        {item.isOnline ? (
-                          <span className="font-semibold text-[var(--unlocked)]">
-                            Online
-                          </span>
-                        ) : (
-                          <span className="font-semibold text-[var(--locked)]">
-                            Offline
-                          </span>
-                        )}
-
+                      <div className="flex flex-col gap-8">
                         <p>
-                          <strong>Användarnamn: </strong>
-                          {item.username}
+                          <strong>Namn: </strong>
+                          {item.name}
                         </p>
 
-                        <p>
-                          <strong>Förnamn: </strong>
-                          {item.firstName}
-                        </p>
-
-                        <p>
-                          <strong>Efternamn: </strong>
-                          {item.lastName}
-                        </p>
-
-                        <p>
-                          <strong>Mejladress: </strong>
-                          {item.email}
-                        </p>
-
-                        <p className="flex">
-                          <strong>Behörigheter:&nbsp;</strong>
-                          {item.roles.map((role, i) => (
-                            <span key={i}>
-                              {role}
-                              {i < item.roles.length - 1 ? ",\u00A0" : ""}
-                            </span>
-                          ))}
-                        </p>
-
-                        <div className="mt-2">
-                          <span
-                            className={`${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-28 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
+                        <div
+                          className={`${item.units.length > 0 ? "gap-2" : ""} flex flex-col`}
+                        >
+                          <div
+                            className={`${item.units.length > 0 ? "flex-col gap-2" : ""} flex`}
                           >
-                            {item.isLocked ? "Låst" : "Upplåst"}
-                          </span>
+                            <strong>Enheter med åtkomst: </strong>
+                            <div className="flex flex-wrap gap-2">
+                              {item.units.length > 0
+                                ? item.units.map((unit, i) => (
+                                    <span
+                                      key={i}
+                                      className="flex h-6 items-center justify-center rounded-xl bg-[var(--bg-navbar-link)] px-4 text-sm font-semibold"
+                                    >
+                                      {unit}
+                                    </span>
+                                  ))
+                                : "\u00A0-"}
+                            </div>
+                          </div>
+
+                          <div
+                            className={`${item.subCategories.length > 0 ? "flex-col gap-2" : ""} flex`}
+                          >
+                            <strong>Underkategorier: </strong>
+                            <div className="flex flex-wrap gap-2">
+                              {item.subCategories.length > 0
+                                ? item.subCategories.map((subCategory, i) => (
+                                    <span
+                                      key={i}
+                                      className="flex h-6 items-center justify-center rounded-xl bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-reverse)]"
+                                    >
+                                      {subCategory}
+                                    </span>
+                                  ))
+                                : "\u00A0-"}
+                            </div>
+                          </div>
                         </div>
                       </div>
 
                       <div>
                         <p>
-                          <strong>Senast inloggad: </strong>
-                          {item.lastLogin
-                            ? new Date(item.lastLogin).toLocaleString()
-                            : "Aldrig"}
+                          <strong>Skapad: </strong>
+                          {new Date(item.creationDate).toLocaleString()} av{" "}
+                          {item.createdBy}
                         </p>
 
                         <p>
-                          <strong>Konto skapat: </strong>
-                          {new Date(item.creationDate).toLocaleString()}
+                          <strong>Uppdaterad: </strong>
+                          {new Date(item.updateDate).toLocaleString()} av{" "}
+                          {item.updatedBy}
                         </p>
                       </div>
                     </div>
@@ -1388,4 +1352,4 @@ const UsersClient = (props: Props) => {
   );
 };
 
-export default UsersClient;
+export default CategoriesClient;

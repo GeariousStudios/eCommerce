@@ -1,17 +1,17 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Message from "../components/message/Message";
-import useAuthStatus from "../hooks/useAuthStatus";
+import Message from "../../../components/message/Message";
+import useAuthStatus from "../../../hooks/useAuthStatus";
 
-const UnitGroupsClient = dynamic(() => import("./UnitGroupsClient"), {
+const CategoriesClient = dynamic(() => import("./CategoriesClient"), {
   ssr: false,
   loading: () => (
     <Message icon="loading" content="Laddar in sidan..." fullscreen={true} />
   ),
 });
 
-const UnitGroupsWrapper = () => {
+const CategoriesWrapper = () => {
   const { isAuthReady, isAdmin, isConnected } = useAuthStatus();
 
   if (!isAuthReady) {
@@ -22,7 +22,7 @@ const UnitGroupsWrapper = () => {
     return <Message icon="deny" content="deny" fullscreen={true} />;
   }
 
-  return <UnitGroupsClient isConnected={isConnected} />;
+  return <CategoriesClient isConnected={isConnected} />;
 };
 
-export default UnitGroupsWrapper;
+export default CategoriesWrapper;
