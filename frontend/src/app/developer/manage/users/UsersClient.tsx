@@ -351,7 +351,7 @@ const UsersClient = (props: Props) => {
         toggleEditItemModal={toggleEditItemModal}
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
-        isConnected={Props.isConnected}
+        isConnected={props.isConnected}
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
