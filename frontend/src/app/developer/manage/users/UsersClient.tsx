@@ -20,8 +20,6 @@ type Props = {
 };
 
 const UsersClient = (props: Props) => {
-  ...
-};
   // <--- Unique.
   // --- VARIABLES ---
   const {
