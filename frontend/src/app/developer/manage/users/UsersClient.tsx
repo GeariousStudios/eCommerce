@@ -15,7 +15,13 @@ import {
 } from "@heroicons/react/20/solid";
 import CustomTooltip from "@/app/components/customTooltip/CustomTooltip";
 
-const UsersClient = () => {
+type Props = {
+  isConnected: boolean | null;
+};
+
+const UsersClient = (props: Props) => {
+  ...
+};
   // <--- Unique.
   // --- VARIABLES ---
   const {
@@ -347,7 +353,7 @@ const UsersClient = () => {
         toggleEditItemModal={toggleEditItemModal}
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
-        isConnected={true}
+        isConnected={Props.isConnected}
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
