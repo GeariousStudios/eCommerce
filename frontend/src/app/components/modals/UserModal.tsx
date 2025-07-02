@@ -17,8 +17,8 @@ import ModalBase from "./ModalBase";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  userId?: number | null;
-  onUserUpdated: () => void;
+  itemId?: number | null;
+  onItemUpdated: () => void;
 };
 
 const UserModal = (props: Props) => {
@@ -45,7 +45,7 @@ const UserModal = (props: Props) => {
       return;
     }
 
-    if (props.userId !== null && props.userId !== undefined) {
+    if (props.itemId !== null && props.itemId !== undefined) {
       fetchUser();
     } else {
       setUsername("");
@@ -56,7 +56,7 @@ const UserModal = (props: Props) => {
       setNewUserRoles([]);
       setIsLocked(false);
     }
-  }, [props.isOpen, props.userId]);
+  }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
   // --- Add user ---
@@ -122,7 +122,7 @@ const UserModal = (props: Props) => {
       }
 
       props.onClose();
-      props.onUserUpdated();
+      props.onItemUpdated();
       notify("success", "Användare skapad!", 4000);
     } catch (err) {
       notify("error", String(err));
@@ -133,7 +133,7 @@ const UserModal = (props: Props) => {
   const fetchUser = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/user-management/fetch/${props.userId}`,
+        `${apiUrl}/user-management/fetch/${props.itemId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -170,7 +170,7 @@ const UserModal = (props: Props) => {
 
     try {
       const response = await fetch(
-        `${apiUrl}/user-management/update/${props.userId}`,
+        `${apiUrl}/user-management/update/${props.itemId}`,
         {
           method: "PUT",
           headers: {
@@ -230,7 +230,7 @@ const UserModal = (props: Props) => {
       }
 
       props.onClose();
-      props.onUserUpdated();
+      props.onItemUpdated();
       notify("success", "Användare uppdaterad!", 4000);
     } catch (err) {
       notify("error", String(err));
@@ -247,14 +247,14 @@ const UserModal = (props: Props) => {
         <ModalBase
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
-          icon={props.userId ? PencilSquareIcon : PlusIcon}
-          label={props.userId ? "Redigera användare" : "Lägg till ny användare"}
+          icon={props.itemId ? PencilSquareIcon : PlusIcon}
+          label={props.itemId ? "Redigera användare" : "Lägg till ny användare"}
         >
           <form
             ref={formRef}
             className="relative flex flex-col gap-4"
             onSubmit={(e) =>
-              props.userId ? updateUser(e, props.userId) : addUser(e)
+              props.itemId ? updateUser(e, props.itemId) : addUser(e)
             }
           >
             <div className="flex items-center gap-2">
@@ -276,7 +276,7 @@ const UserModal = (props: Props) => {
                 autoComplete="new-username"
               />
 
-              {props.userId !== null ? (
+              {props.itemId !== null ? (
                 <Input
                   type="password"
                   id="password"
@@ -379,7 +379,7 @@ const UserModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.userId ? "Uppdatera" : "Lägg till"}
+                {props.itemId ? "Uppdatera" : "Lägg till"}
               </button>
               <button
                 type="button"

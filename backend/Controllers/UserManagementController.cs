@@ -144,16 +144,10 @@ namespace backend.Controllers
                 }),
                 counts = new
                 {
-                    admins = totalAdminCount,
-                    developers = totalDeveloperCount,
-                    locked = totalLockedCount,
-                    unlocked = totalUnlockedCount,
-
-                    // Filtered.
-                    filteredAdmins = filteredAdminCount,
-                    filteredDevelopers = filteredDeveloperCount,
-                    filteredLocked = filteredLockedCount,
-                    filteredUnlocked = filteredUnlockedCount,
+                    Admin = totalAdminCount,
+                    Developer = totalDeveloperCount,
+                    Locked = totalLockedCount,
+                    Unlocked = totalUnlockedCount,
                 },
             };
 

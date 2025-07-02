@@ -9,6 +9,9 @@
   --bg-main-dark: #121212;
   --bg-main-light: #fafafa;
 
+  --text-main-dark: #e0e0e0;
+  --text-main-light: #212121;
+
   --border-main-dark: #e0e0e040;
   --border-main-light: #21212140;
   --border-secondary-dark: #1f1f1f;
@@ -27,13 +30,23 @@
 
   --accent-color-active-dark: #007cf0;
   --accent-color-active-light: #6eb0f7;
+
+  /* --- BADGES COLORS --- */
+  --badge-coral: #ffab9d;
+  --badge-orange: #ffd580;
+  --badge-apricot: #ffdac1;
+  --badge-green: #c3f584;
+  --badge-mint: #a0e7e5;
+  --badge-blue: #b3d4ff;
+  --badge-purple: #d5a6ff;
+  --badge-pink: #f7aef8;
 }
 
 [data-theme="dark"] {
   /* --- MAIN --- */
   --bg-main: var(--bg-main-dark);
-  --text-main: #e0e0e0;
-  --text-main-reverse: #212121;
+  --text-main: var(--text-main-dark);
+  --text-main-reverse: var(--text-main-light);
   --text-secondary: #e0e0e0aa;
   --border-main: var(--border-main-dark);
   --border-secondary: var(--border-secondary-dark);
@@ -96,8 +109,8 @@
 [data-theme="light"] {
   /* --- MAIN --- */
   --bg-main: var(--bg-main-light);
-  --text-main: #212121;
-  --text-main-reverse: #e0e0e0;
+  --text-main: var(--text-main-light);
+  --text-main-reverse: var(--text-main-dark);
   --text-secondary: #212121aa;
   --border-main: var(--border-main-light);
   --border-secondary: var(--border-secondary-light);

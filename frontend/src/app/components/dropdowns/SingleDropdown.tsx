@@ -15,6 +15,7 @@ type DropdownProps = {
   onChange?: (value: string) => void;
   required?: boolean;
   onModal?: boolean;
+  showAbove?: boolean;
 };
 
 const SingleDropdown = ({
@@ -25,6 +26,7 @@ const SingleDropdown = ({
   onChange,
   required,
   onModal = false,
+  showAbove = false,
 }: DropdownProps) => {
   // --- VARIABLES ---
   // --- Refs ---
@@ -47,7 +49,11 @@ const SingleDropdown = ({
     const update = () => {
       if (wrapperRef.current && dropdownRef.current) {
         const rect = wrapperRef.current.getBoundingClientRect();
-        dropdownRef.current.style.top = `${rect.bottom}px`;
+        if (showAbove) {
+          dropdownRef.current.style.top = `${rect.top - dropdownRef.current.offsetHeight}px`;
+        } else {
+          dropdownRef.current.style.top = `${rect.bottom}px`;
+        }
         dropdownRef.current.style.left = `${rect.left}px`;
         dropdownRef.current.style.width = `${rect.width - 16}px`;
       }
@@ -142,7 +148,7 @@ const SingleDropdown = ({
             dropdownRef.current = el;
             portalContentRef.current = el;
           }}
-          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} fixed z-[var(--z-tooltip)] ml-2 list-none rounded-b border-1 border-t-0 border-[var(--border-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} ${showAbove ? "rounded-t border-b-0" : "rounded-b border-t-0"} fixed z-[var(--z-tooltip)] ml-2 list-none border-1 border-[var(--border-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
           role="listbox"
           inert={!isOpen || undefined}
         >

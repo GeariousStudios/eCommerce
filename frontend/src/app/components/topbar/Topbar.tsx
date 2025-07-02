@@ -196,12 +196,14 @@ const Topbar = (props: Props) => {
               </div>
             ) : isLoggedIn ? (
               <div className="flex flex-wrap items-center">
-                <span className="">Välkommen tillbaka,&nbsp;</span>
-                <div>
-                  <span className="font-semibold text-[var(--accent-color)]">
-                    {firstName ? firstName : username}
-                  </span>
-                  !
+                <div className="xs:flex hidden">
+                  <span className="">Välkommen tillbaka,&nbsp;</span>
+                  <div>
+                    <span className="font-semibold text-[var(--accent-color)]">
+                      {firstName ? firstName : username}
+                    </span>
+                    !
+                  </div>
                 </div>
               </div>
             ) : (

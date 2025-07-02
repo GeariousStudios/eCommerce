@@ -65,22 +65,22 @@ const ModalBase = (props: Props) => {
                   className={`${props.smallGap ? "gap-8" : "gap-12"} flex max-h-[90svh] flex-col overflow-x-hidden overflow-y-auto p-4`}
                 >
                   {!props.disableCloseButton && (
-                    <div className="relative flex items-center justify-between">
+                    <div className="relative flex items-center justify-between gap-4">
                       <div className="flex gap-4">
                         {Icon && (
-                          <Icon className="h-8 w-8 text-[var(--accent-color)]" />
+                          <Icon className="xs:h-8 xs:min-h-8 xs:w-8 xs:min-w-8 h-6 min-h-6 w-6 min-w-6 text-[var(--accent-color)]" />
                         )}
-                        <span className="text-2xl font-semibold">
+                        <span className="xs:text-xl flex items-center font-semibold">
                           {props.label}
                         </span>
                       </div>
                       <button
                         onClick={() => props.onClose()}
-                        className="h-[32px] w-[32px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
+                        className="xs:h-[32px] xs:min-h-[32px] xs:w-[32px] xs:min-w-[32px] h-[24px] min-h-[24px] w-[24px] min-w-[24px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
                       >
                         <XMarkIcon />
                       </button>
-                      <hr className="absolute mt-16 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
+                      <hr className="xs:mt-16 absolute mt-12 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
                     </div>
                   )}
                   {props.children}
