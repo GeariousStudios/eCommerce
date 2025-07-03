@@ -17,7 +17,7 @@ type Props = {
   onItemUpdated: () => void;
 };
 
-const UnitGroupModal = (props: Props) => {
+const NewsTypeModal = (props: Props) => {
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
@@ -40,7 +40,7 @@ const UnitGroupModal = (props: Props) => {
     }
 
     if (props.itemId !== null && props.itemId !== undefined) {
-      fetchUnitGroup();
+      fetchNewsType();
     } else {
       setName("");
       setOriginalName("");
@@ -48,12 +48,12 @@ const UnitGroupModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add unit group ---
-  const addUnitGroup = async (event: FormEvent) => {
+  // --- Add news type ---
+  const addNewsType = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/unit-group/create`, {
+      const response = await fetch(`${apiUrl}/news-type/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -106,17 +106,17 @@ const UnitGroupModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Enhetsgrupp skapad!", 4000);
+      notify("success", "Nyhetstyp skapad!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
   };
 
-  // --- Fetch unit group ---
-  const fetchUnitGroup = async () => {
+  // --- Fetch news type ---
+  const fetchNewsType = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/unit-group/fetch/${props.itemId}`,
+        `${apiUrl}/news-type/fetch/${props.itemId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -130,25 +130,25 @@ const UnitGroupModal = (props: Props) => {
       if (!response.ok) {
         notify("error", result.message);
       } else {
-        fillUnitGroupData(result);
+        fillNewsTypeData(result);
       }
     } catch (err) {
       notify("error", String(err));
     }
   };
 
-  const fillUnitGroupData = (result: any) => {
+  const fillNewsTypeData = (result: any) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
   };
 
-  // --- Update unit group ---
-  const updateUnitGroup = async (event: FormEvent) => {
+  // --- Update news type ---
+  const updateNewsType = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
       const response = await fetch(
-        `${apiUrl}/unit-group/update/${props.itemId}`,
+        `${apiUrl}/news-type/update/${props.itemId}`,
         {
           method: "PUT",
           headers: {
@@ -203,7 +203,7 @@ const UnitGroupModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Enhetsgrupp uppdaterad!", 4000);
+      notify("success", "Nyhetstyp uppdaterad!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -234,9 +234,7 @@ const UnitGroupModal = (props: Props) => {
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.itemId ? "Redigera enhetsgrupp" : "Lägg till ny enhetsgrupp"
-          }
+          label={props.itemId ? "Redigera nyhetstyp" : "Lägg till ny nyhetstyp"}
           confirmOnClose
           isDirty={isDirty}
         >
@@ -244,13 +242,13 @@ const UnitGroupModal = (props: Props) => {
             ref={formRef}
             className="relative flex flex-col gap-4"
             onSubmit={(e) =>
-              props.itemId ? updateUnitGroup(e) : addUnitGroup(e)
+              props.itemId ? updateNewsType(e) : addNewsType(e)
             }
           >
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-main)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Uppgifter om enhetsgruppen
+                Uppgifter om nyhetstypen
               </h3>
               <hr className="w-full text-[var(--border-main)]" />
             </div>
@@ -290,4 +288,4 @@ const UnitGroupModal = (props: Props) => {
   );
 };
 
-export default UnitGroupModal;
+export default NewsTypeModal;

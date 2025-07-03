@@ -3,16 +3,16 @@ import ChevronDownIcon from "@heroicons/react/20/solid/ChevronDownIcon";
 import PortalWrapper from "../helpers/PortalWrapper";
 
 type OptionProps = {
-  value: string;
-  label: string;
+  value: string | number;
+  label: string | number;
 };
 
 type DropdownProps = {
   id?: string;
   label?: string;
   options: OptionProps[];
-  value: string;
-  onChange?: (value: string) => void;
+  value: string | number;
+  onChange?: (value: string | number) => void;
   required?: boolean;
   onModal?: boolean;
   showAbove?: boolean;

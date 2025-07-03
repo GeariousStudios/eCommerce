@@ -71,3 +71,16 @@ export type UnitFilters = {
   unitGroupIds?: number[];
   isHidden?: boolean;
 };
+
+// --- admin/manage/NewsTypesClient.tsx ---
+export type NewsTypeItem = {
+  id: number;
+  name: string;
+
+  creationDate: string;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
+};
+
+export type NewsTypeFilters = {};

@@ -445,44 +445,45 @@ const ManageBase = <TItem extends { id: number }>({
           </div>
         )}
         <div className="flex flex-wrap gap-4">
-          {filters && filters.length > 0 && (
-            <div className="flex gap-4">
-              <CustomTooltip
-                content={`${isGrid ? "Växla till tabellvy" : "Växla till kortvy"}`}
-                showOnTouch
+          <div className="flex gap-4">
+            <CustomTooltip
+              content={`${isGrid ? "Växla till tabellvy" : "Växla till kortvy"}`}
+              showOnTouch
+            >
+              <button
+                className={`${roundedButtonClass} group gap-2`}
+                onClick={() => {
+                  setIsGrid(!isGrid);
+                  updateIsGridView(!isGrid);
+                }}
               >
-                <button
-                  className={`${roundedButtonClass} group gap-2`}
-                  onClick={() => {
-                    setIsGrid(!isGrid);
-                    updateIsGridView(!isGrid);
-                  }}
-                >
-                  <span className="relative flex items-center justify-center">
-                    {isGrid ? (
-                      <>
-                        <OutlineTableCellsIcon
-                          className={`${viewClass} absolute opacity-100 transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
-                        />
-                        <SolidTableCellsIcon
-                          className={`${viewClass} absolute opacity-0 transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <OutlineSquares2X2Icon
-                          className={`${viewClass} absolute opacity-100 transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
-                        />
-                        <SolidSquares2X2Icon
-                          className={`${viewClass} absolute opacity-0 transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
-                        />{" "}
-                      </>
-                    )}
-                  </span>
-                </button>
-              </CustomTooltip>
+                <span className="relative flex items-center justify-center">
+                  {isGrid ? (
+                    <>
+                      <OutlineTableCellsIcon
+                        className={`${viewClass} absolute opacity-100 transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                      />
+                      <SolidTableCellsIcon
+                        className={`${viewClass} absolute opacity-0 transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <OutlineSquares2X2Icon
+                        className={`${viewClass} absolute opacity-100 transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                      />
+                      <SolidSquares2X2Icon
+                        className={`${viewClass} absolute opacity-0 transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                      />{" "}
+                    </>
+                  )}
+                </span>
+              </button>
+            </CustomTooltip>
 
-              {filters.map((group, i) => (
+            {filters &&
+              filters.length > 0 &&
+              filters.map((group, i) => (
                 <Filter
                   key={i}
                   filterRef={smallFilterRefs.current[i]}
@@ -496,70 +497,73 @@ const ManageBase = <TItem extends { id: number }>({
                   }))}
                 />
               ))}
-            </div>
-          )}
+          </div>
         </div>
 
-        {/* --- Filter: All --- */}
-        <div className="relative">
-          <button
-            className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
-            onClick={() => {
-              setFilterAllOpen(true);
-            }}
-          >
-            <span className={`${filterClass} xs:flex hidden`}>Alla filter</span>
-            <AdjustmentsHorizontalIcon className={`${filterIconClass}`} />
-          </button>
+        {/* --- Filter: All ---  */}
+        {filters && filters.length > 0 && (
+          <div className="relative">
+            <button
+              className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
+              onClick={() => {
+                setFilterAllOpen(true);
+              }}
+            >
+              <span className={`${filterClass} xs:flex hidden`}>
+                Alla filter
+              </span>
+              <AdjustmentsHorizontalIcon className={`${filterIconClass}`} />
+            </button>
 
-          <SideMenu
-            triggerRef={smallFilterRefs.current[0]}
-            isOpen={filterAllOpen}
-            onClose={() => setFilterAllOpen(false)}
-            label="Alla filter"
-          >
-            <div className="flex h-full flex-col justify-between">
-              <div className="flex flex-col">
-                {filters?.map((group, i) => (
-                  <AllFilter
-                    key={i}
-                    filterRef={bigFilterRefs.current[i]}
-                    label={group.label}
-                    filterData={group.options.map((opt) => ({
-                      label: opt.label,
-                      show: opt.isSelected,
-                      setShow: opt.setSelected,
-                      count: opt.count,
-                    }))}
-                  />
-                ))}
-              </div>
+            <SideMenu
+              triggerRef={smallFilterRefs.current[0]}
+              isOpen={filterAllOpen}
+              onClose={() => setFilterAllOpen(false)}
+              label="Alla filter"
+            >
+              <div className="flex h-full flex-col justify-between">
+                <div className="flex flex-col">
+                  {filters?.map((group, i) => (
+                    <AllFilter
+                      key={i}
+                      filterRef={bigFilterRefs.current[i]}
+                      label={group.label}
+                      filterData={group.options.map((opt) => ({
+                        label: opt.label,
+                        show: opt.isSelected,
+                        setShow: opt.setSelected,
+                        count: opt.count,
+                      }))}
+                    />
+                  ))}
+                </div>
 
-              <div className="flex flex-col gap-4 py-4 sm:flex-row">
-                <button
-                  onClick={() => setFilterAllOpen(false)}
-                  className={`${buttonPrimaryClass} w-full`}
-                >
-                  Visa{" "}
-                  <span className="font-normal">
-                    {pagination?.totalItems ?? 0}
-                  </span>
-                </button>
-                <button
-                  onClick={() => clearFilters()}
-                  className={`${buttonSecondaryClass} w-full`}
-                  disabled={
-                    !filters?.some((group) =>
-                      group.options.some((opt) => opt.isSelected),
-                    )
-                  }
-                >
-                  Rensa alla
-                </button>
+                <div className="flex flex-col gap-4 py-4 sm:flex-row">
+                  <button
+                    onClick={() => setFilterAllOpen(false)}
+                    className={`${buttonPrimaryClass} w-full`}
+                  >
+                    Visa{" "}
+                    <span className="font-normal">
+                      {pagination?.totalItems ?? 0}
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => clearFilters()}
+                    className={`${buttonSecondaryClass} w-full`}
+                    disabled={
+                      !filters?.some((group) =>
+                        group.options.some((opt) => opt.isSelected),
+                      )
+                    }
+                  >
+                    Rensa alla
+                  </button>
+                </div>
               </div>
-            </div>
-          </SideMenu>
-        </div>
+            </SideMenu>
+          </div>
+        )}
       </div>
 
       {/* --- Filter chips --- */}

@@ -5,12 +5,14 @@ import {
   HomeIcon as OutlineHomeIcon,
   PresentationChartLineIcon as OutlinePresentationChartLineIcon,
   ChatBubbleBottomCenterTextIcon as OutlineChatBubbleBottomCenterTextIcon,
+  NewspaperIcon as OutlineNewspaperIcon,
 } from "@heroicons/react/24/outline";
 import {
   UserGroupIcon as SolidUserGroupIcon,
   HomeIcon as SolidHomeIcon,
   PresentationChartLineIcon as SolidPresentationChartLineIcon,
   ChatBubbleBottomCenterTextIcon as SolidChatBubbleBottomCenterTextIcon,
+  NewspaperIcon as SolidNewspaperIcon,
 } from "@heroicons/react/24/solid";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
@@ -259,6 +261,35 @@ const Navbar = (props: Props) => {
                   icon={OutlinePresentationChartLineIcon}
                   iconHover={SolidPresentationChartLineIcon}
                 />
+
+                {isAdmin && (
+                  <div>
+                    <hr className="mt-4 mb-4 rounded-full text-[var(--border-main)] md:mb-8" />
+
+                    <span className="hidden pb-1 text-xs font-semibold whitespace-nowrap uppercase md:flex">
+                      Admin
+                    </span>
+                    <NavbarSubmenu
+                      label="Nyheter"
+                      icon={OutlineNewspaperIcon}
+                      iconHover={SolidNewspaperIcon}
+                      menus={[
+                        {
+                          label: "Administrera",
+                          requiresAdmin: true,
+                          items: [
+                            {
+                              title: "Hantera",
+                              href: "/admin/manage/newsTypes/",
+                              label: "Nyhetstyper",
+                            },
+                          ],
+                        },
+                      ]}
+                      hasScrollbar={props.hasScrollbar}
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="mb-4" />

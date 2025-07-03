@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, use, useEffect, useRef, useState } from "react";
 import SingleDropdown from "../dropdowns/SingleDropdown";
 import RichTextEditor, {
   RichTextEditorRef,
@@ -21,42 +21,47 @@ type Props = {
   onNewsUpdated: () => void;
 };
 
+type NewsTypeOptions = {
+  id: number;
+  name: string;
+};
+
 const NewsModal = (props: Props) => {
   // --- VARIABLES ---
   // --- Refs ---
   const editorRef = useRef<RichTextEditorRef>(null);
   const formRef = useRef<HTMLFormElement>(null);
-    const modalRef = useRef<ModalBaseHandle>(null);
+  const modalRef = useRef<ModalBaseHandle>(null);
+  const hasSetInitialContent = useRef(false);
 
   // --- States ---
   const [date, setDate] = useState("");
-  const [type, setType] = useState("");
+  const [typeId, setTypeId] = useState<string | number>("");
+  const [typeName, setTypeName] = useState<string | number>("");
   const [headline, setHeadline] = useState("");
   const [content, setContent] = useState("");
   const [author, setAuthor] = useState("");
   const [authorId, setAuthorId] = useState("");
-  const [hasPreloadedEditor, setHasPreloadedEditor] = useState(false);
-  const [isEditorReady, setIsEditorReady] = useState(false);
+  const [newsTypes, setNewsTypes] = useState<NewsTypeOptions[]>([]);
 
   const [originalDate, setOriginalDate] = useState("");
-  const [originalType, setOriginalType] = useState("");
+  const [originalTypeId, setOriginalTypeId] = useState<string | number>("");
   const [originalHeadline, setOriginalHeadline] = useState("");
   const [originalContent, setOriginalContent] = useState("");
   const [isDirty, setIsDirty] = useState(false);
 
+  const [isEditorReady, setIsEditorReady] = useState(false);
   // --- Other ---
   const token = localStorage.getItem("token");
   const { notify } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (!hasPreloadedEditor) {
-      setHasPreloadedEditor(true);
+    if (!props.isOpen) {
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    if (!props.isOpen) return;
+    fetchNewsTypes();
 
     if (props.newsId !== null && props.newsId !== undefined) {
       fetchNewsItem(props.newsId);
@@ -64,8 +69,8 @@ const NewsModal = (props: Props) => {
       setDate("");
       setOriginalDate("");
 
-      setType("");
-      setOriginalType("");
+      setTypeId("");
+      setOriginalTypeId("");
 
       setHeadline("");
       setOriginalHeadline("");
@@ -73,6 +78,7 @@ const NewsModal = (props: Props) => {
       setContent("");
       setOriginalContent("");
       editorRef.current?.setContent("");
+      hasSetInitialContent.current = false;
     }
   }, [props.isOpen, props.newsId]);
 
@@ -90,7 +96,12 @@ const NewsModal = (props: Props) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ date, type, headline, content: currentContent }),
+        body: JSON.stringify({
+          date,
+          typeId,
+          headline,
+          content: currentContent,
+        }),
       });
 
       const result = await response.json();
@@ -101,6 +112,28 @@ const NewsModal = (props: Props) => {
         props.onClose();
         props.onNewsUpdated();
         notify("success", "Nyhet skapad!", 4000);
+      }
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  // --- Fetch news types ---
+  const fetchNewsTypes = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/news-type`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        setNewsTypes(result.items);
       }
     } catch (err) {
       notify("error", String(err));
@@ -120,6 +153,7 @@ const NewsModal = (props: Props) => {
         notify("error", result.message);
       } else {
         fillNewsItemData(result);
+        hasSetInitialContent.current = false;
       }
     } catch (err) {
       notify("error", String(err));
@@ -137,8 +171,11 @@ const NewsModal = (props: Props) => {
     setDate(formattedDate);
     setOriginalDate(formattedDate);
 
-    setType(result.type ?? "");
-    setOriginalType(result.type ?? "");
+    setTypeId(result.typeId ?? "");
+    setOriginalTypeId(result.typeId ?? "");
+
+    const matchedType = newsTypes.find((t) => t.id === result.typeId);
+    setTypeName(matchedType?.name ?? result.typeName ?? "Okänd typ");
 
     setHeadline(result.headline ?? "");
     setOriginalHeadline(result.headline ?? "");
@@ -148,6 +185,13 @@ const NewsModal = (props: Props) => {
 
     setAuthor(result.author ?? "");
     setAuthorId(result.authorId);
+
+    if (editorRef.current && isEditorReady) {
+      try {
+        editorRef.current.setContent(result.content ?? "");
+        hasSetInitialContent.current = false;
+      } catch (e) {}
+    }
   };
 
   // --- Update news item ---
@@ -163,7 +207,12 @@ const NewsModal = (props: Props) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ date, type, headline, content: currentContent }),
+        body: JSON.stringify({
+          date,
+          typeId,
+          headline,
+          content: currentContent,
+        }),
       });
 
       const result = await response.json();
@@ -202,27 +251,49 @@ const NewsModal = (props: Props) => {
 
     const dirty =
       date !== originalDate ||
-      type !== originalType ||
+      typeId !== originalTypeId ||
       headline !== originalHeadline ||
       (content !== originalContent &&
         !(content === "<p><br></p>" && originalContent === ""));
     setIsDirty(dirty);
   }, [
     date,
-    type,
+    typeId,
     headline,
     content,
     originalDate,
-    originalType,
+    originalTypeId,
     originalHeadline,
     originalContent,
   ]);
 
+  useEffect(() => {
+    if (
+      !editorRef.current ||
+      !isEditorReady ||
+      !content ||
+      hasSetInitialContent.current
+    ) {
+      return;
+    }
+
+    try {
+      editorRef.current.setContent(content);
+      hasSetInitialContent.current = true;
+    } catch (e) {}
+  }, [isEditorReady, content]);
+
   return (
     <>
-      {hasPreloadedEditor && (
+      {!isEditorReady && (
         <div style={{ display: "none" }}>
-          <RichTextEditor ref={editorRef} value="" name="editor-preload" />
+          <RichTextEditor
+            ref={editorRef}
+            value=""
+            name="editor-preload"
+            onReady={() => setIsEditorReady(true)}
+            onChange={() => {}}
+          />
         </div>
       )}
 
@@ -255,11 +326,16 @@ const NewsModal = (props: Props) => {
 
             <SingleDropdown
               label="Nyhetstyp"
-              value={type}
-              onChange={setType}
+              value={typeId}
+              onChange={setTypeId}
               options={[
-                { value: "Release", label: "Release" },
-                { value: "Hotfix", label: "Hotfix" },
+                ...(newsTypes.some((t) => t.id === typeId) || !typeId
+                  ? []
+                  : [{ value: typeId, label: typeName || "Okänd typ" }]),
+                ...newsTypes.map((t) => ({
+                  label: t.name,
+                  value: t.id,
+                })),
               ]}
               onModal
               required
@@ -278,7 +354,9 @@ const NewsModal = (props: Props) => {
               ref={editorRef}
               value={content}
               name="content"
-              onReady={() => setIsEditorReady(true)}
+              onReady={() => {
+                setIsEditorReady(true);
+              }}
               onChange={(val) => setContent(val)}
               required
             />

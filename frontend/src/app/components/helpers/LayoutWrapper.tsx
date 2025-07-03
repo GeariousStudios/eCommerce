@@ -57,6 +57,10 @@ const LayoutWrapper = (props: Props) => {
     // --- Developer ---
     developer: { label: "Utvecklare", clickable: false },
     users: { label: "Hantera användare", clickable: false },
+
+    // --- Admin ---
+    admin: { label: "Admin", clickable: false },
+    newstypes: { label: "Nyhetstyper", clickable: false },
   };
 
   // --- CREATE BREADCRUMBS ---

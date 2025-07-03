@@ -21,7 +21,7 @@ namespace backend.Controllers
             _userService = userService;
         }
 
-        [Authorize(Roles = "Developer")]
+        [Authorize(Roles = "Admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateNewsItem(CreateNewsDto dto)
         {
@@ -32,12 +32,12 @@ namespace backend.Controllers
                 return Unauthorized(new { message = "Ingen behörig användare inloggad" });
             }
 
-            if (dto.Type == "")
+            if (dto.TypeId <= 0)
             {
                 return BadRequest(new { message = "Välj nyhetstyp" });
             }
 
-            if (dto.Headline == "")
+            if (string.IsNullOrWhiteSpace(dto.Headline))
             {
                 return BadRequest(new { message = "Fyll i rubrik" });
             }
@@ -47,14 +47,24 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Fyll i innehåll" });
             }
 
+            var newsType = await _context.NewsTypes.FirstOrDefaultAsync(t => t.Id == dto.TypeId);
+
+            if (newsType == null)
+            {
+                return BadRequest(new { message = "Ogiltig nyhetstyp" });
+            }
+
+            var (user, userId) = userInfo.Value;
+
             var newsItem = new News
             {
                 Date = dto.Date,
-                Type = dto.Type ?? "",
-                Headline = dto.Headline ?? "",
-                Content = dto.Content ?? "",
-                Author = userInfo.Value.User,
-                AuthorId = userInfo.Value.UserId,
+                TypeId = newsType.Id,
+                TypeName = newsType.Name,
+                Headline = dto.Headline,
+                Content = dto.Content,
+                Author = user,
+                AuthorId = userId,
             };
 
             _context.News.Add(newsItem);
@@ -64,7 +74,8 @@ namespace backend.Controllers
             {
                 Id = newsItem.Id,
                 Date = newsItem.Date,
-                Type = newsItem.Type,
+                TypeId = newsItem.TypeId,
+                TypeName = newsItem.TypeName,
                 Headline = newsItem.Headline,
                 Content = newsItem.Content,
                 Author = newsItem.Author,
@@ -95,9 +106,9 @@ namespace backend.Controllers
             return Ok(newsItem);
         }
 
-        [Authorize(Roles = "Developer")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdateNews(int id, UpdateNewsDto dto)
+        public async Task<IActionResult> UpdateNewsItem(int id, UpdateNewsDto dto)
         {
             var userInfo = await _userService.GetUserInfoAsync();
 
@@ -112,12 +123,12 @@ namespace backend.Controllers
                 return NotFound(new { message = "Nyheten kunde inte hittas i databasen" });
             }
 
-            if (dto.Type == "")
+            if (dto.TypeId <= 0)
             {
                 return BadRequest(new { message = "Välj nyhetstyp" });
             }
 
-            if (dto.Headline == "")
+            if (string.IsNullOrWhiteSpace(dto.Headline))
             {
                 return BadRequest(new { message = "Fyll i rubrik" });
             }
@@ -127,12 +138,22 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Fyll i innehåll" });
             }
 
+            var newsType = await _context.NewsTypes.FirstOrDefaultAsync(t => t.Id == dto.TypeId);
+
+            if (newsType == null)
+            {
+                return BadRequest(new { message = "Nyhetstypen kunde inte hittas i databasen" });
+            }
+
+            var (user, userId) = userInfo.Value;
+
             newsItem.Date = dto.Date;
-            newsItem.Type = dto.Type ?? "";
-            newsItem.Headline = dto.Headline ?? "";
-            newsItem.Content = dto.Content ?? "";
-            newsItem.Author = userInfo.Value.User;
-            newsItem.AuthorId = userInfo.Value.UserId;
+            newsItem.TypeId = newsType.Id;
+            newsItem.TypeName = newsType.Name;
+            newsItem.Headline = dto.Headline;
+            newsItem.Content = dto.Content;
+            newsItem.Author = user;
+            newsItem.AuthorId = userId;
 
             await _context.SaveChangesAsync();
 
@@ -140,7 +161,8 @@ namespace backend.Controllers
             {
                 Id = newsItem.Id,
                 Date = newsItem.Date,
-                Type = newsItem.Type,
+                TypeId = newsItem.TypeId,
+                TypeName = newsItem.TypeName,
                 Headline = newsItem.Headline,
                 Content = newsItem.Content,
                 Author = newsItem.Author,
@@ -150,7 +172,7 @@ namespace backend.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "Developer")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteNewsItem(int id)
         {

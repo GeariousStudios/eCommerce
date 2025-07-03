@@ -31,7 +31,7 @@ type Props = {
 type NewsItem = {
   id: number;
   date: string;
-  type: string;
+  typeName: string;
   headline: string;
   content: string;
   author: string;
@@ -300,7 +300,7 @@ const HomeClient = (props: Props) => {
 
                       <div className="flex items-center justify-between">
                         <h3 className="text-xl text-[var(--accent-color)]">
-                          {item.type}
+                          {item.typeName}
                         </h3>
                         {props.isLoggedIn !== false && props.isAdmin && (
                           <div className="mr-2 hidden gap-2 group-hover:flex">

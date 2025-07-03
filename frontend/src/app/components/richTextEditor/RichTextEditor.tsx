@@ -9,6 +9,7 @@ import {
   useEffect,
   useImperativeHandle,
   useRef,
+  useState,
 } from "react";
 
 const QuillWrapper = dynamic(() => import("../helpers/QuillWrapper"), {
@@ -36,6 +37,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
   ({ value, name, required, onReady, onChange }, ref) => {
     const quillRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const [isEditorReady, setIsEditorReady] = useState(false);
 
     useImperativeHandle(ref, () => ({
       getContent: () => {
@@ -66,18 +68,16 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     // --- PASTE HTML FROM ITEM ---
     useEffect(() => {
       const interval = setInterval(() => {
-        const editor = quillRef.current?.getEditor();
-        if (editor && editor.root.innerHTML !== value) {
-          editor.clipboard.dangerouslyPasteHTML(value, "silent");
-          document.activeElement instanceof HTMLElement &&
-            document.activeElement.blur();
-
+        const editor = quillRef.current?.getEditor?.();
+        if (editor) {
+          setIsEditorReady(true);
+          onReady?.();
           clearInterval(interval);
         }
       }, 50);
 
       return () => clearInterval(interval);
-    }, [value]);
+    }, []);
 
     const modules = {
       toolbar: [
@@ -88,38 +88,11 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
       ],
       keyboard: {
         bindings: {
-          tab: {
-            key: 9,
-            handler: function () {
-              const nextElement = document.querySelector(":focus + *");
-              if (nextElement) {
-                (nextElement as HTMLElement).focus();
-                return true;
-              }
-              return false;
-            },
-          },
+          tab: false,
         },
       },
+      history: { delay: 1000, maxStack: 100, userOnly: true },
     };
-
-    // useEffect(() => {
-    //   const checkEditor = setInterval(() => {
-    //     const editor = quillRef.current?.getEditor?.();
-    //     if (editor) {
-    //       clearInterval(checkEditor);
-    //       onReady?.();
-    //     }
-    //   }, 50);
-
-    //   return () => clearInterval(checkEditor);
-    // }, [onReady]);
-
-    useEffect(() => {
-      if (quillRef.current && onReady) {
-        onReady();
-      }
-    }, [quillRef.current]);
 
     return (
       <div className="focus-within:z-[calc(var(--z-base)+1) relative w-full rounded border-1 border-[var(--border-main)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
