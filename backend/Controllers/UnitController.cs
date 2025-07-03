@@ -25,6 +25,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
+            [FromQuery] int[]? unitGroupIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
@@ -38,6 +39,11 @@ namespace backend.Controllers
                 query = query.Where(u => u.IsHidden == isHidden.Value);
             }
 
+            if (unitGroupIds?.Any() == true)
+            {
+                query = query.Where(u => unitGroupIds.Contains(u.UnitGroupId));
+            }
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var lowered = search.ToLower();
@@ -47,15 +53,12 @@ namespace backend.Controllers
                 );
             }
 
-            var filteredHiddenCount = await query.CountAsync(u => u.IsHidden);
-            var filteredVisibleCount = await query.CountAsync(u => !u.IsHidden);
-
             query = sortBy.ToLower() switch
             {
                 "name" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.Name)
-                    : query.OrderBy(u => u.Name),
-                "unitGroup" => sortOrder == "desc"
+                    ? query.OrderByDescending(u => u.Name.ToLower())
+                    : query.OrderBy(u => u.Name.ToLower()),
+                "unitgroupname" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.UnitGroup.Name)
                     : query.OrderBy(u => u.UnitGroup.Name),
                 "ishidden" => sortOrder == "desc"
@@ -69,12 +72,15 @@ namespace backend.Controllers
             int totalCount = await query.CountAsync();
 
             List<Unit> units;
-
-            totalCount = await query.CountAsync();
             units = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
             var totalHiddenCount = await _context.Units.CountAsync(u => u.IsHidden);
             var totalVisibleCount = await _context.Units.CountAsync(u => !u.IsHidden);
+            var totalUnitGroupCounts = _context
+                .Units.Include(u => u.UnitGroup)
+                .AsEnumerable()
+                .GroupBy(u => u.UnitGroup?.Name ?? "Okänd grupp")
+                .ToDictionary(g => g.Key, g => g.Count());
 
             var result = new
             {
@@ -97,10 +103,7 @@ namespace backend.Controllers
                 {
                     hidden = totalHiddenCount,
                     visible = totalVisibleCount,
-
-                    // Filtered.
-                    filteredHidden = filteredHiddenCount,
-                    filteredVisible = filteredVisibleCount,
+                    unitGroupCount = totalUnitGroupCounts,
                 },
             };
 

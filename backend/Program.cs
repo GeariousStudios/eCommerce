@@ -98,13 +98,35 @@ using (var scope = app.Services.CreateScope())
 
     if (!db.Users.Any())
     {
-        var newsItem = new News
+        var newsItemOne = new News
         {
-            Date = DateTime.Today,
-            Type = "Välkomna hit",
-            Headline = "Testa, klicka runt och upptäck!",
+            Date = new DateTime(1996, 7, 2),
+            Type = "Information",
+            Headline = "Tekniskt information",
             Content =
-                "<div><p>Den här webbapplikationen är ett exempel på mina färdigheter inom frontend- och backendutveckling. Mycket funktionalitet och finess saknas, men kärnan finns på plats.</p><p><br></p><p>I dagsläget kan du göra följande:</p><p><br></p><p><strong style='color: rgb(102, 163, 224);'>ANVÄNDARE</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Logga in</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Ändra enkla inställningar kopplat till ditt konto</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Hantera användare</li></ol><p><br></p><p><strong style='color: rgb(102, 163, 224);'>RAPPORTERING</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa enhetsgrupp (t.ex. Fyllning)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa enhet och knyta till enhetsgrupp (t.ex. Lina I)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa kategori + underkategorier och knyta dessa till enheter (t.ex. Innerpåstillverkning -&gt; Maskindel 1A)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Gå in på din enhet (och i framtiden även kunna rapportera såklart)</li></ol><p><br></p><p><strong style='color: rgb(102, 163, 224);'>ÖVRIGT</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Administrera nyheter här på startsidan</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Mörkt/ljust tema</li></ol><p><br></p><p><strong><em>Notera</em></strong> att när servern har haft inaktivitet i över 15 minuter så raderas databasen, vilket betyder att om du återvänder hit så kommer du ha en ny databas. Detta eftersom jag använder en gratis databashantering med ett gratis serveralternativ.</p><p><br></p><p><strong style='color: rgb(194, 133, 255);'>MASKINERI</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Frontend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Bibliotek/ramverk:</strong> React (Next.js)</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> TypeScript, Tailwind, CSS</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Komponentsbibliotek:</strong> Inget, samtliga komponenter är skapade av mig</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ikonbibliotek:</strong> heroicons.com</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Backend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ramverk:</strong> ASP NET Core</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> C#</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Databas:</strong> SQLite</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Server:</strong> Render</li></ol><p><br></p><p><strong style='color: rgb(194, 133, 255);'>KONTAKTUPPGIFTER</strong></p><p>liam0765@outlook.com</p><p>0765948648</p><p>https://www.linkedin.com/in/liam-fritzson-540206362/</p></div>",
+                "<div><p><strong style='color: rgb(194, 133, 255);'>MASKINERI</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Frontend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Bibliotek/ramverk:</strong> React (Next.js)</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> TypeScript, Tailwind, CSS</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Komponentsbibliotek:</strong> Inget, samtliga komponenter är skapade av mig</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ikonbibliotek:</strong> heroicons.com</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Backend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ramverk:</strong> ASP NET Core</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> C#</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Databas:</strong> SQLite</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Server:</strong> Render</li></ol><p><br></p></div>",
+            Author = "Liam Fritzson",
+            AuthorId = 1996,
+        };
+
+        var newsItemTwo = new News
+        {
+            Date = new DateTime(1996, 7, 1),
+            Type = "Information",
+            Headline = "Kontaktuppgifter",
+            Content =
+                "<div><p><strong style='color: rgb(194, 133, 255);'>KONTAKTUPPGIFTER</strong></p><p>liam0765@outlook.com</p><p>0765948648</p><p>https://www.linkedin.com/in/liam-fritzson-540206362/</p></div>",
+            Author = "Liam Fritzson",
+            AuthorId = 1996,
+        };
+
+        var newsItemThree = new News
+        {
+            Date = new DateTime(1996, 6, 30),
+            Type = "Välkommen hit!",
+            Headline = "Klicka runt och upptäck!",
+            Content =
+                "<div><p>Den här webbapplikationen är ett exempel på mina färdigheter inom frontend- och backendutveckling.</p><p><br></p><p><strong>I dagsläget kan du göra följande:</strong></p><p><br></p><p><strong style='color: rgb(102, 163, 224);'>ANVÄNDARE</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Logga in</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Ändra enkla inställningar kopplat till ditt konto</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Hantera användare</li></ol><p><br></p><p><strong style='color: rgb(102, 163, 224);'>RAPPORTERING</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa enhetsgrupp (t.ex. Fyllning)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa enhet och knyta till enhetsgrupp (t.ex. Lina I)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa kategori + underkategorier och knyta dessa till enheter (t.ex. Innerpåstillverkning -&gt; Maskindel 1A)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Gå in på din enhet (och i framtiden även kunna rapportera såklart)</li></ol><p><br></p><p><strong style='color: rgb(102, 163, 224);'>ÖVRIGT</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Administrera nyheter här på startsidan</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Mörkt/ljust tema</li></ol><p><br></p><p><strong>Detta är vad som finns i loopen:</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Göra en första draft på rapporteringsvy</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Klickbara breadcrumbs (fler navigeringsvyer)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>En redigerbar navbar (kunna lägga till favoriter osv)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Påbörja pulsvyn</li></ol></div>",
             Author = "Liam Fritzson",
             AuthorId = 1996,
         };
@@ -112,8 +134,8 @@ using (var scope = app.Services.CreateScope())
         var masterUser = new User
         {
             Username = "master",
-            FirstName = "Förnamn",
-            LastName = "Efternamn",
+            FirstName = "John",
+            LastName = "Smith",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("master"),
             Roles = UserRoles.Developer | UserRoles.Admin | UserRoles.Master,
             UserPreferences = new UserPreferences { Theme = "dark" },
@@ -213,7 +235,9 @@ using (var scope = app.Services.CreateScope())
         unitGroupOne.Units.Add(unitTwo);
         unitGroupTwo.Units.Add(unitThree);
 
-        db.News.Add(newsItem);
+        db.News.Add(newsItemOne);
+        db.News.Add(newsItemTwo);
+        db.News.Add(newsItemThree);
         db.Users.Add(masterUser);
         db.Users.Add(testUserOne);
         db.Users.Add(testUserTwo);

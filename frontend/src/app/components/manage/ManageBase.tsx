@@ -54,6 +54,7 @@ import {
   TableCellsIcon as SolidTableCellsIcon,
 } from "@heroicons/react/24/solid";
 import SideMenu from "../sideMenu/SideMenu";
+import useUserPrefs from "@/app/hooks/useUserPrefs";
 
 // --- PROPS ---
 export type ManageBaseProps<TItem> = {
@@ -112,6 +113,7 @@ export type ManageTableItem<TItem> = {
   key: string;
   label: string;
   classNameAddition?: string;
+  childClassNameAddition?: string;
   sortingItem?: string;
   labelAsc?: string;
   labelDesc?: string;
@@ -180,6 +182,16 @@ const ManageBase = <TItem extends { id: number }>({
       bigFilterRefs.current.push(createRef<HTMLDivElement>());
     }
   }
+
+  // --- UPDATE GRID/TABLE PREFERENCE ---
+  const { isLoadingUserPrefs, isGridView, updateIsGridView } = useUserPrefs();
+  useEffect(() => {
+    if (window.innerWidth < 640) {
+      setIsGrid(true);
+    } else if (isGridView !== null) {
+      setIsGrid(isGridView);
+    }
+  }, [isLoadingUserPrefs]);
 
   // --- ITEM SELECTION ---
   const selectableIds = items
@@ -286,15 +298,6 @@ const ManageBase = <TItem extends { id: number }>({
     return pages;
   };
 
-  // --- SET GRID/TABLE INITIALLY ---
-  useEffect(() => {
-    if (window.innerWidth >= 640) {
-      return;
-    }
-
-    setIsGrid(true);
-  }, []);
-
   // --- SET COLSPAN ---
   useEffect(() => {
     const getVisibleCols = () => {
@@ -323,6 +326,10 @@ const ManageBase = <TItem extends { id: number }>({
     window.addEventListener("resize", setColSpan);
     return () => window.removeEventListener("resize", setColSpan);
   }, [tableItems]);
+
+  if (isGridView === null || isLoadingUserPrefs) {
+    return <Message icon="loading" content="Nästan klar..." fullscreen />;
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -442,10 +449,14 @@ const ManageBase = <TItem extends { id: number }>({
             <div className="flex gap-4">
               <CustomTooltip
                 content={`${isGrid ? "Växla till tabellvy" : "Växla till kortvy"}`}
+                showOnTouch
               >
                 <button
                   className={`${roundedButtonClass} group gap-2`}
-                  onClick={() => setIsGrid(!isGrid)}
+                  onClick={() => {
+                    setIsGrid(!isGrid);
+                    updateIsGridView(!isGrid);
+                  }}
                 >
                   <span className="relative flex items-center justify-center">
                     {isGrid ? (
@@ -579,37 +590,64 @@ const ManageBase = <TItem extends { id: number }>({
       {isGrid ? (
         // --- GRID VIEW ---
         <div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className={`${gridItems.length > 1 ? "gap-2" : ""} ${selectedItems.includes(item.id) ? "border-[var(--accent-color)]" : "border-[var(--border-main)]"} ${getIsDisabled(item) ? "!cursor-not-allowed !border-[var(--border-main)]" : ""} flex max-h-[462.5px] cursor-pointer flex-col overflow-auto rounded border-1 p-4 transition-colors duration-[var(--fast)] hover:border-[var(--accent-color)]`}
-                onClick={() => toggleSelect(item.id)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    toggleSelect(item.id);
-                  }
-                }}
-              >
-                {gridItems?.map((i) => {
-                  const value = i.getValue(item);
-                  if (value === null) {
-                    return null;
-                  }
-
-                  return (
-                    <div key={i.key}>
-                      <div className={`${i.classNameAddition ?? ""}`}>
-                        {i.label !== null && i.label}
-                        {value}
-                      </div>
-                    </div>
-                  );
-                })}
+          {!isConnected ? (
+            (disconnectedState ?? (
+              <div className="flex min-h-72 items-center">
+                <Message icon="server" content="server" />
               </div>
-            ))}
-          </div>
+            ))
+          ) : isLoading ? (
+            (loadingState ?? (
+              <div className="flex min-h-72 items-center">
+                <Message
+                  icon="loading"
+                  content="Hämtar innehåll..."
+                  sideMessage={(items.length ?? 0) <= 2}
+                />
+              </div>
+            ))
+          ) : items.length === 0 ? (
+            (emptyState ?? (
+              <div className="flex min-h-72 items-center">
+                <Message
+                  icon="search"
+                  content="Det finns inget innehåll att visa."
+                />
+              </div>
+            ))
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className={`${gridItems.length > 1 ? "gap-2" : ""} ${selectedItems.includes(item.id) ? "border-[var(--accent-color)]" : "border-[var(--border-main)]"} ${getIsDisabled(item) ? "!cursor-not-allowed !border-[var(--border-main)]" : ""} flex max-h-[462.5px] cursor-pointer flex-col overflow-auto rounded border-1 p-4 transition-colors duration-[var(--fast)] hover:border-[var(--accent-color)]`}
+                  onClick={() => toggleSelect(item.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleSelect(item.id);
+                    }
+                  }}
+                >
+                  {gridItems?.map((i) => {
+                    const value = i.getValue(item);
+                    if (value === null) {
+                      return null;
+                    }
+
+                    return (
+                      <div key={i.key}>
+                        <div className={`${i.classNameAddition ?? ""}`}>
+                          {i.label !== null && i.label}
+                          {value}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         // --- TABLE VIEW ---
@@ -773,6 +811,7 @@ const ManageBase = <TItem extends { id: number }>({
                             key={i.key}
                             classNameAddition={`${getResponsiveClass(i.responsivePriority)}
                             ${i.classNameAddition ?? ""}`}
+                            childClassNameAddition={`${i.childClassNameAddition ?? ""}`}
                           >
                             {i.getValue(item)}
                           </TdCell>

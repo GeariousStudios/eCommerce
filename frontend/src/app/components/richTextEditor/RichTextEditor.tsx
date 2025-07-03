@@ -28,19 +28,29 @@ type Props = {
   value: string;
   name?: string;
   required?: boolean;
+  onReady?: () => void;
+  onChange?: (val: string) => void;
 };
 
 const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
-  ({ value, name, required }, ref) => {
+  ({ value, name, required, onReady, onChange }, ref) => {
     const quillRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     useImperativeHandle(ref, () => ({
       getContent: () => {
-        return quillRef.current?.getEditor()?.root?.innerHTML ?? "";
+        try {
+          return quillRef.current?.getEditor()?.root?.innerHTML ?? "";
+        } catch {
+          return "";
+        }
       },
       getContentText: () => {
-        return quillRef.current?.getEditor()?.getText() ?? "";
+        try {
+          return quillRef.current?.getEditor()?.getText() ?? "";
+        } catch {
+          return "";
+        }
       },
       setContent: (value: string) => {
         const editor = quillRef.current?.getEditor();
@@ -93,6 +103,24 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
       },
     };
 
+    // useEffect(() => {
+    //   const checkEditor = setInterval(() => {
+    //     const editor = quillRef.current?.getEditor?.();
+    //     if (editor) {
+    //       clearInterval(checkEditor);
+    //       onReady?.();
+    //     }
+    //   }, 50);
+
+    //   return () => clearInterval(checkEditor);
+    // }, [onReady]);
+
+    useEffect(() => {
+      if (quillRef.current && onReady) {
+        onReady();
+      }
+    }, [quillRef.current]);
+
     return (
       <div className="focus-within:z-[calc(var(--z-base)+1) relative w-full rounded border-1 border-[var(--border-main)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
         <QuillWrapper
@@ -101,6 +129,9 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           theme="snow"
           placeholder=" "
           modules={modules}
+          onChange={(val) => {
+            onChange?.(val);
+          }}
         />
 
         <textarea

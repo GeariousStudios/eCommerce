@@ -44,14 +44,14 @@ namespace backend.Controllers
                 query = query.Where(u => u.Name.ToLower().Contains(lowered));
             }
 
-            var filteredHasUnitsCount = await query.CountAsync(u => u.Units.Any());
-            var filteredNoUnitsCount = await query.CountAsync(u => !u.Units.Any());
-
             query = sortBy.ToLower() switch
             {
                 "name" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.Name)
-                    : query.OrderBy(u => u.Name),
+                    ? query.OrderByDescending(u => u.Name.ToLower())
+                    : query.OrderBy(u => u.Name.ToLower()),
+                "hasunits" => sortOrder == "desc"
+                    ? query.OrderByDescending(u => u.Units.Any())
+                    : query.OrderBy(u => u.Units.Any()),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Id)
                     : query.OrderBy(u => u.Id),
@@ -83,15 +83,7 @@ namespace backend.Controllers
             {
                 totalCount,
                 items = unitGroups,
-                counts = new
-                {
-                    hasUnits = totalHasUnitsCount,
-                    noUnits = totalNoUnitsCount,
-
-                    // Filtered.
-                    filteredHasUnits = filteredHasUnitsCount,
-                    filteredNoUnits = filteredNoUnitsCount,
-                },
+                counts = new { hasUnits = totalHasUnitsCount, noUnits = totalNoUnitsCount },
             };
 
             return Ok(result);
@@ -222,7 +214,7 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Valideringsfel", errors });
             }
 
-            var existingUnitGroup = await _context.Units.FirstOrDefaultAsync(u =>
+            var existingUnitGroup = await _context.UnitGroups.FirstOrDefaultAsync(u =>
                 u.Name.ToLower() == dto.Name.ToLower() && u.Id != id
             );
 

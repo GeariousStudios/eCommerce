@@ -34,7 +34,13 @@ namespace backend.Controllers
                 return NotFound();
             }
 
-            return Ok(new { theme = user.UserPreferences.Theme });
+            return Ok(
+                new
+                {
+                    theme = user.UserPreferences.Theme,
+                    isGridView = user.UserPreferences.IsGridView,
+                }
+            );
         }
 
         [HttpPut("theme")]
@@ -67,10 +73,43 @@ namespace backend.Controllers
 
             return Ok(new { message = "Temat uppdaterades!" });
         }
+
+        [HttpPut("view")]
+        public async Task<IActionResult> UpdateViewPreference(
+            [FromBody] UpdateViewPreferenceRequest req
+        )
+        {
+            var username = User.Identity?.Name;
+            var isGridView = req.IsGridView;
+
+            if (username == null)
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context
+                .Users.Include(u => u.UserPreferences)
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user?.UserPreferences == null)
+            {
+                return NotFound();
+            }
+
+            user.UserPreferences.IsGridView = isGridView;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Vy-preferens uppdaterades!" });
+        }
     }
 }
 
 public class UpdateThemeRequest
 {
     public required string Theme { get; set; }
+}
+
+public class UpdateViewPreferenceRequest
+{
+    public required bool IsGridView { get; set; }
 }

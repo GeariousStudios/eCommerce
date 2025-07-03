@@ -113,7 +113,18 @@ const Navbar = (props: Props) => {
 
   // --- INITIALLY FETCH UNITS ---
   useEffect(() => {
+    if (!isAuthReady) {
+      return;
+    }
+
     fetchUnits();
+
+    const handleUpdate = () => fetchUnits();
+    window.addEventListener("unit-list-updated", handleUpdate);
+
+    return () => {
+      window.removeEventListener("unit-list-updated", handleUpdate);
+    };
   }, [isAuthReady]);
 
   // --- SCROLLBAR OBSERVER ---

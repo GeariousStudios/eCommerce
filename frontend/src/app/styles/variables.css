@@ -31,7 +31,7 @@
   --accent-color-active-dark: #007cf0;
   --accent-color-active-light: #6eb0f7;
 
-  /* --- BADGES COLORS --- */
+  /* --- BADGE COLORS --- */
   --badge-coral: #ffab9d;
   --badge-orange: #ffd580;
   --badge-apricot: #ffdac1;
@@ -54,6 +54,9 @@
   --accent-color: var(--accent-color-dark);
   --accent-color-hover: var(--accent-color-hover-dark);
   --accent-color-active: var(--accent-color-active-dark);
+
+  --badge-main: var(--text-main-dark);
+  --badge-main-reverse: var(--text-main-light);
 
   /* --- NAVBAR --- */
   --bg-navbar: #1a1a1a;
@@ -118,6 +121,9 @@
   --accent-color: var(--accent-color-light);
   --accent-color-hover: var(--accent-color-hover-light);
   --accent-color-active: var(--accent-color-active-light);
+
+  --badge-main: var(--text-main-light);
+  --badge-main-reverse: var(--text-main-dark);
 
   /* --- NAVBAR --- */
   --bg-navbar: #f0f0f0;

@@ -353,7 +353,9 @@ const SettingsModal = (props: Props) => {
                       <Input
                         placeholder="•••••••••"
                         value={inputValue}
-                        onChange={(val) => setInputValue(val as string)}
+                        onChange={(val) => {
+                          setInputValue(val as string);
+                        }}
                         type="password"
                         autoComplete="new-password"
                       />
@@ -390,7 +392,9 @@ const SettingsModal = (props: Props) => {
                       <Input
                         placeholder={firstName}
                         value={inputValue}
-                        onChange={(val) => setInputValue(val as string)}
+                        onChange={(val) => {
+                          setInputValue(val as string);
+                        }}
                       />
                       <button
                         onClick={() => {
@@ -436,7 +440,9 @@ const SettingsModal = (props: Props) => {
                       <Input
                         placeholder={lastName}
                         value={inputValue}
-                        onChange={(val) => setInputValue(val as string)}
+                        onChange={(val) => {
+                          setInputValue(val as string);
+                        }}
                       />
                       <button
                         onClick={() => {
@@ -478,7 +484,9 @@ const SettingsModal = (props: Props) => {
                       <Input
                         placeholder={email}
                         value={inputValue}
-                        onChange={(val) => setInputValue(val as string)}
+                        onChange={(val) => {
+                          setInputValue(val as string);
+                        }}
                         type="email"
                         id="email"
                       />

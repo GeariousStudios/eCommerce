@@ -1,6 +1,18 @@
+import {
+  buttonPrimaryClass,
+  buttonSecondaryClass,
+} from "@/app/styles/buttonClasses";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FocusTrap } from "focus-trap-react";
-import { ElementType, ReactNode, useEffect, useRef, useState } from "react";
+import {
+  ElementType,
+  forwardRef,
+  ReactNode,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 
 type Props = {
   children: ReactNode;
@@ -11,10 +23,27 @@ type Props = {
   disableClickOutside?: boolean;
   disableCloseButton?: boolean;
   smallGap?: boolean;
+  confirmOnClose?: boolean;
+  confirmCloseMessage?: string;
+  isDirty?: boolean;
 };
 
-const ModalBase = (props: Props) => {
+export type ModalBaseHandle = {
+  requestClose: () => void;
+};
+
+const ModalBase = forwardRef((props: Props, ref) => {
+  useImperativeHandle(ref, () => ({
+    requestClose,
+  }));
+
+  // --- VARIABLES ---
+  // --- Refs ---
   const innerRef = useRef<HTMLDivElement>(null);
+
+  // --- States ---
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
   let Icon = props.icon ?? undefined;
 
   useEffect(() => {
@@ -29,7 +58,7 @@ const ModalBase = (props: Props) => {
         target instanceof Element &&
         !target.closest('[data-inside-modal="true"]')
       ) {
-        props.onClose();
+        requestClose();
       }
     };
 
@@ -41,6 +70,23 @@ const ModalBase = (props: Props) => {
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, [props.isOpen, props.onClose]);
+
+  const requestClose = () => {
+    if (props.confirmOnClose && props.isDirty) {
+      setShowConfirmModal(true);
+    } else {
+      props.onClose();
+    }
+  };
+
+  const handleConfirmClose = () => {
+    setShowConfirmModal(false);
+    props.onClose();
+  };
+
+  const handleConfirmCancel = () => {
+    setShowConfirmModal(false);
+  };
 
   return (
     <>
@@ -75,7 +121,7 @@ const ModalBase = (props: Props) => {
                         </span>
                       </div>
                       <button
-                        onClick={() => props.onClose()}
+                        onClick={requestClose}
                         className="xs:h-[32px] xs:min-h-[32px] xs:w-[32px] xs:min-w-[32px] h-[24px] min-h-[24px] w-[24px] min-w-[24px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
                       >
                         <XMarkIcon />
@@ -90,8 +136,45 @@ const ModalBase = (props: Props) => {
           </FocusTrap>
         </div>
       )}
+
+      {showConfirmModal && (
+        <FocusTrap
+          focusTrapOptions={{
+            initialFocus: false,
+            allowOutsideClick: true,
+            escapeDeactivates: false,
+          }}
+        >
+          <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/75">
+            <div className="relative top-1/2">
+              <div className="relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-md -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]">
+                <p className="mb-6 text-[var(--text-main)]">
+                  {props.confirmCloseMessage ??
+                    "Du har osparade ändringar. Vill du stänga ändå?"}
+                </p>
+                <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+                  <button
+                    type="button"
+                    onClick={handleConfirmClose}
+                    className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                  >
+                    Stäng ändå
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmCancel}
+                    className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                  >
+                    Avbryt
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </FocusTrap>
+      )}
     </>
   );
-};
+});
 
 export default ModalBase;

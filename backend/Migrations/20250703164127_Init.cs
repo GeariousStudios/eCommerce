@@ -138,6 +138,7 @@ namespace eCommerce.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Theme = table.Column<string>(type: "TEXT", nullable: false),
+                    IsGridView = table.Column<bool>(type: "INTEGER", nullable: false),
                     UserId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>

@@ -1,639 +1,332 @@
 "use client";
 
-import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
-import Input from "../../../components/input/Input";
-import DeleteModal from "../../../components/modals/DeleteModal";
 import { useToast } from "../../../components/toast/ToastProvider";
-import CustomTooltip from "../../../components/customTooltip/CustomTooltip";
+import useManage from "@/app/hooks/useManage";
+import { UnitFilters, UnitItem } from "@/app/types/manageTypes"; // <-- Unique.
 import {
-  AdjustmentsHorizontalIcon,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronUpDownIcon,
-  ChevronUpIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon,
-} from "@heroicons/react/20/solid";
-
-import {
-  TrashIcon,
-  PlusIcon,
-  PencilSquareIcon,
-} from "@heroicons/react/24/outline";
-import {
-  buttonDeleteSecondaryClass,
-  buttonPrimaryClass,
-  buttonSecondaryClass,
-  iconButtonPrimaryClass,
-  roundedButtonClass,
-} from "../../../styles/buttonClasses";
-import Message from "../../../components/message/Message";
-import SingleDropdown from "../../../components/dropdowns/SingleDropdown";
-import UnitModal from "../../../components/modals/UnitModal";
-import MenuDropdown from "../../../components/dropdowns/MenuDropdown";
-import SideMenu from "../../../components/sideMenu/SideMenu";
-
-// --- CLASSES ---
-let thClass =
-  "pl-4 p-2 min-w-48 h-[40px] cursor-pointer border-1 border-t-0 border-[var(--border-secondary)] border-b-[var(--border-main)] text-left transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]";
-
-let tdClass =
-  "py-2 px-4 min-w-48 h-[40px] border-1 border-b-0 border-[var(--border-secondary)] text-left break-all";
-
-let filterClass =
-  "truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
-
-let filterIconClass =
-  "h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
-
-// --- COMPONENTS ---
-// --- Filter ---
-const Filter = ({
-  filterRef,
-  label,
-  breakpoint,
-  filterData,
-}: {
-  filterRef: RefObject<HTMLButtonElement | null>;
-  label: string;
-  breakpoint: string;
-  filterData: FilterData[];
-}) => {
-  const [filterOpen, setFilterOpen] = useState(false);
-
-  let divClassName = "relative hidden ";
-
-  if (breakpoint === "2xs") {
-    divClassName += "2xs:flex";
-  } else if (breakpoint === "xs") {
-    divClassName += "xs:flex";
-  } else if (breakpoint === "sm") {
-    divClassName += "sm:flex";
-  } else if (breakpoint === "md") {
-    divClassName += "md:flex";
-  } else if (breakpoint === "ml") {
-    divClassName += "ml:flex";
-  } else if (breakpoint === "lg") {
-    divClassName += "lg:flex";
-  } else if (breakpoint === "xl") {
-    divClassName += "xl:flex";
-  } else if (breakpoint === "2xl") {
-    divClassName += "2xl:flex";
-  }
-
-  return (
-    <div className={divClassName}>
-      <button
-        ref={filterRef}
-        className={`${roundedButtonClass} group w-auto gap-2 px-4`}
-        onClick={() => {
-          setFilterOpen((prev) => !prev);
-        }}
-      >
-        <span
-          className={`${filterClass} ${filterOpen ? "text-[var(--accent-color)]" : ""}`}
-        >
-          {label}
-        </span>
-        <ChevronDownIcon
-          className={`${filterIconClass} ${filterOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
-        />
-      </button>
-
-      <MenuDropdown
-        triggerRef={filterRef}
-        isOpen={filterOpen}
-        onClose={() => setFilterOpen(false)}
-      >
-        <div className="flex w-full flex-col gap-4">
-          {filterData.map((item, index) => (
-            <div
-              key={index}
-              onClick={() => item.setShow(!item.show)}
-              className="group flex cursor-pointer justify-between"
-            >
-              <Input
-                type="checkbox"
-                checked={item.show}
-                label={item.label}
-                readOnly
-              />
-              <span>({item.count ?? 0})</span>
-            </div>
-          ))}
-        </div>
-      </MenuDropdown>
-    </div>
-  );
-};
-
-// --- AllFilter ---
-const AllFilter = ({
-  filterRef,
-  label,
-  filterData,
-}: {
-  filterRef: RefObject<HTMLDivElement | null>;
-  label: string;
-  filterData: FilterData[];
-}) => {
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [filterHeight, setFilterHeight] = useState("0px");
-
-  useEffect(() => {
-    if (filterRef.current) {
-      setFilterHeight(
-        filterOpen ? `${filterRef.current.scrollHeight}px` : "0px",
-      );
-    }
-  }, [filterOpen]);
-
-  return (
-    <div>
-      <button
-        onClick={() => setFilterOpen((prev) => !prev)}
-        className={`${filterOpen ? "text-[var(--accent-color)]" : ""} flex w-full cursor-pointer items-center justify-between py-4 duration-[var(--fast)] hover:text-[var(--accent-color)]`}
-      >
-        <span className="text-lg font-semibold">{label}</span>
-        <ChevronDownIcon
-          className={`${filterOpen ? "rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
-        />
-      </button>
-
-      <div
-        style={{ height: filterHeight }}
-        className="overflow-hidden transition-[height] duration-[var(--slow)]"
-      >
-        <div ref={filterRef}>
-          <div className="flex w-full flex-col">
-            {filterData.map((item, index) => (
-              <div
-                key={index}
-                onClick={() => item.setShow(!item.show)}
-                className={`${index === filterData.length - 1 ? "mb-4" : ""} group flex cursor-pointer justify-between py-4`}
-              >
-                <Input
-                  type="checkbox"
-                  checked={item.show}
-                  label={item.label}
-                  readOnly
-                />
-                <span>({item.count ?? 0})</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-      <hr className="-ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
-    </div>
-  );
-};
-
-// --- PROPS ---
-// --- Outside UnitsClient ---
-type FilterData = {
-  label: string;
-  show: boolean;
-  setShow: (value: boolean) => void;
-  count?: number;
-};
-
-// --- Inside UnitsClient ---
-type Item = {
-  id: number;
-  name: string;
-  unitGroupName: string;
-  isHidden: boolean;
-
-  creationDate: string;
-  updateDate: string;
-  createdBy: string;
-  updatedBy: string;
-};
+  deleteContent,
+  fetchContent,
+  fetchUnitGroups,
+  UnitGroupOption,
+} from "@/app/apis/manage/unitsApi"; // <-- Unique.
+import ManageBase from "@/app/components/manage/ManageBase";
+import UnitModal from "@/app/components/modals/manage/UnitModal"; // <-- Unique.
+import DeleteModal from "@/app/components/modals/DeleteModal";
+import { useEffect, useState } from "react";
+import { badgeClass } from "@/app/components/manage/ManageClasses";
 
 type Props = {
   isConnected: boolean | null;
 };
 
 const UnitsClient = (props: Props) => {
+  // <-- Unique.
   // --- VARIABLES ---
-  const [colSpan, setColSpan] = useState(2);
+  const {
+    // --- Items ---
+    items,
+    setItems,
+    selectedItems,
+    setSelectedItems,
 
-  // --- States: Backend ---
-  const [isLoadingContent, setIsLoadingItems] = useState(false);
-  const [totalCounts, setTotalCounts] = useState<{
-    locked: number;
-    unlocked: number;
+    editingItemId,
+    setEditingItemId,
+    isEditModalOpen,
+    setIsEditModalOpen,
 
-    filteredHidden: number;
-    filteredVisible: number;
-  } | null>(null);
+    deletingItemIds,
+    setDeletingItemIds,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
 
-  // --- States: Edit/Delete ---
-  const [items, setItems] = useState<Item[]>([]);
-  const [editingItemId, setEditingItemId] = useState<number | null>(null);
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
-  const [isEditItemModalOpen, setIsEditItemModalOpen] = useState(false);
+    // --- Loading ---
+    isLoading,
+    setIsLoading,
 
-  const [deletingItemIds, setDeletingItemIds] = useState<number[]>([]);
-  const [isDeleteModalOpen, setIsDeleteItemModalOpen] = useState(false);
-
-  // --- States: Pagination ---
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setitemsPerPage] = useState(5);
-  const [totalItems, setTotalItems] = useState<number | null>(null);
-
-  // --- States: Sort ---
-  const [sortBy, setSortBy] = useState<string>("id");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-
-  // --- States: Filter/Search ---
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const [showHidden, setShowHidden] = useState(false);
-  const [showVisible, setShowVisible] = useState(false);
-
-  // --- Other ---
-  const token = localStorage.getItem("token");
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const { notify } = useToast();
-  const lastItemIndex = currentPage * itemsPerPage;
-  const firstItemIndex = lastItemIndex - itemsPerPage;
-  const visibleRowCount = Math.max(
-    0,
-    Math.min(itemsPerPage, (totalItems ?? 0) - firstItemIndex),
-  );
-  const rowCount = Math.max(0, Math.min(itemsPerPage, visibleRowCount));
-  const totalPages = Math.max(1, Math.ceil((totalItems ?? 0) / itemsPerPage));
-
-  // --- SMALL FILTER ---
-  // --- Variables ---
-  const filterOneRef = useRef<HTMLButtonElement>(null);
-  const filterAllRef = useRef<HTMLButtonElement>(null);
-
-  // --- BIG FILTER ---
-  // --- Variables ---
-  const allFilterOneRef = useRef<HTMLDivElement>(null);
-
-  const [filterAllOpen, setFilterAllOpen] = useState(false);
-
-  // --- PAGINATION HELPGER ---
-  const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
-
-    // If less than 7 pages, show all.
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-      return pages;
-    }
-
-    // Don't show "..." before first page if page is 3 or less.
-    if (currentPage <= 3) {
-      for (let i = 1; i <= 4; i++) {
-        pages.push(i);
-      }
-      pages.push("...");
-      pages.push(totalPages);
-      // 1. Show "1 ..." if page is at least 2 below total pages.
-    } else if (currentPage >= totalPages - 2) {
-      pages.push(1);
-      pages.push("...");
-      // 2. And then show the remaining pages.
-      for (let i = totalPages - 3; i <= totalPages; i++) {
-        pages.push(i);
-      }
-      // Show "1 ... X, X, X ... X" if none of the criterias above match.
-    } else {
-      pages.push(1);
-      pages.push("...");
-
-      for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-        pages.push(i);
-      }
-
-      pages.push("...");
-      pages.push(totalPages);
-    }
-
-    return pages;
-  };
-
-  // --- BACKEND ---
-  // --- Fetch items ---
-  const fetchItems = async (
-    page: number,
-    pageSize: number,
-    sortByField: string,
-    sortOrderField: "asc" | "desc",
-    showLoading = true,
-  ) => {
-    try {
-      if (showLoading) {
-        setIsLoadingItems(true);
-      }
-
-      // --- Pagination, filter & sort parameters ---
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(pageSize),
-        sortBy: sortByField,
-        sortOrder: sortOrderField,
-        search: searchTerm,
-      });
-
-      if (showHidden && !showVisible) {
-        params.append("isHidden", "true");
-      } else if (!showHidden && showVisible) {
-        params.append("isHidden", "false");
-      }
-
-      // --- Data ---
-      const response = await fetch(`${apiUrl}/unit?${params.toString()}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // --- Fail ---
-      if (response.status === 401) {
-        localStorage.removeItem("token");
-        return;
-      }
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        notify("error", result.message);
-        return;
-      }
-
-      // --- Success ---
-      setItems(Array.isArray(result.items) ? result.items : []);
-      setTotalItems(result.totalCount ?? 0);
-      setTotalCounts(result.counts ?? null);
-    } catch (err) {
-    } finally {
-      if (showLoading) {
-        setIsLoadingItems(false);
-      }
-    }
-  };
-
-  // --- Delete item(s)
-  const finishDeleteItem = async (id: number) => {
-    try {
-      // --- Delete data ---
-      const response = await fetch(`${apiUrl}/unit/delete/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // --- Fail ---
-      if (response.status === 401) {
-        localStorage.removeItem("token");
-        return;
-      }
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        notify("error", result.message);
-        return;
-      }
-
-      // --- Success ---
-      await fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
-      notify("success", "Enhet borttagen!", 4000);
-    } catch (err) {
-      notify("error", String(err));
-    }
-  };
-
-  // --- FETCH FREQUENCY ---
-  useEffect(() => {
-    fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
-  }, [
+    // --- Pagination ---
     currentPage,
+    setCurrentPage,
     itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    setTotalItems,
+
+    // --- Sorting ---
     sortBy,
     sortOrder,
+    handleSort,
+
+    // --- Search & Filtering ---
     searchTerm,
-    showHidden,
-    showVisible,
-  ]);
+    setSearchTerm,
+    filters,
+    setFilters,
+    counts,
+    setCounts,
+    isGrid,
+    setIsGrid,
 
-  // --- When filter, go to page 1 ---
+    // --- Other ---
+    fetchItems,
+  } = useManage<UnitItem, UnitFilters>(async (params) => {
+    // <-- Unique.
+    try {
+      const result = await fetchContent(params);
+      return {
+        items: result.items,
+        total: result.total,
+        counts: result.counts,
+      };
+    } catch (err: any) {
+      notify("error", err.message || "Kunde inte hämta enheter"); // <-- Unique.
+      return {
+        items: [],
+        total: 0,
+        counts: {},
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  });
+
+  const { notify } = useToast();
+
+  // --- FETCH UNITS INITIALIZATION (Unique) ---
+  const [unitGroups, setUnitGroups] = useState<UnitGroupOption[]>([]);
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, showHidden, showVisible]);
-
-  // --- SORTING ---
-  const handleSort = (field: string) => {
-    const isSameField = field === sortBy;
-    const newSortOrder = isSameField && sortOrder === "asc" ? "desc" : "asc";
-
-    setSortBy(field);
-    setSortOrder(newSortOrder);
-    fetchItems(currentPage, itemsPerPage, field, newSortOrder, false);
-  };
-
-  // --- Icon swapper ---
-  const getSortIcon = (field: string) => {
-    if (sortBy !== field) {
-      return <ChevronUpDownIcon className="h-6 w-6" />;
-    }
-    return sortOrder === "asc" ? (
-      <ChevronUpIcon className="h-6 w-6" />
-    ) : (
-      <ChevronDownIcon className="h-6 w-6" />
-    );
-  };
-
-  // --- ITEM SELECTION ---
-  const visibleContentIds = items.map((item) => item.id);
-
-  const selectableIds = items.map((item) => item.id);
-
-  const allSelected =
-    selectableIds.length > 0 &&
-    selectableIds.every((id) => selectedItems.includes(id));
-
-  const selectUnit = (itemId: number) => {
-    const item = items.find((u) => u.id === itemId);
-    if (!item) {
-      return;
-    }
-
-    if (selectedItems.includes(itemId)) {
-      setSelectedItems(selectedItems.filter((id) => id !== itemId));
-    } else {
-      setSelectedItems([...selectedItems, itemId]);
-    }
-  };
-
-  const selectAll = () => {
-    if (allSelected) {
-      setSelectedItems(
-        selectedItems.filter((id) => !selectableIds.includes(id)),
-      );
-    } else {
-      setSelectedItems([...new Set([...selectedItems, ...selectableIds])]);
-    }
-  };
-
-  // --- SET COLSPAN ---
-  useEffect(() => {
-    const updateColSpan = () => {
-      const width = window.innerWidth;
-
-      let span = 2;
-      if (width >= 384) {
-        span += 1;
-      }
-      if (width >= 640) {
-        span += 1;
-      }
-
-      setColSpan(span);
-    };
-
-    updateColSpan();
-    window.addEventListener("resize", updateColSpan);
-    return () => removeEventListener("resize", updateColSpan);
+    fetchUnitGroups()
+      .then(setUnitGroups)
+      .catch((err) => notify("error", String(err)));
   }, []);
 
   // --- TOGGLE MODAL(S) ---
   // --- Delete ---
   const toggleDeleteItemModal = (itemIds: number[] = []) => {
     setDeletingItemIds(itemIds);
-    setIsDeleteItemModalOpen((prev) => !prev);
+    setIsDeleteModalOpen((prev) => !prev);
   };
 
   // --- Edit ---
-  const openItemEditModal = (itemId: number | null = null) => {
+  const toggleEditItemModal = (itemId: number | null = null) => {
     setEditingItemId(itemId);
-    setIsEditItemModalOpen(true);
+    setIsEditModalOpen((prev) => !prev);
   };
 
-  const closeItemEditModal = () => {
-    setIsEditItemModalOpen(false);
-    setEditingItemId(null);
+  // --- Delete item(s)
+  const finishDeleteContent = async (id: number) => {
+    try {
+      await deleteContent(id);
+      await fetchItems();
+      window.dispatchEvent(new Event("unit-list-updated"));
+      notify("success", "Enhet borttagen!", 4000); // <-- Unique.
+    } catch (err) {
+      notify("error", String(err));
+    }
   };
 
-  // --- COMPONENTS ---
-  // --- FilterChip ---
-  const FilterChip = ({
-    visible,
-    onClickEvent,
-    label,
-  }: {
-    visible: boolean;
-    onClickEvent: (value: boolean) => void;
-    label: string;
-  }) => {
-    return (
-      <>
-        {visible && (
-          <button
-            className={`${roundedButtonClass} group w-auto gap-2 px-4`}
-            onClick={() => {
-              onClickEvent(false);
-            }}
-          >
-            <span className={`${filterClass}`}>{label}</span>
-            <XMarkIcon className={`${filterIconClass}`} />
-          </button>
-        )}
-      </>
-    );
-  };
-
-  // --- ThCell ---
-  const ThCell = ({
-    sortingItem,
-    label,
-    labelAsc,
-    labelDesc,
-    classNameAddition,
-  }: {
-    sortingItem: string;
-    label: string;
-    labelAsc: string;
-    labelDesc: string;
-    classNameAddition?: string;
-  }) => {
-    return (
-      <CustomTooltip
-        content={
-          sortBy === sortingItem
-            ? sortOrder === "asc"
-              ? "Sortera " + labelAsc
-              : "Sortera " + labelDesc
-            : "Sortera " + labelDesc
-        }
-      >
-        <th
-          className={`${thClass} ${classNameAddition ? classNameAddition : ""}`}
-          onClick={() => handleSort(sortingItem)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              handleSort(sortingItem);
-            }
-          }}
-          tabIndex={0}
-          aria-sort={
-            sortBy === sortingItem
-              ? sortOrder === "asc"
-                ? "ascending"
-                : "descending"
-              : "none"
-          }
-        >
-          <div className="relative flex gap-2">
-            <span className="w-full truncate overflow-hidden text-ellipsis">
-              {label}
+  // --- Grid Items (Unique) ---
+  const gridItems = () => [
+    {
+      key: "name, isHidden",
+      getValue: (item: UnitItem) => (
+        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+          <div className="flex flex-col">
+            <span className="flex items-center justify-between text-2xl font-bold">
+              <span className="flex items-center">{item.name}</span>
             </span>
-            <span className="flex">{getSortIcon(sortingItem)}</span>
           </div>
-        </th>
-      </CustomTooltip>
-    );
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">Tillhör enhetsgrupp:</span>
+            <span className="-mt-2">{item.unitGroupName}</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">Status:</span>
+            <span
+              className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-min-[72px] w-[72px] text-[var(--text-main-reverse)]`}
+            >
+              {item.isHidden ? "Gömd" : "Synlig"}
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "creationDate, createdBy",
+      getValue: (item: UnitItem) => (
+        <p className="flex flex-col">
+          <span className="font-semibold">Skapad: </span>
+          {new Date(item.creationDate).toLocaleString("sv-SE", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}{" "}
+          av {item.createdBy}
+        </p>
+      ),
+    },
+    {
+      key: "updateDate, updatedBy",
+      getValue: (item: UnitItem) => (
+        <p className="flex flex-col">
+          <span className="font-semibold">Senast uppdaterad: </span>
+          {new Date(item.updateDate).toLocaleString("sv-SE", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}{" "}
+          av {item.updatedBy}
+        </p>
+      ),
+    },
+  ];
+
+  // --- Table Items (Unique) ---
+  const tableItems = () => [
+    {
+      key: "name",
+      label: "Namn",
+      sortingItem: "name",
+      labelAsc: "namn Ö-A",
+      labelDesc: "namn A-Ö",
+      getValue: (item: UnitItem) => item.name,
+      responsivePriority: 0,
+    },
+    {
+      key: "unitGroupName",
+      label: "Tillhör enhetsgrupp",
+      sortingItem: "unitGroupName",
+      labelAsc: "enhetsgrupp A-Ö",
+      labelDesc: "enhetsgrupp Ö-A",
+      getValue: (item: UnitItem) => item.unitGroupName,
+      responsivePriority: 2,
+    },
+    {
+      key: "isHidden",
+      label: "Status",
+      sortingItem: "isHidden",
+      labelAsc: "gömda enheter",
+      labelDesc: "synliga enheter",
+      classNameAddition: "w-[100px] min-w-[100px]",
+      childClassNameAddition: "w-[72px] min-w-[72px]",
+      getValue: (item: UnitItem) => (
+        <span
+          className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+        >
+          {item.isHidden ? "Gömd" : "Synlig"}
+        </span>
+      ),
+      responsivePriority: 1,
+    },
+  ];
+
+  // --- Filter Controls (Unique) ---
+  const filterControls = {
+    showVisible: filters.isHidden === false,
+    setShowVisible: (val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        isHidden: val ? false : undefined,
+      }));
+    },
+
+    showHidden: filters.isHidden === true,
+    setShowHidden: (val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        isHidden: val ? true : undefined,
+      }));
+    },
+
+    selectedUnitGroups: filters.unitGroupIds ?? [],
+    toggleUnitGroup: (groupId: number) => {
+      setFilters((prev) => {
+        const groups = new Set(prev.unitGroupIds ?? []);
+        if (groups.has(groupId)) {
+          groups.delete(groupId);
+        } else {
+          groups.add(groupId);
+        }
+        return { ...prev, unitGroupIds: Array.from(groups) };
+      });
+    },
   };
 
-  // --- TdCell ---
-  const TdCell = ({
-    children,
-    classNameAddition,
-  }: {
-    children: ReactNode;
-    classNameAddition?: string;
-  }) => {
-    return (
-      <td
-        className={`${tdClass} ${classNameAddition ? classNameAddition : ""}`}
-      >
-        <div className="truncate overflow-hidden text-ellipsis">{children}</div>
-      </td>
-    );
-  };
+  // --- Filter List (Unique)
+  const filterList = () => [
+    {
+      label: "Status",
+      breakpoint: "ml",
+      options: [
+        {
+          label: "Synliga enheter",
+          isSelected: filterControls.showVisible,
+          setSelected: filterControls.setShowVisible,
+          count: counts?.visible,
+        },
+        {
+          label: "Gömda enheter",
+          isSelected: filterControls.showHidden,
+          setSelected: filterControls.setShowHidden,
+          count: counts?.hidden,
+        },
+      ],
+    },
+    {
+      label: "Tillhör enhetsgrupp",
+      breakpoint: "lg",
+      options: unitGroups.map((group) => ({
+        label: group.name,
+        isSelected: filterControls.selectedUnitGroups.includes(group.id),
+        setSelected: () => filterControls.toggleUnitGroup(group.id),
+        count: counts?.unitGroupCount?.[group.name],
+      })),
+    },
+  ];
 
   return (
     <>
+      <ManageBase<UnitItem> // <-- Unique.
+        itemName="enhet" // <-- Unique.
+        items={items}
+        selectedItems={selectedItems}
+        setSelectedItems={setSelectedItems}
+        toggleEditItemModal={toggleEditItemModal}
+        toggleDeleteItemModal={toggleDeleteItemModal}
+        isLoading={isLoading}
+        isConnected={props.isConnected === true}
+        isGrid={isGrid}
+        setIsGrid={setIsGrid}
+        gridItems={gridItems()}
+        tableItems={tableItems()}
+        showCheckbox={true}
+        showInfoButton={false}
+        getIsDisabled={() => false} // <-- Unique.
+        pagination={{
+          currentPage,
+          setCurrentPage,
+          itemsPerPage,
+          setItemsPerPage,
+          totalItems: totalItems ?? 0,
+        }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
+        searchTerm={searchTerm}
+        onSearchChange={(val) => setSearchTerm(val)}
+        filters={filterList()}
+      />
+
       {/* --- MODALS --- */}
-      <UnitModal
-        isOpen={isEditItemModalOpen}
-        onClose={closeItemEditModal}
-        unitId={editingItemId}
-        onUnitUpdated={() => {
-          fetchItems(currentPage, itemsPerPage, sortBy, sortOrder);
+      <UnitModal // <-- Unique.
+        isOpen={isEditModalOpen}
+        onClose={toggleEditItemModal}
+        itemId={editingItemId}
+        onItemUpdated={() => {
+          fetchItems();
         }}
       />
 
@@ -645,573 +338,16 @@ const UnitsClient = (props: Props) => {
         }}
         onConfirm={async () => {
           for (const id of deletingItemIds) {
-            await finishDeleteItem(id);
+            await finishDeleteContent(id);
           }
 
-          setIsDeleteItemModalOpen(false);
+          setIsDeleteModalOpen(false);
           setDeletingItemIds([]);
           setSelectedItems([]);
         }}
       />
-
-      {/* --- MAIN --- */}
-      <div className="flex flex-col gap-4">
-        {/* --- TOP --- */}
-        <div className="flex flex-col gap-4">
-          {/* --- ITEM EDITING --- */}
-          <div className="flex flex-wrap gap-4">
-            {/* --- Add item --- */}
-            <CustomTooltip content="Lägg till ny enhet" lgHidden={true}>
-              <button
-                className={`${buttonPrimaryClass} lg:w-auto lg:px-4`}
-                onClick={() => {
-                  openItemEditModal();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    openItemEditModal();
-                  }
-                }}
-                tabIndex={0}
-              >
-                <div className="flex items-center justify-center gap-2 truncate">
-                  <PlusIcon className="h-6" />
-                  <span className="hidden lg:block">Lägg till ny enhet</span>
-                </div>
-              </button>
-            </CustomTooltip>
-
-            {/* --- Edit item --- */}
-            <CustomTooltip
-              content={
-                selectedItems.length === 0
-                  ? "Välj en enhet"
-                  : selectedItems.length === 1
-                    ? "Redigera enhet"
-                    : "Du kan bara redigera en enhet i taget!"
-              }
-              lgHidden={selectedItems.length === 1}
-              showOnTouch={
-                selectedItems.length === 0 || selectedItems.length > 1
-              }
-            >
-              <button
-                className={`${buttonSecondaryClass} lg:w-auto lg:px-4`}
-                onClick={() => {
-                  openItemEditModal(selectedItems[0]);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    openItemEditModal(selectedItems[0]);
-                  }
-                }}
-                tabIndex={0}
-                disabled={
-                  selectedItems.length === 0 || selectedItems.length > 1
-                }
-              >
-                <div className="flex items-center justify-center gap-2 truncate">
-                  <PencilSquareIcon className="h-6 min-h-6 w-6 min-w-6" />
-                  <span className="hidden lg:block">Redigera enhet</span>
-                </div>
-              </button>
-            </CustomTooltip>
-
-            {/* --- Delete item --- */}
-            <CustomTooltip
-              content={
-                selectedItems.length === 0
-                  ? "Välj en eller fler enheter"
-                  : `Ta bort enhet (${selectedItems.length})`
-              }
-              lgHidden={selectedItems.length > 0}
-              showOnTouch={selectedItems.length === 0}
-            >
-              <button
-                className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-auto lg:px-4`}
-                onClick={() => toggleDeleteItemModal(selectedItems)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    toggleDeleteItemModal(selectedItems);
-                  }
-                }}
-                tabIndex={0}
-                disabled={selectedItems.length === 0}
-              >
-                <div className="flex items-center justify-center gap-2 truncate">
-                  <TrashIcon className="h-6" />
-                  <span className="hidden lg:block">
-                    Ta bort enhet
-                    <span>
-                      {selectedItems.length > 0
-                        ? ` (${selectedItems.length})`
-                        : ""}
-                    </span>
-                  </span>
-                </div>
-              </button>
-            </CustomTooltip>
-          </div>
-
-          {/* --- SEARCH AND FILTER --- */}
-          <div className="3xs:flex-nowrap flex flex-wrap justify-between gap-4">
-            {/* --- Search --- */}
-            <div className="flex w-full items-center gap-4">
-              <div className="flex w-full items-center justify-start">
-                <Input
-                  icon={<MagnifyingGlassIcon />}
-                  placeholder="Sök enhet"
-                  value={searchTerm}
-                  onChange={(val) => setSearchTerm(String(val).toLowerCase())}
-                />
-              </div>
-            </div>
-
-            {/* --- Filters --- */}
-            <div className="flex gap-4">
-              {/* --- Filter: One --- */}
-              <Filter
-                filterRef={filterOneRef}
-                label="Status"
-                breakpoint="md"
-                filterData={[
-                  {
-                    label: "Gömd",
-                    show: showHidden,
-                    setShow: setShowHidden,
-                    count: totalCounts?.filteredHidden,
-                  },
-                  {
-                    label: "Synlig",
-                    show: showVisible,
-                    setShow: setShowVisible,
-                    count: totalCounts?.filteredVisible,
-                  },
-                ]}
-              />
-
-              {/* --- Filter: All --- */}
-              <div className="relative">
-                <button
-                  className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
-                  onClick={() => {
-                    setFilterAllOpen(true);
-                  }}
-                >
-                  <span className={`${filterClass} xs:flex hidden`}>
-                    Alla filter
-                  </span>
-                  <AdjustmentsHorizontalIcon className={`${filterIconClass}`} />
-                </button>
-
-                <SideMenu
-                  triggerRef={filterAllRef}
-                  isOpen={filterAllOpen}
-                  onClose={() => setFilterAllOpen(false)}
-                  label="Alla filter"
-                >
-                  <div className="flex h-full flex-col justify-between">
-                    <div className="flex flex-col">
-                      {/* --- All filter: One --- */}
-                      <AllFilter
-                        filterRef={allFilterOneRef}
-                        label="Status"
-                        filterData={[
-                          {
-                            label: "Gömd",
-                            show: showHidden,
-                            setShow: setShowHidden,
-                            count: totalCounts?.filteredHidden,
-                          },
-                          {
-                            label: "Synlig",
-                            show: showVisible,
-                            setShow: setShowVisible,
-                            count: totalCounts?.filteredVisible,
-                          },
-                        ]}
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-4 py-4 sm:flex-row">
-                      <button
-                        onClick={() => setFilterAllOpen(false)}
-                        className={`${buttonPrimaryClass} w-full`}
-                      >
-                        Visa{" "}
-                        <span className="font-normal">{totalItems ?? 0}</span>
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowHidden(false);
-                          setShowVisible(false);
-                        }}
-                        className={`${buttonSecondaryClass} w-full`}
-                        disabled={!showHidden && !showVisible}
-                      >
-                        Rensa alla
-                      </button>
-                    </div>
-                  </div>
-                </SideMenu>
-              </div>
-            </div>
-          </div>
-
-          {/* --- Filter chips --- */}
-          {(showHidden || showVisible) && (
-            <div className="flex flex-wrap gap-4">
-              <span className="flex items-center font-semibold text-[var(--text-secondary)]">
-                Aktiva filter:
-              </span>
-              <FilterChip
-                visible={showHidden}
-                onClickEvent={setShowHidden}
-                label="Gömd"
-              />
-
-              <FilterChip
-                visible={showVisible}
-                onClickEvent={setShowVisible}
-                label="Synlig"
-              />
-
-              <button
-                className="group w-auto cursor-pointer rounded-full px-4 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]"
-                onClick={() => {
-                  setShowHidden(false);
-                  setShowVisible(false);
-                }}
-              >
-                <span className="font-semibold text-[var(--accent-color)]">
-                  Rensa alla
-                </span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* --- TABLE --- */}
-        <div className="flex w-full flex-col">
-          <div className="flex w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
-            <table className="w-full table-fixed border-collapse">
-              {/* --- Table head --- */}
-              <thead
-                className={`${!props.isConnected || isLoadingContent ? "pointer-events-none" : ""} bg-[var(--bg-grid-header)]`}
-              >
-                <tr>
-                  <th
-                    className={`${thClass} !w-[40px] !min-w-[40px] !border-l-0 !pl-2`}
-                    onClick={selectAll}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        selectAll();
-                      }
-                    }}
-                  >
-                    <div className="flex items-center justify-center">
-                      <Input
-                        type="checkbox"
-                        checked={allSelected}
-                        indeterminate={
-                          !allSelected &&
-                          visibleContentIds.some((id) =>
-                            selectedItems.includes(id),
-                          )
-                        }
-                        readOnly
-                      />
-                    </div>
-                  </th>
-
-                  <ThCell
-                    sortingItem="name"
-                    label="Namn"
-                    labelAsc="namn Ö-A"
-                    labelDesc="namn A-Ö"
-                  />
-
-                  <ThCell
-                    sortingItem="unitGroupName"
-                    label="Tillhör enhetsgrupp"
-                    labelAsc="enhetsgrupp Ö-A"
-                    labelDesc="enhetsgrupp A-Ö"
-                    classNameAddition="hidden sm:table-cell"
-                  />
-
-                  <ThCell
-                    sortingItem="isHidden"
-                    label="Status"
-                    labelAsc="gömda enheter"
-                    labelDesc="synliga enheter"
-                    classNameAddition="w-28 min-w-28 border-r-0 hidden 2xs:table-cell"
-                  />
-                </tr>
-              </thead>
-
-              {/* --- Table body --- */}
-              <tbody>
-                {/* --- Error messages --- */}
-                {!props.isConnected || items.length === 0 ? (
-                  <tr>
-                    <td colSpan={colSpan} className="h-57">
-                      {!props.isConnected ? (
-                        <Message icon="server" content="server" />
-                      ) : (
-                        <Message
-                          icon="search"
-                          content={
-                            searchTerm || showHidden || showVisible
-                              ? "Inga enheter kunde hittas med det sökkriteriet."
-                              : "Det finns inga enheter."
-                          }
-                        />
-                      )}
-                    </td>
-                  </tr>
-                ) : isLoadingContent ? (
-                  <>
-                    <tr className="bg-[var(--bg-grid)]">
-                      <td
-                        colSpan={colSpan}
-                        style={{ height: `${rowCount * 40}px` }}
-                      >
-                        <div className="flex h-[40px]">
-                          <Message
-                            icon="loading"
-                            content="Hämtar innehåll..."
-                            sideMessage={(visibleRowCount ?? 0) <= 2}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  </>
-                ) : (
-                  <>
-                    {items.map((item, index) => {
-                      const isEven = index % 2 === 0;
-                      const isSelected = selectedItems.includes(item.id);
-                      const rowClass = `${
-                        isEven
-                          ? "bg-[var(--bg-grid)]"
-                          : "bg-[var(--bg-grid-zebra)]"
-                      } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""}
-                        hover:bg-[var(--bg-grid-header-hover)] cursor-pointer transition-[background] duration-[var(--fast)]`;
-
-                      return (
-                        <tr
-                          key={item.id}
-                          className={rowClass}
-                          onClick={() => selectUnit(item.id)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              selectUnit(item.id);
-                            }
-                          }}
-                        >
-                          <td
-                            className={`${tdClass} !w-[40px] !min-w-[40px] cursor-pointer !border-l-0`}
-                          >
-                            <div className="flex items-center justify-center">
-                              <div className="flex items-center justify-center">
-                                <Input
-                                  type="checkbox"
-                                  checked={selectedItems.includes(item.id)}
-                                  readOnly
-                                />
-                              </div>
-                            </div>
-                          </td>
-
-                          <TdCell>{item.name}</TdCell>
-
-                          <TdCell classNameAddition="hidden sm:table-cell">
-                            {item.unitGroupName}
-                          </TdCell>
-
-                          <TdCell classNameAddition=" w-28 min-w-28 border-r-0 2xs:table-cell hidden">
-                            <div className="flex items-center justify-center">
-                              <span
-                                className={`${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-64 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
-                              >
-                                {item.isHidden ? "Gömd" : "Synlig"}
-                              </span>
-                            </div>
-                          </TdCell>
-                        </tr>
-                      );
-                    })}
-                  </>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* --- PAGINATION --- */}
-        <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
-          {/* --- Showing info --- */}
-          <span className="flex w-[175.23px] text-[var(--text-secondary)]">
-            Visar {(currentPage - 1) * itemsPerPage + 1}-
-            {Math.min(currentPage * itemsPerPage, totalItems ?? 0)} av{" "}
-            {totalItems ?? 0}
-          </span>
-
-          {/* --- Change pages --- */}
-          <div className="xs:w-auto flex w-full items-center">
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedItems([]);
-                setCurrentPage((prev) => Math.max(prev - 1, 1));
-              }}
-              disabled={currentPage === 1}
-              className={`${iconButtonPrimaryClass}`}
-            >
-              <ChevronLeftIcon className="min-h-full min-w-full" />
-            </button>
-            <div className="flex flex-wrap items-center justify-center">
-              {getPageNumbers().map((page, index) =>
-                page === "..." ? (
-                  <span key={index} className="flex px-2">
-                    ...
-                  </span>
-                ) : (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setSelectedItems([]);
-                      setCurrentPage(Number(page));
-                    }}
-                    className={`${currentPage === page ? "bg-[var(--accent-color)] text-[var(--text-main-reverse)]" : "hover:text-[var(--accent-color)]"} ${currentPage === page && page >= 100 ? "px-5" : ""} flex max-w-7 min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-[var(--fast)]`}
-                  >
-                    {page}
-                  </button>
-                ),
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedItems([]);
-                setCurrentPage((prev) =>
-                  prev <
-                  Math.max(1, Math.ceil((totalItems ?? 0) / itemsPerPage))
-                    ? prev + 1
-                    : prev,
-                );
-              }}
-              disabled={
-                currentPage >= Math.ceil((totalItems ?? 0) / itemsPerPage)
-              }
-              className={`${iconButtonPrimaryClass}`}
-            >
-              <ChevronRightIcon className="min-h-full min-w-full" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="">Antal per sida:</span>
-            <div className="3xs:min-w-20">
-              <div id="portal-root" />
-              <SingleDropdown
-                options={[
-                  { label: "5", value: "5" },
-                  { label: "15", value: "15" },
-                  { label: "25", value: "25" },
-                ]}
-                value={String(itemsPerPage)}
-                onChange={(val) => {
-                  const newPageSize = Number(val);
-                  const newMaxPages = Math.ceil(
-                    (totalItems ?? 0) / newPageSize,
-                  );
-                  setitemsPerPage(newPageSize);
-
-                  if (currentPage > newMaxPages) {
-                    setCurrentPage(newMaxPages);
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* --- META DATA ---*/}
-        <div className="flex w-full flex-col">
-          {/* --- Header --- */}
-          <div className="flex items-center rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
-            <span className="truncate font-semibold">
-              Information om vald enhet
-            </span>
-          </div>
-          {/* --- Items --- */}
-          <div
-            className={`${selectedItems.length === 0 || selectedItems.length > 1 ? "items-center" : ""} flex max-h-96 min-h-80 overflow-x-auto rounded-b border-1 border-t-0 border-[var(--border-main)] p-4`}
-          >
-            {selectedItems.length === 0 ? (
-              <Message
-                icon="unit"
-                content="Här kan du se information om vald enhet. Välj en i tabellen ovan!"
-              />
-            ) : selectedItems.length > 1 ? (
-              <Message
-                icon="beware"
-                content="Kan inte visa information om flera enheter samtidigt."
-              />
-            ) : (
-              <div className="flex">
-                {items
-                  .filter((u) => u.id === selectedItems[0])
-                  .map((item) => (
-                    <div key={item.id} className="flex flex-col gap-8">
-                      <div>
-                        <p>
-                          <strong>Namn: </strong>
-                          {item.name}
-                        </p>
-
-                        <p>
-                          <strong>Tillhör enhetsgrupp: </strong>
-                          {item.unitGroupName ? item.unitGroupName : "-"}
-                        </p>
-
-                        <div className="mt-2">
-                          <span
-                            className={`${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} flex h-6 w-28 items-center justify-center rounded-xl text-sm font-semibold text-[var(--text-main-reverse)]`}
-                          >
-                            {item.isHidden ? "Gömd" : "Synlig"}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <p>
-                          <strong>Skapad: </strong>
-                          {new Date(item.creationDate).toLocaleString()} av{" "}
-                          {item.createdBy}
-                        </p>
-
-                        <p>
-                          <strong>Uppdaterad: </strong>
-                          {new Date(item.updateDate).toLocaleString()} av{" "}
-                          {item.updatedBy}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
     </>
   );
 };
 
-export default UnitsClient;
+export default UnitsClient; // <-- Unique.

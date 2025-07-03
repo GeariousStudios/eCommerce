@@ -1,18 +1,17 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { FocusTrap } from "focus-trap-react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../input/Input";
-import { useToast } from "../toast/ToastProvider";
+import Input from "../../input/Input";
+import { useToast } from "../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
   switchClass,
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
-import MultiDropdown from "../dropdowns/MultiDropdown";
-import ModalBase from "./ModalBase";
+import ModalBase, { ModalBaseHandle } from "../ModalBase";
+import SingleDropdown from "../../dropdowns/SingleDropdown";
 
 type Props = {
   isOpen: boolean;
@@ -21,19 +20,27 @@ type Props = {
   onItemUpdated: () => void;
 };
 
-const UserModal = (props: Props) => {
+type UnitGroupOptions = {
+  id: number;
+  name: string;
+};
+
+const UnitModal = (props: Props) => {
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
+    const modalRef = useRef<ModalBaseHandle>(null);
 
   // --- States ---
-  const [username, setUsername] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [newUserRoles, setNewUserRoles] = useState<string[]>([]);
-  const [isLocked, setIsLocked] = useState(false);
+  const [name, setName] = useState("");
+  const [unitGroup, setUnitGroup] = useState("");
+  const [isHidden, setIsHidden] = useState(false);
+  const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
+
+  const [originalName, setOriginalName] = useState("");
+  const [originalUnitGroup, setOriginalUnitGroup] = useState("");
+  const [originalIsHidden, setOriginalIsHidden] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -45,39 +52,38 @@ const UserModal = (props: Props) => {
       return;
     }
 
+    fetchUnitGroups();
+
     if (props.itemId !== null && props.itemId !== undefined) {
-      fetchUser();
+      fetchUnit();
     } else {
-      setUsername("");
-      setFirstName("");
-      setLastName("");
-      setPassword("");
-      setEmail("");
-      setNewUserRoles([]);
-      setIsLocked(false);
+      setName("");
+      setOriginalName("");
+
+      setUnitGroup("");
+      setOriginalUnitGroup("");
+
+      setIsHidden(false);
+      setOriginalIsHidden(false);
     }
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add user ---
-  const addUser = async (event: FormEvent) => {
+  // --- Add unit ---
+  const addUnit = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/user-management/create`, {
+      const response = await fetch(`${apiUrl}/unit/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          username,
-          firstName,
-          lastName,
-          password,
-          email: email.trim() === "" ? null : email,
-          roles: newUserRoles,
-          isLocked,
+          name,
+          unitGroupId: parseInt(unitGroup),
+          isHidden,
         }),
       });
 
@@ -123,71 +129,85 @@ const UserModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Användare skapad!", 4000);
+      window.dispatchEvent(new Event("unit-list-updated"));
+      notify("success", <>Enhet skapad!</>, 4000);
     } catch (err) {
       notify("error", String(err));
     }
   };
 
-  // --- Fetch user ---
-  const fetchUser = async () => {
+  // --- Fetch unit groups ---
+  const fetchUnitGroups = async () => {
     try {
-      const response = await fetch(
-        `${apiUrl}/user-management/fetch/${props.itemId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${apiUrl}/unit-group`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const result = await response.json();
 
       if (!response.ok) {
         notify("error", result.message);
       } else {
-        fillUserData(result);
+        setUnitGroups(result.items);
       }
     } catch (err) {
       notify("error", String(err));
     }
   };
 
-  const fillUserData = (result: any) => {
-    setUsername(result.username ?? "");
-    setFirstName(result.firstName ?? "");
-    setLastName(result.lastName ?? "");
-    setPassword("");
-    setEmail(result.email ?? "");
-    setNewUserRoles(result.roles ?? []);
-    setIsLocked(result.isLocked ?? false);
+  // --- Fetch unit ---
+  const fetchUnit = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/unit/fetch/${props.itemId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        fillUnitData(result);
+      }
+    } catch (err) {
+      notify("error", String(err));
+    }
   };
 
-  // --- Update user ---
-  const updateUser = async (event: FormEvent, id: number) => {
+  const fillUnitData = (result: any) => {
+    setName(result.name ?? "");
+    setOriginalName(result.name ?? "");
+
+    setUnitGroup(String(result.unitGroupId ?? ""));
+    setOriginalUnitGroup(String(result.unitGroupId ?? ""));
+
+    setIsHidden(result.isHidden ?? false);
+    setOriginalIsHidden(result.isHidden ?? false);
+  };
+
+  // --- Update unit ---
+  const updateUnit = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(
-        `${apiUrl}/user-management/update/${props.itemId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            username,
-            firstName,
-            lastName,
-            password,
-            email: email.trim() === "" ? null : email,
-            roles: newUserRoles,
-            isLocked,
-          }),
+      const response = await fetch(`${apiUrl}/unit/update/${props.itemId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          name,
+          unitGroupId: parseInt(unitGroup),
+          isHidden,
+        }),
+      });
 
       if (response.status === 401) {
         localStorage.removeItem("token");
@@ -231,7 +251,8 @@ const UserModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Användare uppdaterad!", 4000);
+      window.dispatchEvent(new Event("unit-list-updated"));
+      notify("success", "Enhet uppdaterad!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -241,97 +262,79 @@ const UserModal = (props: Props) => {
     formRef.current?.requestSubmit();
   };
 
+  // --- SET/UNSET IS DIRTY ---
+  useEffect(() => {
+    if (props.itemId === null || props.itemId === undefined) {
+      const dirty = name !== "" || unitGroup !== "" || isHidden !== false;
+
+      setIsDirty(dirty);
+      return;
+    }
+
+    const dirty =
+      name !== originalName ||
+      unitGroup !== originalUnitGroup ||
+      isHidden !== originalIsHidden;
+    setIsDirty(dirty);
+  }, [
+    name,
+    unitGroup,
+    isHidden,
+    originalName,
+    originalUnitGroup,
+    originalIsHidden,
+  ]);
+
   return (
     <>
       {props.isOpen && (
         <ModalBase
+          ref={modalRef}
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={props.itemId ? "Redigera användare" : "Lägg till ny användare"}
+          label={props.itemId ? "Redigera enhet" : "Lägg till ny enhet"}
+          confirmOnClose
+          isDirty={isDirty}
         >
           <form
             ref={formRef}
             className="relative flex flex-col gap-4"
-            onSubmit={(e) =>
-              props.itemId ? updateUser(e, props.itemId) : addUser(e)
-            }
+            onSubmit={(e) => (props.itemId ? updateUnit(e) : addUnit(e))}
           >
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-main)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Inloggningsuppgifter
+                Uppgifter om enheten
               </h3>
               <hr className="w-full text-[var(--border-main)]" />
             </div>
 
             <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
               <Input
-                id="username"
-                label={"Användarnamn"}
-                value={username}
-                onChange={(val) => setUsername(String(val))}
+                label={"Namn"}
+                value={name}
+                onChange={(val) => {
+                  setName(String(val));
+                }}
                 onModal={true}
                 required
-                autoComplete="new-username"
-              />
-
-              {props.itemId !== null ? (
-                <Input
-                  type="password"
-                  id="password"
-                  label={"Lösenord"}
-                  value={password}
-                  placeholder="•••••••••"
-                  onChange={(val) => setPassword(String(val))}
-                  onModal={true}
-                />
-              ) : (
-                <Input
-                  type="password"
-                  id="password"
-                  label={"Lösenord"}
-                  value={password}
-                  onChange={(val) => setPassword(String(val))}
-                  onModal={true}
-                  required
-                  autoComplete="new-password"
-                />
-              )}
-            </div>
-
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Användardetaljer
-              </h3>
-              <hr className="w-full text-[var(--border-main)]" />
-            </div>
-
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
-              <Input
-                id="email"
-                label={"Mejladress"}
-                value={email}
-                onChange={(val) => setEmail(String(val))}
-                onModal={true}
               />
 
               <div className="flex w-full gap-6 sm:gap-4">
-                <Input
-                  id="firstName"
-                  label={"Förnamn"}
-                  value={firstName}
-                  onChange={(val) => setFirstName(String(val))}
-                  onModal={true}
-                />
-
-                <Input
-                  id="lastName"
-                  label={"Efternamn"}
-                  value={lastName}
-                  onChange={(val) => setLastName(String(val))}
-                  onModal={true}
+                <SingleDropdown
+                  id="unitGroup"
+                  label={"Enhetsgrupp"}
+                  value={unitGroup}
+                  onChange={(val) => {
+                    setUnitGroup(String(val));
+                  }}
+                  onModal
+                  required
+                  options={unitGroups.map((ug) => ({
+                    label: ug.name,
+                    value: String(ug.id),
+                  }))}
                 />
               </div>
             </div>
@@ -339,37 +342,23 @@ const UserModal = (props: Props) => {
             <div className="mt-8 flex items-center gap-2">
               <hr className="w-12 text-[var(--border-main)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Behörigheter och status
+                Status
               </h3>
               <hr className="w-full text-[var(--border-main)]" />
             </div>
 
             <div className="mb-8 flex justify-between gap-4">
-              <div className="flex w-[calc(50%-0.375rem)] min-w-36">
-                <MultiDropdown
-                  label="Behörigheter"
-                  options={[
-                    { label: "Admin", value: "Admin" },
-                    { label: "Developer", value: "Developer" },
-                  ]}
-                  value={newUserRoles}
-                  onChange={setNewUserRoles}
-                  onModal={true}
-                  required
-                />
-              </div>
-
               <div className="flex items-center gap-2 truncate">
                 <button
                   type="button"
                   role="switch"
-                  aria-checked={isLocked}
-                  className={switchClass(isLocked)}
-                  onClick={() => setIsLocked((prev) => !prev)}
+                  aria-checked={isHidden}
+                  className={switchClass(isHidden)}
+                  onClick={() => setIsHidden((prev) => !prev)}
                 >
-                  <div className={switchKnobClass(isLocked)} />
+                  <div className={switchKnobClass(isHidden)} />
                 </button>
-                <span className="mb-0.5">Lås konto</span>
+                <span className="mb-0.5">Göm enhet</span>
               </div>
             </div>
 
@@ -383,7 +372,7 @@ const UserModal = (props: Props) => {
               </button>
               <button
                 type="button"
-                onClick={props.onClose}
+                onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
                 Ångra
@@ -396,4 +385,4 @@ const UserModal = (props: Props) => {
   );
 };
 
-export default UserModal;
+export default UnitModal;

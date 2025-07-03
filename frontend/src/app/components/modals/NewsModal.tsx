@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import SingleDropdown from "../dropdowns/SingleDropdown";
-import { FocusTrap } from "focus-trap-react";
 import RichTextEditor, {
   RichTextEditorRef,
 } from "../richTextEditor/RichTextEditor";
@@ -13,7 +12,7 @@ import {
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
 import { useToast } from "../toast/ToastProvider";
-import ModalBase from "./ModalBase";
+import ModalBase, { ModalBaseHandle } from "./ModalBase";
 
 type Props = {
   isOpen: boolean;
@@ -27,6 +26,7 @@ const NewsModal = (props: Props) => {
   // --- Refs ---
   const editorRef = useRef<RichTextEditorRef>(null);
   const formRef = useRef<HTMLFormElement>(null);
+    const modalRef = useRef<ModalBaseHandle>(null);
 
   // --- States ---
   const [date, setDate] = useState("");
@@ -36,6 +36,13 @@ const NewsModal = (props: Props) => {
   const [author, setAuthor] = useState("");
   const [authorId, setAuthorId] = useState("");
   const [hasPreloadedEditor, setHasPreloadedEditor] = useState(false);
+  const [isEditorReady, setIsEditorReady] = useState(false);
+
+  const [originalDate, setOriginalDate] = useState("");
+  const [originalType, setOriginalType] = useState("");
+  const [originalHeadline, setOriginalHeadline] = useState("");
+  const [originalContent, setOriginalContent] = useState("");
+  const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -55,9 +62,16 @@ const NewsModal = (props: Props) => {
       fetchNewsItem(props.newsId);
     } else {
       setDate("");
+      setOriginalDate("");
+
       setType("");
+      setOriginalType("");
+
       setHeadline("");
+      setOriginalHeadline("");
+
       setContent("");
+      setOriginalContent("");
       editorRef.current?.setContent("");
     }
   }, [props.isOpen, props.newsId]);
@@ -121,9 +135,17 @@ const NewsModal = (props: Props) => {
       : "";
 
     setDate(formattedDate);
+    setOriginalDate(formattedDate);
+
     setType(result.type ?? "");
+    setOriginalType(result.type ?? "");
+
     setHeadline(result.headline ?? "");
+    setOriginalHeadline(result.headline ?? "");
+
     setContent(result.content ?? "");
+    setOriginalContent(result.content ?? "");
+
     setAuthor(result.author ?? "");
     setAuthorId(result.authorId);
   };
@@ -172,6 +194,30 @@ const NewsModal = (props: Props) => {
     }, 0);
   };
 
+  // --- SET/UNSET IS DIRTY ---
+  useEffect(() => {
+    if (!editorRef.current || !isEditorReady) {
+      return;
+    }
+
+    const dirty =
+      date !== originalDate ||
+      type !== originalType ||
+      headline !== originalHeadline ||
+      (content !== originalContent &&
+        !(content === "<p><br></p>" && originalContent === ""));
+    setIsDirty(dirty);
+  }, [
+    date,
+    type,
+    headline,
+    content,
+    originalDate,
+    originalType,
+    originalHeadline,
+    originalContent,
+  ]);
+
   return (
     <>
       {hasPreloadedEditor && (
@@ -182,10 +228,13 @@ const NewsModal = (props: Props) => {
 
       {props.isOpen && (
         <ModalBase
+          ref={modalRef}
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
           icon={props.newsId ? PencilSquareIcon : PlusIcon}
           label={props.newsId ? "Redigera nyhet" : "Lägg till nyhet"}
+          confirmOnClose
+          isDirty={isDirty}
         >
           <form
             ref={formRef}
@@ -229,6 +278,8 @@ const NewsModal = (props: Props) => {
               ref={editorRef}
               value={content}
               name="content"
+              onReady={() => setIsEditorReady(true)}
+              onChange={(val) => setContent(val)}
               required
             />
 
@@ -236,14 +287,14 @@ const NewsModal = (props: Props) => {
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full sm:w-auto grow-2`}
+                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
                 {props.newsId ? "Uppdatera" : "Lägg till"}
               </button>
               <button
                 type="button"
-                onClick={props.onClose}
-                className={`${buttonSecondaryClass} w-full sm:w-auto grow`}
+                onClick={() => modalRef.current?.requestClose()}
+                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
                 Ångra
               </button>

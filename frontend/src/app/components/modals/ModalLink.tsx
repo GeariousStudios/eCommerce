@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ElementType, useState } from "react";
+import { ElementType } from "react";
 import CustomTooltip from "../customTooltip/CustomTooltip";
 
 type Props = {

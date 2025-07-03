@@ -1,4 +1,4 @@
-import { UserFilters, UserItem } from "../types/manageTypes";
+import { UserFilters, UserItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -6,7 +6,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 export type SortOrder = "asc" | "desc";
 
 // --- developer/manage/UsersClient.tsx ---
-export const fetchUsers = async ({
+export const fetchContent = async ({
   page,
   pageSize,
   sortBy,
@@ -29,6 +29,7 @@ export const fetchUsers = async ({
     search,
   });
 
+  // --- FILTERS START ---
   if (filters?.isLocked !== undefined) {
     params.append("isLocked", String(filters.isLocked));
   }
@@ -36,6 +37,7 @@ export const fetchUsers = async ({
   filters?.roles?.forEach((role) => {
     params.append("roles", role);
   });
+  // --- FILTERS STOP ---
 
   const response = await fetch(`${apiUrl}/user-management?${params}`, {
     headers: {
@@ -57,7 +59,7 @@ export const fetchUsers = async ({
   };
 };
 
-export const deleteUser = async (id: number): Promise<void> => {
+export const deleteContent = async (id: number): Promise<void> => {
   const response = await fetch(`${apiUrl}/user-management/delete/${id}`, {
     method: "DELETE",
     headers: {
@@ -70,6 +72,4 @@ export const deleteUser = async (id: number): Promise<void> => {
     localStorage.removeItem("token");
     return;
   }
-
-  const result = await response.json();
 };

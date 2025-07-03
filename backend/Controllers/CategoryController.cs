@@ -27,7 +27,7 @@ namespace backend.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
-            [FromQuery] string[]? units = null,
+            [FromQuery] int[]? unitIds = null,
             [FromQuery] bool? hasSubCategories = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
@@ -63,29 +63,22 @@ namespace backend.Controllers
                 }
             }
 
-            var filteredSubCategoryCount = await efQuery
-                .Where(c => c.SubCategories != null)
-                .SelectMany(c => c.SubCategories!)
-                .CountAsync();
-
-            var totalCount = await efQuery.CountAsync();
-
-            var query = efQuery.AsEnumerable();
-
-            if (units?.Any() == true)
+            if (unitIds?.Any() == true)
             {
-                var unitIds = units.Select(int.Parse).ToList();
-                query = query.Where(c =>
+                efQuery = efQuery.Where(c =>
                     c.Units != null && c.Units.Any(u => unitIds.Contains(u.Id))
                 );
             }
+
+            var totalCount = await efQuery.CountAsync();
+            var query = efQuery.AsEnumerable();
 
             query = sortBy.ToLower() switch
             {
                 "name" => sortOrder == "desc"
                     ? query.OrderByDescending(c => c.Name)
                     : query.OrderBy(c => c.Name),
-                "subCategories" => sortOrder == "desc"
+                "subcategories" => sortOrder == "desc"
                     ? query.OrderByDescending(c =>
                         c.SubCategories!.OrderBy(sc => sc.Name)
                             .Select(sc => sc.Name)
@@ -96,13 +89,9 @@ namespace backend.Controllers
                             .Select(sc => sc.Name)
                             .FirstOrDefault()
                     ),
-                "units" => sortOrder == "desc"
-                    ? query.OrderByDescending(c =>
-                        c.Units!.OrderBy(u => u.Name).Select(u => u.Name).FirstOrDefault()
-                    )
-                    : query.OrderBy(c =>
-                        c.Units!.OrderBy(u => u.Name).Select(u => u.Name).FirstOrDefault()
-                    ),
+                "unitcount" => sortOrder == "desc"
+                    ? query.OrderByDescending(c => c.Units!.Count)
+                    : query.OrderBy(c => c.Units!.Count),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(c => c.Id)
                     : query.OrderBy(c => c.Id),
@@ -130,12 +119,6 @@ namespace backend.Controllers
                 .Select(g => new { Name = g.Key, Count = g.Count() })
                 .ToList();
 
-            var filteredUnitCount = query
-                .SelectMany(c => c.Units ?? Array.Empty<Unit>())
-                .GroupBy(u => u.Name)
-                .Select(g => new { Name = g.Key, Count = g.Count() })
-                .ToList();
-
             var result = new
             {
                 totalCount,
@@ -152,14 +135,10 @@ namespace backend.Controllers
                 }),
                 counts = new
                 {
-                    subCategories = totalSubCategoryCount,
-                    withSubCategories = withSubCategoryCount,
-                    withoutSubCategories = withoutSubCategoryCount,
-                    unitCounts = unitCounts.ToDictionary(u => u.Name, u => u.Count),
-
-                    // Filtered.
-                    filteredsubCategories = filteredSubCategoryCount,
-                    filteredUnits = filteredUnitCount,
+                    SubCategories = totalSubCategoryCount,
+                    WithSubCategories = withSubCategoryCount,
+                    WithoutSubCategories = withoutSubCategoryCount,
+                    UnitCount = unitCounts.ToDictionary(u => u.Name, u => u.Count),
                 },
             };
 

@@ -11,7 +11,7 @@ using backend.Data;
 namespace eCommerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250618163051_Init")]
+    [Migration("20250703164127_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -236,6 +236,9 @@ namespace eCommerce.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsGridView")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Theme")

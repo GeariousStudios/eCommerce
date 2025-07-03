@@ -1,24 +1,23 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { FocusTrap } from "focus-trap-react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../input/Input";
-import { useToast } from "../toast/ToastProvider";
+import Input from "../../input/Input";
+import { useToast } from "../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
   roundedButtonClass,
 } from "@/app/styles/buttonClasses";
-import ModalBase from "./ModalBase";
-import MultiDropdown from "../dropdowns/MultiDropdown";
+import ModalBase, { ModalBaseHandle } from "../ModalBase";
+import MultiDropdown from "../../dropdowns/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  categoryId?: number | null;
-  onCategoryUpdated: () => void;
+  itemId?: number | null;
+  onItemUpdated: () => void;
 };
 
 type UnitOptions = {
@@ -30,15 +29,19 @@ const CategoryModal = (props: Props) => {
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
+  const modalRef = useRef<ModalBaseHandle>(null);
 
   // --- States ---
   const [name, setName] = useState("");
   const [unit, setUnit] = useState<string[]>([]);
   const [subCategory, setSubCategory] = useState<string[]>([]);
-  const [isHidden, setIsHidden] = useState(false);
-
   const [newSubCategory, setNewSubCategory] = useState("");
   const [units, setUnits] = useState<UnitOptions[]>([]);
+
+  const [originalName, setOriginalName] = useState("");
+  const [originalUnit, setOriginalUnit] = useState<string[]>([]);
+  const [originalSubCategory, setOriginalSubCategory] = useState<string[]>([]);
+  const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -54,18 +57,24 @@ const CategoryModal = (props: Props) => {
   useEffect(() => {
     if (
       props.isOpen &&
-      props.categoryId !== null &&
-      props.categoryId !== undefined &&
+      props.itemId !== null &&
+      props.itemId !== undefined &&
       units.length > 0
     ) {
       fetchCategory();
     } else {
       setName("");
+      setOriginalName("");
+
       setUnit([]);
+      setOriginalUnit([]);
+
       setSubCategory([]);
+      setOriginalSubCategory([]);
+
       setNewSubCategory("");
     }
-  }, [props.isOpen, props.categoryId, units]);
+  }, [props.isOpen, props.itemId, units]);
 
   // --- BACKEND ---
   // --- Add category ---
@@ -127,7 +136,7 @@ const CategoryModal = (props: Props) => {
       }
 
       props.onClose();
-      props.onCategoryUpdated();
+      props.onItemUpdated();
       notify("success", "Kategori skapad!", 4000);
     } catch (err) {
       notify("error", String(err));
@@ -159,15 +168,12 @@ const CategoryModal = (props: Props) => {
   // --- Fetch category ---
   const fetchCategory = async () => {
     try {
-      const response = await fetch(
-        `${apiUrl}/category/fetch/${props.categoryId}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${apiUrl}/category/fetch/${props.itemId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const result = await response.json();
 
@@ -183,6 +189,7 @@ const CategoryModal = (props: Props) => {
 
   const fillCategoryData = (result: any) => {
     setName(result.name ?? "");
+    setOriginalName(result.name ?? "");
 
     const unitIds = result.units
       ?.map((unitName: string) => {
@@ -192,16 +199,19 @@ const CategoryModal = (props: Props) => {
       .filter(Boolean) as string[];
 
     setUnit(unitIds);
+    setOriginalUnit(unitIds);
+
     setSubCategory(result.subCategories ?? []);
+    setOriginalSubCategory(result.subCategories ?? []);
   };
 
   // --- Update category ---
-  const updateCategory = async (event: FormEvent, id: number) => {
+  const updateCategory = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
       const response = await fetch(
-        `${apiUrl}/category/update/${props.categoryId}`,
+        `${apiUrl}/category/update/${props.itemId}`,
         {
           method: "PUT",
           headers: {
@@ -257,7 +267,7 @@ const CategoryModal = (props: Props) => {
       }
 
       props.onClose();
-      props.onCategoryUpdated();
+      props.onItemUpdated();
       notify("success", "Kategori uppdaterad!", 4000);
     } catch (err) {
       notify("error", String(err));
@@ -309,24 +319,56 @@ const CategoryModal = (props: Props) => {
     );
   };
 
+  // --- SET/UNSET IS DIRTY ---
+  const areArraysEqual = (a: string[], b: string[]) => {
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    const sortedA = [...a].sort();
+    const sortedB = [...b].sort();
+    return sortedA.every((val, index) => val === sortedB[index]);
+  };
+
+  useEffect(() => {
+    if (props.itemId === null || props.itemId === undefined) {
+      const dirty = name !== "" || unit.length > 0 || subCategory.length > 0;
+
+      setIsDirty(dirty);
+      return;
+    }
+
+    const dirty =
+      name !== originalName ||
+      !areArraysEqual(unit, originalUnit) ||
+      !areArraysEqual(subCategory, originalSubCategory);
+    setIsDirty(dirty);
+  }, [
+    name,
+    unit,
+    subCategory,
+    originalName,
+    originalUnit,
+    originalSubCategory,
+  ]);
+
   return (
     <>
       {props.isOpen && (
         <ModalBase
+          ref={modalRef}
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
-          icon={props.categoryId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.categoryId ? "Redigera kategori" : "Lägg till ny kategori"
-          }
+          icon={props.itemId ? PencilSquareIcon : PlusIcon}
+          label={props.itemId ? "Redigera kategori" : "Lägg till ny kategori"}
+          confirmOnClose
+          isDirty={isDirty}
         >
           <form
             ref={formRef}
             className="relative flex flex-col gap-4"
             onSubmit={(e) =>
-              props.categoryId
-                ? updateCategory(e, props.categoryId)
-                : addCategory(e)
+              props.itemId ? updateCategory(e) : addCategory(e)
             }
           >
             <div className="flex items-center gap-2">
@@ -380,6 +422,7 @@ const CategoryModal = (props: Props) => {
                     addSubCategory();
                   }
                 }}
+                placeholder="Skapa underkategorier här..."
               />
 
               <button
@@ -416,11 +459,11 @@ const CategoryModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.categoryId ? "Uppdatera" : "Lägg till"}
+                {props.itemId ? "Uppdatera" : "Lägg till"}
               </button>
               <button
                 type="button"
-                onClick={props.onClose}
+                onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
                 Ångra

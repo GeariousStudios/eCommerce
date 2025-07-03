@@ -2,21 +2,21 @@
 
 import { useToast } from "../../../components/toast/ToastProvider";
 import useManage from "@/app/hooks/useManage";
-import { UserFilters, UserItem } from "@/app/types/manageTypes"; // <--- Unique.
-import { deleteUser, fetchUsers } from "@/app/apis/manageApis"; // <--- Unique.
+import { UserFilters, UserItem } from "@/app/types/manageTypes"; // <-- Unique.
+import { deleteContent, fetchContent } from "@/app/apis/manage/usersApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import UserModal from "@/app/components/modals/UserModal"; // <--- Unique.
+import UserModal from "@/app/components/modals/manage/UserModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
-import {
-  LockClosedIcon,
-  LockOpenIcon,
-  WifiIcon,
-} from "@heroicons/react/20/solid";
+import { LockClosedIcon, WifiIcon } from "@heroicons/react/20/solid";
 import CustomTooltip from "@/app/components/customTooltip/CustomTooltip";
 
-const UsersClient = () => {
-  // <--- Unique.
+type Props = {
+  isConnected: boolean | null;
+};
+
+const UsersClient = (props: Props) => {
+  // <-- Unique.
   // --- VARIABLES ---
   const {
     // --- Items ---
@@ -65,17 +65,16 @@ const UsersClient = () => {
     // --- Other ---
     fetchItems,
   } = useManage<UserItem, UserFilters>(async (params) => {
-    // <--- Unique.
+    // <-- Unique.
     try {
-      const result = await fetchUsers(params); // <--- Unique.
-      console.log("API-result", result);
+      const result = await fetchContent(params);
       return {
         items: result.items,
         total: result.total,
         counts: result.counts,
       };
     } catch (err: any) {
-      notify("error", err.message || "Kunde inte hämta användare");
+      notify("error", err.message || "Kunde inte hämta användare"); // <-- Unique
       return {
         items: [],
         total: 0,
@@ -102,12 +101,11 @@ const UsersClient = () => {
   };
 
   // --- Delete item(s)
-  const finishDeleteUser = async (id: number) => {
-    // <--- Unique.
+  const finishDeleteContent = async (id: number) => {
     try {
-      await deleteUser(id); // <--- Unique.
+      await deleteContent(id);
       await fetchItems();
-      notify("success", "Användare borttagen!", 4000); // <--- Unique.
+      notify("success", "Användare borttagen!", 4000); // <-- Unique.
     } catch (err) {
       notify("error", String(err));
     }
@@ -124,7 +122,7 @@ const UsersClient = () => {
               <span className="flex items-center gap-2">
                 {item.username}{" "}
                 {item.isLocked && (
-                  <CustomTooltip content="Detta konto är låst!">
+                  <CustomTooltip content="Detta konto är låst!" showOnTouch>
                     <LockClosedIcon className="h-5 w-5 cursor-help text-[var(--locked)]" />
                   </CustomTooltip>
                 )}
@@ -136,6 +134,7 @@ const UsersClient = () => {
                     {item.isOnline ? "är online" : "är offline"}
                   </span>
                 }
+                showOnTouch
               >
                 <WifiIcon
                   className={`${!item.isOnline && "opacity-20"} h-5 w-5 cursor-help`}
@@ -148,6 +147,7 @@ const UsersClient = () => {
             <span>{item.email?.trim() ? item.email : null}</span>
           </div>
           <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">Behörigheter:</span>
             {item.roles.map((role, i) => (
               <span
                 key={i}
@@ -161,24 +161,34 @@ const UsersClient = () => {
       ),
     },
     {
-      key: "lastLogin",
+      key: "creationDate",
       getValue: (item: UserItem) => (
         <p className="flex flex-col">
-          <span className="font-bold">Senast inloggad: </span>
-          {item.lastLogin
-            ? new Date(item.lastLogin).toLocaleString()
-            : "Aldrig"}
+          <span className="font-semibold">Konto skapat: </span>
+          {new Date(item.creationDate).toLocaleString("sv-SE", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </p>
       ),
     },
     {
-      key: "creationDate",
+      key: "lastLogin",
       getValue: (item: UserItem) => (
         <p className="flex flex-col">
-          <span className="font-bold">Konto skapat: </span>
-          {item.creationDate
-            ? new Date(item.creationDate).toLocaleString()
-            : "Aldrig"}
+          <span className="font-semibold">Senast inloggad: </span>
+          {item.lastLogin
+            ? new Date(item.lastLogin).toLocaleString("sv-SE", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "-"}
         </p>
       ),
     },
@@ -248,15 +258,14 @@ const UsersClient = () => {
       sortingItem: "isLocked",
       labelAsc: "låsta konton",
       labelDesc: "upplåsta konton",
-      classNameAddition: "w-[102px] min-w-[102px]",
+      classNameAddition: "w-[100px] min-w-[100px]",
+      childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: UserItem) => (
-        <div className="flex flex-wrap gap-2">
-          <span
-            className={`${badgeClass} ${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} max-w-[72px] min-w-[72px] text-[var(--text-main-reverse)]`}
-          >
-            {item.isLocked ? "Låst" : "Upplåst"}
-          </span>
-        </div>
+        <span
+          className={`${badgeClass} ${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+        >
+          {item.isLocked ? "Låst" : "Upplåst"}
+        </span>
       ),
       responsivePriority: 5,
     },
@@ -347,7 +356,7 @@ const UsersClient = () => {
         toggleEditItemModal={toggleEditItemModal}
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
-        isConnected={true}
+        isConnected={props.isConnected === true}
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
@@ -371,7 +380,7 @@ const UsersClient = () => {
       />
 
       {/* --- MODALS --- */}
-      <UserModal // <--- Unique.
+      <UserModal // <-- Unique.
         isOpen={isEditModalOpen}
         onClose={toggleEditItemModal}
         itemId={editingItemId}
@@ -388,7 +397,7 @@ const UsersClient = () => {
         }}
         onConfirm={async () => {
           for (const id of deletingItemIds) {
-            await finishDeleteUser(id); // <--- Unique.
+            await finishDeleteContent(id);
           }
 
           setIsDeleteModalOpen(false);

@@ -62,13 +62,6 @@ namespace backend.Controllers
                 );
             }
 
-            var filteredAdminCount = await query.CountAsync(u => u.Roles.HasFlag(UserRoles.Admin));
-            var filteredDeveloperCount = await query.CountAsync(u =>
-                u.Roles.HasFlag(UserRoles.Developer)
-            );
-            var filteredLockedCount = await query.CountAsync(u => u.IsLocked);
-            var filteredUnlockedCount = await query.CountAsync(u => !u.IsLocked);
-
             query = sortBy.ToLower() switch
             {
                 "username" => sortOrder == "desc"

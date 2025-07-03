@@ -264,13 +264,19 @@ export const ThCell = ({
 export const TdCell = ({
   children,
   classNameAddition,
+  childClassNameAddition,
 }: {
   children: ReactNode;
   classNameAddition?: string;
+  childClassNameAddition?: string;
 }) => {
   return (
     <td className={`${tdClass} ${classNameAddition ? classNameAddition : ""}`}>
-      <div className="truncate overflow-hidden text-ellipsis">{children}</div>
+      <div
+        className={`${childClassNameAddition ? childClassNameAddition : ""} flex truncate overflow-hidden text-ellipsis`}
+      >
+        {children}
+      </div>
     </td>
   );
 };

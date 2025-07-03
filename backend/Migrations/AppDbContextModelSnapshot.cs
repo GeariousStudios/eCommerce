@@ -235,6 +235,9 @@ namespace eCommerce.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsGridView")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Theme")
                         .IsRequired()
                         .HasColumnType("TEXT");

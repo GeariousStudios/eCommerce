@@ -6,6 +6,7 @@ const useUserPrefs = () => {
   // --- States ---
   const { isLoggedIn } = useAuthStatus();
   const [userTheme, setUserTheme] = useState<string | null>(null);
+  const [isGridView, setIsGridView] = useState<boolean | null>(null);
   const [isLoadingUserPrefs, setIsLoadingUserPrefs] = useState(false);
 
   // --- Other ---
@@ -18,8 +19,8 @@ const useUserPrefs = () => {
       return;
     }
 
-    // --- Fetch theme ---
-    const fetchUserTheme = async () => {
+    // --- Fetch user preferences ---
+    const fetchUserPreferences = async () => {
       setIsLoadingUserPrefs(true);
       try {
         const response = await fetch(`${apiUrl}/user-preferences`, {
@@ -32,13 +33,14 @@ const useUserPrefs = () => {
 
         const result = await response.json();
         setUserTheme(result.theme);
+        setIsGridView(result.isGridView);
       } catch (err) {
       } finally {
         setIsLoadingUserPrefs(false);
       }
     };
 
-    fetchUserTheme();
+    fetchUserPreferences();
   }, [isLoggedIn]);
 
   const updateUserTheme = async (newTheme: string) => {
@@ -49,9 +51,23 @@ const useUserPrefs = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ Theme: newTheme }),
+        body: JSON.stringify({ theme: newTheme }),
       });
       setUserTheme(newTheme);
+    } catch (err) {}
+  };
+
+  const updateIsGridView = async (isGrid: boolean) => {
+    try {
+      await fetch(`${apiUrl}/user-preferences/view`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isGridView: isGrid }),
+      });
+      setIsGridView(isGrid);
     } catch (err) {}
   };
 
@@ -64,7 +80,13 @@ const useUserPrefs = () => {
     }
   }, [userTheme]);
 
-  return { userTheme, updateUserTheme, isLoadingUserPrefs };
+  return {
+    userTheme,
+    updateUserTheme,
+    isGridView,
+    updateIsGridView,
+    isLoadingUserPrefs,
+  };
 };
 
 export default useUserPrefs;

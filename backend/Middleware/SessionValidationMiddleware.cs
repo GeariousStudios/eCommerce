@@ -11,29 +11,28 @@ public class SessionValidationMiddleware
         _next = next;
     }
 
-public async Task InvokeAsync(HttpContext context, AppDbContext db)
-{
-    if (context.User.Identity?.IsAuthenticated == true)
+    public async Task InvokeAsync(HttpContext context, AppDbContext db)
     {
-        var username = context.User.Identity.Name;
-        var tokenId = context.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
-
-        if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(tokenId))
+        if (context.User.Identity?.IsAuthenticated == true)
         {
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
-            if (user != null && user.CurrentSessionId != tokenId)
-            {
-                user.IsOnline = false;
-                await db.SaveChangesAsync();
+            var username = context.User.Identity.Name;
+            var tokenId = context.User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
 
-                context.Response.StatusCode = 401;
-                await context.Response.WriteAsync("Ogiltig session.");
-                return;
+            if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(tokenId))
+            {
+                var user = await db.Users.FirstOrDefaultAsync(u => u.Username == username);
+                if (user != null && user.CurrentSessionId != tokenId)
+                {
+                    user.IsOnline = false;
+                    await db.SaveChangesAsync();
+
+                    context.Response.StatusCode = 401;
+                    await context.Response.WriteAsync("Ogiltig session.");
+                    return;
+                }
             }
         }
+
+        await _next(context);
     }
-
-    await _next(context);
-}
-
 }
