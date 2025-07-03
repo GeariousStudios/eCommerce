@@ -1,3 +1,4 @@
+import { error } from "console";
 import { UnitGroupFilters, UnitGroupItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
@@ -67,5 +68,16 @@ export const deleteContent = async (id: number): Promise<void> => {
   if (response.status === 401) {
     localStorage.removeItem("token");
     return;
+  }
+
+  if (!response.ok) {
+    let errorMessage = "Kunde inte ta bort enhetsgruppen";
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      errorMessage = await response.text();
+    }
+    throw new Error(errorMessage);
   }
 };

@@ -72,4 +72,15 @@ export const deleteContent = async (id: number): Promise<void> => {
     localStorage.removeItem("token");
     return;
   }
+
+   if (!response.ok) {
+    let errorMessage = "Kunde inte ta bort användaren";
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      errorMessage = await response.text();
+    }
+    throw new Error(errorMessage);
+  }
 };

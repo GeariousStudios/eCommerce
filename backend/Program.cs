@@ -100,29 +100,29 @@ using (var scope = app.Services.CreateScope())
     {
         var newsItemOne = new News
         {
-            Date = new DateTime(1996, 7, 2),
+            Date = new DateTime(2000, 1, 1),
             Type = "Information",
-            Headline = "Tekniskt information",
+            Headline = "Teknisk information",
             Content =
-                "<div><p><strong style='color: rgb(194, 133, 255);'>MASKINERI</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Frontend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Bibliotek/ramverk:</strong> React (Next.js)</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> TypeScript, Tailwind, CSS</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Komponentsbibliotek:</strong> Inget, samtliga komponenter är skapade av mig</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ikonbibliotek:</strong> heroicons.com</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Backend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ramverk:</strong> ASP NET Core</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> C#</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Databas:</strong> SQLite</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Server:</strong> Render</li></ol><p><br></p></div>",
+                "<div><p><strong style='color: rgb(102, 163, 224);'>MASKINERI</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Frontend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Bibliotek/ramverk:</strong> React (Next.js)</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> TypeScript, Tailwind, CSS</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Komponentsbibliotek:</strong> Inget, samtliga komponenter är skapade av mig</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ikonbibliotek:</strong> heroicons.com</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Backend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ramverk:</strong> ASP NET Core</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> C#</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Databas:</strong> SQLite</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Server:</strong> Render</li></ol><p><br></p></div>",
             Author = "Liam Fritzson",
             AuthorId = 1996,
         };
 
         var newsItemTwo = new News
         {
-            Date = new DateTime(1996, 7, 1),
+            Date = new DateTime(2000, 1, 2),
             Type = "Information",
             Headline = "Kontaktuppgifter",
             Content =
-                "<div><p><strong style='color: rgb(194, 133, 255);'>KONTAKTUPPGIFTER</strong></p><p>liam0765@outlook.com</p><p>0765948648</p><p>https://www.linkedin.com/in/liam-fritzson-540206362/</p></div>",
+                "<div><p><strong style='color: rgb(102, 163, 224);'>KONTAKTUPPGIFTER</strong></p><p>liam0765@outlook.com</p><p>0765948648</p><p>https://www.linkedin.com/in/liam-fritzson-540206362/</p></div>",
             Author = "Liam Fritzson",
             AuthorId = 1996,
         };
 
         var newsItemThree = new News
         {
-            Date = new DateTime(1996, 6, 30),
+            Date = new DateTime(2000, 1, 3),
             Type = "Välkommen hit!",
             Headline = "Klicka runt och upptäck!",
             Content =

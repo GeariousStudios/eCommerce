@@ -106,8 +106,8 @@ const UsersClient = (props: Props) => {
       await deleteContent(id);
       await fetchItems();
       notify("success", "Användare borttagen!", 4000); // <-- Unique.
-    } catch (err) {
-      notify("error", String(err));
+    } catch (err: any) {
+      notify("error", err?.message || String(err));
     }
   };
 

@@ -119,8 +119,8 @@ const UnitsClient = (props: Props) => {
       await fetchItems();
       window.dispatchEvent(new Event("unit-list-updated"));
       notify("success", "Enhet borttagen!", 4000); // <-- Unique.
-    } catch (err) {
-      notify("error", String(err));
+    } catch (err: any) {
+      notify("error", err?.message || String(err));
     }
   };
 
