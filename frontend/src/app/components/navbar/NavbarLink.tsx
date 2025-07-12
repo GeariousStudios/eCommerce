@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ElementType } from "react";
-import CustomTooltip from "../customTooltip/CustomTooltip";
+import CustomTooltip from "../common/CustomTooltip";
 
 type Props = {
   href: string;
@@ -18,7 +18,11 @@ const NavbarLink = (props: Props) => {
 
   return (
     <>
-      <CustomTooltip content={props.tooltip ? props.tooltip : ""} side="right" showOnTouch>
+      <CustomTooltip
+        content={props.tooltip ? props.tooltip : ""}
+        side="right"
+        showOnTouch
+      >
         <Link
           href={props.href}
           className={`${isActive ? "text-[var(--accent-color)]" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : ""} group flex h-[40px] w-[40px] items-center justify-center gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-between`}

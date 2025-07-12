@@ -17,7 +17,7 @@ import {
   thClass,
   viewClass,
 } from "./ManageClasses";
-import Input from "../input/Input";
+import Input from "../common/Input";
 import {
   Filter,
   AllFilter,
@@ -37,9 +37,9 @@ import {
   ChevronRightIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
-import SingleDropdown from "../dropdowns/SingleDropdown";
-import Message from "../message/Message";
-import CustomTooltip from "../customTooltip/CustomTooltip";
+import SingleDropdown from "../common/SingleDropdown";
+import Message from "../common/Message";
+import CustomTooltip from "../common/CustomTooltip";
 import {
   AdjustmentsHorizontalIcon,
   InformationCircleIcon,
@@ -946,9 +946,13 @@ const ManageBase = <TItem extends { id: number }>({
                   const newMaxPages = Math.ceil(
                     (pagination.totalItems ?? 0) / newPageSize,
                   );
+
                   pagination.setItemsPerPage(newPageSize);
 
-                  if (pagination.currentPage > newMaxPages) {
+                  if (
+                    pagination.totalItems > 0 &&
+                    pagination.currentPage > newMaxPages
+                  ) {
                     pagination.setCurrentPage(newMaxPages);
                   }
                 }}

@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 
 type SortOrder = "asc" | "desc";
 
+type UseManageOptions = {
+  initialSortBy?: string;
+  initialSortOrder?: SortOrder;
+};
+
 const useManage = <
   TItem extends { id: number },
   TFilters extends Record<string, any> = Record<string, any>,
@@ -14,6 +19,7 @@ const useManage = <
     search: string;
     filters?: TFilters;
   }) => Promise<{ items: TItem[]; total: number; counts?: any }>,
+  options?: UseManageOptions,
 ) => {
   // --- States: Items ---
   const [items, setItems] = useState<TItem[]>([]);
@@ -34,8 +40,10 @@ const useManage = <
   const [totalItems, setTotalItems] = useState<number | null>(null);
 
   // --- States: Sort & Search ---
-  const [sortBy, setSortBy] = useState<string>("id");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
+  const [sortBy, setSortBy] = useState<string>(options?.initialSortBy ?? "id");
+  const [sortOrder, setSortOrder] = useState<SortOrder>(
+    options?.initialSortOrder ?? "asc",
+  );
 
   // --- States: Search & Filtering ---
   const [searchTerm, setSearchTerm] = useState("");

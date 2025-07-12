@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../input/Input";
+import Input from "../../common/Input";
 import { useToast } from "../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
@@ -10,7 +10,7 @@ import {
   switchClass,
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
-import MultiDropdown from "../../dropdowns/MultiDropdown";
+import MultiDropdown from "../../common/MultiDropdown";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
 
 type Props = {

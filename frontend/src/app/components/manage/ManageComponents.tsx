@@ -12,9 +12,9 @@ import {
   ChevronUpIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
-import MenuDropdown from "../dropdowns/MenuDropdown";
-import Input from "../input/Input";
-import CustomTooltip from "../customTooltip/CustomTooltip";
+import MenuDropdown from "../common/MenuDropdown";
+import Input from "../common/Input";
+import CustomTooltip from "../common/CustomTooltip";
 
 // --- PROPS ---
 type FilterData = {

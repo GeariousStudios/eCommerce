@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ElementType } from "react";
-import CustomTooltip from "../customTooltip/CustomTooltip";
+import CustomTooltip from "../common/CustomTooltip";
 
 type Props = {
   href?: string;

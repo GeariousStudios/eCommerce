@@ -20,8 +20,8 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../toast/ToastProvider";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
-import Message from "../message/Message";
-import MenuDropdown from "../dropdowns/MenuDropdown";
+import Message from "../common/Message";
+import MenuDropdown from "../common/MenuDropdown";
 import TopbarLink from "./TopbarLink";
 import useTheme from "@/app/hooks/useTheme";
 import SettingsModal from "../modals/SettingsModal";

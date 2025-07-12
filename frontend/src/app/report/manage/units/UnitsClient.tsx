@@ -68,26 +68,29 @@ const UnitsClient = (props: Props) => {
 
     // --- Other ---
     fetchItems,
-  } = useManage<UnitItem, UnitFilters>(async (params) => {
-    // <-- Unique.
-    try {
-      const result = await fetchContent(params);
-      return {
-        items: result.items,
-        total: result.total,
-        counts: result.counts,
-      };
-    } catch (err: any) {
-      notify("error", err.message || "Kunde inte hämta enheter"); // <-- Unique.
-      return {
-        items: [],
-        total: 0,
-        counts: {},
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  });
+  } = useManage<UnitItem, UnitFilters>(
+    async (params) => {
+      // <-- Unique.
+      try {
+        const result = await fetchContent(params);
+        return {
+          items: result.items,
+          total: result.total,
+          counts: result.counts,
+        };
+      } catch (err: any) {
+        notify("error", err.message || "Kunde inte hämta enheter"); // <-- Unique.
+        return {
+          items: [],
+          total: 0,
+          counts: {},
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    { initialSortBy: "unitGroupName", initialSortOrder: "asc" },
+  );
 
   const { notify } = useToast();
 
@@ -199,8 +202,8 @@ const UnitsClient = (props: Props) => {
       key: "unitGroupName",
       label: "Tillhör enhetsgrupp",
       sortingItem: "unitGroupName",
-      labelAsc: "enhetsgrupp A-Ö",
-      labelDesc: "enhetsgrupp Ö-A",
+      labelAsc: "enhetsgrupp Ö-A",
+      labelDesc: "enhetsgrupp A-Ö",
       getValue: (item: UnitItem) => item.unitGroupName,
       responsivePriority: 2,
     },

@@ -49,7 +49,7 @@ const LayoutWrapper = (props: Props) => {
     categories: { label: "Kategorier", clickable: false },
     units: { label: "Enheter", clickable: false },
     unit: { label: "Enheter", clickable: false },
-    unitgroups: {
+    "unit-groups": {
       label: "Enhetsgrupper",
       clickable: false,
     },
@@ -60,7 +60,7 @@ const LayoutWrapper = (props: Props) => {
 
     // --- Admin ---
     admin: { label: "Admin", clickable: false },
-    newstypes: { label: "Nyhetstyper", clickable: false },
+    "news-types": { label: "Nyhetstyper", clickable: false },
   };
 
   // --- CREATE BREADCRUMBS ---
@@ -101,7 +101,8 @@ const LayoutWrapper = (props: Props) => {
       <Topbar hasScrollbar={hasScrollbar} breadcrumbs={breadcrumbs} />
       <div className="flex">
         <div
-          className={`${hasScrollbar ? "ml-22 md:ml-67" : "ml-19 md:ml-64"} w-full max-w-[1920px] overflow-x-hidden p-4 pt-22 duration-[var(--medium)]`}
+          className={`${hasScrollbar ? "ml-22 md:ml-67" : "ml-19 md:ml-64"} w-full max-w-[1920px]
+          p-4 pt-22 duration-[var(--medium)]`}
         >
           {props.children}
         </div>

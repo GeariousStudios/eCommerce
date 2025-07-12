@@ -1,12 +1,12 @@
 "use client";
 
 import { FormEvent, use, useEffect, useRef, useState } from "react";
-import SingleDropdown from "../dropdowns/SingleDropdown";
+import SingleDropdown from "../common/SingleDropdown";
 import RichTextEditor, {
   RichTextEditorRef,
 } from "../richTextEditor/RichTextEditor";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../input/Input";
+import Input from "../common/Input";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
@@ -121,12 +121,15 @@ const NewsModal = (props: Props) => {
   // --- Fetch news types ---
   const fetchNewsTypes = async () => {
     try {
-      const response = await fetch(`${apiUrl}/news-type`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/news-type?&sortBy=name&sortOrder=asc`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       const result = await response.json();
 

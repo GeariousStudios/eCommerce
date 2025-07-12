@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../input/Input";
+import Input from "../../common/Input";
 import { useToast } from "../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
@@ -10,8 +10,9 @@ import {
   roundedButtonClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
-import MultiDropdown from "../../dropdowns/MultiDropdown";
+import MultiDropdown from "../../common/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
+import DragDrop from "../../common/DragDrop";
 
 type Props = {
   isOpen: boolean;
@@ -42,6 +43,8 @@ const CategoryModal = (props: Props) => {
   const [originalUnit, setOriginalUnit] = useState<string[]>([]);
   const [originalSubCategory, setOriginalSubCategory] = useState<string[]>([]);
   const [isDirty, setIsDirty] = useState(false);
+
+  const [isAnyDragging, setIsAnyDragging] = useState(false);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -283,9 +286,7 @@ const CategoryModal = (props: Props) => {
 
     if (trimmed) {
       if (!subCategory.includes(trimmed)) {
-        setSubCategory((prev) =>
-          [...prev, trimmed].sort((a, b) => a.localeCompare(b, "sv")),
-        );
+        setSubCategory((prev) => [trimmed, ...prev]);
         setNewSubCategory("");
       } else {
         notify("error", "En underkategori med samma namn finns redan");
@@ -300,20 +301,31 @@ const CategoryModal = (props: Props) => {
   const SubCategoryChip = ({
     label,
     onDelete,
+    isDragging = false,
+    dragging = false,
   }: {
     label: string;
     onDelete: () => void;
+    isDragging?: boolean;
+    dragging?: boolean;
   }) => {
+    const disableHover = dragging && !isDragging;
+
     return (
       <>
         <button
+          disabled={isDragging}
           className={`${roundedButtonClass} group w-auto gap-2 !bg-[var(--bg-modal-link)] px-4`}
           onClick={onDelete}
         >
-          <span className="truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]">
+          <span
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} truncate font-semibold transition-colors duration-[var(--fast)]`}
+          >
             {label}
           </span>
-          <XMarkIcon className="h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]" />
+          <XMarkIcon
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} h-6 w-6 transition-[color,rotate] duration-[var(--fast)]`}
+          />
         </button>
       </>
     );
@@ -379,16 +391,18 @@ const CategoryModal = (props: Props) => {
               <hr className="w-full text-[var(--border-main)]" />
             </div>
 
-            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
-              <Input
-                label={"Namn"}
-                value={name}
-                onChange={(val) => setName(String(val))}
-                onModal={true}
-                required
-              />
+            <div className="mb-8 flex w-full flex-col gap-6 sm:flex-row sm:gap-4">
+              <div className="w-full sm:w-1/2">
+                <Input
+                  label={"Namn"}
+                  value={name}
+                  onChange={(val) => setName(String(val))}
+                  onModal={true}
+                  required
+                />
+              </div>
 
-              <div className="flex w-full gap-6 sm:gap-4">
+              <div className="w-full sm:w-1/2">
                 <MultiDropdown
                   id="unitGroup"
                   label={"Enheter med åtkomst"}
@@ -435,22 +449,22 @@ const CategoryModal = (props: Props) => {
             </div>
 
             {subCategory.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {subCategory
-                  .slice()
-                  .sort((a, b) => a.localeCompare(b, "sv"))
-                  .map((sub, index) => (
-                    <SubCategoryChip
-                      key={index}
-                      label={sub}
-                      onDelete={() =>
-                        setSubCategory((prev) =>
-                          prev.filter((_, i) => i !== prev.indexOf(sub)),
-                        )
-                      }
-                    />
-                  ))}
-              </div>
+              <DragDrop
+                items={subCategory}
+                getId={(item) => item}
+                onReorder={(newList) => setSubCategory(newList)}
+                onDraggingChange={setIsAnyDragging}
+                renderItem={(item, isDragging) => (
+                  <SubCategoryChip
+                    label={item}
+                    isDragging={isDragging}
+                    dragging={isAnyDragging}
+                    onDelete={() =>
+                      setSubCategory((prev) => prev.filter((s) => s !== item))
+                    }
+                  />
+                )}
+              />
             )}
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-between">

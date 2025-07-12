@@ -68,26 +68,29 @@ const CategoriesClient = (props: Props) => {
 
     // --- Other ---
     fetchItems,
-  } = useManage<CategoryItem, CategoryFilters>(async (params) => {
-    // <-- Unique.
-    try {
-      const result = await fetchContent(params);
-      return {
-        items: result.items,
-        total: result.total,
-        counts: result.counts,
-      };
-    } catch (err: any) {
-      notify("error", err.message || "Kunde inte hämta kategorier"); // <-- Unique.
-      return {
-        items: [],
-        total: 0,
-        counts: {},
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  });
+  } = useManage<CategoryItem, CategoryFilters>(
+    async (params) => {
+      // <-- Unique.
+      try {
+        const result = await fetchContent(params);
+        return {
+          items: result.items,
+          total: result.total,
+          counts: result.counts,
+        };
+      } catch (err: any) {
+        notify("error", err.message || "Kunde inte hämta kategorier"); // <-- Unique.
+        return {
+          items: [],
+          total: 0,
+          counts: {},
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    { initialSortBy: "name", initialSortOrder: "asc" },
+  );
 
   const { notify } = useToast();
 

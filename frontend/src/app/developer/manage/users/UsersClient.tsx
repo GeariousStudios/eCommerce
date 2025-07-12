@@ -9,7 +9,7 @@ import UserModal from "@/app/components/modals/manage/UserModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { LockClosedIcon, WifiIcon } from "@heroicons/react/20/solid";
-import CustomTooltip from "@/app/components/customTooltip/CustomTooltip";
+import CustomTooltip from "@/app/components/common/CustomTooltip";
 
 type Props = {
   isConnected: boolean | null;
@@ -64,26 +64,29 @@ const UsersClient = (props: Props) => {
 
     // --- Other ---
     fetchItems,
-  } = useManage<UserItem, UserFilters>(async (params) => {
-    // <-- Unique.
-    try {
-      const result = await fetchContent(params);
-      return {
-        items: result.items,
-        total: result.total,
-        counts: result.counts,
-      };
-    } catch (err: any) {
-      notify("error", err.message || "Kunde inte hämta användare"); // <-- Unique
-      return {
-        items: [],
-        total: 0,
-        counts: {},
-      };
-    } finally {
-      setIsLoading(false);
-    }
-  });
+  } = useManage<UserItem, UserFilters>(
+    async (params) => {
+      // <-- Unique.
+      try {
+        const result = await fetchContent(params);
+        return {
+          items: result.items,
+          total: result.total,
+          counts: result.counts,
+        };
+      } catch (err: any) {
+        notify("error", err.message || "Kunde inte hämta användare"); // <-- Unique
+        return {
+          items: [],
+          total: 0,
+          counts: {},
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    { initialSortBy: "roles", initialSortOrder: "asc" },
+  );
 
   const { notify } = useToast();
 

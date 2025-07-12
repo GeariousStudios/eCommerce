@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../input/Input";
+import Input from "../../common/Input";
 import { useToast } from "../../toast/ToastProvider";
 import {
   buttonPrimaryClass,

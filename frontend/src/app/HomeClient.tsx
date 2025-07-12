@@ -8,10 +8,10 @@ import {
 import { FormEvent, useEffect, useState } from "react";
 import NewsModal from "./components/modals/NewsModal";
 import DeleteModal from "./components/modals/DeleteModal";
-import Input from "./components/input/Input";
-import CustomTooltip from "./components/customTooltip/CustomTooltip";
+import Input from "./components/common/Input";
+import CustomTooltip from "./components/common/CustomTooltip";
 import { useToast } from "./components/toast/ToastProvider";
-import Message from "./components/message/Message";
+import Message from "./components/common/Message";
 import {
   buttonPrimaryClass,
   hyperLinkButtonClass,

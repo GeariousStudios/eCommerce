@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../input/Input";
+import Input from "../../common/Input";
 import { useToast } from "../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
@@ -106,6 +106,7 @@ const UnitGroupModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
+      window.dispatchEvent(new Event("unit-list-updated"));
       notify("success", "Enhetsgrupp skapad!", 4000);
     } catch (err) {
       notify("error", String(err));
@@ -203,6 +204,7 @@ const UnitGroupModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
+      window.dispatchEvent(new Event("unit-list-updated"));
       notify("success", "Enhetsgrupp uppdaterad!", 4000);
     } catch (err) {
       notify("error", String(err));

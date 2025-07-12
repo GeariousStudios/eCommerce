@@ -14,15 +14,15 @@ import {
 import { CheckIcon } from "@heroicons/react/16/solid";
 import { useEffect, useRef, useState } from "react";
 import useTheme from "@/app/hooks/useTheme";
-import SingleDropdown from "../dropdowns/SingleDropdown";
+import SingleDropdown from "../common/SingleDropdown";
 import { useToast } from "../toast/ToastProvider";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
 import {
   buttonSecondaryClass,
   iconButtonPrimaryClass,
 } from "@/app/styles/buttonClasses";
-import Input from "../input/Input";
-import CustomTooltip from "../customTooltip/CustomTooltip";
+import Input from "../common/Input";
+import CustomTooltip from "../common/CustomTooltip";
 
 type Props = {
   isOpen: boolean;

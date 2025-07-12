@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Message from "./components/message/Message";
+import Message from "./components/common/Message";
 import useAuthStatus from "./hooks/useAuthStatus";
 
 const HomeClient = dynamic(() => import("./HomeClient"), {

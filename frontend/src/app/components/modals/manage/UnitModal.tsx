@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../input/Input";
+import Input from "../../common/Input";
 import { useToast } from "../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
@@ -11,7 +11,7 @@ import {
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
-import SingleDropdown from "../../dropdowns/SingleDropdown";
+import SingleDropdown from "../../common/SingleDropdown";
 
 type Props = {
   isOpen: boolean;
@@ -29,7 +29,7 @@ const UnitModal = (props: Props) => {
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
-    const modalRef = useRef<ModalBaseHandle>(null);
+  const modalRef = useRef<ModalBaseHandle>(null);
 
   // --- States ---
   const [name, setName] = useState("");

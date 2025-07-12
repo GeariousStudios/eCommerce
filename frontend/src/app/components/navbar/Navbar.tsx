@@ -19,9 +19,9 @@ import NavbarSubmenu from "./NavbarSubmenu";
 import useTheme from "../../hooks/useTheme";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Message from "../message/Message";
+import Message from "../common/Message";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
-import CustomTooltip from "../customTooltip/CustomTooltip";
+import CustomTooltip from "../common/CustomTooltip";
 import { useToast } from "../toast/ToastProvider";
 
 type Props = {
@@ -61,11 +61,14 @@ const Navbar = (props: Props) => {
   // --- Fetch units ---
   const fetchUnits = async () => {
     try {
-      const response = await fetch(`${apiUrl}/unit`, {
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${apiUrl}/unit?sortBy=unitGroupName&sortOrder=asc`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       // --- Fail ---
       const result = await response.json();
@@ -244,7 +247,7 @@ const Navbar = (props: Props) => {
                           label: "Enheter",
                         },
                         {
-                          href: "/report/manage/unitGroups/",
+                          href: "/report/manage/unit-groups/",
                           label: "Enhetsgrupper",
                         },
                       ],
@@ -280,7 +283,7 @@ const Navbar = (props: Props) => {
                           items: [
                             {
                               title: "Hantera",
-                              href: "/admin/manage/newsTypes/",
+                              href: "/admin/manage/news-types/",
                               label: "Nyhetstyper",
                             },
                           ],

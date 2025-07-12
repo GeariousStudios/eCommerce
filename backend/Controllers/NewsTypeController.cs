@@ -194,7 +194,7 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Valideringsfel", errors });
             }
 
-            var existingNewsType = await _context.UnitGroups.FirstOrDefaultAsync(t =>
+            var existingNewsType = await _context.NewsTypes.FirstOrDefaultAsync(t =>
                 t.Name.ToLower() == dto.Name.ToLower() && t.Id != id
             );
 

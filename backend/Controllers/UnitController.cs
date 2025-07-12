@@ -59,11 +59,17 @@ namespace backend.Controllers
                     ? query.OrderByDescending(u => u.Name.ToLower())
                     : query.OrderBy(u => u.Name.ToLower()),
                 "unitgroupname" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.UnitGroup.Name)
-                    : query.OrderBy(u => u.UnitGroup.Name),
+                    ? query.OrderByDescending(u => u.UnitGroup.Name).ThenBy(u => u.Name)
+                    : query.OrderBy(u => u.UnitGroup.Name).ThenBy(u => u.Name),
                 "ishidden" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.IsHidden)
-                    : query.OrderBy(u => u.IsHidden),
+                    ? query
+                        .OrderByDescending(u => u.IsHidden)
+                        .ThenBy(u => u.UnitGroup.Name)
+                        .ThenBy(u => u.Name)
+                    : query
+                        .OrderBy(u => u.IsHidden)
+                        .ThenBy(u => u.UnitGroup.Name)
+                        .ThenBy(u => u.Name),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Id)
                     : query.OrderBy(u => u.Id),
@@ -178,20 +184,22 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Valideringsfel", errors });
             }
 
-            var existingUnit = await _context.Units.FirstOrDefaultAsync(u =>
-                u.Name.ToLower() == dto.Name.ToLower()
-            );
-
-            if (existingUnit != null)
-            {
-                return BadRequest(new { message = "Enhet med detta namn finns redan!" });
-            }
-
             var unitGroup = await _context.UnitGroups.FindAsync(dto.UnitGroupId);
 
             if (unitGroup == null)
             {
                 return NotFound(new { message = "Enhetsgruppen kunde inte hittas" });
+            }
+
+            var existingUnit = await _context.Units.FirstOrDefaultAsync(u =>
+                u.Name.ToLower() == dto.Name.ToLower()
+            );
+
+            if (existingUnit != null && existingUnit.UnitGroupId == unitGroup.Id)
+            {
+                return BadRequest(
+                    new { message = "Enhet med detta namn finns redan i samma enhetsgrupp!" }
+                );
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
@@ -259,20 +267,22 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Valideringsfel", errors });
             }
 
-            var existingUnit = await _context.Units.FirstOrDefaultAsync(u =>
-                u.Name.ToLower() == dto.Name.ToLower() && u.Id != id
-            );
-
-            if (existingUnit != null)
-            {
-                return BadRequest(new { message = "Enhet med detta namn finns redan!" });
-            }
-
             var unitGroup = await _context.UnitGroups.FindAsync(dto.UnitGroupId);
 
             if (unitGroup == null)
             {
                 return NotFound(new { message = "Enhetsgruppen kunde inte hittas" });
+            }
+
+            var existingUnit = await _context.Units.FirstOrDefaultAsync(u =>
+                u.Name.ToLower() == dto.Name.ToLower() && u.Id != id
+            );
+
+            if (existingUnit != null && existingUnit.UnitGroupId == unitGroup.Id)
+            {
+                return BadRequest(
+                    new { message = "Enhet med detta namn finns redan i samma enhetsgrupp!" }
+                );
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
