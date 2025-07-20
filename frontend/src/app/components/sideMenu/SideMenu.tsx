@@ -73,7 +73,7 @@ const SideMenu = (props: Props) => {
                 >
                   <XMarkIcon />
                 </button>
-                <hr className="absolute mt-16 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
+                <hr className="absolute mt-16 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
               </div>
 
               <div className="flex-1 overflow-y-auto px-4">{props.children}</div>

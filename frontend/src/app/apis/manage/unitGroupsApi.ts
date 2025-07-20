@@ -30,9 +30,9 @@ export const fetchContent = async ({
   });
 
   // --- FILTERS START ---
-  if (filters?.hasUnits !== undefined) {
-    params.append("hasUnits", String(filters.hasUnits));
-  }
+  filters?.unitIds?.forEach((id) => {
+    params.append("unitIds", id.toString());
+  });
   // --- FILTERS STOP ---
 
   const response = await fetch(`${apiUrl}/unit-group?${params}`, {
@@ -70,7 +70,7 @@ export const deleteContent = async (id: number): Promise<void> => {
   }
 
   if (!response.ok) {
-    let errorMessage = "Kunde inte ta bort enhetsgruppen";
+    let errorMessage = "Kunde inte ta bort gruppen";
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorMessage;
@@ -79,4 +79,27 @@ export const deleteContent = async (id: number): Promise<void> => {
     }
     throw new Error(errorMessage);
   }
+};
+
+export type UnitOption = {
+  id: number;
+  name: string;
+  unitGroupName?: string;
+};
+
+export const fetchUnits = async (): Promise<UnitOption[]> => {
+  const response = await fetch(`${apiUrl}/unit?sortBy=name&sortOrder=asc`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
 };

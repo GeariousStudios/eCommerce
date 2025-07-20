@@ -2,17 +2,43 @@ import { FocusTrap } from "focus-trap-react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import {
   buttonDeletePrimaryClass,
+  buttonPrimaryClass,
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase from "./ModalBase";
+import { ReactNode, useState } from "react";
+import { request } from "http";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  confirmOnDelete?: boolean;
+  confirmDeleteMessage?: string | ReactNode;
 };
 
 const DeleteModal = (props: Props) => {
+  // --- VARIABLES ---
+  // --- States ---
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const requestDelete = () => {
+    if (props.confirmOnDelete) {
+      setShowConfirmModal(true);
+    } else {
+      props.onConfirm();
+    }
+  };
+
+  const handleConfirmClose = () => {
+    setShowConfirmModal(false);
+    props.onConfirm();
+  };
+
+  const handleConfirmCancel = () => {
+    setShowConfirmModal(false);
+  };
+
   return (
     <>
       {props.isOpen && (
@@ -21,14 +47,15 @@ const DeleteModal = (props: Props) => {
           onClose={() => props.onClose()}
           icon={TrashIcon}
           label="Är du säker?"
+          disableClickOutside={showConfirmModal}
         >
-          <div className="relative flex gap-8 flex-col">
+          <div className="relative flex flex-col gap-8">
             <p>Ett borttaget objekt går ej att få tillbaka.</p>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
               <button
                 type="button"
-                onClick={props.onConfirm}
+                onClick={requestDelete}
                 className={`${buttonDeletePrimaryClass} w-full grow-2 sm:w-auto`}
               >
                 Ta bort
@@ -43,6 +70,43 @@ const DeleteModal = (props: Props) => {
             </div>
           </div>
         </ModalBase>
+      )}
+
+      {showConfirmModal && (
+        <FocusTrap
+          focusTrapOptions={{
+            initialFocus: false,
+            allowOutsideClick: true,
+            escapeDeactivates: false,
+          }}
+        >
+          <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/75">
+            <div className="relative top-1/2">
+              <div className="relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-md -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]">
+                <p className="mb-6 text-[var(--text-main)]">
+                  {props.confirmDeleteMessage ??
+                    "De objekt du vill ta bort används. Vill du ta bort ändå?"}
+                </p>
+                <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+                  <button
+                    type="button"
+                    onClick={handleConfirmClose}
+                    className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                  >
+                    Ta bort ändå
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmCancel}
+                    className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                  >
+                    Avbryt
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </FocusTrap>
       )}
     </>
   );

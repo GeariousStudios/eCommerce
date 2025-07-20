@@ -5,7 +5,7 @@ import useManage from "@/app/hooks/useManage";
 import { NewsTypeFilters, NewsTypeItem } from "@/app/types/manageTypes"; // <-- Unique.
 import { deleteContent, fetchContent } from "@/app/apis/manage/newsTypesApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import NewsTypeModal from "@/app/components/modals/manage/NewsTypeModal"; // <-- Unique.
+import NewsTypeModal from "@/app/components/modals/admin/NewsTypeModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 
 type Props = {

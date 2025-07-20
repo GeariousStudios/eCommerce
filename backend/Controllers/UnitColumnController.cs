@@ -1,0 +1,386 @@
+using backend.Data;
+using backend.Dtos.UnitColumn;
+using backend.Models;
+using backend.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace backend.Controllers
+{
+    [ApiController]
+    [Route("unit-column")]
+    public class UnitColumnController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+        private readonly UserService _userService;
+
+        public UnitColumnController(AppDbContext context, UserService userService)
+        {
+            _context = context;
+            _userService = userService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll(
+            [FromQuery] string sortBy = "id",
+            [FromQuery] string sortOrder = "asc",
+            [FromQuery] int[]? unitIds = null,
+            [FromQuery] string[]? dataTypes = null,
+            [FromQuery] bool? hasData = null,
+            [FromQuery] string? search = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10
+        )
+        {
+            var efQuery = _context
+                .UnitColumns.Include(c => c.UnitToUnitColumns)
+                .ThenInclude(uuc => uuc.Unit)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var lowered = search.ToLower();
+                efQuery = efQuery.Where(c => c.Name.ToLower().Contains(lowered));
+            }
+
+            if (unitIds?.Any() == true)
+            {
+                efQuery = efQuery.Where(c =>
+                    c.UnitToUnitColumns.Any(uuc => unitIds.Contains(uuc.UnitId))
+                );
+            }
+
+            if (hasData != null)
+            {
+                efQuery = efQuery.Where(c => c.HasData == hasData.Value);
+            }
+
+            var parsedDataTypes = new List<UnitColumnDataType>();
+
+            if (dataTypes?.Any() == true)
+            {
+                foreach (var dt in dataTypes)
+                {
+                    if (Enum.TryParse<UnitColumnDataType>(dt, ignoreCase: true, out var parsed))
+                        parsedDataTypes.Add(parsed);
+                }
+
+                if (parsedDataTypes.Any())
+                {
+                    efQuery = efQuery.Where(c => parsedDataTypes.Contains(c.DataType));
+                }
+            }
+
+            var totalCount = await efQuery.CountAsync();
+            var query = efQuery.AsEnumerable();
+
+            query = sortBy.ToLower() switch
+            {
+                "name" => sortOrder == "desc"
+                    ? query.OrderByDescending(c => c.Name.ToLower())
+                    : query.OrderBy(c => c.Name.ToLower()),
+                "unitcount" => sortOrder == "desc"
+                    ? query
+                        .OrderByDescending(c => c.UnitToUnitColumns.Count)
+                        .ThenBy(c => c.Name.ToLower())
+                    : query.OrderBy(c => c.UnitToUnitColumns.Count).ThenBy(c => c.Name.ToLower()),
+                "hasdata" => sortOrder == "desc"
+                    ? query.OrderByDescending(c => c.HasData).ThenBy(c => c.Name.ToLower())
+                    : query.OrderBy(c => c.HasData).ThenBy(c => c.Name.ToLower()),
+                _ => sortOrder == "desc"
+                    ? query.OrderByDescending(c => c.Id)
+                    : query.OrderBy(c => c.Id),
+            };
+
+            var columns = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            // Filters.
+            var unitCount = _context
+                .UnitToUnitColumns.GroupBy(uuc => uuc.UnitId)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var dataTypeCount = _context
+                .UnitColumns.GroupBy(c => c.DataType)
+                .ToDictionary(g => g.Key.ToString(), g => g.Count());
+
+            var hasDataCount = new Dictionary<string, int>
+            {
+                ["True"] = await _context.UnitColumns.CountAsync(c => c.HasData),
+                ["False"] = await _context.UnitColumns.CountAsync(c => !c.HasData),
+            };
+
+            var result = new
+            {
+                totalCount,
+                items = columns.Select(c => new UnitColumnDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    DataType = c.DataType,
+                    Units = c.UnitToUnitColumns.Select(uuc => uuc.Unit.Name).Distinct().ToList(),
+                    HasData = c.HasData,
+
+                    // Meta data.
+                    CreationDate = c.CreationDate,
+                    CreatedBy = c.CreatedBy,
+                    UpdateDate = c.UpdateDate,
+                    UpdatedBy = c.UpdatedBy,
+                }),
+                counts = new
+                {
+                    unitCount = unitCount,
+                    dataTypeCount = dataTypeCount,
+                    hasData = hasDataCount,
+                },
+            };
+
+            return Ok(result);
+        }
+
+        // Fetch a specific column.
+        // Used when editing/deleting column.
+        [HttpGet("fetch/{id}")]
+        public async Task<IActionResult> GetColumn(int id)
+        {
+            var column = await _context
+                .UnitColumns.Include(c => c.UnitToUnitColumns)
+                .ThenInclude(uuc => uuc.Unit)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (column == null)
+            {
+                return NotFound(new { message = "Kolumnen kunde inte hittas i databasen" });
+            }
+
+            var result = new UnitColumnDto
+            {
+                Id = column.Id,
+                Name = column.Name,
+                DataType = column.DataType,
+                Units = column.UnitToUnitColumns.Select(uuc => uuc.Unit.Name).Distinct().ToList(),
+                HasData = column.HasData,
+            };
+
+            return Ok(result);
+        }
+
+        // Fetch all columns tied to a specific unit.
+        // Used in units.
+        [HttpGet("unit/{unitId}")]
+        public async Task<IActionResult> GetColumnsForUnit(int unitId)
+        {
+            var unit = await _context
+                .Units.Include(u => u.UnitToUnitColumns.OrderBy(uc => uc.Order))
+                .ThenInclude(uuc => uuc.UnitColumn)
+                .FirstOrDefaultAsync(u => u.Id == unitId);
+
+            if (unit == null)
+            {
+                return NotFound(new { message = "Enheten kunde inte hittas i databasen" });
+            }
+
+            var result = unit
+                .UnitToUnitColumns.OrderBy(uuc => uuc.Order)
+                .Select(uuc => new UnitColumnDto
+                {
+                    Id = uuc.UnitColumn.Id,
+                    Name = uuc.UnitColumn.Name,
+                    DataType = uuc.UnitColumn.DataType,
+                    HasData = uuc.UnitColumn.HasData,
+
+                    // Meta data.
+                    CreationDate = uuc.UnitColumn.CreationDate,
+                    CreatedBy = uuc.UnitColumn.CreatedBy,
+                    UpdateDate = uuc.UnitColumn.UpdateDate,
+                    UpdatedBy = uuc.UnitColumn.UpdatedBy,
+                });
+
+            return Ok(result);
+        }
+
+        [HttpDelete("delete/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteColumn(int id)
+        {
+            var column = await _context
+                .UnitColumns.Include(c => c.UnitToUnitColumns)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (column == null)
+            {
+                return NotFound(new { message = "Kolumnen kunde inte hittas i databasen" });
+            }
+
+            var isInUse = column.UnitToUnitColumns != null && column.UnitToUnitColumns.Any();
+            // var hasStoredData = await _context.UnitCells.AnyAsync(uc => uc.ColumnId == id);
+
+            if (isInUse)
+            {
+                return BadRequest(new { message = "Kan inte ta bort en kolumn som används" });
+            }
+
+            // if (hasStoredData)
+            // {
+            //     return BadRequest(
+            //         new { message = "Kolumnen kan inte tas bort då den innehåller sparad data!" }
+            //     );
+            // }
+
+            _context.UnitColumns.Remove(column);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Kolumn borttagen!" });
+        }
+
+        [HttpPost("create")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateColumn(CreateUnitColumnDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                return BadRequest(new { message = "Valideringsfel", errors });
+            }
+
+            var existingColumn = await _context.UnitColumns.FirstOrDefaultAsync(c =>
+                c.Name.ToLower() == dto.Name.ToLower()
+            );
+
+            if (existingColumn != null)
+            {
+                return BadRequest(new { message = "En kolumn med detta namn finns redan!" });
+            }
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+            }
+
+            var (createdBy, userId) = userInfo.Value;
+            var now = DateTime.UtcNow;
+
+            var column = new UnitColumn
+            {
+                Name = dto.Name,
+                DataType = dto.DataType,
+
+                // Meta data.
+                CreationDate = now,
+                CreatedBy = createdBy,
+                UpdateDate = now,
+                UpdatedBy = createdBy,
+            };
+
+            _context.UnitColumns.Add(column);
+            await _context.SaveChangesAsync();
+
+            var result = new UnitColumnDto
+            {
+                Name = column.Name,
+                DataType = column.DataType,
+                HasData = column.HasData,
+
+                // Meta data.
+                CreationDate = column.CreationDate,
+                CreatedBy = column.CreatedBy,
+                UpdateDate = column.UpdateDate,
+                UpdatedBy = column.UpdatedBy,
+            };
+
+            return Ok(result);
+        }
+
+        [HttpPut("update/{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateColumn(int id, UpdateUnitColumnDto dto)
+        {
+            var column = await _context
+                .UnitColumns.Include(c => c.UnitToUnitColumns)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (column == null)
+            {
+                return NotFound(new { message = "Kolumnen kunde inte hittas i databasen" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                return BadRequest(new { message = "Valideringsfel", errors });
+            }
+
+            var existingColumn = await _context.UnitColumns.FirstOrDefaultAsync(c =>
+                c.Name.ToLower() == dto.Name.ToLower() && c.Id != id
+            );
+
+            if (existingColumn != null)
+            {
+                return BadRequest(new { message = "En kolumn med detta namn finns redan!" });
+            }
+
+            if (column.DataType != dto.DataType)
+            {
+                var isInUse = await _context.UnitCells.AnyAsync(uc => uc.ColumnId == column.Id);
+
+                if (isInUse)
+                {
+                    return BadRequest(
+                        new
+                        {
+                            message = "Datatypen kan inte ändras eftersom kolumnen redan används i sparade celler",
+                        }
+                    );
+                }
+
+                column.DataType = dto.DataType;
+            }
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+            }
+
+            var (updatedBy, userId) = userInfo.Value;
+            var now = DateTime.UtcNow;
+
+            column.Name = dto.Name;
+
+            // Meta data.
+            column.UpdateDate = now;
+            column.UpdatedBy = updatedBy;
+
+            await _context.SaveChangesAsync();
+
+            var result = new UnitColumnDto
+            {
+                Id = column.Id,
+                Name = column.Name,
+                DataType = column.DataType,
+                HasData = column.HasData,
+
+                // Meta data.
+                UpdateDate = column.UpdateDate,
+                UpdatedBy = column.UpdatedBy,
+            };
+
+            return Ok(result);
+        }
+    }
+}

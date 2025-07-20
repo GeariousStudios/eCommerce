@@ -6,11 +6,15 @@ import { UnitFilters, UnitItem } from "@/app/types/manageTypes"; // <-- Unique.
 import {
   deleteContent,
   fetchContent,
+  fetchUnitColumns,
+  fetchCategories,
   fetchUnitGroups,
+  UnitColumnOption,
+  CategoryOption,
   UnitGroupOption,
 } from "@/app/apis/manage/unitsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import UnitModal from "@/app/components/modals/manage/UnitModal"; // <-- Unique.
+import UnitModal from "@/app/components/modals/report/UnitModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { useEffect, useState } from "react";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
@@ -94,11 +98,21 @@ const UnitsClient = (props: Props) => {
 
   const { notify } = useToast();
 
-  // --- FETCH UNITS INITIALIZATION (Unique) ---
+  // --- FETCH INITIALIZATION (Unique) ---
   const [unitGroups, setUnitGroups] = useState<UnitGroupOption[]>([]);
+  const [unitColumns, setUnitColumns] = useState<UnitColumnOption[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
   useEffect(() => {
     fetchUnitGroups()
       .then(setUnitGroups)
+      .catch((err) => notify("error", String(err)));
+
+    fetchUnitColumns()
+      .then(setUnitColumns)
+      .catch((err) => notify("error", String(err)));
+
+    fetchCategories()
+      .then(setCategories)
       .catch((err) => notify("error", String(err)));
   }, []);
 
@@ -139,13 +153,57 @@ const UnitsClient = (props: Props) => {
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Tillhör enhetsgrupp:</span>
+            <span className="w-full font-semibold">Tillhör grupp:</span>
             <span className="-mt-2">{item.unitGroupName}</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">Kolumner:</span>
+            <>
+              {item.unitColumnIds.length === 0 ? (
+                <span className="-mt-2">-</span>
+              ) : (
+                item.unitColumnIds.map((id) => {
+                  const col = unitColumns.find((c) => c.id === id);
+                  if (!col) {
+                    return null;
+                  }
+
+                  return (
+                    <span
+                      key={id}
+                      className={`${badgeClass} bg-[var(--badge-one)] text-[var(--text-main-reverse)]`}
+                    >
+                      {col.name}
+                    </span>
+                  );
+                })
+              )}
+            </>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">Kategorier:</span>
+            <>
+              {categories.filter((cat) => item.categoryIds.includes(cat.id))
+                .length === 0 ? (
+                <span className="-mt-2">-</span>
+              ) : (
+                categories
+                  .filter((cat) => item.categoryIds.includes(cat.id))
+                  .map((cat, i) => (
+                    <span
+                      key={i}
+                      className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-main-reverse)]`}
+                    >
+                      {cat.name}
+                    </span>
+                  ))
+              )}
+            </>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">Status:</span>
             <span
-              className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-min-[72px] w-[72px] text-[var(--text-main-reverse)]`}
+              className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} text-[var(--text-main-reverse)]`}
             >
               {item.isHidden ? "Gömd" : "Synlig"}
             </span>
@@ -200,17 +258,66 @@ const UnitsClient = (props: Props) => {
     },
     {
       key: "unitGroupName",
-      label: "Tillhör enhetsgrupp",
-      sortingItem: "unitGroupName",
-      labelAsc: "enhetsgrupp Ö-A",
-      labelDesc: "enhetsgrupp A-Ö",
+      label: "Tillhör grupp",
+      sortingItem: "unitgroupname",
+      labelAsc: "grupp Ö-A",
+      labelDesc: "grupp A-Ö",
       getValue: (item: UnitItem) => item.unitGroupName,
       responsivePriority: 2,
     },
     {
+      key: "unitColumns",
+      label: "Kolumner",
+      sortingItem: "unitcolumncount",
+      labelAsc: "antal kolumner (stigande)",
+      labelDesc: "antal kolumner (fallande)",
+      getValue: (item: UnitItem) => (
+        <div className="flex flex-wrap gap-2">
+          {item.unitColumnIds.map((id) => {
+            const col = unitColumns.find((c) => c.id === id);
+            if (!col) {
+              return null;
+            }
+
+            return (
+              <span
+                key={id}
+                className={`${badgeClass} bg-[var(--badge-one)] text-[var(--text-main-reverse)]`}
+              >
+                {col.name}
+              </span>
+            );
+          })}
+        </div>
+      ),
+      responsivePriority: 3,
+    },
+    {
+      key: "categories",
+      label: "Kategorier",
+      sortingItem: "categorycount",
+      labelAsc: "antal kategorier (stigande)",
+      labelDesc: "antal kategorier (fallande)",
+      getValue: (item: UnitItem) => (
+        <div className="flex flex-wrap gap-2">
+          {categories
+            .filter((cat) => item.categoryIds.includes(cat.id))
+            .map((cat, i) => (
+              <span
+                key={i}
+                className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-main-reverse)]`}
+              >
+                {cat.name}
+              </span>
+            ))}
+        </div>
+      ),
+      responsivePriority: 4,
+    },
+    {
       key: "isHidden",
       label: "Status",
-      sortingItem: "isHidden",
+      sortingItem: "visibilitycount",
       labelAsc: "gömda enheter",
       labelDesc: "synliga enheter",
       classNameAddition: "w-[100px] min-w-[100px]",
@@ -256,6 +363,26 @@ const UnitsClient = (props: Props) => {
         return { ...prev, unitGroupIds: Array.from(groups) };
       });
     },
+
+    selectedUnitColumns: filters.unitColumnIds ?? [],
+    setUnitColumnSelected: (colId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        unitColumnIds: val
+          ? [...(prev.unitColumnIds ?? []), colId]
+          : (prev.unitColumnIds ?? []).filter((id) => id !== colId),
+      }));
+    },
+
+    selectedCategories: filters.categoryIds ?? [],
+    setCategorySelected: (catId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        categoryIds: val
+          ? [...(prev.categoryIds ?? []), catId]
+          : (prev.categoryIds ?? []).filter((id) => id !== catId),
+      }));
+    },
   };
 
   // --- Filter List (Unique)
@@ -268,24 +395,53 @@ const UnitsClient = (props: Props) => {
           label: "Synliga enheter",
           isSelected: filterControls.showVisible,
           setSelected: filterControls.setShowVisible,
-          count: counts?.visible,
+          count: counts?.visibilityCount?.["Visible"] ?? 0,
         },
         {
           label: "Gömda enheter",
           isSelected: filterControls.showHidden,
           setSelected: filterControls.setShowHidden,
-          count: counts?.hidden,
+          count: counts?.visibilityCount?.["Hidden"] ?? 0,
         },
       ],
     },
     {
-      label: "Tillhör enhetsgrupp",
+      label: "Tillhör grupp",
       breakpoint: "lg",
       options: unitGroups.map((group) => ({
         label: group.name,
         isSelected: filterControls.selectedUnitGroups.includes(group.id),
-        setSelected: () => filterControls.toggleUnitGroup(group.id),
+        setSelected: (val: boolean) => {
+          setFilters((prev) => ({
+            ...prev,
+            unitGroupIds: val
+              ? [...(prev.unitGroupIds ?? []), group.id]
+              : (prev.unitGroupIds ?? []).filter((id) => id !== group.id),
+          }));
+        },
         count: counts?.unitGroupCount?.[group.name],
+      })),
+    },
+    {
+      label: "Kolumner",
+      breakpoint: "xl",
+      options: unitColumns.map((col) => ({
+        label: col.name,
+        isSelected: filterControls.selectedUnitColumns.includes(col.id),
+        setSelected: (val: boolean) =>
+          filterControls.setUnitColumnSelected(col.id, val),
+        count: counts?.unitColumnCount?.[col.id],
+      })),
+    },
+    {
+      label: "Kategorier",
+      breakpoint: "2xl",
+      options: categories.map((cat) => ({
+        label: cat.name,
+        isSelected: filterControls.selectedCategories.includes(cat.id),
+        setSelected: (val: boolean) =>
+          filterControls.setCategorySelected(cat.id, val),
+        count: counts?.categoryCount?.[cat.id],
       })),
     },
   ];
@@ -348,6 +504,19 @@ const UnitsClient = (props: Props) => {
           setDeletingItemIds([]);
           setSelectedItems([]);
         }}
+        confirmOnDelete
+        confirmDeleteMessage={
+          <>
+            Tar du bort en enhet så tar du även bort all knuten data.
+            <br />
+            <br />
+            Om enheten innehåller data som är viktig för verksamheten, t.ex. vid
+            trendning, så är det bättre att gömma den.
+            <br />
+            <br />
+            Vill du ta bort ändå?
+          </>
+        }
       />
     </>
   );

@@ -43,18 +43,22 @@ import CustomTooltip from "../common/CustomTooltip";
 import {
   AdjustmentsHorizontalIcon,
   InformationCircleIcon,
-  PencilSquareIcon,
-  PlusIcon,
+  PlusIcon as OutlinePlusIcon,
+  PencilSquareIcon as OutlinePencilSquareIcon,
   Squares2X2Icon as OutlineSquares2X2Icon,
   TableCellsIcon as OutlineTableCellsIcon,
-  TrashIcon,
+  TrashIcon as OutlineTrashIcon,
 } from "@heroicons/react/24/outline";
 import {
+  PlusIcon as SolidPlusIcon,
+  PencilSquareIcon as SolidPencilSquareIcon,
   Squares2X2Icon as SolidSquares2X2Icon,
   TableCellsIcon as SolidTableCellsIcon,
+  TrashIcon as SolidTrashIcon,
 } from "@heroicons/react/24/solid";
 import SideMenu from "../sideMenu/SideMenu";
 import useUserPrefs from "@/app/hooks/useUserPrefs";
+import HoverIcon from "../common/HoverIcon";
 
 // --- PROPS ---
 export type ManageBaseProps<TItem> = {
@@ -339,7 +343,7 @@ const ManageBase = <TItem extends { id: number }>({
           {/* --- Add item --- */}
           <CustomTooltip content={`Lägg till ny ${itemName}`} lgHidden={true}>
             <button
-              className={`${buttonPrimaryClass} lg:w-auto lg:px-4`}
+              className={`${buttonPrimaryClass} group lg:w-max lg:px-4`}
               onClick={() => {
                 toggleEditItemModal();
               }}
@@ -352,7 +356,11 @@ const ManageBase = <TItem extends { id: number }>({
               tabIndex={0}
             >
               <div className="flex items-center justify-center gap-2 truncate">
-                <PlusIcon className="h-6 min-h-6 w-6 min-w-6" />
+                <HoverIcon
+                  outline={OutlinePlusIcon}
+                  solid={SolidPlusIcon}
+                  className="h-6 min-h-6 w-6 min-w-6"
+                />
                 <span className="hidden lg:block">Lägg till ny {itemName}</span>
               </div>
             </button>
@@ -371,7 +379,7 @@ const ManageBase = <TItem extends { id: number }>({
             showOnTouch={selectedItems.length === 0 || selectedItems.length > 1}
           >
             <button
-              className={`${buttonSecondaryClass} lg:w-auto lg:px-4`}
+              className={`${buttonSecondaryClass} group lg:w-auto lg:px-4`}
               onClick={() => {
                 toggleEditItemModal(selectedItems[0]);
               }}
@@ -385,7 +393,11 @@ const ManageBase = <TItem extends { id: number }>({
               disabled={selectedItems.length === 0 || selectedItems.length > 1}
             >
               <div className="flex items-center justify-center gap-2 truncate">
-                <PencilSquareIcon className="h-6 min-h-6 w-6 min-w-6" />
+                <HoverIcon
+                  outline={OutlinePencilSquareIcon}
+                  solid={SolidPencilSquareIcon}
+                  className="h-6 min-h-6 w-6 min-w-6"
+                />
                 <span className="hidden lg:block">Redigera {itemName}</span>
               </div>
             </button>
@@ -402,7 +414,7 @@ const ManageBase = <TItem extends { id: number }>({
             showOnTouch={selectedItems.length === 0}
           >
             <button
-              className={`${buttonDeleteSecondaryClass} 3xs:ml-auto lg:w-auto lg:px-4`}
+              className={`${buttonDeleteSecondaryClass} 3xs:ml-auto group lg:w-auto lg:px-4`}
               onClick={() => toggleDeleteItemModal(selectedItems)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -414,7 +426,11 @@ const ManageBase = <TItem extends { id: number }>({
               disabled={selectedItems.length === 0}
             >
               <div className="flex items-center justify-center gap-2 truncate">
-                <TrashIcon className="h-6 min-h-6 w-6 min-w-6" />
+                <HoverIcon
+                  outline={OutlineTrashIcon}
+                  solid={SolidTrashIcon}
+                  className="h-6 min-h-6 w-6 min-w-6"
+                />
                 <span className="hidden lg:block">
                   Ta bort {itemName}
                   <span>
@@ -700,7 +716,7 @@ const ManageBase = <TItem extends { id: number }>({
                     ) : (
                       <th
                         key={i}
-                        className={`${thClass} ${getResponsiveClass(item.responsivePriority)} ${item.classNameAddition ?? ""}`}
+                        className={`pointer-events-none ${thClass} ${getResponsiveClass(item.responsivePriority)} ${item.classNameAddition ?? ""}`}
                       >
                         {item.label}
                       </th>
@@ -779,7 +795,7 @@ const ManageBase = <TItem extends { id: number }>({
                       isEven
                         ? "bg-[var(--bg-grid)]"
                         : "bg-[var(--bg-grid-zebra)]"
-                    } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""} ${isDisabled ? "!cursor-not-allowed" : "hover:bg-[var(--bg-grid-header-hover)]"} cursor-pointer transition-[background] duration-[var(--fast)]`;
+                    } ${isSelected ? "bg-[var--bg-grid-header-hover)]" : ""} ${isDisabled ? "!cursor-not-allowed opacity-33" : "hover:bg-[var(--bg-grid-header-hover)]"} cursor-pointer transition-[background] duration-[var(--fast)]`;
 
                     return (
                       <tr

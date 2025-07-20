@@ -1,6 +1,10 @@
+using System.Security.Cryptography;
 using backend.Data;
 using backend.Dtos.Category;
+using backend.Dtos.SubCategory;
+using backend.Dtos.Unit;
 using backend.Models;
+using backend.Models.ManyToMany;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +26,6 @@ namespace backend.Controllers
             _userService = userService;
         }
 
-        // WORD OF NOTE - If too many categories in the future (1000+), then performance might become an issue.
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] string sortBy = "id",
@@ -35,8 +38,10 @@ namespace backend.Controllers
         )
         {
             var efQuery = _context
-                .Categories.Include(c => c.SubCategories)
-                .Include(c => c.Units)
+                .Categories.Include(c => c.CategoryToSubCategories)
+                .ThenInclude(csc => csc.SubCategory)
+                .Include(c => c.UnitToCategories)
+                .ThenInclude(uc => uc.Unit)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -45,8 +50,9 @@ namespace backend.Controllers
                 efQuery = efQuery.Where(c =>
                     c.Name.ToLower().Contains(lowered)
                     || (
-                        c.SubCategories != null
-                        && c.SubCategories.Any(sc => sc.Name.ToLower().Contains(lowered))
+                        c.CategoryToSubCategories.Any(csc =>
+                            csc.SubCategory.Name.ToLower().Contains(lowered)
+                        )
                     )
                 );
             }
@@ -55,18 +61,18 @@ namespace backend.Controllers
             {
                 if (hasSubCategories.Value)
                 {
-                    efQuery = efQuery.Where(c => c.SubCategories != null && c.SubCategories.Any());
+                    efQuery = efQuery.Where(c => c.CategoryToSubCategories.Any());
                 }
                 else
                 {
-                    efQuery = efQuery.Where(c => c.SubCategories == null || !c.SubCategories.Any());
+                    efQuery = efQuery.Where(c => !c.CategoryToSubCategories.Any());
                 }
             }
 
             if (unitIds?.Any() == true)
             {
                 efQuery = efQuery.Where(c =>
-                    c.Units != null && c.Units.Any(u => unitIds.Contains(u.Id))
+                    c.UnitToCategories.Any(uc => unitIds.Contains(uc.UnitId))
                 );
             }
 
@@ -76,22 +82,20 @@ namespace backend.Controllers
             query = sortBy.ToLower() switch
             {
                 "name" => sortOrder == "desc"
-                    ? query.OrderByDescending(c => c.Name)
+                    ? query.OrderByDescending(c => c.Name.ToLower())
                     : query.OrderBy(c => c.Name),
-                "subcategories" => sortOrder == "desc"
-                    ? query.OrderByDescending(c =>
-                        c.SubCategories!.OrderBy(sc => sc.Name)
-                            .Select(sc => sc.Name)
-                            .FirstOrDefault()
-                    )
-                    : query.OrderBy(c =>
-                        c.SubCategories!.OrderBy(sc => sc.Name)
-                            .Select(sc => sc.Name)
-                            .FirstOrDefault()
-                    ),
+                "subcategorycount" => sortOrder == "desc"
+                    ? query
+                        .OrderByDescending(c => c.CategoryToSubCategories.Count)
+                        .ThenBy(c => c.Name.ToLower())
+                    : query
+                        .OrderBy(c => c.CategoryToSubCategories.Count)
+                        .ThenBy(c => c.Name.ToLower()),
                 "unitcount" => sortOrder == "desc"
-                    ? query.OrderByDescending(c => c.Units!.Count)
-                    : query.OrderBy(c => c.Units!.Count),
+                    ? query
+                        .OrderByDescending(c => c.UnitToCategories.Count)
+                        .ThenBy(c => c.Name.ToLower())
+                    : query.OrderBy(c => c.UnitToCategories.Count).ThenBy(c => c.Name.ToLower()),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(c => c.Id)
                     : query.OrderBy(c => c.Id),
@@ -99,25 +103,24 @@ namespace backend.Controllers
 
             var categories = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
-            var totalSubCategoryCount = await _context
-                .Categories.Where(c => c.SubCategories != null)
-                .SelectMany(c => c.SubCategories!)
-                .CountAsync();
+            // Filters.
+            var subCategoryCount = new Dictionary<string, int>
+            {
+                ["With"] = await _context.Categories.CountAsync(c =>
+                    c.CategoryToSubCategories.Any()
+                ),
+                ["Without"] = await _context.Categories.CountAsync(c =>
+                    !c.CategoryToSubCategories.Any()
+                ),
+            };
 
-            var withSubCategoryCount = await _context.Categories.CountAsync(c =>
-                c.SubCategories != null && c.SubCategories.Any()
-            );
+            var subCategories = _context
+                .CategoryToSubCategories.GroupBy(csc => csc.SubCategoryId)
+                .ToDictionary(g => g.Key, g => g.Count());
 
-            var withoutSubCategoryCount = await _context.Categories.CountAsync(c =>
-                c.SubCategories == null || !c.SubCategories.Any()
-            );
-
-            var unitCounts = _context
-                .Categories.AsEnumerable()
-                .SelectMany(c => c.Units ?? Enumerable.Empty<Unit>())
-                .GroupBy(u => u.Name)
-                .Select(g => new { Name = g.Key, Count = g.Count() })
-                .ToList();
+            var unitCount = _context
+                .UnitToCategories.GroupBy(uc => uc.UnitId)
+                .ToDictionary(g => g.Key, g => g.Count());
 
             var result = new
             {
@@ -126,8 +129,37 @@ namespace backend.Controllers
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    Units = c.Units?.Select(u => u.Name).ToList() ?? new(),
-                    SubCategories = c.SubCategories?.Select(sc => sc.Name).ToList() ?? new(),
+                    SubCategories = c
+                        .CategoryToSubCategories.OrderBy(csc => csc.Order)
+                        .Select(csc => new SubCategoryDto
+                        {
+                            Id = csc.SubCategory.Id,
+                            Name = csc.SubCategory.Name,
+                        })
+                        .ToList(),
+                    Units =
+                        c.UnitToCategories.Select(uc => uc.Unit)
+                            .Select(u => new UnitDto
+                            {
+                                Id = u.Id,
+                                Name = u.Name,
+                                UnitGroupId = u.UnitGroupId,
+                                UnitGroupName = u.UnitGroup?.Name ?? "",
+                                IsHidden = u.IsHidden,
+                                UnitColumnIds = u
+                                    .UnitToUnitColumns.Select(uuc => uuc.UnitColumnId)
+                                    .ToList(),
+                                CategoryIds = u
+                                    .UnitToCategories.Select(uc => uc.CategoryId)
+                                    .ToList(),
+                                CreationDate = u.CreationDate,
+                                CreatedBy = u.CreatedBy,
+                                UpdateDate = u.UpdateDate,
+                                UpdatedBy = u.UpdatedBy,
+                            })
+                            .ToList() ?? new(),
+
+                    // Meta data.
                     CreationDate = c.CreationDate,
                     CreatedBy = c.CreatedBy,
                     UpdateDate = c.UpdateDate,
@@ -135,10 +167,9 @@ namespace backend.Controllers
                 }),
                 counts = new
                 {
-                    SubCategories = totalSubCategoryCount,
-                    WithSubCategories = withSubCategoryCount,
-                    WithoutSubCategories = withoutSubCategoryCount,
-                    UnitCount = unitCounts.ToDictionary(u => u.Name, u => u.Count),
+                    subCategoryCount = subCategoryCount,
+                    subCategories = subCategories,
+                    unitCount = unitCount,
                 },
             };
 
@@ -149,8 +180,10 @@ namespace backend.Controllers
         public async Task<IActionResult> GetCategory(int id)
         {
             var category = await _context
-                .Categories.Include(c => c.Units)
-                .Include(c => c.SubCategories)
+                .Categories.Include(c => c.UnitToCategories)
+                .ThenInclude(uc => uc.Unit)
+                .Include(c => c.CategoryToSubCategories)
+                .ThenInclude(csc => csc.SubCategory)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)
@@ -162,9 +195,70 @@ namespace backend.Controllers
             {
                 Id = category.Id,
                 Name = category.Name,
-                Units = category.Units?.Select(u => u.Name).ToList() ?? new(),
-                SubCategories = category.SubCategories?.Select(sc => sc.Name).ToList() ?? new(),
+                Units = category
+                    .UnitToCategories.Select(uc => uc.Unit)
+                    .Select(u => new UnitDto
+                    {
+                        Id = u.Id,
+                        Name = u.Name,
+                        UnitGroupId = u.UnitGroupId,
+                        UnitGroupName = u.UnitGroup?.Name ?? "",
+                        IsHidden = u.IsHidden,
+                        UnitColumnIds = u
+                            .UnitToUnitColumns.Select(uuc => uuc.UnitColumnId)
+                            .ToList(),
+                        CategoryIds = u.UnitToCategories.Select(uc => uc.CategoryId).ToList(),
+                        CreationDate = u.CreationDate,
+                        CreatedBy = u.CreatedBy,
+                        UpdateDate = u.UpdateDate,
+                        UpdatedBy = u.UpdatedBy,
+                    })
+                    .ToList(),
+                SubCategories = category
+                    .CategoryToSubCategories.OrderBy(csc => csc.Order)
+                    .Select(csc => new SubCategoryDto
+                    {
+                        Id = csc.SubCategory.Id,
+                        Name = csc.SubCategory.Name,
+                        CategoryIds = csc
+                            .SubCategory.CategoryToSubCategories.Select(csc => csc.CategoryId)
+                            .ToList(),
+                    })
+                    .ToList(),
             };
+
+            return Ok(result);
+        }
+
+        [HttpGet("unit/{unitId}")]
+        public async Task<IActionResult> GetCategoriesForUnit(int unitId)
+        {
+            var categories = await _context
+                .Categories.Include(c => c.CategoryToSubCategories)
+                .ThenInclude(csc => csc.SubCategory)
+                .Include(c => c.UnitToCategories)
+                .Where(c => c.UnitToCategories.Any(uc => uc.UnitId == unitId))
+                .ToListAsync();
+
+            var result = categories.Select(c => new CategoryDto
+            {
+                Id = c.Id,
+                Name = c.Name,
+                SubCategories = c
+                    .CategoryToSubCategories.OrderBy(csc => csc.Order)
+                    .Select(csc => new SubCategoryDto
+                    {
+                        Id = csc.SubCategory.Id,
+                        Name = csc.SubCategory.Name,
+                    })
+                    .ToList(),
+
+                // Meta data.
+                CreationDate = c.CreationDate,
+                CreatedBy = c.CreatedBy,
+                UpdateDate = c.UpdateDate,
+                UpdatedBy = c.UpdatedBy,
+            });
 
             return Ok(result);
         }
@@ -172,13 +266,38 @@ namespace backend.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
+            var category = await _context
+                .Categories.Include(c => c.UnitToCategories)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)
             {
                 return NotFound(new { message = "Kategorin kunde inte hittas i databasen" });
             }
 
+            var isInUse = category.UnitToCategories != null && category.UnitToCategories.Any();
+
+            if (isInUse)
+            {
+                return BadRequest(new { message = "Kan inte ta bort en kategori som används" });
+            }
+
+            var subCategoryIds = category
+                .CategoryToSubCategories.Select(csc => csc.SubCategoryId)
+                .ToList();
+
+            _context.CategoryToSubCategories.RemoveRange(category.CategoryToSubCategories);
+
+            var subCategoriesToCheck = await _context
+                .SubCategories.Include(sc => sc.CategoryToSubCategories)
+                .Where(sc => subCategoryIds.Contains(sc.Id))
+                .ToListAsync();
+
+            var subCategoriesToDelete = subCategoriesToCheck
+                .Where(sc => sc.CategoryToSubCategories.Count == 1)
+                .ToList();
+
+            _context.SubCategories.RemoveRange(subCategoriesToDelete);
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
 
@@ -216,49 +335,166 @@ namespace backend.Controllers
                 return Unauthorized(new { message = "Ingen behörig användare inloggad" });
             }
 
+            if (dto.SubCategoryIds != null && dto.SubCategoryIds.Any())
+            {
+                var subCategories = await _context
+                    .SubCategories.Where(sc => dto.SubCategoryIds.Contains(sc.Id))
+                    .ToListAsync();
+
+                if (subCategories.Count != dto.SubCategoryIds.Length)
+                {
+                    return BadRequest(
+                        new { message = "En eller flera underkategorier kunde inte hittas" }
+                    );
+                }
+            }
+
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
-            var category = new Category
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
             {
-                Name = dto.Name,
-                Units =
-                    dto.Units != null
-                        ? await _context.Units.Where(u => dto.Units.Contains(u.Id)).ToListAsync()
-                        : new List<Unit>(),
-                SubCategories = dto
-                    .SubCategories?.Select(name => new SubCategory { Name = name })
-                    .ToList(),
-                CreationDate = now,
-                CreatedBy = createdBy,
-                UpdateDate = now,
-                UpdatedBy = createdBy,
-            };
+                var finalSubCategoryIds = new List<int>();
 
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
+                if (dto.SubCategoryIds?.Any() == true)
+                {
+                    var subCategoryIds = dto.SubCategoryIds!;
+                    var existingSubCategories = await _context
+                        .SubCategories.Where(sc => dto.SubCategoryIds.Contains(sc.Id))
+                        .ToListAsync();
 
-            var result = new CategoryDto
+                    if (existingSubCategories.Count != subCategoryIds.Length)
+                    {
+                        return BadRequest(
+                            new { message = "En eller flera underkategorier kunde inte hittas" }
+                        );
+                    }
+
+                    var orderedIds = subCategoryIds.Where(id =>
+                        existingSubCategories.Any(sc => sc.Id == id)
+                    );
+
+                    finalSubCategoryIds.AddRange(orderedIds);
+                }
+
+                if (dto.NewSubCategoryNames?.Any() == true)
+                {
+                    foreach (
+                        var name in dto.NewSubCategoryNames.Where(n =>
+                            !string.IsNullOrWhiteSpace(n)
+                        )
+                    )
+                    {
+                        var trimmed = name.Trim();
+
+                        var conflictingSubCategory = await _context
+                            .SubCategories.Include(sc => sc.CategoryToSubCategories)
+                            .ThenInclude(csc => csc.Category)
+                            .FirstOrDefaultAsync(sc =>
+                                sc.Name.ToLower() == trimmed.ToLower()
+                                && sc.CategoryToSubCategories.Any(csc =>
+                                    csc.Category.Name.ToLower() == dto.Name.ToLower()
+                                )
+                            );
+
+                        if (conflictingSubCategory != null)
+                        {
+                            return BadRequest(
+                                new
+                                {
+                                    message = $"Underkategori {trimmed} finns redan i denna kategori!",
+                                }
+                            );
+                        }
+
+                        var newSubCategory = new SubCategory
+                        {
+                            Name = trimmed,
+
+                            // Meta data.
+                            CreationDate = now,
+                            CreatedBy = createdBy,
+                            UpdateDate = now,
+                            UpdatedBy = createdBy,
+                        };
+
+                        _context.SubCategories.Add(newSubCategory);
+                        await _context.SaveChangesAsync();
+
+                        finalSubCategoryIds.Add(newSubCategory.Id);
+                    }
+                }
+
+                var category = new Category
+                {
+                    Name = dto.Name,
+                    CategoryToSubCategories = finalSubCategoryIds
+                        .Select(
+                            (id, index) =>
+                                new CategoryToSubCategory { SubCategoryId = id, Order = index }
+                        )
+                        .ToList(),
+
+                    // Meta data.
+                    CreationDate = now,
+                    CreatedBy = createdBy,
+                    UpdateDate = now,
+                    UpdatedBy = createdBy,
+                };
+
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
+                await _context
+                    .Entry(category)
+                    .Collection(c => c.CategoryToSubCategories)
+                    .Query()
+                    .Include(csc => csc.SubCategory)
+                    .LoadAsync();
+
+                await transaction.CommitAsync();
+
+                var result = new CategoryDto
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                    Units = new List<UnitDto>(),
+                    SubCategories = category
+                        .CategoryToSubCategories.OrderBy(csc => csc.Order)
+                        .Select(csc => new SubCategoryDto
+                        {
+                            Id = csc.SubCategory.Id,
+                            Name = csc.SubCategory.Name,
+                            CategoryIds = csc
+                                .SubCategory.CategoryToSubCategories.Select(csc => csc.CategoryId)
+                                .ToList(),
+                        })
+                        .ToList(),
+
+                    // Meta data.
+                    CreationDate = category.CreationDate,
+                    CreatedBy = category.CreatedBy,
+                    UpdateDate = category.UpdateDate,
+                    UpdatedBy = category.UpdatedBy,
+                };
+
+                return Ok(result);
+            }
+            catch (Exception ex)
             {
-                Id = category.Id,
-                Name = category.Name,
-                Units = category.Units?.Select(u => u.Name).ToList() ?? new(),
-                SubCategories = category.SubCategories?.Select(sc => sc.Name).ToList() ?? new(),
-                CreationDate = category.CreationDate,
-                CreatedBy = category.CreatedBy,
-                UpdateDate = category.UpdateDate,
-                UpdatedBy = category.UpdatedBy,
-            };
-
-            return Ok(result);
+                await transaction.RollbackAsync();
+                return StatusCode(500, new { message = "Ett fel uppstod: " + ex.Message });
+            }
         }
 
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDto dto)
         {
             var category = await _context
-                .Categories.Include(c => c.Units)
-                .Include(c => c.SubCategories)
+                .Categories.Include(c => c.UnitToCategories)
+                .Include(c => c.CategoryToSubCategories)
+                .ThenInclude(csc => csc.SubCategory)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)
@@ -297,49 +533,155 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
-            category.Name = dto.Name;
+            using var transaction = await _context.Database.BeginTransactionAsync();
 
-            if (category.Units != null)
+            try
             {
-                category.Units.Clear();
-            }
+                var finalSubCategoryIds = new List<int>();
 
-            if (category.SubCategories != null)
-            {
-                _context.SubCategories.RemoveRange(category.SubCategories);
-            }
-
-            if (dto.Units != null && dto.Units.Any())
-            {
-                var newUnits = await _context
-                    .Units.Where(u => dto.Units.Contains(u.Id))
-                    .ToListAsync();
-
-                foreach (var unit in newUnits)
+                if (dto.SubCategoryIds?.Any() == true)
                 {
-                    category.Units?.Add(unit);
+                    var subCategoryIds = dto.SubCategoryIds!;
+                    var existingSubCategories = await _context
+                        .SubCategories.Where(sc => subCategoryIds.Contains(sc.Id))
+                        .ToListAsync();
+
+                    if (existingSubCategories.Count != subCategoryIds.Length)
+                        return BadRequest(
+                            new { message = "En eller flera underkategorier kunde inte hittas" }
+                        );
+
+                    var orderedIds = subCategoryIds.Where(id =>
+                        existingSubCategories.Any(sc => sc.Id == id)
+                    );
+
+                    finalSubCategoryIds.AddRange(orderedIds);
                 }
+
+                var newSubCategories = new List<SubCategory>();
+
+                if (dto.NewSubCategoryNames?.Any() == true)
+                {
+                    foreach (
+                        var name in dto.NewSubCategoryNames.Where(n =>
+                            !string.IsNullOrWhiteSpace(n)
+                        )
+                    )
+                    {
+                        var trimmed = name.Trim();
+
+                        var existingSubCategory = await _context
+                            .SubCategories.Include(sc => sc.CategoryToSubCategories)
+                            .Where(sc => sc.Name.ToLower() == trimmed.ToLower())
+                            .ToListAsync();
+
+                        var isDuplicateInSameCategory = existingSubCategory.Any(sc =>
+                            sc.CategoryToSubCategories.Any(csc => csc.CategoryId == category.Id)
+                        );
+
+                        if (isDuplicateInSameCategory)
+                        {
+                            return BadRequest(
+                                new
+                                {
+                                    message = $"Underkategori {trimmed} finns redan i denna kategori!",
+                                }
+                            );
+                        }
+
+                        var newSubCategory = new SubCategory
+                        {
+                            Name = trimmed,
+
+                            // Meta data.
+                            CreationDate = now,
+                            CreatedBy = updatedBy,
+                            UpdateDate = now,
+                            UpdatedBy = updatedBy,
+                        };
+
+                        newSubCategories.Add(newSubCategory);
+                    }
+                }
+
+                if (newSubCategories.Any())
+                {
+                    _context.SubCategories.AddRange(newSubCategories);
+                    await _context.SaveChangesAsync();
+                    finalSubCategoryIds.AddRange(newSubCategories.Select(sc => sc.Id));
+                }
+
+                category.Name = dto.Name;
+
+                if (dto.SubCategoryIdsToDelete?.Any() == true)
+                {
+                    var subCategoriesToDelete = await _context
+                        .SubCategories.Include(sc => sc.CategoryToSubCategories)
+                        .Where(sc =>
+                            dto.SubCategoryIdsToDelete.Contains(sc.Id)
+                            && sc.CategoryToSubCategories.All(csc => csc.CategoryId == category.Id)
+                        )
+                        .ToListAsync();
+
+                    _context.SubCategories.RemoveRange(subCategoriesToDelete);
+                }
+
+                _context.CategoryToSubCategories.RemoveRange(category.CategoryToSubCategories);
+                category.CategoryToSubCategories = finalSubCategoryIds
+                    .Select(
+                        (id, index) =>
+                            new CategoryToSubCategory
+                            {
+                                CategoryId = category.Id,
+                                SubCategoryId = id,
+                                Order = index,
+                            }
+                    )
+                    .ToList();
+
+                // Meta data.
+                category.UpdateDate = now;
+                category.UpdatedBy = updatedBy;
+
+                await _context.SaveChangesAsync();
+                await _context
+                    .Entry(category)
+                    .Collection(c => c.CategoryToSubCategories)
+                    .Query()
+                    .Include(csc => csc.SubCategory)
+                    .LoadAsync();
+                await transaction.CommitAsync();
+
+                var result = new CategoryDto
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                    Units = new List<UnitDto>(),
+                    SubCategories = category
+                        .CategoryToSubCategories.OrderBy(x => x.Order)
+                        .Select(csc => csc.SubCategory)
+                        .Select(sc => new SubCategoryDto
+                        {
+                            Id = sc.Id,
+                            Name = sc.Name,
+                            CategoryIds = sc
+                                .CategoryToSubCategories.Select(csc => csc.CategoryId)
+                                .ToList(),
+                        })
+                        .ToList(),
+
+                    // Meta data.
+                    UpdateDate = category.UpdateDate,
+                    UpdatedBy = category.UpdatedBy,
+                };
+
+                return Ok(result);
             }
-
-            category.SubCategories = dto
-                .SubCategories?.Select(name => new SubCategory { Name = name })
-                .ToList();
-            category.UpdateDate = now;
-            category.UpdatedBy = updatedBy;
-
-            await _context.SaveChangesAsync();
-
-            var result = new CategoryDto
+            catch (Exception ex)
             {
-                Id = category.Id,
-                Name = category.Name,
-                Units = category.Units?.Select(u => u.Name).ToList() ?? new(),
-                SubCategories = category.SubCategories?.Select(sc => sc.Name).ToList() ?? new(),
-                UpdateDate = category.UpdateDate,
-                UpdatedBy = category.UpdatedBy,
-            };
-
-            return Ok(result);
+                await transaction.RollbackAsync();
+                return StatusCode(500, new { message = "Ett fel uppstod: " + ex.Message });
+            }
         }
     }
 }

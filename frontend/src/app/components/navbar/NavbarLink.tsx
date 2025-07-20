@@ -25,7 +25,7 @@ const NavbarLink = (props: Props) => {
       >
         <Link
           href={props.href}
-          className={`${isActive ? "text-[var(--accent-color)]" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : ""} group flex h-[40px] w-[40px] items-center justify-center gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:max-w-full md:justify-between`}
+          className={`${isActive ? "text-[var(--accent-color)]" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : ""} group flex h-[40px] items-center gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] w-full max-w-full justify-between break-all`}
         >
           <div className="flex items-center gap-4 overflow-hidden">
             <span className="relative flex min-h-6 min-w-6 items-center">
@@ -37,7 +37,7 @@ const NavbarLink = (props: Props) => {
               />
             </span>
             <span
-              className={`${isActive ? "font-bold" : ""} hidden truncate md:flex`}
+              className={`${isActive ? "font-bold" : ""} truncate flex`}
             >
               {props.label}
             </span>

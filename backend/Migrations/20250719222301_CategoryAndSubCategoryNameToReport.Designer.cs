@@ -11,29 +11,14 @@ using backend.Data;
 namespace eCommerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250703192028_Init")]
-    partial class Init
+    [Migration("20250719222301_CategoryAndSubCategoryNameToReport")]
+    partial class CategoryAndSubCategoryNameToReport
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
-
-            modelBuilder.Entity("CategoryUnit", b =>
-                {
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UnitsId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("CategoryId", "UnitsId");
-
-                    b.HasIndex("UnitsId");
-
-                    b.ToTable("CategoryUnit");
-                });
 
             modelBuilder.Entity("backend.Models.Category", b =>
                 {
@@ -62,6 +47,60 @@ namespace eCommerce.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.CategoryToSubCategory", b =>
+                {
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("SubCategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("CategoryId", "SubCategoryId");
+
+                    b.HasIndex("SubCategoryId");
+
+                    b.ToTable("CategoryToSubCategories");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.UnitToCategory", b =>
+                {
+                    b.Property<int>("UnitId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UnitId", "CategoryId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("UnitToCategories");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.UnitToUnitColumn", b =>
+                {
+                    b.Property<int>("UnitId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UnitColumnId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UnitId", "UnitColumnId");
+
+                    b.HasIndex("UnitColumnId");
+
+                    b.ToTable("UnitToUnitColumns");
                 });
 
             modelBuilder.Entity("backend.Models.News", b =>
@@ -129,22 +168,88 @@ namespace eCommerce.Migrations
                     b.ToTable("NewsTypes");
                 });
 
+            modelBuilder.Entity("backend.Models.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CategoryName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Hour")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("StopTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("SubCategoryId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SubCategoryName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("Reports");
+                });
+
             modelBuilder.Entity("backend.Models.SubCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
 
-                    b.HasIndex("CategoryId");
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
 
                     b.ToTable("SubCategories");
                 });
@@ -184,6 +289,85 @@ namespace eCommerce.Migrations
                     b.HasIndex("UnitGroupId");
 
                     b.ToTable("Units");
+                });
+
+            modelBuilder.Entity("backend.Models.UnitCell", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ColumnId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly?>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Hour")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("IntValue")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColumnId");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("UnitCells");
+                });
+
+            modelBuilder.Entity("backend.Models.UnitColumn", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DataType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UnitColumns");
                 });
 
             modelBuilder.Entity("backend.Models.UnitGroup", b =>
@@ -288,30 +472,72 @@ namespace eCommerce.Migrations
                     b.ToTable("UserPreferences");
                 });
 
-            modelBuilder.Entity("CategoryUnit", b =>
-                {
-                    b.HasOne("backend.Models.Category", null)
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.Unit", null)
-                        .WithMany()
-                        .HasForeignKey("UnitsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("backend.Models.SubCategory", b =>
+            modelBuilder.Entity("backend.Models.ManyToMany.CategoryToSubCategory", b =>
                 {
                     b.HasOne("backend.Models.Category", "Category")
-                        .WithMany("SubCategories")
+                        .WithMany("CategoryToSubCategories")
                         .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.SubCategory", "SubCategory")
+                        .WithMany("CategoryToSubCategories")
+                        .HasForeignKey("SubCategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("SubCategory");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.UnitToCategory", b =>
+                {
+                    b.HasOne("backend.Models.Category", "Category")
+                        .WithMany("UnitToCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Unit", "Unit")
+                        .WithMany("UnitToCategories")
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.UnitToUnitColumn", b =>
+                {
+                    b.HasOne("backend.Models.UnitColumn", "UnitColumn")
+                        .WithMany("UnitToUnitColumns")
+                        .HasForeignKey("UnitColumnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Unit", "Unit")
+                        .WithMany("UnitToUnitColumns")
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Unit");
+
+                    b.Navigation("UnitColumn");
+                });
+
+            modelBuilder.Entity("backend.Models.Report", b =>
+                {
+                    b.HasOne("backend.Models.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("backend.Models.Unit", b =>
@@ -323,6 +549,25 @@ namespace eCommerce.Migrations
                         .IsRequired();
 
                     b.Navigation("UnitGroup");
+                });
+
+            modelBuilder.Entity("backend.Models.UnitCell", b =>
+                {
+                    b.HasOne("backend.Models.UnitColumn", "Column")
+                        .WithMany()
+                        .HasForeignKey("ColumnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Unit", "Unit")
+                        .WithMany()
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Column");
+
+                    b.Navigation("Unit");
                 });
 
             modelBuilder.Entity("backend.Models.UserPreferences", b =>
@@ -338,7 +583,26 @@ namespace eCommerce.Migrations
 
             modelBuilder.Entity("backend.Models.Category", b =>
                 {
-                    b.Navigation("SubCategories");
+                    b.Navigation("CategoryToSubCategories");
+
+                    b.Navigation("UnitToCategories");
+                });
+
+            modelBuilder.Entity("backend.Models.SubCategory", b =>
+                {
+                    b.Navigation("CategoryToSubCategories");
+                });
+
+            modelBuilder.Entity("backend.Models.Unit", b =>
+                {
+                    b.Navigation("UnitToCategories");
+
+                    b.Navigation("UnitToUnitColumns");
+                });
+
+            modelBuilder.Entity("backend.Models.UnitColumn", b =>
+                {
+                    b.Navigation("UnitToUnitColumns");
                 });
 
             modelBuilder.Entity("backend.Models.UnitGroup", b =>

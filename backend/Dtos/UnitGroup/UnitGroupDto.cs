@@ -1,10 +1,12 @@
+using backend.Dtos.Unit;
+
 namespace backend.Dtos.UnitGroup
 {
     public class UnitGroupDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public bool HasUnits { get; set; }
+        public List<UnitDto> Units { get; set; } = new();
 
         // Meta data.
         public DateTime CreationDate { get; set; }

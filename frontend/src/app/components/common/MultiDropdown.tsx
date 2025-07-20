@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import PortalWrapper from "../helpers/PortalWrapper";
+import PortalWrapper from "../../helpers/PortalWrapper";
 
 type OptionProps = {
   value: string;
@@ -16,6 +16,7 @@ type DropdownProps = {
   required?: boolean;
   onModal?: boolean;
   showAbove?: boolean;
+  tabIndex?: number;
 };
 
 const MultiDropdown = ({
@@ -27,6 +28,7 @@ const MultiDropdown = ({
   required,
   onModal = false,
   showAbove = false,
+  tabIndex,
 }: DropdownProps) => {
   // --- VARIABLES ---
   // --- Refs ---
@@ -107,7 +109,7 @@ const MultiDropdown = ({
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <div
-        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex h-[40px] w-full cursor-pointer items-center rounded border-1 border-[var(--border-main)] bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
+        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex h-[40px] w-full cursor-pointer items-center rounded border-1 border-[var(--border-tertiary)] bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -117,7 +119,7 @@ const MultiDropdown = ({
             setIsOpen(false);
           }
         }}
-        tabIndex={0}
+        tabIndex={tabIndex ?? 0}
         role="button"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -151,7 +153,7 @@ const MultiDropdown = ({
             dropdownRef.current = el;
             portalContentRef.current = el;
           }}
-          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} ${showAbove ? "rounded-t border-b-0" : "rounded-b border-t-0"} fixed z-[var(--z-tooltip)] ml-2 list-none border-1 border-[var(--border-main)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} ${showAbove ? "rounded-t border-b-0" : "rounded-b border-t-0"} fixed z-[var(--z-tooltip)] ml-2 list-none border-1 border-[var(--border-tertiary)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
           role="listbox"
           inert={!isOpen || undefined}
         >

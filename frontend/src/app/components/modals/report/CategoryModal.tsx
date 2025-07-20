@@ -21,7 +21,7 @@ type Props = {
   onItemUpdated: () => void;
 };
 
-type UnitOptions = {
+type SubCategoryDto = {
   id: number;
   name: string;
 };
@@ -31,17 +31,21 @@ const CategoryModal = (props: Props) => {
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const updatedSubCategoriesRef = useRef<SubCategoryDto[]>([]);
 
   // --- States ---
   const [name, setName] = useState("");
-  const [unit, setUnit] = useState<string[]>([]);
-  const [subCategory, setSubCategory] = useState<string[]>([]);
+  const [subCategoryIds, setSubCategoryIds] = useState<number[]>([]);
   const [newSubCategory, setNewSubCategory] = useState("");
-  const [units, setUnits] = useState<UnitOptions[]>([]);
 
   const [originalName, setOriginalName] = useState("");
-  const [originalUnit, setOriginalUnit] = useState<string[]>([]);
-  const [originalSubCategory, setOriginalSubCategory] = useState<string[]>([]);
+  const [originalSubCategoryIds, setOriginalSubCategoryIds] = useState<
+    number[]
+  >([]);
+
+  const [subCategoryIdsToDelete, setSubCategoryIdsToDelete] = useState<
+    number[]
+  >([]);
   const [isDirty, setIsDirty] = useState(false);
 
   const [isAnyDragging, setIsAnyDragging] = useState(false);
@@ -52,37 +56,30 @@ const CategoryModal = (props: Props) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (props.isOpen) {
-      fetchUnits();
-    }
-  }, [props.isOpen]);
-
-  useEffect(() => {
-    if (
-      props.isOpen &&
-      props.itemId !== null &&
-      props.itemId !== undefined &&
-      units.length > 0
-    ) {
+    if (props.isOpen && props.itemId !== null && props.itemId !== undefined) {
       fetchCategory();
+      fetchAllSubCategories();
     } else {
       setName("");
       setOriginalName("");
 
-      setUnit([]);
-      setOriginalUnit([]);
-
-      setSubCategory([]);
-      setOriginalSubCategory([]);
+      setSubCategoryIds([]);
+      setOriginalSubCategoryIds([]);
 
       setNewSubCategory("");
     }
-  }, [props.isOpen, props.itemId, units]);
+  }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add category ---
-  const addCategory = async (event: FormEvent) => {
+  // --- Create category ---
+  const createCategory = async (event: FormEvent) => {
     event.preventDefault();
+
+    const newSubCategoryNames = updatedSubCategoriesRef.current
+      .filter((sc) => subCategoryIds.includes(sc.id) && sc.id < 0)
+      .map((sc) => sc.name.trim());
+
+    const newSubCategoryIds = subCategoryIds.filter((id) => id > 0);
 
     try {
       const response = await fetch(`${apiUrl}/category/create`, {
@@ -93,8 +90,9 @@ const CategoryModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
-          units: unit.map(Number),
-          subCategories: subCategory,
+          subCategoryIds: newSubCategoryIds,
+          newSubCategoryNames,
+          subCategoryIdsToDelete,
         }),
       });
 
@@ -138,6 +136,17 @@ const CategoryModal = (props: Props) => {
         return;
       }
 
+      result.subCategories.forEach((sc: any) => {
+        const existing = updatedSubCategoriesRef.current.find(
+          (s) => s.name.toLowerCase() === sc.name.toLowerCase() && s.id < 0,
+        );
+
+        if (existing) {
+          existing.id = sc.id;
+        }
+      });
+
+      setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
       notify("success", "Kategori skapad!", 4000);
@@ -146,71 +155,15 @@ const CategoryModal = (props: Props) => {
     }
   };
 
-  // --- Fetch units ---
-  const fetchUnits = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/unit`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        notify("error", result.message);
-      } else {
-        setUnits(result.items);
-      }
-    } catch (err) {
-      notify("error", String(err));
-    }
-  };
-
-  // --- Fetch category ---
-  const fetchCategory = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/category/fetch/${props.itemId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        notify("error", result.message);
-      } else {
-        fillCategoryData(result);
-      }
-    } catch (err) {
-      notify("error", String(err));
-    }
-  };
-
-  const fillCategoryData = (result: any) => {
-    setName(result.name ?? "");
-    setOriginalName(result.name ?? "");
-
-    const unitIds = result.units
-      ?.map((unitName: string) => {
-        const found = units.find((u) => u.name === unitName);
-        return found ? String(found.id) : null;
-      })
-      .filter(Boolean) as string[];
-
-    setUnit(unitIds);
-    setOriginalUnit(unitIds);
-
-    setSubCategory(result.subCategories ?? []);
-    setOriginalSubCategory(result.subCategories ?? []);
-  };
-
   // --- Update category ---
   const updateCategory = async (event: FormEvent) => {
     event.preventDefault();
+
+    const newSubCategoryNames = updatedSubCategoriesRef.current
+      .filter((sc) => subCategoryIds.includes(sc.id) && sc.id < 0)
+      .map((sc) => sc.name.trim());
+
+    const newSubCategoryIds = subCategoryIds.filter((id) => id > 0);
 
     try {
       const response = await fetch(
@@ -223,8 +176,9 @@ const CategoryModal = (props: Props) => {
           },
           body: JSON.stringify({
             name,
-            units: unit.map(Number),
-            subCategories: subCategory,
+            subCategoryIds: newSubCategoryIds,
+            newSubCategoryNames,
+            subCategoryIdsToDelete,
           }),
         },
       );
@@ -269,9 +223,75 @@ const CategoryModal = (props: Props) => {
         return;
       }
 
+      result.subCategories.forEach((sc: any) => {
+        const existing = updatedSubCategoriesRef.current.find(
+          (s) => s.name.trim() === sc.name.trim() && s.id < 0,
+        );
+
+        if (existing) {
+          existing.id = sc.id;
+        }
+      });
+
+      setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
       notify("success", "Kategori uppdaterad!", 4000);
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  // --- Fetch category & sub category ---
+  const fetchCategory = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/category/fetch/${props.itemId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        fillCategoryData(result);
+      }
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  const fillCategoryData = (result: any) => {
+    setName(result.name ?? "");
+    setOriginalName(result.name ?? "");
+
+    const ids = Array.isArray(result.subCategories)
+      ? result.subCategories.map((sc: any) => sc.id)
+      : [];
+
+    setSubCategoryIds(ids);
+    setOriginalSubCategoryIds(ids);
+  };
+
+  const fetchAllSubCategories = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/subcategory`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+      } else {
+        updatedSubCategoriesRef.current = result;
+      }
     } catch (err) {
       notify("error", String(err));
     }
@@ -281,18 +301,53 @@ const CategoryModal = (props: Props) => {
     formRef.current?.requestSubmit();
   };
 
-  const addSubCategory = () => {
+  const createSubCategory = () => {
     const trimmed = newSubCategory.trim();
 
-    if (trimmed) {
-      if (!subCategory.includes(trimmed)) {
-        setSubCategory((prev) => [trimmed, ...prev]);
-        setNewSubCategory("");
-      } else {
-        notify("error", "En underkategori med samma namn finns redan");
-      }
-    } else {
+    if (!trimmed) {
       notify("error", "Ange namnet på underkategorin först");
+      return;
+    }
+
+    const match = updatedSubCategoriesRef.current.find(
+      (sc) => sc.name.trim() === trimmed.trim(),
+    );
+
+    if (match) {
+      if (subCategoryIds.includes(match.id)) {
+        notify("error", "En underkategori med samma namn finns redan");
+        return;
+      }
+
+      setSubCategoryIds((prev) => [match.id, ...prev]);
+      setNewSubCategory("");
+      return;
+    }
+
+    const tempId = -(Math.floor(Math.random() * 1000000) + 1);
+
+    const tempSubCategory: SubCategoryDto = {
+      id: tempId,
+      name: trimmed,
+    };
+
+    updatedSubCategoriesRef.current = [
+      tempSubCategory,
+      ...updatedSubCategoriesRef.current,
+    ];
+    setSubCategoryIds((prev) => [tempId, ...prev]);
+    setNewSubCategory("");
+  };
+
+  const deleteSubCategory = async (subCategoryId: number) => {
+    setSubCategoryIds((prev) => prev.filter((id) => id !== subCategoryId));
+
+    if (subCategoryId > 0) {
+      setSubCategoryIdsToDelete((prev) => [...prev, subCategoryId]);
+    } else {
+      updatedSubCategoriesRef.current = updatedSubCategoriesRef.current.filter(
+        (sc) => sc.id !== subCategoryId,
+      );
     }
   };
 
@@ -332,7 +387,7 @@ const CategoryModal = (props: Props) => {
   };
 
   // --- SET/UNSET IS DIRTY ---
-  const areArraysEqual = (a: string[], b: string[]) => {
+  const areArraysEqual = function <T>(a: T[], b: T[]): boolean {
     if (a.length !== b.length) {
       return false;
     }
@@ -344,7 +399,7 @@ const CategoryModal = (props: Props) => {
 
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
-      const dirty = name !== "" || unit.length > 0 || subCategory.length > 0;
+      const dirty = name !== "" || subCategoryIds.length > 0;
 
       setIsDirty(dirty);
       return;
@@ -352,17 +407,9 @@ const CategoryModal = (props: Props) => {
 
     const dirty =
       name !== originalName ||
-      !areArraysEqual(unit, originalUnit) ||
-      !areArraysEqual(subCategory, originalSubCategory);
+      !areArraysEqual(subCategoryIds, originalSubCategoryIds);
     setIsDirty(dirty);
-  }, [
-    name,
-    unit,
-    subCategory,
-    originalName,
-    originalUnit,
-    originalSubCategory,
-  ]);
+  }, [name, subCategoryIds, originalName, originalSubCategoryIds]);
 
   return (
     <>
@@ -370,7 +417,10 @@ const CategoryModal = (props: Props) => {
         <ModalBase
           ref={modalRef}
           isOpen={props.isOpen}
-          onClose={() => props.onClose()}
+          onClose={() => {
+            setSubCategoryIdsToDelete([]);
+            props.onClose();
+          }}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
           label={props.itemId ? "Redigera kategori" : "Lägg till ny kategori"}
           confirmOnClose
@@ -380,60 +430,46 @@ const CategoryModal = (props: Props) => {
             ref={formRef}
             className="relative flex flex-col gap-4"
             onSubmit={(e) =>
-              props.itemId ? updateCategory(e) : addCategory(e)
+              props.itemId ? updateCategory(e) : createCategory(e)
             }
           >
             <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
+              <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
                 Uppgifter om kategorin
               </h3>
-              <hr className="w-full text-[var(--border-main)]" />
+              <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="mb-8 flex w-full flex-col gap-6 sm:flex-row sm:gap-4">
-              <div className="w-full sm:w-1/2">
+              <div className="w-full">
                 <Input
                   label={"Namn"}
                   value={name}
                   onChange={(val) => setName(String(val))}
-                  onModal={true}
-                  required
-                />
-              </div>
-
-              <div className="w-full sm:w-1/2">
-                <MultiDropdown
-                  id="unitGroup"
-                  label={"Enheter med åtkomst"}
-                  value={unit}
-                  onChange={(val: string[]) => setUnit(val)}
                   onModal
-                  options={units.map((u) => ({
-                    label: u.name,
-                    value: String(u.id),
-                  }))}
+                  required
                 />
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
+              <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
                 Underkategorier
               </h3>
-              <hr className="w-full text-[var(--border-main)]" />
+              <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="flex gap-4">
               <Input
                 value={newSubCategory}
                 onChange={(val) => setNewSubCategory(String(val))}
-                onModal={true}
+                onModal
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    addSubCategory();
+                    createSubCategory();
                   }
                 }}
                 placeholder="Skapa underkategorier här..."
@@ -441,30 +477,40 @@ const CategoryModal = (props: Props) => {
 
               <button
                 type="button"
-                onClick={addSubCategory}
+                onClick={createSubCategory}
                 className={`${buttonPrimaryClass}`}
               >
                 <PlusIcon />
               </button>
             </div>
 
-            {subCategory.length > 0 && (
-              <DragDrop
-                items={subCategory}
-                getId={(item) => item}
-                onReorder={(newList) => setSubCategory(newList)}
-                onDraggingChange={setIsAnyDragging}
-                renderItem={(item, isDragging) => (
-                  <SubCategoryChip
-                    label={item}
-                    isDragging={isDragging}
-                    dragging={isAnyDragging}
-                    onDelete={() =>
-                      setSubCategory((prev) => prev.filter((s) => s !== item))
-                    }
-                  />
-                )}
-              />
+            {subCategoryIds.length > 0 && (
+              <>
+                <DragDrop
+                  items={subCategoryIds}
+                  getId={(id) => String(id)}
+                  onReorder={(newIds) => setSubCategoryIds(newIds)}
+                  onDraggingChange={setIsAnyDragging}
+                  renderItem={(id, isDragging) => {
+                    const label =
+                      updatedSubCategoriesRef.current.find((sc) => sc.id === id)
+                        ?.name ?? `#${id}`;
+
+                    return (
+                      <SubCategoryChip
+                        label={label}
+                        isDragging={isDragging}
+                        dragging={isAnyDragging}
+                        onDelete={() => deleteSubCategory(id)}
+                      />
+                    );
+                  }}
+                />
+
+                <span className="text-sm text-[var(--text-secondary)] italic">
+                  Dra i underkategorierna för att ändra ordningen
+                </span>
+              </>
             )}
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-between">

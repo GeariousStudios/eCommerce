@@ -5,7 +5,7 @@ import useManage from "@/app/hooks/useManage";
 import { UserFilters, UserItem } from "@/app/types/manageTypes"; // <-- Unique.
 import { deleteContent, fetchContent } from "@/app/apis/manage/usersApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import UserModal from "@/app/components/modals/manage/UserModal"; // <-- Unique.
+import UserModal from "@/app/components/modals/developer/UserModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { LockClosedIcon, WifiIcon } from "@heroicons/react/20/solid";
@@ -154,7 +154,7 @@ const UsersClient = (props: Props) => {
             {item.roles.map((role, i) => (
               <span
                 key={i}
-                className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-orange)]" : role === "Developer" ? "bg-[var(--badge-mint)]" : role === "Master" ? "bg-[var(--badge-purple)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
+                className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)]" : role === "Developer" ? "bg-[var(--badge-two)]" : role === "Reporter" ? "bg-[var(--badge-three)]" : role === "Master" ? "bg-[var(--badge-four)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
               >
                 {role}
               </span>
@@ -246,7 +246,7 @@ const UsersClient = (props: Props) => {
           {item.roles.map((role, i) => (
             <span
               key={i}
-              className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-orange)]" : role === "Developer" ? "bg-[var(--badge-mint)]" : role === "Master" ? "bg-[var(--badge-purple)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
+              className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)]" : role === "Developer" ? "bg-[var(--badge-two)]" : role === "Reporter" ? "bg-[var(--badge-three)]" : role === "Master" ? "bg-[var(--badge-four)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
             >
               {role}
             </span>
@@ -258,7 +258,7 @@ const UsersClient = (props: Props) => {
     {
       key: "isLocked",
       label: "Status",
-      sortingItem: "isLocked",
+      sortingItem: "status",
       labelAsc: "låsta konton",
       labelDesc: "upplåsta konton",
       classNameAddition: "w-[100px] min-w-[100px]",
@@ -298,6 +298,17 @@ const UsersClient = (props: Props) => {
       });
     },
 
+    showReporters: filters.roles?.includes("Reporter") ?? false,
+    setShowReporters: (val: boolean) => {
+      setFilters((prev) => {
+        const prevRoles = prev.roles ?? [];
+        const roles = val
+          ? Array.from(new Set([...prevRoles, "Reporter"]))
+          : prevRoles.filter((r) => r !== "Reporter");
+        return { ...prev, roles };
+      });
+    },
+
     showLocked: filters.isLocked === true,
     setShowLocked: (val: boolean) => {
       setFilters((prev) => ({ ...prev, isLocked: val ? true : undefined }));
@@ -319,13 +330,19 @@ const UsersClient = (props: Props) => {
           label: "Admin",
           isSelected: filterControls.showAdmins,
           setSelected: filterControls.setShowAdmins,
-          count: counts?.admin,
+          count: counts?.adminCount,
         },
         {
           label: "Developer",
           isSelected: filterControls.showDevelopers,
           setSelected: filterControls.setShowDevelopers,
-          count: counts?.developer,
+          count: counts?.developerCount,
+        },
+        {
+          label: "Reporter",
+          isSelected: filterControls.showReporters,
+          setSelected: filterControls.setShowReporters,
+          count: counts?.reporterCount,
         },
       ],
     },
@@ -337,13 +354,13 @@ const UsersClient = (props: Props) => {
           label: "Låsta konton",
           isSelected: filterControls.showLocked,
           setSelected: filterControls.setShowLocked,
-          count: counts?.locked,
+          count: counts?.status?.["Locked"] ?? 0,
         },
         {
           label: "Upplåsta konton",
           isSelected: filterControls.showUnlocked,
           setSelected: filterControls.setShowUnlocked,
-          count: counts?.unlocked,
+          count: counts?.status?.["Unlocked"] ?? 0,
         },
       ],
     },

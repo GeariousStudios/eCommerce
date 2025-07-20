@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 const useAuthStatus = () => {
   // --- VARIABLES ---
+  // --- Refs ---
+  const isLoggedInRef = useRef<boolean | null>(null);
+
   // --- States ---
   const [isLoadingAuthStatus, setIsLoadingAuthStatus] = useState<
     boolean | null
@@ -17,8 +21,8 @@ const useAuthStatus = () => {
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   // --- Other variables ---
+  const pathname = usePathname();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const token = localStorage.getItem("token");
 
   const resetInfo = () => {
     setUserRoles([]);
@@ -27,10 +31,14 @@ const useAuthStatus = () => {
     setFirstName("");
     setLastName("");
     setEmail("");
+    setIsLoggedIn(false);
   };
 
   /* --- BACKEND --- */
   const fetchAuthData = async () => {
+    const token = localStorage.getItem("token");
+    const wasLoggedIn = isLoggedInRef.current;
+
     try {
       setIsLoadingAuthStatus(true);
 
@@ -40,14 +48,12 @@ const useAuthStatus = () => {
 
       // --- Return if not connected ---
       if (!connectionResponse.ok) {
-        setIsLoggedIn(false);
         resetInfo();
         return;
       }
 
       // --- Return if not logged in ---
       if (!token) {
-        setIsLoggedIn(false);
         resetInfo();
         return;
       }
@@ -60,14 +66,25 @@ const useAuthStatus = () => {
       });
 
       if (!loginResponse.ok) {
-        setIsLoggedIn(false);
+        if (wasLoggedIn) {
+          location.reload();
+          return;
+        }
+
         resetInfo();
         return;
       }
 
       const loginResult = await loginResponse.json();
       const loggedIn = loginResult.isLoggedIn === true;
+
+      if (wasLoggedIn === true && loggedIn === false) {
+        location.reload();
+        return;
+      }
+
       setIsLoggedIn(loggedIn);
+      isLoggedInRef.current = loggedIn;
 
       // --- User info ---
       if (loggedIn) {
@@ -78,6 +95,11 @@ const useAuthStatus = () => {
         });
 
         if (!infoResponse.ok) {
+          if (wasLoggedIn) {
+            location.reload();
+            return;
+          }
+
           resetInfo();
           return;
         }
@@ -93,9 +115,8 @@ const useAuthStatus = () => {
         resetInfo();
       }
     } catch (err) {
-      setIsConnected(false);
-      setIsLoggedIn(false);
       resetInfo();
+      setIsConnected(false);
     } finally {
       setIsLoadingAuthStatus(false);
       setIsAuthReady(true);
@@ -104,12 +125,14 @@ const useAuthStatus = () => {
 
   useEffect(() => {
     fetchAuthData();
-  }, []);
+  }, [pathname]);
+  
 
   return {
     isLoggedIn,
     isAdmin: userRoles.includes("Admin"),
     isDev: userRoles.includes("Developer"),
+    isReporter: userRoles.includes("Reporter"),
     isConnected,
     isAuthReady,
     username,

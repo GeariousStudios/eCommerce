@@ -3,9 +3,14 @@
 import { useToast } from "../../../components/toast/ToastProvider";
 import useManage from "@/app/hooks/useManage";
 import { UnitGroupFilters, UnitGroupItem } from "@/app/types/manageTypes"; // <-- Unique.
-import { deleteContent, fetchContent } from "@/app/apis/manage/unitGroupsApi"; // <-- Unique.
+import {
+  deleteContent,
+  fetchContent,
+  fetchUnits,
+  UnitOption,
+} from "@/app/apis/manage/unitGroupsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import UnitGroupModal from "@/app/components/modals/manage/UnitGroupModal"; // <-- Unique.
+import UnitGroupModal from "@/app/components/modals/report/UnitGroupModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
@@ -74,7 +79,7 @@ const UnitGroupsClient = (props: Props) => {
           counts: result.counts,
         };
       } catch (err: any) {
-        notify("error", err.message || "Kunde inte hämta enhetsgrupper"); // <-- Unique.
+        notify("error", err.message || "Kunde inte hämta grupper"); // <-- Unique.
         return {
           items: [],
           total: 0,
@@ -88,6 +93,19 @@ const UnitGroupsClient = (props: Props) => {
   );
 
   const { notify } = useToast();
+
+  // --- FETCH UNITS INITIALIZATION (Unique) ---
+  const [units, setUnits] = useState<UnitOption[]>([]);
+  useEffect(() => {
+    fetchUnits()
+      .then(setUnits)
+      .catch((err) => notify("error", String(err)));
+  }, []);
+
+  const nameCounts = units.reduce<Record<string, number>>((acc, unit) => {
+    acc[unit.name] = (acc[unit.name] ?? 0) + 1;
+    return acc;
+  }, {});
 
   // --- TOGGLE MODAL(S) ---
   // --- Delete ---
@@ -107,7 +125,7 @@ const UnitGroupsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", "Enhetsgrupp borttagen!", 4000); // <-- Unique.
+      notify("success", "Grupp borttagen!", 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -125,12 +143,23 @@ const UnitGroupsClient = (props: Props) => {
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Status: </span>
-            <span
-              className={`${badgeClass} ${item.hasUnits ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-max-[104px] w-[104px] text-[var(--text-main-reverse)]`}
-            >
-              {item.hasUnits ? "Används" : "Används inte"}
-            </span>
+            <span className="w-full font-semibold">Används av enheter:</span>
+            {item.units.length === 0 ? (
+              <span className="-mt-2">-</span>
+            ) : (
+              (item.units ?? []).map((unit, i) => {
+                const label = unit.name;
+
+                return (
+                  <span
+                    key={i}
+                    className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                  >
+                    {label}
+                  </span>
+                );
+              })
+            )}
           </div>
         </div>
       ),
@@ -181,19 +210,26 @@ const UnitGroupsClient = (props: Props) => {
       responsivePriority: 0,
     },
     {
-      key: "hasUnits",
-      label: "Status",
-      sortingItem: "hasUnits",
-      labelAsc: "används",
-      labelDesc: "används inte",
-      classNameAddition: "w-[132px] min-w-[132px]",
-      childClassNameAddition: "w-[104px] min-w-[104px]",
+      key: "units",
+      label: "Används av enheter",
+      sortingItem: "unitcount",
+      labelAsc: "antal enheter (stigande)",
+      labelDesc: "antal enheter (fallande)",
       getValue: (item: UnitGroupItem) => (
-        <span
-          className={`${badgeClass} ${item.hasUnits ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
-        >
-          {item.hasUnits ? "Används" : "Används inte"}
-        </span>
+        <div className="flex flex-wrap gap-2">
+          {(item.units ?? []).map((unit, i) => {
+            const label = unit.name;
+
+            return (
+              <span
+                key={i}
+                className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+              >
+                {label}
+              </span>
+            );
+          })}
+        </div>
       ),
       responsivePriority: 1,
     },
@@ -201,19 +237,13 @@ const UnitGroupsClient = (props: Props) => {
 
   // --- Filter Controls (Unique) ---
   const filterControls = {
-    showHasUnits: filters.hasUnits === true,
-    setShowHasUnits: (val: boolean) => {
+    selectedUnits: filters.unitIds ?? [],
+    setUnitSelected: (unitId: number, val: boolean) => {
       setFilters((prev) => ({
         ...prev,
-        hasUnits: val ? true : undefined,
-      }));
-    },
-
-    showNoUnits: filters.hasUnits === false,
-    setShowNoUnits: (val: boolean) => {
-      setFilters((prev) => ({
-        ...prev,
-        hasUnits: val ? false : undefined,
+        unitIds: val
+          ? [...(prev.unitIds ?? []), unitId]
+          : (prev.unitIds ?? []).filter((id) => id !== unitId),
       }));
     },
   };
@@ -221,29 +251,33 @@ const UnitGroupsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: "Status",
+      label: "Används av enheter",
       breakpoint: "ml",
-      options: [
-        {
-          label: "Används",
-          isSelected: filterControls.showHasUnits,
-          setSelected: filterControls.setShowHasUnits,
-          count: counts?.hasUnits,
-        },
-        {
-          label: "Används inte",
-          isSelected: filterControls.showNoUnits,
-          setSelected: filterControls.setShowNoUnits,
-          count: counts?.noUnits,
-        },
-      ],
+      options: units.map((unit) => {
+        const label = unit.name;
+
+        return {
+          label,
+          isSelected: filterControls.selectedUnits.includes(unit.id),
+          setSelected: (val: boolean) =>
+            filterControls.setUnitSelected(unit.id, val),
+          count: counts?.unitCount?.[unit.id],
+        };
+      }),
     },
   ];
+
+  // const anySelectedInUse = () => {
+  //   // <-- Unique.
+  //   return items.some(
+  //     (item) => deletingItemIds.includes(item.id) && item.hasUnits,
+  //   );
+  // };
 
   return (
     <>
       <ManageBase<UnitGroupItem> // <-- Unique.
-        itemName="enhetsgrupp" // <-- Unique.
+        itemName="grupp" // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}
@@ -298,6 +332,7 @@ const UnitGroupsClient = (props: Props) => {
           setDeletingItemIds([]);
           setSelectedItems([]);
         }}
+        // confirmOnDelete={anySelectedInUse()} // <-- Unique.
       />
     </>
   );

@@ -10,7 +10,7 @@ import {
   UnitOption,
 } from "@/app/apis/manage/categoriesApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import CategoryModal from "@/app/components/modals/manage/CategoryModal"; // <-- Unique.
+import CategoryModal from "@/app/components/modals/report/CategoryModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
@@ -102,6 +102,11 @@ const CategoriesClient = (props: Props) => {
       .catch((err) => notify("error", String(err)));
   }, []);
 
+  const nameCounts = units.reduce<Record<string, number>>((acc, unit) => {
+    acc[unit.name] = (acc[unit.name] ?? 0) + 1;
+    return acc;
+  }, {});
+
   // --- TOGGLE MODAL(S) ---
   // --- Delete ---
   const toggleDeleteItemModal = (itemIds: number[] = []) => {
@@ -155,18 +160,27 @@ const CategoriesClient = (props: Props) => {
             </>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Enheter med åtkomst:</span>
+            <span className="w-full font-semibold">Används av enheter:</span>
             {item.units.length === 0 ? (
               <span className="-mt-2">-</span>
             ) : (
-              item.units.map((unit, i) => (
-                <span
-                  key={i}
-                  className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
-                >
-                  {unit}
-                </span>
-              ))
+              item.units.map((unit, i) => {
+                const isDuplicate = nameCounts[unit.name] > 1;
+                const matchingUnit = units.find((u) => u.name === unit.name);
+                const label =
+                  isDuplicate && matchingUnit?.unitGroupName
+                    ? `${unit.name} (${matchingUnit.unitGroupName})`
+                    : unit.name;
+
+                return (
+                  <span
+                    key={i}
+                    className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                  >
+                    {label}
+                  </span>
+                );
+              })
             )}
           </div>
         </div>
@@ -221,8 +235,8 @@ const CategoriesClient = (props: Props) => {
       key: "subCategories",
       label: "Underkategorier",
       sortingItem: "subCategories",
-      labelAsc: "underkategorier Ö-A",
-      labelDesc: "underkategorier A-Ö",
+      labelAsc: "antal underkategorier (stigande)",
+      labelDesc: "antal underkategorier (fallande)",
       getValue: (item: CategoryItem) => (
         <div className="flex flex-wrap gap-2">
           {item.subCategories.map((category, i) => (
@@ -239,23 +253,32 @@ const CategoriesClient = (props: Props) => {
     },
     {
       key: "units",
-      label: "Enheter med åtkomst",
-      sortingItem: "unitCount",
+      label: "Används av enheter",
+      sortingItem: "unitcount",
       labelAsc: "antal enheter (stigande)",
       labelDesc: "antal enheter (fallande)",
       getValue: (item: CategoryItem) => (
         <div className="flex flex-wrap gap-2">
-          {item.units.map((unit, i) => (
-            <span
-              key={i}
-              className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
-            >
-              {unit}
-            </span>
-          ))}
+          {item.units.map((unit, i) => {
+            const isDuplicate = nameCounts[unit.name] > 1;
+            const matchingUnit = units.find((u) => u.name === unit.name);
+            const label =
+              isDuplicate && matchingUnit?.unitGroupName
+                ? `${unit.name} (${matchingUnit.unitGroupName})`
+                : unit.name;
+
+            return (
+              <span
+                key={i}
+                className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+              >
+                {label}
+              </span>
+            );
+          })}
         </div>
       ),
-      responsivePriority: 2,
+      responsivePriority: 3,
     },
   ];
 
@@ -278,16 +301,13 @@ const CategoriesClient = (props: Props) => {
     },
 
     selectedUnits: filters.unitIds ?? [],
-    toggleUnit: (unitId: number) => {
-      setFilters((prev) => {
-        const units = new Set(prev.unitIds ?? []);
-        if (units.has(unitId)) {
-          units.delete(unitId);
-        } else {
-          units.add(unitId);
-        }
-        return { ...prev, unitIds: Array.from(units) };
-      });
+    setUnitSelected: (unitId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        unitIds: val
+          ? [...(prev.unitIds ?? []), unitId]
+          : (prev.unitIds ?? []).filter((id) => id !== unitId),
+      }));
     },
   };
 
@@ -301,27 +321,43 @@ const CategoriesClient = (props: Props) => {
           label: "Har underkategorier",
           isSelected: filterControls.showWithSubCategories,
           setSelected: filterControls.setShowWithSubCategories,
-          count: counts?.withSubCategories,
+          count: counts?.subCategoryCount?.["With"] ?? 0,
         },
         {
           label: "Inga underkategorier",
           isSelected: filterControls.showWithoutSubCategories,
           setSelected: filterControls.setShowWithoutSubCategories,
-          count: counts?.withoutSubCategories,
+          count: counts?.subCategoryCount?.["Without"] ?? 0,
         },
       ],
     },
     {
-      label: "Enheter med åtkomst",
+      label: "Används av enheter",
       breakpoint: "lg",
-      options: units.map((unit) => ({
-        label: unit.name,
-        isSelected: filterControls.selectedUnits.includes(unit.id),
-        setSelected: () => filterControls.toggleUnit(unit.id),
-        count: counts?.unitCount?.[unit.name],
-      })),
+      options: units.map((unit) => {
+        const isDuplicate = nameCounts[unit.name] > 1;
+        const label =
+          isDuplicate && unit.unitGroupName
+            ? `${unit.name} (${unit.unitGroupName})`
+            : unit.name;
+
+        return {
+          label,
+          isSelected: filterControls.selectedUnits.includes(unit.id),
+          setSelected: (val: boolean) =>
+            filterControls.setUnitSelected(unit.id, val),
+          count: counts?.unitCount?.[unit.id],
+        };
+      }),
     },
   ];
+
+  // const anySelectedInUse = () => {
+  //   // <-- Unique.
+  //   return items.some(
+  //     (item) => deletingItemIds.includes(item.id) && item.units.length > 0,
+  //   );
+  // };
 
   return (
     <>
@@ -381,6 +417,7 @@ const CategoriesClient = (props: Props) => {
           setDeletingItemIds([]);
           setSelectedItems([]);
         }}
+        // confirmOnDelete={anySelectedInUse()} // <-- Unique.
       />
     </>
   );

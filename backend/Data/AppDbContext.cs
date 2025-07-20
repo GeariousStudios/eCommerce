@@ -1,4 +1,5 @@
 using backend.Models;
+using backend.Models.ManyToMany;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data
@@ -14,23 +15,20 @@ namespace backend.Data
         public DbSet<NewsType> NewsTypes { get; set; }
         public DbSet<Unit> Units { get; set; }
         public DbSet<UnitGroup> UnitGroups { get; set; }
+        public DbSet<UnitColumn> UnitColumns { get; set; }
+        public DbSet<UnitCell> UnitCells { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<SubCategory> SubCategories { get; set; }
+        public DbSet<Report> Reports { get; set; }
+
+        // Many-to-many.
+        public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
+        public DbSet<UnitToCategory> UnitToCategories { get; set; }
+        public DbSet<CategoryToSubCategory> CategoryToSubCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            // Category <-> Unit many-to-many relationship.
-            modelBuilder.Entity<Category>().HasMany(c => c.Units).WithMany();
-
-            // Category <-> SubCategory 1-to-1 relationship.
-            modelBuilder
-                .Entity<Category>()
-                .HasMany(c => c.SubCategories)
-                .WithOne(sc => sc.Category)
-                .HasForeignKey(sc => sc.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             // UserPreferences <-> User 1-to-1 relationship.
             modelBuilder
@@ -38,6 +36,71 @@ namespace backend.Data
                 .HasOne(u => u.UserPreferences)
                 .WithOne(up => up.User)
                 .HasForeignKey<UserPreferences>(up => up.UserId);
+
+            // Unit <-> UnitColumn many-to-many relationship.
+            modelBuilder
+                .Entity<UnitToUnitColumn>()
+                .HasKey(uuc => new { uuc.UnitId, uuc.UnitColumnId });
+
+            modelBuilder
+                .Entity<UnitToUnitColumn>()
+                .HasOne(uuc => uuc.Unit)
+                .WithMany(u => u.UnitToUnitColumns)
+                .HasForeignKey(uuc => uuc.UnitId);
+
+            modelBuilder
+                .Entity<UnitToUnitColumn>()
+                .HasOne(uuc => uuc.UnitColumn)
+                .WithMany(uc => uc.UnitToUnitColumns)
+                .HasForeignKey(uuc => uuc.UnitColumnId);
+
+            // Unit <-> Category many-to-many relationship.
+            modelBuilder.Entity<UnitToCategory>().HasKey(uc => new { uc.UnitId, uc.CategoryId });
+
+            modelBuilder
+                .Entity<UnitToCategory>()
+                .HasOne(uc => uc.Unit)
+                .WithMany(u => u.UnitToCategories)
+                .HasForeignKey(uc => uc.UnitId);
+
+            modelBuilder
+                .Entity<UnitToCategory>()
+                .HasOne(uc => uc.Category)
+                .WithMany(c => c.UnitToCategories)
+                .HasForeignKey(uc => uc.CategoryId);
+
+            // Category <-> SubCategory many-to-many relationship.
+            modelBuilder
+                .Entity<CategoryToSubCategory>()
+                .HasKey(cs => new { cs.CategoryId, cs.SubCategoryId });
+
+            modelBuilder
+                .Entity<CategoryToSubCategory>()
+                .HasOne(cs => cs.Category)
+                .WithMany(s => s.CategoryToSubCategories)
+                .HasForeignKey(cs => cs.CategoryId);
+
+            modelBuilder
+                .Entity<CategoryToSubCategory>()
+                .HasOne(cs => cs.SubCategory)
+                .WithMany(c => c.CategoryToSubCategories)
+                .HasForeignKey(cs => cs.SubCategoryId);
+
+            // Unit -> UnitCells 1-to-many relationship.
+            modelBuilder
+                .Entity<Unit>()
+                .HasMany(u => u.UnitCells)
+                .WithOne(uc => uc.Unit)
+                .HasForeignKey(uc => uc.UnitId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unit -> Reports 1-to-many relationship.
+            modelBuilder
+                .Entity<Unit>()
+                .HasMany(u => u.Reports)
+                .WithOne(r => r.Unit)
+                .HasForeignKey(r => r.UnitId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // UserRoles stored as string (None, User, Manager, Admin) in DB instead of bit (0, 1, 2, 4).
             // This is to allow refactoring of enum values.

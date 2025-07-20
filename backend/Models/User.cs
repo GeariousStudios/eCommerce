@@ -38,7 +38,8 @@ namespace backend.Models
         None = 0,
         Admin = 1,
         Developer = 2,
-        Master = 4,
+        Reporter = 4,
+        Master = 8,
     }
 
     public class UserPreferences

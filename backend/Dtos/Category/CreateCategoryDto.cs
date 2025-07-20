@@ -7,6 +7,7 @@ namespace backend.Dtos.Category
         [Required(ErrorMessage = "[1] Fyll i namn")]
         public string Name { get; set; } = string.Empty;
         public int[]? Units { get; set; }
-        public string[]? SubCategories { get; set; }
+        public int[]? SubCategoryIds { get; set; }
+        public string[]? NewSubCategoryNames { get; set; }
     }
 }

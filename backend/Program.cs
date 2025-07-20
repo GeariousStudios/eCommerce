@@ -1,7 +1,9 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json.Serialization;
 using backend.Data;
 using backend.Models;
+using backend.Models.ManyToMany;
 using backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -32,7 +34,13 @@ builder
         };
     });
 
-builder.Services.AddControllers();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+;
 builder.Services.AddEndpointsApiExplorer();
 
 /* --- Home --- */
@@ -136,7 +144,7 @@ using (var scope = app.Services.CreateScope())
             TypeName = newsTypeTwo.Name,
             Headline = "Välkommen hit!",
             Content =
-                "<div><p>Den här webbapplikationen är ett exempel på mina färdigheter inom frontend- och backendutveckling. <br>Klicka runt och upptäck!<p><br></p><p><strong>I dagsläget kan du göra följande:</strong></p><p><br></p><p><strong style='color: rgb(102, 163, 224);'>ANVÄNDARE</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Logga in</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Ändra enkla inställningar kopplat till ditt konto</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Hantera användare</li></ol><p><br></p><p><strong style='color: rgb(102, 163, 224);'>RAPPORTERING</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa enhetsgrupp (t.ex. Fyllning)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa enhet och knyta till enhetsgrupp (t.ex. Lina I)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Skapa kategori + underkategorier och knyta dessa till enheter (t.ex. Innerpåstillverkning -&gt; Maskindel 1A)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Gå in på din enhet (och i framtiden även kunna rapportera såklart)</li></ol><p><br></p><p><strong style='color: rgb(102, 163, 224);'>ÖVRIGT</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Administrera nyheter här på startsidan</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Mörkt/ljust tema</li></ol><p><br></p><p><strong>Detta är lite av vad som finns i loopen:</strong></p><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Göra en första draft på rapporteringsvy</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Klickbara breadcrumbs (fler navigeringsvyer)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>En redigerbar navbar (kunna lägga till favoriter osv)</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Påbörja pulsvyn</li></ol></div>",
+                "<div><p>Den här webbapplikationen är ett exempel på mina färdigheter inom frontend- och backendutveckling.</p><p>Klicka runt och upptäck!</p><p><br></p><p><strong>I dagsläget kan du göra följande:</strong></p><p><br></p><p><strong style=color: rgb(102, 163, 224);>ANVÄNDARE</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Logga in</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra enkla inställningar kopplat till ditt konto</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Hantera användare</li></ol><p><br></p><p><strong style=color: rgb(102, 163, 224);>RAPPORTERING</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa grupp (t.ex. Fyllning)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kategori + underkategorier (t.ex. Innerpåstillverkning -&gt; Maskindel 1A)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kolumner (t.ex. Antal producerade)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa enhet (t.ex. Lina I) och knyta samtliga ovan till enheten</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Gå in på din enhet och rapportera</li></ol><p><br></p><p><strong style=color: rgb(102, 163, 224);>ÖVRIGT</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Administrera nyheter här på startsidan</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Mörkt/ljust tema</li></ol><p><br></p><p><strong>Detta är lite av vad som finns i loopen:</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Fortsätta jobba på rapporteringsvyn!</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Klickbara breadcrumbs (fler navigeringsvyer)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>En redigerbar navbar (kunna lägga till favoriter osv)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Påbörja pulsvyn</li></ol></div>",
             Author = "Liam Fritzson",
             AuthorId = 1996,
         };
@@ -147,7 +155,7 @@ using (var scope = app.Services.CreateScope())
             FirstName = "John",
             LastName = "Smith",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("master"),
-            Roles = UserRoles.Developer | UserRoles.Admin | UserRoles.Master,
+            Roles = UserRoles.Developer | UserRoles.Admin | UserRoles.Reporter | UserRoles.Master,
             UserPreferences = new UserPreferences { Theme = "dark" },
             CreationDate = DateTime.UtcNow,
         };
@@ -158,7 +166,7 @@ using (var scope = app.Services.CreateScope())
             FirstName = "Test",
             LastName = "Testström",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("tester1"),
-            Roles = UserRoles.Developer,
+            Roles = UserRoles.Admin | UserRoles.Reporter,
             UserPreferences = new UserPreferences { },
             CreationDate = DateTime.UtcNow,
         };
@@ -167,13 +175,46 @@ using (var scope = app.Services.CreateScope())
         {
             Username = "tester2",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("tester2"),
-            Roles = UserRoles.Admin,
+            Roles = UserRoles.Reporter,
             IsLocked = true,
             UserPreferences = new UserPreferences { },
             CreationDate = DateTime.UtcNow,
         };
 
-        var unitGroupOne = new UnitGroup
+        var column = new UnitColumn
+        {
+            Name = "Antal producerade",
+            DataType = UnitColumnDataType.Number,
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "Liam Fritzson",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "Liam Fritzson",
+        };
+        db.UnitColumns.Add(column);
+        await db.SaveChangesAsync();
+
+        var subCategory1 = new SubCategory { Name = "Maskindel 1A" };
+        var subCategory2 = new SubCategory { Name = "Maskindel 2B" };
+        db.SubCategories.AddRange(subCategory1, subCategory2);
+        await db.SaveChangesAsync();
+
+        var category = new Category
+        {
+            Name = "Innerpåstillverkning",
+            CategoryToSubCategories = new List<CategoryToSubCategory>
+            {
+                new CategoryToSubCategory { SubCategoryId = subCategory1.Id, Order = 0 },
+                new CategoryToSubCategory { SubCategoryId = subCategory2.Id, Order = 1 },
+            },
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "Liam Fritzson",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "Liam Fritzson",
+        };
+        db.Categories.Add(category);
+        await db.SaveChangesAsync();
+
+        var unitGroup = new UnitGroup
         {
             Name = "Fyllning",
             Units = new List<Unit>(),
@@ -182,75 +223,36 @@ using (var scope = app.Services.CreateScope())
             UpdateDate = DateTime.UtcNow,
             UpdatedBy = "Liam Fritzson",
         };
+        db.UnitGroups.Add(unitGroup);
+        await db.SaveChangesAsync();
 
-        var unitOne = new Unit
+        var unit = new Unit
         {
             Name = "Lina I",
             IsHidden = false,
-            UnitGroup = unitGroupOne,
+            UnitGroupId = unitGroup.Id,
+            UnitGroup = unitGroup,
             CreationDate = DateTime.UtcNow,
             CreatedBy = "Liam Fritzson",
             UpdateDate = DateTime.UtcNow,
             UpdatedBy = "Liam Fritzson",
         };
+        db.Units.Add(unit);
+        await db.SaveChangesAsync();
 
-        var unitTwo = new Unit
-        {
-            Name = "Lina II",
-            IsHidden = false,
-            UnitGroup = unitGroupOne,
-            CreationDate = DateTime.UtcNow,
-            CreatedBy = "Liam Fritzson",
-            UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "Liam Fritzson",
-        };
+        db.UnitToCategories.Add(new UnitToCategory { UnitId = unit.Id, CategoryId = category.Id });
 
-        var unitGroupTwo = new UnitGroup
-        {
-            Name = "Paketering",
-            Units = new List<Unit>(),
-            CreationDate = DateTime.UtcNow,
-            CreatedBy = "Liam Fritzson",
-            UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "Liam Fritzson",
-        };
-
-        var unitThree = new Unit
-        {
-            Name = "Lina IV",
-            IsHidden = false,
-            UnitGroup = unitGroupTwo,
-            CreationDate = DateTime.UtcNow,
-            CreatedBy = "Liam Fritzson",
-            UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "Liam Fritzson",
-        };
-
-        var categoryOne = new Category
-        {
-            Name = "Innerpåstillverkning",
-            Units = new List<Unit> { unitOne, unitTwo },
-            SubCategories = new List<SubCategory>
+        db.UnitToUnitColumns.Add(
+            new UnitToUnitColumn
             {
-                new SubCategory { Name = "Maskindel 1A" },
-                new SubCategory { Name = "Maskindel 2B" },
-            },
-            CreationDate = DateTime.UtcNow,
-            CreatedBy = "Liam Fritzson",
-            UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "Liam Fritzson",
-        };
-
-        unitGroupOne.Units.Add(unitOne);
-        unitGroupOne.Units.Add(unitTwo);
-        unitGroupTwo.Units.Add(unitThree);
+                UnitId = unit.Id,
+                UnitColumnId = column.Id,
+                Order = 0,
+            }
+        );
 
         db.News.AddRange(newsItemOne, newsItemTwo, newsItemThree);
         db.Users.AddRange(masterUser, testUserOne, testUserTwo);
-
-        db.UnitGroups.AddRange(unitGroupOne, unitGroupTwo);
-
-        db.Categories.Add(categoryOne);
 
         await db.SaveChangesAsync();
     }

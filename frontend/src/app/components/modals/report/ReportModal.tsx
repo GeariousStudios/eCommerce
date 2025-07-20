@@ -1,0 +1,1101 @@
+"use client";
+
+import { FormEvent, useEffect, useRef, useState } from "react";
+import {
+  ExclamationTriangleIcon,
+  PlusIcon as OutlinePlusIcon,
+  XMarkIcon as OutlineXMarkIcon,
+  PencilIcon as OutlinePencilIcon,
+  TrashIcon as OutlineTrashIcon,
+} from "@heroicons/react/24/outline";
+import {
+  PlusIcon as SolidPlusIcon,
+  XMarkIcon as SolidXMarkIcon,
+  PencilIcon as SolidPencilIcon,
+  TrashIcon as SolidTrashIcon,
+} from "@heroicons/react/24/solid";
+import Input from "../../common/Input";
+import { useToast } from "../../toast/ToastProvider";
+import {
+  buttonPrimaryClass,
+  buttonSecondaryClass,
+  iconButtonPrimaryClass,
+} from "@/app/styles/buttonClasses";
+import ModalBase, { ModalBaseHandle } from "../ModalBase";
+import SingleDropdown from "../../common/SingleDropdown";
+import RichTextEditor, {
+  RichTextEditorRef,
+} from "../../richTextEditor/RichTextEditor";
+import HoverIcon from "../../common/HoverIcon";
+import { localDateTimeToUtcIso } from "@/app/helpers/timeUtils";
+import { start } from "repl";
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  unitId: number | undefined;
+  selectedDate: string;
+  selectedHour: string;
+  onItemUpdated: () => void;
+  reportId?: number;
+};
+
+type Report = {
+  id?: string;
+  categoryId?: string;
+  subCategoryId?: string;
+  categoryName?: string;
+  subCategoryName?: string;
+  startTime: string;
+  stopTime: string;
+  content: string;
+  hour?: string;
+  date?: string;
+};
+
+type Category = {
+  id: string;
+  name: string;
+  subCategories: {
+    id: string;
+    name: string;
+    categoryId: string;
+  }[];
+};
+
+const ReportModal = (props: Props) => {
+  // --- VARIABLES ---
+  // --- Refs ---
+  const editorRef = useRef<RichTextEditorRef>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const modalRef = useRef<ModalBaseHandle>(null);
+  const hasSetInitialContent = useRef(false);
+
+  // --- States ---
+  const [isDirty, setIsDirty] = useState(false);
+
+  const [reports, setReports] = useState<Report[]>([]);
+  const [currentReport, setCurrentReport] = useState<Report>({
+    id: "",
+    categoryId: "",
+    subCategoryId: "",
+    startTime: "",
+    stopTime: "",
+    content: "",
+    hour: "",
+    date: "",
+  });
+  const [isAddingReport, setIsAddingReport] = useState(false);
+  const [isEditingExistingReport, setIsEditingExistingReport] = useState(false);
+  const [canAddReport, setCanAddReport] = useState(true);
+  const [hiddenReportId, setHiddenReportId] = useState<string | null>(null);
+  const [backupEditedReport, setBackupEditedReport] = useState<Report | null>(
+    null,
+  );
+  const [conflictReport, setConflictReport] = useState<Report | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [isEditorReady, setIsEditorReady] = useState(false);
+
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedHour, setSelectedHour] = useState<string>("");
+
+  // --- Other ---
+  const token = localStorage.getItem("token");
+  const { notify } = useToast();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  // --- Fetch data ---
+  useEffect(() => {
+    if (!props.unitId || !selectedHour || !selectedDate) {
+      return;
+    }
+
+    checkIfCanAddReport();
+    fetchReportsForHour();
+  }, [props.unitId, selectedHour, selectedDate]);
+
+  useEffect(() => {
+    if (!props.isOpen) {
+      return;
+    }
+
+    fetchCategories();
+
+    setReports([]);
+    setSelectedHour("");
+    setSelectedDate(props.selectedDate);
+    setIsAddingReport(false);
+    setCanAddReport(true);
+    setIsDirty(false);
+    hasSetInitialContent.current = false;
+    editorRef.current?.setContent("");
+
+    if (!isEditingExistingReport) {
+      setCurrentReport({
+        categoryId: "",
+        subCategoryId: "",
+        categoryName: "",
+        subCategoryName: "",
+        startTime: "",
+        stopTime: "",
+        content: "",
+        hour: "",
+        date: "",
+      });
+
+      setIsEditingExistingReport(false);
+    }
+
+    const initEditExistingReport = async () => {
+      if (
+        !props.reportId ||
+        !props.unitId ||
+        !props.selectedDate ||
+        !props.selectedHour
+      ) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`${apiUrl}/report/${props.reportId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          notify("error", result.message);
+          return;
+        }
+
+        setSelectedHour(props.selectedHour);
+        setSelectedDate(props.selectedDate);
+
+        setIsEditingExistingReport(true);
+        setIsAddingReport(true);
+        setBackupEditedReport({ ...result, id: String(result.id) });
+        setHiddenReportId(result.id);
+      } catch (err) {
+        notify("error", "Kunde inte hämta rapport");
+      }
+    };
+
+    initEditExistingReport();
+  }, [props.isOpen]);
+
+  // --- POPULATE FIELDS ---
+  useEffect(() => {
+    if (isEditingExistingReport && backupEditedReport) {
+      setCurrentReport({
+        ...backupEditedReport,
+        startTime: backupEditedReport.startTime.slice(0, 16),
+        stopTime: backupEditedReport.stopTime
+          ? backupEditedReport.stopTime.slice(0, 16)
+          : "",
+        content: backupEditedReport.content ?? "",
+      });
+      editorRef.current?.setContent(backupEditedReport.content);
+      hasSetInitialContent.current = true;
+    }
+  }, [isEditingExistingReport, backupEditedReport]);
+
+  // --- BACKEND ---
+  // --- Fetch reports ---
+  const fetchReportsForHour = async () => {
+    if (!selectedHour) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${apiUrl}/report/${props.unitId}/${selectedDate}/${selectedHour}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+        return;
+      }
+
+      setReports(result);
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  // --- Fetch categories ---
+  const fetchCategories = async () => {
+    if (!props.unitId) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${apiUrl}/category/unit/${props.unitId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result.message);
+        return;
+      }
+
+      if (Array.isArray(result) && result.length > 0) {
+        setCategories(result);
+      }
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  // --- Report check and create/update ---
+  const checkIfCanAddReport = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/report/can-add/${props.unitId}/${selectedDate}/${selectedHour}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+      setCanAddReport(result.canAdd);
+      setConflictReport(result.conflictReport || null);
+    } catch (err) {
+      notify("error", "Kunde inte kontrollera rapportstatus");
+    }
+  };
+
+  const createReport = async (report: Report) => {
+    const startTimeIso = localDateTimeToUtcIso(report.startTime);
+    const date = report.startTime.slice(0, 10);
+    const hour = parseInt(report.startTime.slice(11, 13), 10);
+
+    try {
+      const response = await fetch(`${apiUrl}/report/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          unitId: props.unitId,
+          startTime: startTimeIso,
+          stopTime: report.stopTime || null,
+          categoryId: report.categoryId || null,
+          subCategoryId: report.subCategoryId || null,
+          categoryName: report.categoryName || null,
+          subCategoryName: report.subCategoryName || null,
+          content: report.content,
+          date,
+          hour,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return false;
+      }
+
+      if (!response.ok) {
+        notify("error", result.message);
+        return false;
+      }
+
+      await fetchReportsForHour();
+      props.onItemUpdated();
+      notify("success", "Störningsrapport skapad");
+      return true;
+    } catch (err) {
+      notify("error", String(err));
+      return false;
+    }
+  };
+
+  const updateReport = async (report: Report) => {
+    const startTimeIso = localDateTimeToUtcIso(report.startTime);
+    const date = report.startTime.slice(0, 10);
+    const hour = parseInt(report.startTime.slice(11, 13), 10);
+
+    try {
+      const response = await fetch(`${apiUrl}/report/update/${report.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          startTime: startTimeIso,
+          stopTime: report.stopTime || null,
+          categoryId: report.categoryId || null,
+          subCategoryId: report.subCategoryId || null,
+          content: report.content,
+          date,
+          hour,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return false;
+      }
+
+      if (!response.ok) {
+        notify("error", result.message);
+        return false;
+      }
+
+      await fetchReportsForHour();
+      props.onItemUpdated();
+      notify("success", "Störningsrapport uppdaterad");
+      return true;
+    } catch (err) {
+      notify("error", String(err));
+      return false;
+    }
+  };
+
+  const deleteReport = async (id: string) => {
+    try {
+      const response = await fetch(`${apiUrl}/report/delete/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      if (!response.ok) {
+        notify("error", result.message);
+        return;
+      }
+
+      setReports((prev) => prev.filter((r) => r.id !== id));
+      props.onItemUpdated();
+      notify("success", "Störningsrapport raderad");
+    } catch (err) {
+      notify("error", String(err));
+    }
+  };
+
+  // --- Update reports ---
+  const updateReports = async (event: FormEvent) => {
+    event.preventDefault();
+    props.onClose();
+    props.onItemUpdated();
+    notify("success", "Ändringar sparade!", 4000);
+  };
+
+  const handleSaveClick = () => {
+    resetReport();
+    formRef.current?.requestSubmit();
+  };
+
+  const handleConflictClick = async () => {
+    if (!conflictReport?.id) {
+      return;
+    }
+
+    const newDate = String(conflictReport.date);
+    const newHour = String(conflictReport.hour);
+
+    setSelectedDate(newDate);
+    setSelectedHour(newHour);
+
+    await fetchReportsForHour();
+
+    setIsEditingExistingReport(true);
+    setIsAddingReport(true);
+    setBackupEditedReport(conflictReport);
+    setHiddenReportId(conflictReport.id ?? null);
+  };
+
+  const resetReport = () => {
+    if (isEditingExistingReport && backupEditedReport) {
+      setReports((prev) =>
+        prev.map((r) =>
+          r.id === backupEditedReport.id ? backupEditedReport : r,
+        ),
+      );
+    }
+
+    setValidationError(null);
+    setIsEditingExistingReport(false);
+    setIsAddingReport(false);
+    setHiddenReportId(null);
+    setCurrentReport({
+      id: "",
+      categoryId: "",
+      subCategoryId: "",
+      categoryName: "",
+      subCategoryName: "",
+      startTime: "",
+      stopTime: "",
+      content: "",
+      hour: "",
+      date: "",
+    });
+    editorRef.current?.setContent("");
+  };
+
+  // --- Validate times ---
+  const validateTimes = async (
+    unitId: number,
+    startTime: string,
+    stopTime: string,
+    reportId?: string,
+  ) => {
+    try {
+      const params = new URLSearchParams({
+        unitId: String(unitId),
+        startTime: localDateTimeToUtcIso(startTime),
+        ...(stopTime ? { stopTime: localDateTimeToUtcIso(stopTime) } : {}),
+        ...(reportId ? { reportId: String(reportId) } : {}),
+      });
+
+      const response = await fetch(`${apiUrl}/report/validate-time?${params}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Serverfel: ${text || response.status}`);
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (err) {
+      return { isValid: true };
+    }
+  };
+
+  useEffect(() => {
+    // const delay = setTimeout(() => {
+    if (!currentReport.startTime || !props.unitId) {
+      return;
+    }
+
+    validateTimes(
+      props.unitId,
+      currentReport.startTime,
+      currentReport.stopTime,
+      currentReport.id ? currentReport.id : "",
+    ).then((result) => {
+      if (!result.isValid) {
+        setValidationError(result.message);
+      } else {
+        setValidationError(null);
+      }
+    });
+    // }, 50);
+
+    // return () => clearTimeout(delay);
+  }, [currentReport.startTime, currentReport.stopTime, currentReport.id]);
+
+  // --- SET/UNSET IS DIRTY ---
+  useEffect(() => {
+    const dirty =
+      currentReport.content !== "" && currentReport.content !== "<p><br></p>";
+
+    setIsDirty(dirty);
+  }, [currentReport.content]);
+
+  useEffect(() => {
+    if (
+      !editorRef.current ||
+      !isEditorReady ||
+      !currentReport.content ||
+      hasSetInitialContent.current
+    ) {
+      return;
+    }
+
+    try {
+      editorRef.current.setContent(currentReport.content);
+      hasSetInitialContent.current = true;
+    } catch (e) {}
+  }, [isEditorReady, currentReport.content]);
+
+  // --- 24 HOUR LIST / 59 MINUTE LIST ---
+  const hourOptions = Array.from({ length: 24 }, (_, i) => ({
+    label: `${i.toString().padStart(2, "0")}:00`,
+    value: String(i),
+  }));
+
+  return (
+    <>
+      {!isEditorReady && (
+        <div style={{ display: "none" }}>
+          <RichTextEditor
+            ref={editorRef}
+            value=""
+            name="editor-preload"
+            onReady={() => setIsEditorReady(true)}
+            onChange={() => {}}
+          />
+        </div>
+      )}
+
+      {props.isOpen && (
+        <ModalBase
+          ref={modalRef}
+          isOpen={props.isOpen}
+          onClose={() => {
+            resetReport();
+            props.onClose();
+          }}
+          icon={ExclamationTriangleIcon}
+          label={`Rapportera störningar: ${selectedDate}`}
+          confirmOnClose
+          isDirty={isDirty}
+        >
+          <form
+            ref={formRef}
+            className="relative flex flex-col gap-4"
+            onSubmit={(e) => updateReports(e)}
+          >
+            <div className="flex items-center gap-2">
+              <hr className="w-12 text-[var(--border-tertiary)]" />
+              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                1. Välj tidpunkt
+              </h3>
+              <hr className="w-full text-[var(--border-tertiary)]" />
+            </div>
+
+            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+              <Input
+                type="date"
+                id="selectedDate"
+                label="Datum"
+                value={selectedDate}
+                onChange={(val) => setSelectedDate(String(val))}
+                onModal
+                required
+              />
+
+              <SingleDropdown
+                id="selectedHour"
+                label={"Timme"}
+                value={selectedHour}
+                onChange={(val) => setSelectedHour(String(val))}
+                onModal
+                required
+                options={hourOptions}
+              />
+            </div>
+
+            <div
+              className={`${selectedHour && selectedDate ? "" : "pointer-events-none opacity-25"} flex flex-col gap-4`}
+            >
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  2. Rapportera störningar
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <div className="flex flex-col justify-between gap-6">
+                {!canAddReport &&
+                conflictReport?.startTime.slice(0, 13) !==
+                  `${selectedDate}T${selectedHour.padStart(2, "0")}` ? (
+                  <div className="text-sm text-[var(--note-error)]">
+                    Det finns ett tidigare stopp som blockerar nya rapporter:
+                    <br />
+                    <button
+                      type="button"
+                      onClick={handleConflictClick}
+                      className="cursor-pointer font-semibold underline"
+                    >
+                      {conflictReport?.stopTime ? (
+                        `${conflictReport?.startTime.slice(0, 16).replace("T", " ")} - ${conflictReport.stopTime.slice(0, 16).replace("T", " ")}`
+                      ) : (
+                        <>
+                          {" "}
+                          {conflictReport?.startTime
+                            .slice(0, 16)
+                            .replace("T", " ")}{" "}
+                          - <span className="">pågående</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                ) : (
+                  !isAddingReport && (
+                    <button
+                      className={`${buttonSecondaryClass} flex w-full items-center justify-center gap-2`}
+                      onClick={() => {
+                        setCurrentReport({
+                          id: "",
+                          categoryId: "",
+                          subCategoryId: "",
+                          categoryName: "",
+                          subCategoryName: "",
+                          content: "",
+                          startTime: `${selectedDate}T${selectedHour.padStart(2, "0")}:00`,
+                          stopTime: "",
+                          hour: "",
+                          date: "",
+                        });
+                        setIsAddingReport(true);
+                      }}
+                      tabIndex={selectedHour && selectedDate ? 0 : -1}
+                    >
+                      <HoverIcon
+                        outline={OutlinePlusIcon}
+                        solid={SolidPlusIcon}
+                        className="h-6 min-h-6 w-6 min-w-6"
+                      />
+                      Rapportera ny störning
+                    </button>
+                  )
+                )}
+
+                {!isAddingReport && reports.length > 0 && (
+                  <>
+                    {reports
+                      .filter((r) => r.id !== hiddenReportId)
+                      .map((report, index) => (
+                        <div
+                          key={report.id}
+                          className="relative flex flex-col gap-4 rounded-2xl bg-[var(--bg-main)] p-4"
+                        >
+                          {report.categoryId && (
+                            <div className="flex justify-between gap-4">
+                              <div className="mb-2 flex flex-col">
+                                <div className="font-bold">
+                                  {categories.find(
+                                    (c) =>
+                                      String(c.id) ===
+                                      String(report.categoryId),
+                                  )?.name ?? report.categoryName}
+                                </div>
+
+                                <div className="text-sm text-[var(--text-secondary)]">
+                                  {report.subCategoryId && (
+                                    <>
+                                      {categories
+                                        .find(
+                                          (c) =>
+                                            String(c.id) ===
+                                            String(report.categoryId),
+                                        )
+                                        ?.subCategories.find(
+                                          (sc) =>
+                                            String(sc.id) ===
+                                            String(report.subCategoryId),
+                                        )?.name ?? report.subCategoryName}
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  className={`${iconButtonPrimaryClass}`}
+                                  onClick={() => {
+                                    setIsEditingExistingReport(true);
+                                    setIsAddingReport(true);
+                                    setBackupEditedReport(report);
+                                  }}
+                                  tabIndex={
+                                    selectedHour && selectedDate ? 0 : -1
+                                  }
+                                >
+                                  <HoverIcon
+                                    outline={OutlinePencilIcon}
+                                    solid={SolidPencilIcon}
+                                    className="h-6 min-h-6 w-6 min-w-6"
+                                  />
+                                </button>
+                                <button
+                                  type="button"
+                                  className={`${iconButtonPrimaryClass}`}
+                                  onClick={() => {
+                                    if (report.id) {
+                                      deleteReport(report.id);
+                                    } else {
+                                      setReports((prev) =>
+                                        prev.filter((_, i) => i !== index),
+                                      );
+                                    }
+                                  }}
+                                  tabIndex={
+                                    selectedHour && selectedDate ? 0 : -1
+                                  }
+                                >
+                                  <HoverIcon
+                                    outline={OutlineTrashIcon}
+                                    solid={SolidTrashIcon}
+                                    className="h-6 min-h-6 w-6 min-w-6"
+                                  />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          <div className="flex justify-between gap-2">
+                            <div className="text-sm text-[var(--text-secondary)]">
+                              {report.stopTime ? (
+                                `${report.startTime?.slice(0, 16).replace("T", " ")} - ${report.stopTime?.slice(0, 16).replace("T", " ")}`
+                              ) : (
+                                <>
+                                  {report.startTime
+                                    ?.slice(0, 16)
+                                    .replace("T", " ")}{" "}
+                                  -{" "}
+                                  <span className="font-semibold text-[var(--note-error)]">
+                                    pågående
+                                  </span>
+                                </>
+                              )}
+                            </div>
+
+                            {!report.categoryId && (
+                              <div className="flex gap-2">
+                                <button
+                                  type="button"
+                                  className={`${iconButtonPrimaryClass}`}
+                                  onClick={() => {
+                                    setIsEditingExistingReport(true);
+                                    setBackupEditedReport(report);
+                                    setIsAddingReport(true);
+                                    if (report.id) {
+                                      setHiddenReportId(report.id);
+                                    }
+                                  }}
+                                >
+                                  <HoverIcon
+                                    outline={OutlinePencilIcon}
+                                    solid={SolidPencilIcon}
+                                    className="h-6 min-h-6 w-6 min-w-6"
+                                  />
+                                </button>
+                                <button
+                                  type="button"
+                                  className={`${iconButtonPrimaryClass}`}
+                                  onClick={() => {
+                                    if (report.id) {
+                                      deleteReport(report.id);
+                                    } else {
+                                      setReports((prev) =>
+                                        prev.filter((_, i) => i !== index),
+                                      );
+                                    }
+                                  }}
+                                >
+                                  <HoverIcon
+                                    outline={OutlineTrashIcon}
+                                    solid={SolidTrashIcon}
+                                    className="h-6 min-h-6 w-6 min-w-6"
+                                  />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                          <div
+                            className="text-sm break-all"
+                            dangerouslySetInnerHTML={{ __html: report.content }}
+                          />
+                        </div>
+                      ))}
+                  </>
+                )}
+
+                {isAddingReport && (
+                  <div className="flex flex-col gap-6 rounded-2xl bg-[var(--bg-main)] p-6">
+                    {categories.length > 0 && (
+                      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-4">
+                        <SingleDropdown
+                          id="category"
+                          label="Kategori"
+                          value={
+                            currentReport.categoryId
+                              ? String(currentReport.categoryId)
+                              : ""
+                          }
+                          options={[
+                            { label: "\u00A0", value: "" },
+                            ...categories.map((c) => ({
+                              label: c.name,
+                              value: String(c.id),
+                            })),
+                          ]}
+                          onChange={(val) =>
+                            setCurrentReport((prev) => ({
+                              ...prev,
+                              categoryId: String(val),
+                              categoryName:
+                                categories.find((c) => String(c.id) === val)
+                                  ?.name ?? "",
+                            }))
+                          }
+                        />
+                        {(() => {
+                          const selectedCategory = categories.find(
+                            (c) =>
+                              String(c.id) === String(currentReport.categoryId),
+                          );
+                          const subs = selectedCategory?.subCategories ?? [];
+
+                          return subs.length > 0 ? (
+                            <SingleDropdown
+                              id="subCategory"
+                              label="Underkategori"
+                              value={
+                                currentReport.subCategoryId
+                                  ? String(currentReport.subCategoryId)
+                                  : ""
+                              }
+                              onChange={(val) =>
+                                setCurrentReport((prev) => ({
+                                  ...prev,
+                                  subCategoryId: String(val),
+                                  subCategoryName:
+                                    categories
+                                      .find(
+                                        (c) =>
+                                          String(c.id) ===
+                                          String(currentReport.categoryId),
+                                      )
+                                      ?.subCategories.find(
+                                        (sc) => String(sc.id) === val,
+                                      )?.name ?? "",
+                                }))
+                              }
+                              options={[
+                                { label: "\u00A0", value: "" },
+                                ...subs
+                                  .filter(
+                                    (sc) =>
+                                      sc.id !== undefined &&
+                                      sc.name !== undefined,
+                                  )
+                                  .map((sc) => ({
+                                    label: sc.name,
+                                    value: String(sc.id),
+                                  })),
+                              ]}
+                            />
+                          ) : null;
+                        })()}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col gap-4 sm:flex-row">
+                      <Input
+                        type="datetime-local"
+                        id="startTime"
+                        label="Starttid"
+                        value={
+                          currentReport.startTime === ""
+                            ? `${selectedDate}T${selectedHour.padStart(2, "0")}:00`
+                            : String(currentReport.startTime)
+                        }
+                        onChange={(val) => {
+                          const start = String(val);
+                          setCurrentReport((prev) => {
+                            const updated = {
+                              ...prev,
+                              startTime: start,
+                            };
+
+                            validateTimes(
+                              props.unitId!,
+                              updated.startTime,
+                              updated.stopTime,
+                              updated.id ? updated.id : undefined,
+                            ).then((result) => {
+                              if (!result.isValid) {
+                                setValidationError(result.message);
+                              } else {
+                                setValidationError(null);
+                              }
+                            });
+                            return updated;
+                          });
+                        }}
+                      />
+
+                      <Input
+                        type="datetime-local"
+                        id="stopTime"
+                        label="Sluttid"
+                        value={String(currentReport.stopTime) || ""}
+                        onChange={(val) => {
+                          const stop = String(val);
+                          setCurrentReport((prev) => {
+                            const updated = {
+                              ...prev,
+                              stopTime: stop,
+                            };
+
+                            validateTimes(
+                              props.unitId!,
+                              updated.startTime,
+                              updated.stopTime,
+                              updated.id ? updated.id : undefined,
+                            ).then((result) => {
+                              if (!result.isValid) {
+                                setValidationError(result.message);
+                              } else {
+                                setValidationError(null);
+                              }
+                            });
+                            return updated;
+                          });
+                        }}
+                      />
+                    </div>
+
+                    <RichTextEditor
+                      ref={editorRef}
+                      value={currentReport.content}
+                      name="content"
+                      onReady={() => {
+                        setIsEditorReady(true);
+                      }}
+                      onChange={(val) =>
+                        setCurrentReport((prev) => ({
+                          ...prev,
+                          content: val,
+                        }))
+                      }
+                    />
+
+                    <div className="flex flex-col gap-4 sm:flex-row">
+                      <button
+                        className={`${buttonPrimaryClass} flex w-full items-center justify-center gap-2`}
+                        type="button"
+                        onClick={async () => {
+                          if (!currentReport.startTime) {
+                            currentReport.startTime = `${selectedDate}T${selectedHour.padStart(2, "0")}:00`;
+                          }
+
+                          let success = false;
+
+                          if (currentReport.id) {
+                            success = await updateReport(currentReport);
+                          } else {
+                            success = await createReport(currentReport);
+                          }
+
+                          if (!success) {
+                            return;
+                          }
+
+                          setCurrentReport({
+                            categoryId: "",
+                            subCategoryId: "",
+                            categoryName: "",
+                            subCategoryName: "",
+                            startTime: "",
+                            stopTime: "",
+                            content: "",
+                            id: "",
+                          });
+                          editorRef.current?.setContent("");
+
+                          setHiddenReportId(null);
+                          setIsAddingReport(false);
+                        }}
+                        disabled={!!validationError}
+                      >
+                        <HoverIcon
+                          outline={OutlinePlusIcon}
+                          solid={SolidPlusIcon}
+                          className="h-6 min-h-6 w-6 min-w-6"
+                        />
+                        Spara
+                      </button>
+
+                      <button
+                        className={`${buttonSecondaryClass} flex w-full items-center justify-center gap-2`}
+                        type="button"
+                        onClick={() => {
+                          resetReport();
+                        }}
+                      >
+                        <HoverIcon
+                          outline={OutlineXMarkIcon}
+                          solid={SolidXMarkIcon}
+                          className="h-6 min-h-6 w-6 min-w-6"
+                        />
+                        Ångra
+                      </button>
+                    </div>
+
+                    {validationError && (
+                      <div
+                        className="-mt-3 text-sm font-semibold text-[var(--note-error)]"
+                        dangerouslySetInnerHTML={{
+                          __html: validationError,
+                        }}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-2 mb-2 flex items-center">
+              <hr className="w-full text-[var(--border-tertiary)]" />
+            </div>
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+              <button
+                type="button"
+                onClick={handleSaveClick}
+                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+              >
+                Spara
+              </button>
+              <button
+                type="button"
+                onClick={() => modalRef.current?.requestClose()}
+                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+              >
+                Ångra
+              </button>
+            </div>
+          </form>
+        </ModalBase>
+      )}
+    </>
+  );
+};
+
+export default ReportModal;

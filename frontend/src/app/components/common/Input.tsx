@@ -17,6 +17,7 @@ type InputProps = {
   readOnly?: boolean;
   autoComplete?: string;
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  tabIndex?: number;
 };
 
 const isDarkTheme = () => {
@@ -45,12 +46,15 @@ const Input = ({
   readOnly = false,
   autoComplete = "on",
   onKeyDown,
+  tabIndex,
 }: InputProps & { icon?: ReactNode }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isCheckbox = type === "checkbox";
   const isRadio = type === "radio";
   const isDate = type === "date";
+  const isTime = type === "time";
+  const isDateTime = type === "datetime-local";
   const isDisabled = id === "disabled";
 
   const [showPassword, setShowPassword] = useState(false);
@@ -58,7 +62,7 @@ const Input = ({
   return (
     <>
       <div
-        className={`${isCheckbox || isRadio ? "flex items-center justify-center" : "w-full"} ${isDarkTheme() ? "dark-calender" : ""} relative`}
+        className={`${isCheckbox || isRadio ? "flex items-center justify-center" : "w-full"} ${isDarkTheme() ? "dark-calendar" : ""} relative`}
       >
         <input
           ref={(el) => {
@@ -77,18 +81,43 @@ const Input = ({
           }
           value={isCheckbox || isRadio ? undefined : value}
           checked={isCheckbox || isRadio ? checked : undefined}
-          onChange={(e) =>
-            onChange &&
-            (isCheckbox || isRadio
-              ? onChange(e.target.checked)
-              : onChange(e.target.value))
-          }
+          onChange={(e) => {
+            if (type === "number") {
+              const clean = e.target.value
+                .replace(/^0+(?!$)/, "")
+                .replace(/[^\d]/g, "");
+
+              if (clean === "") {
+                onChange?.("");
+              } else {
+                const numericValue = Math.min(Number(clean), 999999);
+                onChange?.(numericValue.toString());
+              }
+            } else {
+              if (isCheckbox || isRadio) {
+                onChange?.(e.target.checked);
+              } else {
+                onChange?.(e.target.value);
+              }
+            }
+          }}
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer rounded border-1 border-[var(--border-main)] p-2`}
+          className={`${isDisabled ? "!cursor-not-allowed opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer rounded border-1 border-[var(--border-tertiary)] p-2`}
           readOnly={readOnly}
           autoComplete={autoComplete}
-          onKeyDown={onKeyDown}
+          onKeyDown={(e) => {
+            if (type === "number") {
+              const blocked = ["e", "E", "+", "-", ",", "."];
+              if (blocked.includes(e.key)) {
+                e.preventDefault();
+              }
+            }
+            onKeyDown?.(e);
+          }}
+          min={type === "number" ? 0 : undefined}
+          max={type === "number" ? 999999 : undefined}
+          tabIndex={tabIndex ?? 0}
         />
         {icon && (
           <div className="pointer-events-none absolute top-1/2 left-4 flex h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
@@ -117,7 +146,7 @@ const Input = ({
           (!isCheckbox && !isRadio ? (
             <label
               htmlFor={id}
-              className={`${isDate ? "top-0" : "top-[60%]"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-[var(--slow)] select-none`}
+              className={`${isDate || isTime || isDateTime ? "top-0" : "top-[60%]"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-[var(--slow)] select-none`}
             >
               {label}
               {required && <span className="ml-1 text-red-700">*</span>}
@@ -127,18 +156,7 @@ const Input = ({
               htmlFor={id}
               className={`${readOnly ? "!pointer-events-none" : ""} ${isDisabled ? "opacity-25" : "opacity-100"} cursor-pointer`}
             >
-              <input
-                type={type}
-                id={id}
-                name={id}
-                checked={checked}
-                onChange={(e) => onChange?.(e.target.checked)}
-                required={required}
-                spellCheck={spellCheck}
-                className="invisible"
-                readOnly={readOnly}
-              />
-              <span className="relative inline-block">
+              <span className="relative ml-4 inline-block">
                 <span
                   className={`${checked ? "" : "!font-normal"} !text-[var(--text-main)]`}
                 >

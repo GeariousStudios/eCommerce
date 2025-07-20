@@ -16,7 +16,7 @@ const UnitClient = dynamic(() => import("./UnitClient"), {
 });
 
 const UnitWrapper = () => {
-  const { isAuthReady, isConnected } = useAuthStatus();
+  const { isAuthReady, isConnected, isLoggedIn, isReporter } = useAuthStatus();
 
   if (!isAuthReady) {
     return (
@@ -24,7 +24,14 @@ const UnitWrapper = () => {
     );
   }
 
-  return <UnitClient isConnected={isConnected} isAuthReady={isAuthReady} />;
+  return (
+    <UnitClient
+      isConnected={isConnected}
+      isAuthReady={isAuthReady}
+      isLoggedIn={isLoggedIn}
+      isReporter={isReporter}
+    />
+  );
 };
 
 export default UnitWrapper;

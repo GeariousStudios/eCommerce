@@ -17,6 +17,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@heroicons/react": "^2.2.0",
+    "@microsoft/signalr": "^8.0.7",
     "@radix-ui/react-tooltip": "^1.2.6",
     "focus-trap-react": "^11.0.3",
     "lucide-react": "^0.503.0",

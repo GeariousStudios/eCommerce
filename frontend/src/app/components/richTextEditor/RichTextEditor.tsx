@@ -12,7 +12,7 @@ import {
   useState,
 } from "react";
 
-const QuillWrapper = dynamic(() => import("../helpers/QuillWrapper"), {
+const QuillWrapper = dynamic(() => import("../../helpers/QuillWrapper"), {
   ssr: false,
 }) as ForwardRefExoticComponent<
   ReactQuill["props"] & React.RefAttributes<ReactQuill>
@@ -95,7 +95,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     };
 
     return (
-      <div className="focus-within:z-[calc(var(--z-base)+1) relative w-full rounded border-1 border-[var(--border-main)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
+      <div className="focus-within:z-[calc(var(--z-base)+1) relative w-full rounded border-1 border-[var(--border-tertiary)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
         <QuillWrapper
           ref={quillRef}
           id="quill-editor"

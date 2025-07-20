@@ -7,11 +7,8 @@ import { useToast } from "../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
-  switchClass,
-  switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
-import SingleDropdown from "../../common/SingleDropdown";
 
 type Props = {
   isOpen: boolean;
@@ -20,12 +17,7 @@ type Props = {
   onItemUpdated: () => void;
 };
 
-type UnitGroupOptions = {
-  id: number;
-  name: string;
-};
-
-const UnitModal = (props: Props) => {
+const UnitGroupModal = (props: Props) => {
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
@@ -33,13 +25,8 @@ const UnitModal = (props: Props) => {
 
   // --- States ---
   const [name, setName] = useState("");
-  const [unitGroup, setUnitGroup] = useState("");
-  const [isHidden, setIsHidden] = useState(false);
-  const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
 
   const [originalName, setOriginalName] = useState("");
-  const [originalUnitGroup, setOriginalUnitGroup] = useState("");
-  const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
@@ -52,29 +39,21 @@ const UnitModal = (props: Props) => {
       return;
     }
 
-    fetchUnitGroups();
-
     if (props.itemId !== null && props.itemId !== undefined) {
-      fetchUnit();
+      fetchUnitGroup();
     } else {
       setName("");
       setOriginalName("");
-
-      setUnitGroup("");
-      setOriginalUnitGroup("");
-
-      setIsHidden(false);
-      setOriginalIsHidden(false);
     }
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add unit ---
-  const addUnit = async (event: FormEvent) => {
+  // --- Add unit group ---
+  const addUnitGroup = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/unit/create`, {
+      const response = await fetch(`${apiUrl}/unit-group/create`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,8 +61,6 @@ const UnitModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
-          unitGroupId: parseInt(unitGroup),
-          isHidden,
         }),
       });
 
@@ -130,84 +107,60 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", <>Enhet skapad!</>, 4000);
+      notify("success", "Grupp skapad!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
   };
 
-  // --- Fetch unit groups ---
-  const fetchUnitGroups = async () => {
+  // --- Fetch unit group ---
+  const fetchUnitGroup = async () => {
     try {
-      const response = await fetch(`${apiUrl}/unit-group`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/unit-group/fetch/${props.itemId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       const result = await response.json();
 
       if (!response.ok) {
         notify("error", result.message);
       } else {
-        setUnitGroups(result.items);
+        fillUnitGroupData(result);
       }
     } catch (err) {
       notify("error", String(err));
     }
   };
 
-  // --- Fetch unit ---
-  const fetchUnit = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/unit/fetch/${props.itemId}`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        notify("error", result.message);
-      } else {
-        fillUnitData(result);
-      }
-    } catch (err) {
-      notify("error", String(err));
-    }
-  };
-
-  const fillUnitData = (result: any) => {
+  const fillUnitGroupData = (result: any) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
-
-    setUnitGroup(String(result.unitGroupId ?? ""));
-    setOriginalUnitGroup(String(result.unitGroupId ?? ""));
-
-    setIsHidden(result.isHidden ?? false);
-    setOriginalIsHidden(result.isHidden ?? false);
   };
 
-  // --- Update unit ---
-  const updateUnit = async (event: FormEvent) => {
+  // --- Update unit group ---
+  const updateUnitGroup = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/unit/update/${props.itemId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/unit-group/update/${props.itemId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+          }),
         },
-        body: JSON.stringify({
-          name,
-          unitGroupId: parseInt(unitGroup),
-          isHidden,
-        }),
-      });
+      );
 
       if (response.status === 401) {
         localStorage.removeItem("token");
@@ -252,7 +205,7 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", "Enhet uppdaterad!", 4000);
+      notify("success", "Grupp uppdaterad!", 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -265,25 +218,15 @@ const UnitModal = (props: Props) => {
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
-      const dirty = name !== "" || unitGroup !== "" || isHidden !== false;
+      const dirty = name !== "";
 
       setIsDirty(dirty);
       return;
     }
 
-    const dirty =
-      name !== originalName ||
-      unitGroup !== originalUnitGroup ||
-      isHidden !== originalIsHidden;
+    const dirty = name !== originalName;
     setIsDirty(dirty);
-  }, [
-    name,
-    unitGroup,
-    isHidden,
-    originalName,
-    originalUnitGroup,
-    originalIsHidden,
-  ]);
+  }, [name, originalName]);
 
   return (
     <>
@@ -293,24 +236,28 @@ const UnitModal = (props: Props) => {
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={props.itemId ? "Redigera enhet" : "Lägg till ny enhet"}
+          label={
+            props.itemId ? "Redigera grupp" : "Lägg till ny grupp"
+          }
           confirmOnClose
           isDirty={isDirty}
         >
           <form
             ref={formRef}
             className="relative flex flex-col gap-4"
-            onSubmit={(e) => (props.itemId ? updateUnit(e) : addUnit(e))}
+            onSubmit={(e) =>
+              props.itemId ? updateUnitGroup(e) : addUnitGroup(e)
+            }
           >
             <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
+              <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Uppgifter om enheten
+                Uppgifter om gruppen
               </h3>
-              <hr className="w-full text-[var(--border-main)]" />
+              <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
               <Input
                 label={"Namn"}
                 value={name}
@@ -320,46 +267,6 @@ const UnitModal = (props: Props) => {
                 onModal={true}
                 required
               />
-
-              <div className="flex w-full gap-6 sm:gap-4">
-                <SingleDropdown
-                  id="unitGroup"
-                  label={"Enhetsgrupp"}
-                  value={unitGroup}
-                  onChange={(val) => {
-                    setUnitGroup(String(val));
-                  }}
-                  onModal
-                  required
-                  options={unitGroups.map((ug) => ({
-                    label: ug.name,
-                    value: String(ug.id),
-                  }))}
-                />
-              </div>
-            </div>
-
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Status
-              </h3>
-              <hr className="w-full text-[var(--border-main)]" />
-            </div>
-
-            <div className="mb-8 flex justify-between gap-4">
-              <div className="flex items-center gap-2 truncate">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isHidden}
-                  className={switchClass(isHidden)}
-                  onClick={() => setIsHidden((prev) => !prev)}
-                >
-                  <div className={switchKnobClass(isHidden)} />
-                </button>
-                <span className="mb-0.5">Göm enhet</span>
-              </div>
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
@@ -385,4 +292,4 @@ const UnitModal = (props: Props) => {
   );
 };
 
-export default UnitModal;
+export default UnitGroupModal;

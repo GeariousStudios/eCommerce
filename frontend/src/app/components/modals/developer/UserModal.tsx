@@ -348,11 +348,11 @@ const UserModal = (props: Props) => {
             onSubmit={(e) => (props.itemId ? updateUser(e) : addUser(e))}
           >
             <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
+              <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
                 Inloggningsuppgifter
               </h3>
-              <hr className="w-full text-[var(--border-main)]" />
+              <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
@@ -391,11 +391,11 @@ const UserModal = (props: Props) => {
             </div>
 
             <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
+              <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
                 Användardetaljer
               </h3>
-              <hr className="w-full text-[var(--border-main)]" />
+              <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
@@ -427,11 +427,11 @@ const UserModal = (props: Props) => {
             </div>
 
             <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
+              <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
                 Behörigheter och status
               </h3>
-              <hr className="w-full text-[var(--border-main)]" />
+              <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="mb-8 flex justify-between gap-4">
@@ -441,6 +441,7 @@ const UserModal = (props: Props) => {
                   options={[
                     { label: "Admin", value: "Admin" },
                     { label: "Developer", value: "Developer" },
+                    { label: "Reporter", value: "Reporter" },
                   ]}
                   value={newUserRoles}
                   onChange={setNewUserRoles}

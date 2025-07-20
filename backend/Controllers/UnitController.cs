@@ -1,6 +1,7 @@
 using backend.Data;
 using backend.Dtos.Unit;
 using backend.Models;
+using backend.Models.ManyToMany;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,13 +27,20 @@ namespace backend.Controllers
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
             [FromQuery] int[]? unitGroupIds = null,
+            [FromQuery] int[]? unitColumnIds = null,
+            [FromQuery] int[]? categoryIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            IQueryable<Unit> query = _context.Units.Include(u => u.UnitGroup);
+            IQueryable<Unit> query = _context
+                .Units.Include(u => u.UnitGroup)
+                .Include(u => u.UnitToUnitColumns)
+                .ThenInclude(uuc => uuc.UnitColumn)
+                .Include(u => u.UnitToCategories)
+                .ThenInclude(uc => uc.Category);
 
             if (isHidden.HasValue)
             {
@@ -42,6 +50,20 @@ namespace backend.Controllers
             if (unitGroupIds?.Any() == true)
             {
                 query = query.Where(u => unitGroupIds.Contains(u.UnitGroupId));
+            }
+
+            if (unitColumnIds?.Any() == true)
+            {
+                query = query.Where(u =>
+                    u.UnitToUnitColumns.Any(uuc => unitColumnIds.Contains(uuc.UnitColumnId))
+                );
+            }
+
+            if (categoryIds?.Any() == true)
+            {
+                query = query.Where(u =>
+                    u.UnitToCategories.Any(uc => categoryIds.Contains(uc.CategoryId))
+                );
             }
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -59,8 +81,18 @@ namespace backend.Controllers
                     ? query.OrderByDescending(u => u.Name.ToLower())
                     : query.OrderBy(u => u.Name.ToLower()),
                 "unitgroupname" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.UnitGroup.Name).ThenBy(u => u.Name)
-                    : query.OrderBy(u => u.UnitGroup.Name).ThenBy(u => u.Name),
+                    ? query.OrderByDescending(u => u.UnitGroup.Name).ThenBy(u => u.Name.ToLower())
+                    : query.OrderBy(u => u.UnitGroup.Name).ThenBy(u => u.Name.ToLower()),
+                "unitcolumncount" => sortOrder == "desc"
+                    ? query
+                        .OrderByDescending(u => u.UnitToUnitColumns.Count)
+                        .ThenBy(u => u.Name.ToLower())
+                    : query.OrderBy(u => u.UnitToUnitColumns.Count).ThenBy(u => u.Name.ToLower()),
+                "categorycount" => sortOrder == "desc"
+                    ? query
+                        .OrderByDescending(u => u.UnitToCategories.Count)
+                        .ThenBy(u => u.Name.ToLower())
+                    : query.OrderBy(u => u.UnitToCategories.Count).ThenBy(u => u.Name.ToLower()),
                 "ishidden" => sortOrder == "desc"
                     ? query
                         .OrderByDescending(u => u.IsHidden)
@@ -75,17 +107,34 @@ namespace backend.Controllers
                     : query.OrderBy(u => u.Id),
             };
 
-            int totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync();
 
             List<Unit> units;
             units = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            var totalHiddenCount = await _context.Units.CountAsync(u => u.IsHidden);
-            var totalVisibleCount = await _context.Units.CountAsync(u => !u.IsHidden);
-            var totalUnitGroupCounts = _context
+            // Filters.
+            var visibilityCount = new Dictionary<string, int>
+            {
+                ["Visible"] = await _context.Units.CountAsync(u => !u.IsHidden),
+                ["Hidden"] = await _context.Units.CountAsync(u => u.IsHidden),
+            };
+
+            var unitGroupCount = _context
                 .Units.Include(u => u.UnitGroup)
                 .AsEnumerable()
                 .GroupBy(u => u.UnitGroup?.Name ?? "Okänd grupp")
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var unitColumnCount = _context
+                .Units.AsEnumerable()
+                .SelectMany(u => u.UnitToUnitColumns)
+                .GroupBy(uuc => uuc.UnitColumnId)
+                .ToDictionary(g => g.Key, g => g.Count());
+
+            var categoryCount = _context
+                .Units.AsEnumerable()
+                .SelectMany(u => u.UnitToCategories)
+                .GroupBy(uc => uc.CategoryId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
             var result = new
@@ -98,6 +147,14 @@ namespace backend.Controllers
                     IsHidden = u.IsHidden,
                     UnitGroupId = u.UnitGroupId,
                     UnitGroupName = u.UnitGroup.Name ?? "Okänd grupp",
+                    UnitColumnIds = u
+                        .UnitToUnitColumns.OrderBy(x => x.Order)
+                        .Select(x => x.UnitColumnId)
+                        .ToList(),
+                    CategoryIds = u
+                        .UnitToCategories.OrderBy(x => x.Order)
+                        .Select(x => x.CategoryId)
+                        .ToList(),
 
                     // Meta data.
                     CreationDate = u.CreationDate,
@@ -107,9 +164,10 @@ namespace backend.Controllers
                 }),
                 counts = new
                 {
-                    hidden = totalHiddenCount,
-                    visible = totalVisibleCount,
-                    unitGroupCount = totalUnitGroupCounts,
+                    visibilityCount = visibilityCount,
+                    unitGroupCount = unitGroupCount,
+                    unitColumnCount = unitColumnCount,
+                    categoryCount = categoryCount,
                 },
             };
 
@@ -121,6 +179,10 @@ namespace backend.Controllers
         {
             var unit = await _context
                 .Units.Include(u => u.UnitGroup)
+                .Include(u => u.UnitToUnitColumns)
+                .ThenInclude(uuc => uuc.UnitColumn)
+                .Include(u => u.UnitToCategories)
+                .ThenInclude(uc => uc.Category)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unit == null)
@@ -135,6 +197,14 @@ namespace backend.Controllers
                 IsHidden = unit.IsHidden,
                 UnitGroupId = unit.UnitGroupId,
                 UnitGroupName = unit.UnitGroup.Name,
+                UnitColumnIds = unit
+                    .UnitToUnitColumns.OrderBy(uc => uc.Order)
+                    .Select(x => x.UnitColumnId)
+                    .ToList(),
+                CategoryIds = unit
+                    .UnitToCategories.OrderBy(x => x.Order)
+                    .Select(x => x.CategoryId)
+                    .ToList(),
 
                 // Meta data.
                 CreationDate = unit.CreationDate,
@@ -157,12 +227,24 @@ namespace backend.Controllers
                 return NotFound(new { message = "Enheten kunde inte hittas i databasen" });
             }
 
-            // if (unit.InUse)
-            // {
-            //     return BadRequest(new { message = "Kan inte ta bort en enhet som används!" });
-            // }
+            var affectedColumnIds = await _context
+                .UnitCells.Where(uc => uc.UnitId == id)
+                .Select(uc => uc.ColumnId)
+                .Distinct()
+                .ToListAsync();
 
             _context.Units.Remove(unit);
+            await _context.SaveChangesAsync();
+
+            var columnsToUpdate = await _context
+                .UnitColumns.Where(c => affectedColumnIds.Contains(c.Id))
+                .ToListAsync();
+
+            foreach (var column in columnsToUpdate)
+            {
+                column.HasData = await _context.UnitCells.AnyAsync(uc => uc.ColumnId == column.Id);
+            }
+
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Enhet borttagen!" });
@@ -188,7 +270,7 @@ namespace backend.Controllers
 
             if (unitGroup == null)
             {
-                return NotFound(new { message = "Enhetsgruppen kunde inte hittas" });
+                return NotFound(new { message = "Gruppen kunde inte hittas" });
             }
 
             var existingUnit = await _context.Units.FirstOrDefaultAsync(u =>
@@ -198,8 +280,13 @@ namespace backend.Controllers
             if (existingUnit != null && existingUnit.UnitGroupId == unitGroup.Id)
             {
                 return BadRequest(
-                    new { message = "Enhet med detta namn finns redan i samma enhetsgrupp!" }
+                    new { message = "En enhet med detta namn finns redan i samma grupp!" }
                 );
+            }
+
+            if (dto.UnitColumnIds.Count > 4)
+            {
+                return BadRequest(new { message = "En enhet kan ha max 4 kolumner!" });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
@@ -225,6 +312,18 @@ namespace backend.Controllers
                 UpdatedBy = createdBy,
             };
 
+            unit.UnitToUnitColumns = dto
+                .UnitColumnIds.Select(
+                    (colId, index) => new UnitToUnitColumn { UnitColumnId = colId, Order = index }
+                )
+                .ToList();
+
+            unit.UnitToCategories = dto
+                .CategoryIds.Select(
+                    (catId, index) => new UnitToCategory { CategoryId = catId, Order = index }
+                )
+                .ToList();
+
             _context.Units.Add(unit);
             await _context.SaveChangesAsync();
 
@@ -233,6 +332,14 @@ namespace backend.Controllers
                 Name = unit.Name,
                 IsHidden = unit.IsHidden,
                 UnitGroupId = unit.UnitGroupId,
+                UnitColumnIds = unit
+                    .UnitToUnitColumns.OrderBy(x => x.Order)
+                    .Select(x => x.UnitColumnId)
+                    .ToList(),
+                CategoryIds = unit
+                    .UnitToCategories.OrderBy(x => x.Order)
+                    .Select(x => x.CategoryId)
+                    .ToList(),
 
                 // Meta data.
                 CreationDate = unit.CreationDate,
@@ -248,7 +355,10 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUnit(int id, UpdateUnitDto dto)
         {
-            var unit = await _context.Units.FindAsync(id);
+            var unit = await _context
+                .Units.Include(u => u.UnitToUnitColumns)
+                .Include(u => u.UnitToCategories)
+                .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unit == null)
             {
@@ -271,7 +381,7 @@ namespace backend.Controllers
 
             if (unitGroup == null)
             {
-                return NotFound(new { message = "Enhetsgruppen kunde inte hittas" });
+                return NotFound(new { message = "Gruppen kunde inte hittas" });
             }
 
             var existingUnit = await _context.Units.FirstOrDefaultAsync(u =>
@@ -281,8 +391,13 @@ namespace backend.Controllers
             if (existingUnit != null && existingUnit.UnitGroupId == unitGroup.Id)
             {
                 return BadRequest(
-                    new { message = "Enhet med detta namn finns redan i samma enhetsgrupp!" }
+                    new { message = "En enhet med detta namn finns redan i samma grupp!" }
                 );
+            }
+
+            if (dto.UnitColumnIds.Count > 4)
+            {
+                return BadRequest(new { message = "En enhet kan ha max 4 kolumner!" });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
@@ -299,6 +414,46 @@ namespace backend.Controllers
             unit.IsHidden = dto.IsHidden;
             unit.UnitGroup = unitGroup;
 
+            var oldUnitColumnLinks = await _context
+                .UnitToUnitColumns.Where(l => l.UnitId == unit.Id)
+                .ToListAsync();
+
+            _context.UnitToUnitColumns.RemoveRange(oldUnitColumnLinks);
+
+            var newUnitColumnLinks = dto
+                .UnitColumnIds.Select(
+                    (colId, index) =>
+                        new UnitToUnitColumn
+                        {
+                            UnitId = unit.Id,
+                            UnitColumnId = colId,
+                            Order = index,
+                        }
+                )
+                .ToList();
+
+            _context.UnitToUnitColumns.AddRange(newUnitColumnLinks);
+
+            var oldCategoryLinks = await _context
+                .UnitToCategories.Where(l => l.UnitId == unit.Id)
+                .ToListAsync();
+
+            _context.UnitToCategories.RemoveRange(oldCategoryLinks);
+
+            var newUnitCategoryLinks = dto
+                .CategoryIds.Select(
+                    (catId, index) =>
+                        new UnitToCategory
+                        {
+                            UnitId = unit.Id,
+                            CategoryId = catId,
+                            Order = index,
+                        }
+                )
+                .ToList();
+
+            _context.UnitToCategories.AddRange(newUnitCategoryLinks);
+
             // Meta data.
             unit.UpdateDate = now;
             unit.UpdatedBy = updatedBy;
@@ -311,6 +466,14 @@ namespace backend.Controllers
                 Name = unit.Name,
                 IsHidden = unit.IsHidden,
                 UnitGroupId = unit.UnitGroupId,
+                UnitColumnIds = unit
+                    .UnitToUnitColumns.OrderBy(x => x.Order)
+                    .Select(x => x.UnitColumnId)
+                    .ToList(),
+                CategoryIds = unit
+                    .UnitToCategories.OrderBy(x => x.Order)
+                    .Select(x => x.CategoryId)
+                    .ToList(),
 
                 // Meta data.
                 UpdateDate = unit.UpdateDate,

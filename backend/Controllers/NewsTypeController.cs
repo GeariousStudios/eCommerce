@@ -48,7 +48,7 @@ namespace backend.Controllers
                     : query.OrderBy(t => t.Id),
             };
 
-            int totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync();
 
             var newsTypes = await query
                 .Skip((page - 1) * pageSize)
@@ -130,7 +130,7 @@ namespace backend.Controllers
 
             if (existingNewsType != null)
             {
-                return BadRequest(new { message = "Nyhetstyp med detta namn finns redan!" });
+                return BadRequest(new { message = "En nyhetstyp med detta namn finns redan!" });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
@@ -200,7 +200,7 @@ namespace backend.Controllers
 
             if (existingNewsType != null)
             {
-                return BadRequest(new { message = "Nyhetstyp med detta namn finns redan!" });
+                return BadRequest(new { message = "En nyhetstyp med detta namn finns redan!" });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();

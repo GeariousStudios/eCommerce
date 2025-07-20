@@ -1,0 +1,202 @@
+using backend.Data;
+using backend.Dtos.Category;
+using backend.Dtos.SubCategory;
+using backend.Dtos.Unit;
+using backend.Models;
+using backend.Models.ManyToMany;
+using backend.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace backend.Controllers
+{
+    [ApiController]
+    [Authorize(Roles = "Admin")]
+    [Route("subcategory")]
+    public class SubCategoryController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+        private readonly UserService _userService;
+
+        public SubCategoryController(AppDbContext context, UserService userService)
+        {
+            _context = context;
+            _userService = userService;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var subCategories = await _context
+                .SubCategories.OrderBy(sc => sc.Name)
+                .Select(sc => new SubCategoryDto { Id = sc.Id, Name = sc.Name })
+                .ToListAsync();
+
+            return Ok(subCategories);
+        }
+
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> DeleteSubCategory(int id)
+        {
+            var subCategory = await _context
+                .SubCategories.Include(c => c.CategoryToSubCategories)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (subCategory == null)
+            {
+                return NotFound(new { message = "Underkategorin kunde inte hittas i databasen" });
+            }
+
+            // var isInUse =
+            //     subCategory.CategoryToSubCategories != null
+            //     && subCategory.CategoryToSubCategories.Any();
+
+            // if (isInUse)
+            // {
+            //     return BadRequest(
+            //         new { message = "Kan inte ta bort en underkategori som används" }
+            //     );
+            // }
+
+            _context.SubCategories.Remove(subCategory);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Underkategori borttagen!" });
+        }
+
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateSubCategory(CreateSubCategoryDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                return BadRequest(new { message = "Valideringsfel", errors });
+            }
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+            }
+
+            var (createdBy, userId) = userInfo.Value;
+            var now = DateTime.UtcNow;
+
+            var subCategory = new SubCategory
+            {
+                Name = dto.Name,
+                CategoryToSubCategories =
+                    dto.CategoryIds != null
+                        ? dto
+                            .CategoryIds.Select(id => new CategoryToSubCategory { CategoryId = id })
+                            .ToList()
+                        : new List<CategoryToSubCategory>(),
+
+                // Meta data.
+                CreationDate = now,
+                CreatedBy = createdBy,
+                UpdateDate = now,
+                UpdatedBy = createdBy,
+            };
+
+            _context.SubCategories.Add(subCategory);
+            await _context.SaveChangesAsync();
+
+            var result = new SubCategoryDto
+            {
+                Id = subCategory.Id,
+                Name = subCategory.Name,
+                CategoryIds = subCategory
+                    .CategoryToSubCategories.Select(csc => csc.CategoryId)
+                    .ToList(),
+
+                // Meta data.
+                CreationDate = subCategory.CreationDate,
+                CreatedBy = subCategory.CreatedBy,
+                UpdateDate = subCategory.UpdateDate,
+                UpdatedBy = subCategory.UpdatedBy,
+            };
+
+            return Ok(result);
+        }
+
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdateSubCategory(int id, UpdateSubCategoryDto dto)
+        {
+            var subCategory = await _context
+                .SubCategories.Include(c => c.CategoryToSubCategories)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (subCategory == null)
+            {
+                return NotFound(new { message = "Underkategorin kunde inte hittas i databasen" });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                return BadRequest(new { message = "Valideringsfel", errors });
+            }
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+            }
+
+            var (updatedBy, userId) = userInfo.Value;
+            var now = DateTime.UtcNow;
+
+            subCategory.Name = dto.Name;
+
+            _context.CategoryToSubCategories.RemoveRange(subCategory.CategoryToSubCategories);
+
+            subCategory.CategoryToSubCategories =
+                dto.CategoryIds != null
+                    ? dto
+                        .CategoryIds.Select(id => new CategoryToSubCategory
+                        {
+                            CategoryId = id,
+                            SubCategoryId = subCategory.Id,
+                        })
+                        .ToList()
+                    : new List<CategoryToSubCategory>();
+
+            // Meta data.
+            subCategory.UpdateDate = now;
+            subCategory.UpdatedBy = updatedBy;
+
+            await _context.SaveChangesAsync();
+
+            var result = new SubCategoryDto
+            {
+                Id = subCategory.Id,
+                Name = subCategory.Name,
+                CategoryIds = subCategory
+                    .CategoryToSubCategories.Select(csc => csc.CategoryId)
+                    .ToList(),
+
+                // Meta data.
+                UpdateDate = subCategory.UpdateDate,
+                UpdatedBy = subCategory.UpdatedBy,
+            };
+
+            return Ok(result);
+        }
+    }
+}

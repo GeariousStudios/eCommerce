@@ -12,10 +12,12 @@
   --text-main-dark: #e0e0e0;
   --text-main-light: #212121;
 
-  --border-main-dark: #e0e0e040;
-  --border-main-light: #21212140;
+  --border-main-dark: #464646;
+  --border-main-light: #b2b2b2;
   --border-secondary-dark: #1f1f1f;
   --border-secondary-light: #e9e9e9;
+  --border-tertiary-dark: #696969;
+  --border-tertiary-light: #a1a1a1;
 
   --slow: 250ms;
   --medium: 200ms;
@@ -32,13 +34,14 @@
   --accent-color-active-light: #6eb0f7;
 
   /* --- BADGE COLORS --- */
-  --badge-coral: #ffab9d;
-  --badge-orange: #ffd580;
+  --badge-one: #ffd580;
+  --badge-two: #a0e7e5;
+  --badge-three: #d5a6ff;
+  --badge-four: #ffab9d;
+
   --badge-apricot: #ffdac1;
-  --badge-green: #c3f584;
-  --badge-mint: #a0e7e5;
   --badge-blue: #b3d4ff;
-  --badge-purple: #d5a6ff;
+  --badge-green: #c3f584;
   --badge-pink: #f7aef8;
 }
 
@@ -50,6 +53,7 @@
   --text-secondary: #e0e0e0aa;
   --border-main: var(--border-main-dark);
   --border-secondary: var(--border-secondary-dark);
+  --border-tertiary: var(--border-tertiary-dark);
 
   --accent-color: var(--accent-color-dark);
   --accent-color-hover: var(--accent-color-hover-dark);
@@ -85,9 +89,9 @@
   --button-primary-hover: var(--accent-color-hover);
   --button-primary-active: var(--accent-color-active);
 
-  --button-secondary: var(--border-main);
+  --button-secondary: var(--border-tertiary);
   --button-secondary-hover: var(--text-main);
-  --button-secondary-active: var(--border-main);
+  --button-secondary-active: var(--border-tertiary);
 
   --button-delete: #aa6f6f;
   --button-delete-hover: #814b4b;
@@ -117,6 +121,7 @@
   --text-secondary: #212121aa;
   --border-main: var(--border-main-light);
   --border-secondary: var(--border-secondary-light);
+  --border-tertiary: var(--border-tertiary-light);
 
   --accent-color: var(--accent-color-light);
   --accent-color-hover: var(--accent-color-hover-light);
@@ -152,9 +157,9 @@
   --button-primary-hover: var(--accent-color-hover);
   --button-primary-active: var(--accent-color-active);
 
-  --button-secondary: var(--border-main);
+  --button-secondary: var(--border-tertiary);
   --button-secondary-hover: var(--text-main);
-  --button-secondary-active: var(--border-main);
+  --button-secondary-active: var(--border-tertiary);
 
   --button-delete: #814b4b;
   --button-delete-hover: #aa6f6f;

@@ -65,17 +65,17 @@ namespace backend.Controllers
             query = sortBy.ToLower() switch
             {
                 "username" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.Username)
-                    : query.OrderBy(u => u.Username),
+                    ? query.OrderByDescending(u => u.Username.ToLower())
+                    : query.OrderBy(u => u.Username.ToLower()),
                 "firstName" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.FirstName)
-                    : query.OrderBy(u => u.FirstName),
+                    ? query.OrderByDescending(u => u.FirstName.ToLower())
+                    : query.OrderBy(u => u.FirstName.ToLower()),
                 "lastName" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.LastName)
-                    : query.OrderBy(u => u.LastName),
+                    ? query.OrderByDescending(u => u.LastName.ToLower())
+                    : query.OrderBy(u => u.LastName.ToLower()),
                 "email" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.Email)
-                    : query.OrderBy(u => u.Email),
+                    ? query.OrderByDescending(u => u.Email.ToLower())
+                    : query.OrderBy(u => u.Email.ToLower()),
                 "islocked" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.IsLocked)
                     : query.OrderBy(u => u.IsLocked),
@@ -84,7 +84,7 @@ namespace backend.Controllers
                     : query.OrderBy(u => u.Id),
             };
 
-            int totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync();
 
             List<User> users;
 
@@ -108,14 +108,20 @@ namespace backend.Controllers
                 users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             }
 
-            var totalAdminCount = await _context.Users.CountAsync(u =>
-                u.Roles.HasFlag(UserRoles.Admin)
-            );
-            var totalDeveloperCount = await _context.Users.CountAsync(u =>
+            // Filters.
+            var status = new Dictionary<string, int>
+            {
+                ["Unlocked"] = await _context.Users.CountAsync(u => !u.IsLocked),
+                ["Locked"] = await _context.Users.CountAsync(u => u.IsLocked),
+            };
+
+            var adminCount = await _context.Users.CountAsync(u => u.Roles.HasFlag(UserRoles.Admin));
+            var developerCount = await _context.Users.CountAsync(u =>
                 u.Roles.HasFlag(UserRoles.Developer)
             );
-            var totalLockedCount = await _context.Users.CountAsync(u => u.IsLocked);
-            var totalUnlockedCount = await _context.Users.CountAsync(u => !u.IsLocked);
+            var reporterCount = await _context.Users.CountAsync(u =>
+                u.Roles.HasFlag(UserRoles.Reporter)
+            );
 
             var result = new
             {
@@ -137,10 +143,10 @@ namespace backend.Controllers
                 }),
                 counts = new
                 {
-                    Admin = totalAdminCount,
-                    Developer = totalDeveloperCount,
-                    Locked = totalLockedCount,
-                    Unlocked = totalUnlockedCount,
+                    adminCount = adminCount,
+                    developerCount = developerCount,
+                    reporterCount = reporterCount,
+                    status = status,
                 },
             };
 

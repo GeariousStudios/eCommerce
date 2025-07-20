@@ -14,7 +14,11 @@
 /* --- INPUT LABELS --- */
 input:focus ~ label,
 input[type="date"]:valid ~ label,
+input[type="time"]:valid ~ label,
+input[type="datetime-local"]:valid ~ label,
 input:not([type="date"]):not(:placeholder-shown) ~ label,
+input:not([type="time"]):not(:placeholder-shown) ~ label,
+input:not([type="datetime-local"]):not(:placeholder-shown) ~ label,
 input.placeholder ~ label,
 input:-webkit-autofill ~ label {
   color: var(--accent-color);
@@ -44,7 +48,9 @@ select:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0px 1000px var(--bg-input) inset;
 }
 
-.dark-calender input[type="date"]::-webkit-calendar-picker-indicator {
+.dark-calendar input[type="date"]::-webkit-calendar-picker-indicator,
+.dark-calendar input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+.dark-calendar input[type="time"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
 
@@ -72,6 +78,17 @@ input[type="checkbox"]:indeterminate::after {
   height: 8px;
   border: solid var(--accent-color);
   border-width: 2px 0 0 0;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 
 /* --- SCROLLBAR --- */
@@ -181,7 +198,7 @@ th:focus-visible {
 }
 
 .ql-toolbar.ql-snow {
-  border-bottom: 1px solid var(--border-main) !important;
+  border-bottom: 1px solid var(--border-tertiary) !important;
 
   button,
   .ql-picker-label {

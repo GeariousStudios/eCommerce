@@ -1,4 +1,5 @@
 using backend.Data;
+using backend.Dtos.Unit;
 using backend.Dtos.UnitGroup;
 using backend.Models;
 using backend.Services;
@@ -25,17 +26,17 @@ namespace backend.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
-            [FromQuery] bool? hasUnits = null,
+            [FromQuery] int[]? unitIds = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            IQueryable<UnitGroup> query = _context.UnitGroups;
+            IQueryable<UnitGroup> query = _context.UnitGroups.Include(u => u.Units);
 
-            if (hasUnits.HasValue)
+            if (unitIds?.Any() == true)
             {
-                query = query.Where(u => u.Units.Any() == hasUnits.Value);
+                query = query.Where(ug => ug.Units.Any(u => unitIds.Contains(u.Id)));
             }
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -49,15 +50,24 @@ namespace backend.Controllers
                 "name" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Name.ToLower())
                     : query.OrderBy(u => u.Name.ToLower()),
-                "hasunits" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.Units.Any())
-                    : query.OrderBy(u => u.Units.Any()),
+                "unitcount" => sortOrder == "desc"
+                    ? query.OrderByDescending(u => u.Units.Count()).ThenBy(u => u.Name.ToLower())
+                    : query.OrderBy(u => u.Units.Count()).ThenBy(u => u.Name.ToLower()),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Id)
                     : query.OrderBy(u => u.Id),
             };
 
-            int totalCount = await query.CountAsync();
+            query = query.Include(u => u.Units);
+
+            var totalCount = await query.CountAsync();
+
+            // Filters.
+            var unitCount = await _context
+                .UnitGroups.SelectMany(ug => ug.Units)
+                .GroupBy(u => u.Id)
+                .Select(ug => new { UnitId = ug.Key, Count = ug.Count() })
+                .ToDictionaryAsync(x => x.UnitId, x => x.Count);
 
             var unitGroups = await query
                 .Skip((page - 1) * pageSize)
@@ -66,7 +76,9 @@ namespace backend.Controllers
                 {
                     Id = u.Id,
                     Name = u.Name,
-                    HasUnits = u.Units.Any(),
+                    Units = u
+                        .Units.Select(unit => new UnitDto { Id = unit.Id, Name = unit.Name })
+                        .ToList(),
 
                     // Meta data.
                     CreationDate = u.CreationDate,
@@ -76,14 +88,11 @@ namespace backend.Controllers
                 })
                 .ToListAsync();
 
-            var totalHasUnitsCount = await _context.UnitGroups.CountAsync(u => u.Units.Any());
-            var totalNoUnitsCount = await _context.UnitGroups.CountAsync(u => !u.Units.Any());
-
             var result = new
             {
                 totalCount,
                 items = unitGroups,
-                counts = new { hasUnits = totalHasUnitsCount, noUnits = totalNoUnitsCount },
+                counts = new { unitCount = unitCount },
             };
 
             return Ok(result);
@@ -96,10 +105,15 @@ namespace backend.Controllers
 
             if (unit == null)
             {
-                return NotFound(new { message = "Enhetsgruppen kunde inte hittas i databasen" });
+                return NotFound(new { message = "Gruppen kunde inte hittas i databasen" });
             }
 
-            var result = new UnitGroupDto { Id = unit.Id, Name = unit.Name };
+            var result = new UnitGroupDto
+            {
+                Id = unit.Id,
+                Name = unit.Name,
+                Units = new List<UnitDto>(),
+            };
 
             return Ok(result);
         }
@@ -114,18 +128,18 @@ namespace backend.Controllers
 
             if (unitGroup == null)
             {
-                return NotFound(new { message = "Enhetsgruppen kunde inte hittas i databasen" });
+                return NotFound(new { message = "Gruppen kunde inte hittas i databasen" });
             }
 
             if (unitGroup.Units.Any())
             {
-                return BadRequest(new { message = "Kan inte ta bort en enhetsgrupp som används!" });
+                return BadRequest(new { message = "Kan inte ta bort en grupp som används" });
             }
 
             _context.UnitGroups.Remove(unitGroup);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Enhetsgrupp borttagen!" });
+            return Ok(new { message = "Grupp borttagen!" });
         }
 
         [HttpPost("create")]
@@ -150,7 +164,7 @@ namespace backend.Controllers
 
             if (existingUnitGroup != null)
             {
-                return BadRequest(new { message = "Enhetsgrupp med detta namn finns redan!" });
+                return BadRequest(new { message = "En grupp med detta namn finns redan!" });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
@@ -179,6 +193,7 @@ namespace backend.Controllers
 
             var result = new UnitGroupDto
             {
+                Id = unitGroup.Id,
                 Name = unitGroup.Name,
 
                 // Meta data.
@@ -199,7 +214,7 @@ namespace backend.Controllers
 
             if (unitGroup == null)
             {
-                return NotFound(new { message = "Enhetsgruppen kunde inte hittas i databasen" });
+                return NotFound(new { message = "Gruppen kunde inte hittas i databasen" });
             }
 
             if (!ModelState.IsValid)
@@ -220,7 +235,7 @@ namespace backend.Controllers
 
             if (existingUnitGroup != null)
             {
-                return BadRequest(new { message = "Enhetsgrupp med detta namn finns redan!" });
+                return BadRequest(new { message = "En grupp med detta namn finns redan!" });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();

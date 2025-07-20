@@ -54,7 +54,13 @@ const Toast = (props: Props) => {
       onClick={handleClose}
     >
       <Icon className="h-8 w-8" />
-      <div className="w-2/3">{props.content}</div>
+      <div className="w-2/3">
+        {typeof props.content === "string" ? (
+          <div dangerouslySetInnerHTML={{ __html: props.content }} />
+        ) : (
+          props.content
+        )}
+      </div>
     </div>
   );
 };

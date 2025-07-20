@@ -53,7 +53,14 @@ export const fetchContent = async ({
   const result = await response.json();
 
   return {
-    items: Array.isArray(result.items) ? result.items : [],
+    items: Array.isArray(result.items)
+      ? result.items.map((item: any) => ({
+          ...item,
+          subCategories: Array.isArray(item.subCategories)
+            ? item.subCategories.map((sc: any) => sc.name)
+            : [],
+        }))
+      : [],
     total: result.totalCount ?? 0,
     counts: result.counts ?? null,
   };
@@ -88,10 +95,11 @@ export const deleteContent = async (id: number): Promise<void> => {
 export type UnitOption = {
   id: number;
   name: string;
+  unitGroupName?: string;
 };
 
 export const fetchUnits = async (): Promise<UnitOption[]> => {
-  const response = await fetch(`${apiUrl}/unit`, {
+  const response = await fetch(`${apiUrl}/unit?sortBy=name&sortOrder=asc`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,

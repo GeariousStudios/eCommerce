@@ -198,7 +198,7 @@ const SettingsModal = (props: Props) => {
   }, [props.isOpen]);
 
   // --- CLASSES ---
-  const hrClass = "mt-4 mb-4 rounded-full text-[var(--border-main)]";
+  const hrClass = "mt-4 mb-4 rounded-full text-[var(--border-tertiary)]";
   const itemRowClass = "flex-wrap flex items-center justify-between gap-2";
 
   return (

@@ -1,38 +1,63 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import Navbar from "../navbar/Navbar";
-import Topbar from "../topbar/Topbar";
+import Navbar from "../components/navbar/Navbar";
+import Topbar from "../components/topbar/Topbar";
 import { usePathname } from "next/navigation";
 
 type Props = {
   children: ReactNode;
 };
 
+type Breadcrumb = {
+  label: string;
+  href: string;
+  clickable: boolean;
+  isActive: boolean;
+};
+
 const LayoutWrapper = (props: Props) => {
   // --- STATES ---
   const [hasScrollbar, setHasScrollbar] = useState(false);
+  const [navbarHidden, setNavbarHidden] = useState(false);
   const [unitName, setUnitName] = useState<string | null>(null);
+  const [unitGroupId, setUnitGroupId] = useState<string | null>(null);
+  const [unitGroupName, setUnitGroupName] = useState<string | null>(null);
 
   // --- OTHER ---
   const pathname = usePathname();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  // --- IF UNIT, GET UNIT NAME ---
+  // --- IF UNIT, GET UNIT INFO ---
   useEffect(() => {
     const parts = pathname.split("/").filter(Boolean);
     if (parts.length >= 3 && parts[0] === "report" && parts[1] === "unit") {
       const unitId = parts[2];
+
       fetch(`${apiUrl}/unit/fetch/${unitId}`)
         .then((res) => res.json())
         .then((data) => {
           if (data?.name) {
             setUnitName(data.name);
           }
-        })
-        .catch(() => {});
+
+          if (data?.unitGroupId) {
+            setUnitGroupId(String(data.unitGroupId));
+
+            fetch(`${apiUrl}/unit-group/fetch/${data.unitGroupId}`)
+              .then((res) => res.json())
+              .then((groupData) => {
+                if (groupData?.name) {
+                  setUnitGroupName(groupData.name);
+                }
+              })
+              .catch(() => {});
+          }
+        });
     } else {
       setUnitName(null);
+      setUnitGroupId(null);
+      setUnitGroupName(null);
     }
   }, [pathname]);
 
@@ -50,7 +75,11 @@ const LayoutWrapper = (props: Props) => {
     units: { label: "Enheter", clickable: false },
     unit: { label: "Enheter", clickable: false },
     "unit-groups": {
-      label: "Enhetsgrupper",
+      label: "Grupper",
+      clickable: false,
+    },
+    "unit-columns": {
+      label: "Kolumner",
       clickable: false,
     },
 
@@ -64,7 +93,7 @@ const LayoutWrapper = (props: Props) => {
   };
 
   // --- CREATE BREADCRUMBS ---
-  const createBreadcrumbs = (path: string) => {
+  const createBreadcrumbs = (path: string): Breadcrumb[] | undefined => {
     if (path === "/") {
       return undefined;
     }
@@ -75,7 +104,7 @@ const LayoutWrapper = (props: Props) => {
     const filteredParts =
       parts[0] === "developer" ? parts.filter((p) => p !== "manage") : parts;
 
-    return filteredParts.map((part, index) => {
+    let breadcrumbs: Breadcrumb[] = filteredParts.map((part, index) => {
       const key = part.toLowerCase();
       const translation = breadcrumbTranslation[key];
       const isLast = index === filteredParts.length - 1;
@@ -91,18 +120,48 @@ const LayoutWrapper = (props: Props) => {
         isActive: isLast,
       };
     });
+
+    if (
+      pathname.includes("/report/unit/") &&
+      unitGroupId &&
+      unitGroupName &&
+      unitName
+    ) {
+      const unitIndex = breadcrumbs.findIndex(
+        (b: Breadcrumb) => b.label === unitName,
+      );
+      if (unitIndex !== -1) {
+        breadcrumbs.splice(unitIndex, 0, {
+          label: unitGroupName,
+          href: "#",
+          clickable: false,
+          isActive: false,
+        });
+      }
+    }
+
+    return breadcrumbs;
   };
 
   const breadcrumbs = createBreadcrumbs(pathname);
 
   return (
     <>
-      <Navbar hasScrollbar={hasScrollbar} setHasScrollbar={setHasScrollbar} />
-      <Topbar hasScrollbar={hasScrollbar} breadcrumbs={breadcrumbs} />
+      <Navbar
+        hasScrollbar={hasScrollbar}
+        setHasScrollbar={setHasScrollbar}
+        navbarHidden={navbarHidden}
+        setNavbarHidden={setNavbarHidden}
+      />
+      <Topbar
+        hasScrollbar={hasScrollbar}
+        breadcrumbs={breadcrumbs}
+        navbarHidden={navbarHidden}
+        setNavbarHidden={setNavbarHidden}
+      />
       <div className="flex">
         <div
-          className={`${hasScrollbar ? "ml-22 md:ml-67" : "ml-19 md:ml-64"} w-full max-w-[1920px]
-          p-4 pt-22 duration-[var(--medium)]`}
+          className={`${hasScrollbar && !navbarHidden ? "md:ml-67" : !hasScrollbar && !navbarHidden ? "md:ml-64" : ""} w-full max-w-[1920px] overflow-hidden p-4 pt-22 duration-[var(--medium)]`}
         >
           {props.children}
         </div>

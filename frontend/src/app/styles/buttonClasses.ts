@@ -3,13 +3,13 @@ export const buttonPrimaryClass =
   "whitespace-nowrap h-[40px] w-[40px] cursor-pointer rounded bg-[var(--button-primary)] p-2 font-semibold text-[var(--text-main-reverse)] transition-colors hover:bg-[var(--button-primary-hover)] hover:text-[var(--text-main)] active:bg-[var(--button-primary-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-[var(--button-primary)] z-[calc(var(--z-base)+1)]";
 
 export const buttonSecondaryClass =
-  "whitespace-nowrap h-[40px] w-[40px] cursor-pointer rounded border-1 border-[var(--button-secondary)] p-2 font-semibold transition-colors hover:border-[var(--button-secondary-hover)] active:border-[var(--button-secondary-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:border-[var(--border-main)] z-[calc(var(--z-base)+1)]";
+  "whitespace-nowrap h-[40px] w-[40px] cursor-pointer rounded border-1 border-[var(--button-secondary)] p-2 font-semibold transition-colors hover:border-[var(--button-secondary-hover)] active:border-[var(--button-secondary-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:border-[var(--border-tertiary)] z-[calc(var(--z-base)+1)]";
 
 export const buttonDeletePrimaryClass =
   "h-[40px] w-[40px] cursor-pointer rounded bg-[var(--button-delete)] p-2 font-semibold text-[var(--text-main-reverse)] transition-colors hover:bg-[var(--button-delete-hover)] hover:text-[var(--text-main)] active:bg-[var(--button-delete-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-[var(--button-delete)] z-[calc(var(--z-base)+1)]";
 
 export const buttonDeleteSecondaryClass =
-  "h-[40px] w-[40px] cursor-pointer rounded border-1 border-[var(--button-secondary)] p-2 font-semibold transition-colors hover:border-[var(--button-delete)] active:border-[var(--button-delete-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:border-[var(--border-main)] z-[calc(var(--z-base)+1)]";
+  "h-[40px] w-[40px] cursor-pointer rounded border-1 border-[var(--button-secondary)] p-2 font-semibold transition-colors hover:border-[var(--button-delete)] active:border-[var(--button-delete-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:border-[var(--border-tertiary)] z-[calc(var(--z-base)+1)]";
 
 // --- ICON ---
 export const iconButtonPrimaryClass =

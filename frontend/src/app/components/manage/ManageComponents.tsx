@@ -88,14 +88,16 @@ export const Filter = ({
             <div
               key={index}
               onClick={() => item.setShow(!item.show)}
-              className="group flex cursor-pointer justify-between"
+              className="group flex cursor-pointer items-center justify-between gap-4"
             >
-              <Input
-                type="checkbox"
-                checked={item.show}
-                label={item.label}
-                readOnly
-              />
+              <div className="break-all">
+                <Input
+                  type="checkbox"
+                  checked={item.show}
+                  label={item.label}
+                  readOnly
+                />
+              </div>
               <span>({item.count ?? 0})</span>
             </div>
           ))}
@@ -148,14 +150,16 @@ export const AllFilter = ({
               <div
                 key={index}
                 onClick={() => item.setShow(!item.show)}
-                className={`${index === filterData.length - 1 ? "mb-4" : ""} group flex cursor-pointer justify-between py-4`}
+                className={`${index === filterData.length - 1 ? "mb-4" : ""} group flex cursor-pointer items-center justify-between gap-4 py-4`}
               >
-                <Input
-                  type="checkbox"
-                  checked={item.show}
-                  label={item.label}
-                  readOnly
-                />
+                <div className="break-all">
+                  <Input
+                    type="checkbox"
+                    checked={item.show}
+                    label={item.label}
+                    readOnly
+                  />
+                </div>
                 <span>({item.count ?? 0})</span>
               </div>
             ))}

@@ -9,6 +9,8 @@ namespace backend.Dtos.Unit
         public int UnitGroupId { get; set; }
         public string UnitGroupName { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
+        public List<int> UnitColumnIds { get; set; } = new();
+        public List<int> CategoryIds { get; set; } = new();
 
         // Meta data.
         public DateTime CreationDate { get; set; }

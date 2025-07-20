@@ -71,6 +71,18 @@ const ModalBase = forwardRef((props: Props, ref) => {
     };
   }, [props.isOpen, props.onClose]);
 
+  useEffect(() => {
+    if (props.isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [props.isOpen]);
+
   const requestClose = () => {
     if (props.confirmOnClose && props.isDirty) {
       setShowConfirmModal(true);
@@ -126,7 +138,7 @@ const ModalBase = forwardRef((props: Props, ref) => {
                       >
                         <XMarkIcon />
                       </button>
-                      <hr className="xs:mt-16 absolute mt-12 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]" />
+                      <hr className="xs:mt-16 absolute mt-12 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
                     </div>
                   )}
                   {props.children}

@@ -201,7 +201,7 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} ${isActive ? "text-[var(--accent-color)]" : ""} group flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-lg p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] md:w-full md:justify-between`}
+                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} ${isActive ? "text-[var(--accent-color)]" : ""} group flex h-[40px] cursor-pointer items-center rounded-lg p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] w-full justify-between`}
               >
                 <div className="flex items-center gap-4">
                   <span className="relative flex h-6 w-6 items-center">
@@ -213,7 +213,7 @@ const NavbarSubmenu = (props: Props) => {
                     />
                   </span>
                   <span
-                    className={`${isActive ? "font-bold" : ""} hidden truncate overflow-hidden md:flex`}
+                    className={`${isActive ? "font-bold" : ""} truncate overflow-hidden flex`}
                   >
                     {props.label}
                   </span>
@@ -222,7 +222,7 @@ const NavbarSubmenu = (props: Props) => {
                 <ChevronRightIcon
                   className={`${
                     isOpen ? "rotate-180 text-[var(--accent-color)]" : ""
-                  } h-0 w-0 rotate-0 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)] md:h-6 md:w-6`}
+                  } rotate-0 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)] h-6 w-6`}
                 />
               </button>
             </div>
@@ -230,7 +230,7 @@ const NavbarSubmenu = (props: Props) => {
               ref={innerRef}
               id="submenu-menu"
               inert={!isOpen}
-              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-22 md:left-67" : "left-19 md:left-64"} fixed top-0 h-full overflow-x-hidden border-r-1 border-[var(--border-main)] bg-[var(--bg-navbar)] transition-all duration-[var(--slow)]`}
+              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-67" : "left-64"} fixed top-0 h-full overflow-x-hidden border-r-1 border-[var(--border-main)] bg-[var(--bg-navbar)] transition-all duration-[var(--slow)]`}
             >
               <div className="my-4 ml-4">
                 <div className="flex gap-2">
@@ -284,7 +284,7 @@ const NavbarSubmenu = (props: Props) => {
                                               onClick={() => setIsOpen(false)}
                                               href={item.href}
                                               tabIndex={isOpen ? 0 : -1}
-                                              className={`${itemIsActive ? "font-bold text-[var(--accent-color)]" : "text-[var(--text-navbar)]"} flex h-full w-full truncate p-2 text-sm`}
+                                              className={`${itemIsActive ? "font-bold text-[var(--accent-color)]" : "text-[var(--text-navbar)]"} flex h-full w-full p-2 text-sm break-all`}
                                             >
                                               {item.label}
                                             </Link>
@@ -293,7 +293,7 @@ const NavbarSubmenu = (props: Props) => {
                                               onClick={item.onClick}
                                               tabIndex={isOpen ? 0 : -1}
                                               className={
-                                                "flex h-full w-full cursor-pointer truncate p-2 text-sm text-[var(--text-navbar)]"
+                                                "flex h-full w-full cursor-pointer truncate p-2 text-sm break-all text-[var(--text-navbar)]"
                                               }
                                             >
                                               {item.label}

@@ -14,7 +14,7 @@ export const viewClass =
   "h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
 
 export const badgeClass =
-  "flex h-6 items-center justify-center rounded-xl bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-light)]";
+  "flex min-h-6 h-auto py-1 items-center justify-center rounded-full bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-light)] break-all";
 
 const priorityClasses = [
   "",

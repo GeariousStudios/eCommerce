@@ -1,0 +1,28 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import Message from "../../../components/common/Message";
+import useAuthStatus from "../../../hooks/useAuthStatus";
+
+const UnitColumnsClient = dynamic(() => import("./UnitColumnsClient"), {
+  ssr: false,
+  loading: () => (
+    <Message icon="loading" content="Laddar in sidan..." fullscreen={true} />
+  ),
+});
+
+const UnitColumnsWrapper = () => {
+  const { isAuthReady, isAdmin, isConnected } = useAuthStatus();
+
+  if (!isAuthReady) {
+    return <Message icon="loading" content="auth" fullscreen={true} />;
+  }
+
+  if (!isAdmin) {
+    return <Message icon="deny" content="deny" fullscreen={true} />;
+  }
+
+  return <UnitColumnsClient isConnected={isConnected} />;
+};
+
+export default UnitColumnsWrapper;

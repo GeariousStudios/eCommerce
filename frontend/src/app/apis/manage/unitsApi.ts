@@ -39,6 +39,18 @@ export const fetchContent = async ({
       params.append("unitGroupIds", id.toString());
     }
   }
+
+  if (filters?.unitColumnIds) {
+    for (const id of filters.unitColumnIds) {
+      params.append("unitColumnIds", id.toString());
+    }
+  }
+
+  if (filters?.categoryIds) {
+    for (const id of filters.categoryIds) {
+      params.append("categoryIds", id.toString());
+    }
+  }
   // --- FILTERS STOP ---
 
   const response = await fetch(`${apiUrl}/unit?${params}`, {
@@ -94,6 +106,50 @@ export type UnitGroupOption = {
 
 export const fetchUnitGroups = async (): Promise<UnitGroupOption[]> => {
   const response = await fetch(`${apiUrl}/unit-group`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
+};
+
+export type UnitColumnOption = {
+  id: number;
+  name: string;
+};
+
+export const fetchUnitColumns = async (): Promise<UnitColumnOption[]> => {
+  const response = await fetch(`${apiUrl}/unit-column`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
+};
+
+export type CategoryOption = {
+  id: number;
+  name: string;
+};
+
+export const fetchCategories = async (): Promise<CategoryOption[]> => {
+  const response = await fetch(`${apiUrl}/category`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
