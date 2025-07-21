@@ -240,10 +240,11 @@ const Navbar = (props: Props) => {
                   zIndex: 0,
                 }}
               />
+              <div className="pointer-events-none absolute top-0 left-0 h-full w-full border-r-1 border-[var(--border-main)]" />
+              {/* Simulated border. */}
+
               {isAuthReady ? (
                 <>
-                  <div className="pointer-events-none absolute top-0 left-0 h-full w-full border-r-1 border-[var(--border-main)]" />
-                  {/* Simulated border. */}
                   <div
                     ref={innerRef}
                     id="navbar-menu"
@@ -379,14 +380,7 @@ const Navbar = (props: Props) => {
                   </div>
                 </>
               ) : (
-                <div className="inline">
-                  <span className="hidden md:inline">
-                    <Message icon="loading" content="Hämtar innehåll..." />
-                  </span>
-                  <span className="inline md:hidden">
-                    <Message icon="loading" />
-                  </span>
-                </div>
+                <Message icon="loading" content="Hämtar innehåll..." />
               )}
             </div>
           </FocusTrap>

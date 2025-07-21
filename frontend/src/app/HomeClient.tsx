@@ -284,7 +284,7 @@ const HomeClient = (props: Props) => {
             {!props.isAuthReady ? (
               ""
             ) : isLoadingNews ? (
-              <Message icon="loading" content="Hämtar nyheter..." />
+              <Message icon="loading" content="Hämtar nyheter..."  />
             ) : newsItems.length > 0 ? (
               <div>
                 {newsItems.map((item, index) => (

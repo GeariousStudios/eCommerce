@@ -7,7 +7,20 @@ import useAuthStatus from "../../../hooks/useAuthStatus";
 const UnitGroupsClient = dynamic(() => import("./UnitGroupsClient"), {
   ssr: false,
   loading: () => (
-    <Message icon="loading" content="Laddar in sidan..." fullscreen={true} />
+    <>
+      <div className="hidden md:block">
+        <Message icon="loading" content="Laddar in sidan..." fullscreen />
+      </div>
+
+      <div className="block md:hidden">
+        <Message
+          icon="loading"
+          content="Laddar in sidan..."
+          fullscreen
+          withinContainer
+        />
+      </div>
+    </>
   ),
 });
 
@@ -15,11 +28,31 @@ const UnitGroupsWrapper = () => {
   const { isAuthReady, isAdmin, isConnected } = useAuthStatus();
 
   if (!isAuthReady) {
-    return <Message icon="loading" content="auth" fullscreen={true} />;
+    return (
+      <>
+        <div className="hidden md:block">
+          <Message icon="loading" content="auth" fullscreen />
+        </div>
+
+        <div className="block md:hidden">
+          <Message icon="loading" content="auth" fullscreen withinContainer />
+        </div>
+      </>
+    );
   }
 
   if (!isAdmin) {
-    return <Message icon="deny" content="deny" fullscreen={true} />;
+    return (
+      <>
+        <div className="hidden md:block">
+          <Message icon="deny" content="auth" fullscreen />
+        </div>
+
+        <div className="block md:hidden">
+          <Message icon="deny" content="auth" fullscreen withinContainer />
+        </div>
+      </>
+    );
   }
 
   return <UnitGroupsClient isConnected={isConnected} />;

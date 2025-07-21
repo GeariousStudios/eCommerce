@@ -7,11 +7,15 @@ import useAuthStatus from "../../hooks/useAuthStatus";
 const UnitClient = dynamic(() => import("./UnitClient"), {
   ssr: false,
   loading: () => (
-    <Message
-      icon="loading"
-      content="Kollar tillgänglighet..."
-      fullscreen={true}
-    />
+    <>
+      <div className="hidden md:block">
+        <Message icon="loading" content="Kollar tillgänglighet..." fullscreen />
+      </div>
+
+      <div className="block md:hidden">
+        <Message icon="loading" content="Kollar tillgänglighet..." fullscreen withinContainer />
+      </div>
+    </>
   ),
 });
 
@@ -20,7 +24,15 @@ const UnitWrapper = () => {
 
   if (!isAuthReady) {
     return (
-      <Message icon="loading" content="Laddar in sidan..." fullscreen={true} />
+       <>
+        <div className="hidden md:block">
+          <Message icon="loading" content="Laddar in sidan..." fullscreen />
+        </div>
+
+        <div className="block md:hidden">
+          <Message icon="loading" content="Laddar in sidan..." fullscreen withinContainer />
+        </div>
+      </>
     );
   }
 

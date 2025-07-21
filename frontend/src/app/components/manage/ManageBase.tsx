@@ -332,7 +332,22 @@ const ManageBase = <TItem extends { id: number }>({
   }, [tableItems]);
 
   if (isGridView === null || isLoadingUserPrefs) {
-    return <Message icon="loading" content="Nästan klar..." fullscreen />;
+    return (
+      <>
+        <div className="hidden md:block">
+          <Message icon="loading" content="Nästan klar..." fullscreen />
+        </div>
+
+        <div className="block md:hidden">
+          <Message
+            icon="loading"
+            content="Nästan klar..."
+            fullscreen
+            withinContainer
+          />
+        </div>
+      </>
+    );
   }
 
   return (

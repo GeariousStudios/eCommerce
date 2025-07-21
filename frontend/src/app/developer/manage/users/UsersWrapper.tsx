@@ -7,7 +7,20 @@ import useAuthStatus from "../../../hooks/useAuthStatus";
 const UsersClient = dynamic(() => import("./UsersClient"), {
   ssr: false,
   loading: () => (
-    <Message icon="loading" content="Laddar in sidan..." fullscreen={true} />
+    <>
+      <div className="hidden md:block">
+        <Message icon="loading" content="Laddar in sidan..." fullscreen />
+      </div>
+
+      <div className="block md:hidden">
+        <Message
+          icon="loading"
+          content="Laddar in sidan..."
+          fullscreen
+          withinContainer
+        />
+      </div>
+    </>
   ),
 });
 
@@ -15,11 +28,31 @@ const UsersWrapper = () => {
   const { isAuthReady, isDev, isConnected } = useAuthStatus();
 
   if (!isAuthReady) {
-    return <Message icon="loading" content="auth" fullscreen={true} />;
+    return (
+      <>
+        <div className="hidden md:block">
+          <Message icon="loading" content="auth" fullscreen />
+        </div>
+
+        <div className="block md:hidden">
+          <Message icon="loading" content="auth" fullscreen withinContainer />
+        </div>
+      </>
+    );
   }
 
   if (!isDev) {
-    return <Message icon="deny" content="deny" fullscreen={true} />;
+    return (
+      <>
+        <div className="hidden md:block">
+          <Message icon="deny" content="auth" fullscreen />
+        </div>
+
+        <div className="block md:hidden">
+          <Message icon="deny" content="auth" fullscreen withinContainer />
+        </div>
+      </>
+    );
   }
 
   return <UsersClient isConnected={isConnected} />;

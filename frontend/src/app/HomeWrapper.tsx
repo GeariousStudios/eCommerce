@@ -7,7 +7,15 @@ import useAuthStatus from "./hooks/useAuthStatus";
 const HomeClient = dynamic(() => import("./HomeClient"), {
   ssr: false,
   loading: () => (
-    <Message icon="loading" content="Laddar in sidan..." fullscreen={true} />
+    <>
+      <div className="hidden md:block">
+        <Message icon="loading" content="Laddar in sidan..." fullscreen />
+      </div>
+
+      <div className="block md:hidden">
+        <Message icon="loading" content="Laddar in sidan..." fullscreen withinContainer />
+      </div>
+    </>
   ),
 });
 
@@ -20,7 +28,13 @@ const HomeWrapper = () => {
         {/* <h1 className="mb-4 text-2xl font-semibold uppercase transition-[font-size] duration-[var(--medium)]">
           Dashboard
         </h1> */}
-        <Message icon="loading" content="auth" fullscreen={true} />
+        <div className="hidden md:block">
+          <Message icon="loading" content="auth" fullscreen />
+        </div>
+
+        <div className="block md:hidden">
+          <Message icon="loading" content="auth" fullscreen withinContainer />
+        </div>
       </>
     );
   }
