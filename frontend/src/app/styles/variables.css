@@ -43,6 +43,16 @@
   --badge-blue: #b3d4ff;
   --badge-green: #c3f584;
   --badge-pink: #f7aef8;
+
+  --text-one: var(--text-main-light);
+  --text-two: var(--text-main-light);
+  --text-three: var(--text-main-light);
+  --text-four: var(--text-main-light);
+
+  --text-apricot: var(--text-main-light);
+  --text-blue: var(--text-main-light);
+  --text-green: var(--text-main-light);
+  --text-pink: var(--text-main-light);
 }
 
 [data-theme="dark"] {

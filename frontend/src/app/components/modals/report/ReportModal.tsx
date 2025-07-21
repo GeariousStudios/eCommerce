@@ -421,7 +421,7 @@ const ReportModal = (props: Props) => {
     formRef.current?.requestSubmit();
   };
 
-  const handleConflictClick = async () => {
+  const handleConflictClick = () => {
     if (!conflictReport?.id) {
       return;
     }
@@ -432,12 +432,7 @@ const ReportModal = (props: Props) => {
     setSelectedDate(newDate);
     setSelectedHour(newHour);
 
-    await fetchReportsForHour();
-
-    setIsEditingExistingReport(true);
-    setIsAddingReport(true);
-    setBackupEditedReport(conflictReport);
-    setHiddenReportId(conflictReport.id ?? null);
+    fetchReportsForHour();
   };
 
   const resetReport = () => {

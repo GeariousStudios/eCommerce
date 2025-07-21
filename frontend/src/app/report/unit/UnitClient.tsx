@@ -775,7 +775,7 @@ const UnitClient = (props: Props) => {
                                               <div className="flex gap-2">
                                                 <button
                                                   type="button"
-                                                  className={`${iconButtonPrimaryClass} invisible group-hover/row:visible`}
+                                                  className={`${iconButtonPrimaryClass}`}
                                                   onClick={() => {
                                                     const startDate = new Date(
                                                       report.startTime,

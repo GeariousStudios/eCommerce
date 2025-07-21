@@ -171,7 +171,7 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-[var(--badge-one)] text-[var(--text-main-reverse)]`}
+                      className={`${badgeClass} bg-[var(--badge-one)] text-[var(--text-one)]`}
                     >
                       {col.name}
                     </span>
@@ -192,7 +192,7 @@ const UnitsClient = (props: Props) => {
                   .map((cat, i) => (
                     <span
                       key={i}
-                      className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-main-reverse)]`}
+                      className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-two)]`}
                     >
                       {cat.name}
                     </span>
@@ -282,7 +282,7 @@ const UnitsClient = (props: Props) => {
             return (
               <span
                 key={id}
-                className={`${badgeClass} bg-[var(--badge-one)] text-[var(--text-main-reverse)]`}
+                className={`${badgeClass} bg-[var(--badge-one)] text-[var(--text-one)]`}
               >
                 {col.name}
               </span>
@@ -305,7 +305,7 @@ const UnitsClient = (props: Props) => {
             .map((cat, i) => (
               <span
                 key={i}
-                className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-main-reverse)]`}
+                className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-two)]`}
               >
                 {cat.name}
               </span>

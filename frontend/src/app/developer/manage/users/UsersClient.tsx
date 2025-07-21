@@ -154,7 +154,7 @@ const UsersClient = (props: Props) => {
             {item.roles.map((role, i) => (
               <span
                 key={i}
-                className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)]" : role === "Developer" ? "bg-[var(--badge-two)]" : role === "Reporter" ? "bg-[var(--badge-three)]" : role === "Master" ? "bg-[var(--badge-four)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
+                className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)] text-[var(--text-one)]" : role === "Developer" ? "bg-[var(--badge-two)] text-[var(--text-two)]" : role === "Reporter" ? "bg-[var(--badge-three)] text-[var(--text-three)]" : role === "Master" ? "bg-[var(--badge-four)] text-[var(--text-four)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
               >
                 {role}
               </span>
