@@ -781,7 +781,54 @@ const ReportModal = (props: Props) => {
                             <div className="flex justify-between gap-2">
                               <div className="text-sm text-[var(--text-secondary)]">
                                 {report.stopTime ? (
-                                  `${report.startTime?.slice(0, 16).replace("T", " ")} - ${report.stopTime?.slice(0, 16).replace("T", " ")}`
+                                  (() => {
+                                    const start = new Date(report.startTime);
+                                    const stop = new Date(report.stopTime);
+                                    const diffMs =
+                                      stop.getTime() - start.getTime();
+                                    const totalMinutes = Math.floor(
+                                      diffMs / (1000 * 60),
+                                    );
+                                    const diffDays = Math.floor(
+                                      totalMinutes / (60 * 24),
+                                    );
+                                    const diffHours = Math.floor(
+                                      (totalMinutes % (60 * 24)) / 60,
+                                    );
+                                    const diffMinutes = totalMinutes % 60;
+
+                                    const parts: string[] = [];
+                                    if (diffDays > 0)
+                                      parts.push(
+                                        `${diffDays} ${diffDays === 1 ? "dag" : "dagar"}`,
+                                      );
+                                    if (diffHours > 0)
+                                      parts.push(
+                                        `${diffHours} ${diffHours === 1 ? "timme" : "timmar"}`,
+                                      );
+                                    if (diffMinutes > 0 || parts.length === 0)
+                                      parts.push(
+                                        `${diffMinutes} ${diffMinutes === 1 ? "minut" : "minuter"}`,
+                                      );
+
+                                    const duration = parts.join(" ");
+
+                                    return (
+                                      <>
+                                        {report.startTime
+                                          ?.slice(0, 16)
+                                          .replace("T", " ")}{" "}
+                                        -{" "}
+                                        {report.stopTime
+                                          ?.slice(0, 16)
+                                          .replace("T", " ")}{" "}
+                                        <br />
+                                        <span className="italic">
+                                          ({duration})
+                                        </span>
+                                      </>
+                                    );
+                                  })()
                                 ) : (
                                   <>
                                     {report.startTime
