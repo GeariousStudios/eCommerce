@@ -223,6 +223,7 @@ const Navbar = (props: Props) => {
               initialFocus: false,
               allowOutsideClick: true,
               escapeDeactivates: false,
+              fallbackFocus: () => innerRef.current ?? document.body,
             }}
             paused={isDesktop || props.navbarHidden || !isAuthReady}
           >

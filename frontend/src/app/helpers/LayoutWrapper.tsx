@@ -19,7 +19,14 @@ type Breadcrumb = {
 const LayoutWrapper = (props: Props) => {
   // --- STATES ---
   const [hasScrollbar, setHasScrollbar] = useState(false);
-  const [navbarHidden, setNavbarHidden] = useState(false);
+  // const [navbarHidden, setNavbarHidden] = useState(false);
+  const [navbarHidden, setNavbarHidden] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.matchMedia("(max-width: 767px)").matches;
+    }
+    return false;
+  });
+
   const [unitName, setUnitName] = useState<string | null>(null);
   const [unitGroupId, setUnitGroupId] = useState<string | null>(null);
   const [unitGroupName, setUnitGroupName] = useState<string | null>(null);
