@@ -4876,23 +4876,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\se52374\\.nuget\\packages\\": {},
+    "C:\\Users\\Liam\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\se52374\\OneDrive - Fresenius\\PC\\Documents\\GitHub\\eCommerce\\backend\\eCommerce.csproj",
+      "projectUniqueName": "D:\\repos\\eCommerce\\backend\\eCommerce.csproj",
       "projectName": "eCommerce",
-      "projectPath": "C:\\Users\\se52374\\OneDrive - Fresenius\\PC\\Documents\\GitHub\\eCommerce\\backend\\eCommerce.csproj",
-      "packagesPath": "C:\\Users\\se52374\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\se52374\\OneDrive - Fresenius\\PC\\Documents\\GitHub\\eCommerce\\backend\\obj\\",
+      "projectPath": "D:\\repos\\eCommerce\\backend\\eCommerce.csproj",
+      "packagesPath": "C:\\Users\\Liam\\.nuget\\packages\\",
+      "outputPath": "D:\\repos\\eCommerce\\backend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\se52374\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Liam\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4901,6 +4901,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -4919,7 +4920,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
       "net8.0": {
@@ -4979,7 +4980,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

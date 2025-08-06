@@ -54,7 +54,8 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Ogiltig nyhetstyp" });
             }
 
-            var (user, userId) = userInfo.Value;
+            var (createdBy, userId) = userInfo.Value;
+            var now = DateTime.UtcNow;
 
             var newsItem = new News
             {
@@ -63,8 +64,12 @@ namespace backend.Controllers
                 TypeName = newsType.Name,
                 Headline = dto.Headline,
                 Content = dto.Content,
-                Author = user,
-                AuthorId = userId,
+
+                // Meta data.
+                CreationDate = now,
+                CreatedBy = createdBy,
+                UpdateDate = now,
+                UpdatedBy = createdBy,
             };
 
             _context.News.Add(newsItem);
@@ -78,8 +83,12 @@ namespace backend.Controllers
                 TypeName = newsItem.TypeName,
                 Headline = newsItem.Headline,
                 Content = newsItem.Content,
-                Author = newsItem.Author,
-                AuthorId = newsItem.AuthorId,
+
+                // Meta data.
+                CreationDate = newsItem.CreationDate,
+                CreatedBy = newsItem.CreatedBy,
+                UpdateDate = newsItem.UpdateDate,
+                UpdatedBy = newsItem.UpdatedBy,
             };
 
             return Ok(result);
@@ -145,15 +154,18 @@ namespace backend.Controllers
                 return BadRequest(new { message = "Nyhetstypen kunde inte hittas i databasen" });
             }
 
-            var (user, userId) = userInfo.Value;
+            var (updatedBy, userId) = userInfo.Value;
+            var now = DateTime.UtcNow;
 
             newsItem.Date = dto.Date;
             newsItem.TypeId = newsType.Id;
             newsItem.TypeName = newsType.Name;
             newsItem.Headline = dto.Headline;
             newsItem.Content = dto.Content;
-            newsItem.Author = user;
-            newsItem.AuthorId = userId;
+
+            // Meta data.
+            newsItem.UpdateDate = now;
+            newsItem.UpdatedBy = updatedBy;
 
             await _context.SaveChangesAsync();
 
@@ -165,8 +177,10 @@ namespace backend.Controllers
                 TypeName = newsItem.TypeName,
                 Headline = newsItem.Headline,
                 Content = newsItem.Content,
-                Author = newsItem.Author,
-                AuthorId = newsItem.AuthorId,
+
+                // Meta data.
+                UpdateDate = newsItem.UpdateDate,
+                UpdatedBy = newsItem.UpdatedBy,
             };
 
             return Ok(result);

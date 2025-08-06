@@ -34,8 +34,7 @@ type NewsItem = {
   typeName: string;
   headline: string;
   content: string;
-  author: string;
-  authorId: number;
+  updatedBy: string;
 };
 
 const HomeClient = (props: Props) => {
@@ -284,7 +283,7 @@ const HomeClient = (props: Props) => {
             {!props.isAuthReady ? (
               ""
             ) : isLoadingNews ? (
-              <Message icon="loading" content="Hämtar nyheter..."  />
+              <Message icon="loading" content="Hämtar nyheter..." />
             ) : newsItems.length > 0 ? (
               <div>
                 {newsItems.map((item, index) => (
@@ -337,10 +336,7 @@ const HomeClient = (props: Props) => {
 
                       <div dangerouslySetInnerHTML={{ __html: item.content }} />
                       <small className="text-[var(--text-secondary)] italic">
-                        Publicerad av:{" "}
-                        {props.isAdmin
-                          ? item.author + " (ID: " + item.authorId + ")"
-                          : item.author}
+                        Publicerad av: {item.updatedBy}
                       </small>
                     </article>
                     {index !== newsItems.length - 1 && (

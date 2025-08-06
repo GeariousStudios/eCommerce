@@ -8,7 +8,11 @@ namespace backend.Models
         public string TypeName { get; set; } = string.Empty;
         public string Headline { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
-        public string Author { get; set; } = string.Empty;
-        public int AuthorId { get; set; }
+
+        // Meta data.
+        public DateTime CreationDate { get; set; }
+        public DateTime UpdateDate { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
+        public string UpdatedBy { get; set; } = string.Empty;
     }
 }
