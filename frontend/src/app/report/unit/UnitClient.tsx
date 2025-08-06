@@ -34,6 +34,7 @@ import ReportModal from "@/app/components/modals/report/ReportModal";
 import { get } from "http";
 import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
 import { toLocalDateString } from "@/app/helpers/timeUtils";
+import DeleteModal from "@/app/components/modals/DeleteModal";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -70,7 +71,6 @@ const UnitClient = (props: Props) => {
   const [isHidden, setIsHidden] = useState(false);
   const [unitCategoryIds, setUnitCategoryIds] = useState<number[]>([]);
 
-
   // --- States: UnitGroup ---
   const [unitGroupName, setUnitGroupName] = useState("");
 
@@ -90,6 +90,9 @@ const UnitClient = (props: Props) => {
 
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportId, setReportId] = useState<string | undefined>();
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | undefined>();
 
   const [refetchData, setRefetchData] = useState(true);
 
@@ -267,6 +270,8 @@ const UnitClient = (props: Props) => {
     setIsUnitCellModalOpen((prev) => !prev);
   };
 
+  // --- TOGGLE MODALS ---
+  // --- Report ---
   const toggleReportModal = (id?: string, hour?: number, date?: string) => {
     setReportId(id);
 
@@ -283,6 +288,12 @@ const UnitClient = (props: Props) => {
     }
 
     setIsReportModalOpen((prev) => !prev);
+  };
+
+  // --- Delete ---
+  const toggleDeleteItemModal = (id?: string) => {
+    setDeletingItemId(id);
+    setIsDeleteModalOpen((prev) => !prev);
   };
 
   // --- DATE SELECTOR ---
@@ -423,6 +434,20 @@ const UnitClient = (props: Props) => {
           reportId={Number(reportId)}
           selectedDate={reportDate}
           selectedHour={reportHour}
+        />
+
+        <DeleteModal
+          isOpen={isDeleteModalOpen}
+          onClose={() => {
+            toggleDeleteItemModal();
+            setDeletingItemId("");
+          }}
+          onConfirm={() => {
+            deleteReport(String(deletingItemId));
+            setReports((prev) => prev.filter((r) => r.id !== deletingItemId));
+            toggleDeleteItemModal();
+          }}
+          isNestedModal
         />
 
         {/* --- CONTENT --- */}
@@ -807,17 +832,11 @@ const UnitClient = (props: Props) => {
                                                 <button
                                                   type="button"
                                                   className={`${iconButtonPrimaryClass}`}
-                                                  onClick={() => {
-                                                    if (report.id) {
-                                                      deleteReport(report.id);
-                                                    } else {
-                                                      setReports((prev) =>
-                                                        prev.filter(
-                                                          (_, i) => i !== index,
-                                                        ),
-                                                      );
-                                                    }
-                                                  }}
+                                                  onClick={() =>
+                                                    toggleDeleteItemModal(
+                                                      report.id,
+                                                    )
+                                                  }
                                                 >
                                                   <HoverIcon
                                                     outline={OutlineTrashIcon}
@@ -879,17 +898,11 @@ const UnitClient = (props: Props) => {
                                                 <button
                                                   type="button"
                                                   className={`${iconButtonPrimaryClass}`}
-                                                  onClick={() => {
-                                                    if (report.id) {
-                                                      deleteReport(report.id);
-                                                    } else {
-                                                      setReports((prev) =>
-                                                        prev.filter(
-                                                          (_, i) => i !== index,
-                                                        ),
-                                                      );
-                                                    }
-                                                  }}
+                                                  onClick={() =>
+                                                    toggleDeleteItemModal(
+                                                      report.id,
+                                                    )
+                                                  }
                                                 >
                                                   <HoverIcon
                                                     outline={OutlineTrashIcon}

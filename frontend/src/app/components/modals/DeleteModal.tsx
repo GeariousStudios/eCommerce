@@ -15,6 +15,7 @@ type Props = {
   onConfirm: () => void;
   confirmOnDelete?: boolean;
   confirmDeleteMessage?: string | ReactNode;
+  isNestedModal?: boolean;
 };
 
 const DeleteModal = (props: Props) => {
@@ -47,7 +48,8 @@ const DeleteModal = (props: Props) => {
           onClose={() => props.onClose()}
           icon={TrashIcon}
           label="Är du säker?"
-          disableClickOutside={showConfirmModal}
+          disableClickOutside={showConfirmModal || props.isNestedModal}
+          isNestedModal={props.isNestedModal}
         >
           <div className="relative flex flex-col gap-8">
             <p>Ett borttaget objekt går ej att få tillbaka.</p>

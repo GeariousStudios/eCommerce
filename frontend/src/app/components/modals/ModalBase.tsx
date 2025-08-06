@@ -26,6 +26,7 @@ type Props = {
   confirmOnClose?: boolean;
   confirmCloseMessage?: string;
   isDirty?: boolean;
+  isNestedModal?: boolean;
 };
 
 export type ModalBaseHandle = {
@@ -72,6 +73,10 @@ const ModalBase = forwardRef((props: Props, ref) => {
   }, [props.isOpen, props.onClose]);
 
   useEffect(() => {
+    if (props.isNestedModal) {
+      return;
+    }
+
     if (props.isOpen) {
       document.body.style.overflow = "hidden";
     } else {

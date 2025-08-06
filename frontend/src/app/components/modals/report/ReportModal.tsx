@@ -29,6 +29,7 @@ import RichTextEditor, {
 import HoverIcon from "../../common/HoverIcon";
 import { localDateTimeToUtcIso } from "@/app/helpers/timeUtils";
 import { start } from "repl";
+import DeleteModal from "../DeleteModal";
 
 type Props = {
   isOpen: boolean;
@@ -101,6 +102,9 @@ const ReportModal = (props: Props) => {
 
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedHour, setSelectedHour] = useState<string>("");
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | undefined>();
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -530,7 +534,9 @@ const ReportModal = (props: Props) => {
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     const dirty =
-      currentReport.content !== "" && currentReport.content !== "<p><br></p>";
+      currentReport.content !== "" &&
+      currentReport.content !== "<p><br></p>" &&
+      currentReport.content !== backupEditedReport?.content;
 
     setIsDirty(dirty);
   }, [currentReport.content]);
@@ -557,6 +563,13 @@ const ReportModal = (props: Props) => {
     value: String(i),
   }));
 
+  // --- TOGGLE MODAL(S) ---
+  // --- Delete ---
+  const toggleDeleteItemModal = (id?: string) => {
+    setDeletingItemId(id);
+    setIsDeleteModalOpen((prev) => !prev);
+  };
+
   return (
     <>
       {!isEditorReady && (
@@ -572,516 +585,512 @@ const ReportModal = (props: Props) => {
       )}
 
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => {
-            resetReport();
-            props.onClose();
-          }}
-          icon={ExclamationTriangleIcon}
-          label={`Rapportera störningar: ${selectedDate}`}
-          confirmOnClose
-          isDirty={isDirty}
-        >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-4"
-            onSubmit={(e) => updateReports(e)}
+        <>
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => {
+              resetReport();
+              props.onClose();
+            }}
+            icon={ExclamationTriangleIcon}
+            label={`Rapportera störningar: ${selectedDate}`}
+            confirmOnClose
+            isDirty={isDirty}
+            disableClickOutside={isDeleteModalOpen}
           >
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                1. Välj tidpunkt
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
-              <Input
-                type="date"
-                id="selectedDate"
-                label="Datum"
-                value={selectedDate}
-                onChange={(val) => setSelectedDate(String(val))}
-                onModal
-                required
-              />
-
-              <SingleDropdown
-                id="selectedHour"
-                label={"Timme"}
-                value={selectedHour}
-                onChange={(val) => setSelectedHour(String(val))}
-                onModal
-                required
-                options={hourOptions}
-              />
-            </div>
-
-            <div
-              className={`${selectedHour && selectedDate ? "" : "pointer-events-none opacity-25"} flex flex-col gap-4`}
+            <form
+              ref={formRef}
+              className="relative flex flex-col gap-4"
+              onSubmit={(e) => updateReports(e)}
             >
-              <div className="mt-8 flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <hr className="w-12 text-[var(--border-tertiary)]" />
                 <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                  2. Rapportera störningar
+                  1. Välj tidpunkt
                 </h3>
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="flex flex-col justify-between gap-6">
-                {!canAddReport &&
-                conflictReport?.startTime.slice(0, 13) !==
-                  `${selectedDate}T${selectedHour.padStart(2, "0")}` ? (
-                  <div className="text-sm text-[var(--note-error)]">
-                    Det finns ett tidigare stopp som blockerar nya rapporter:
-                    <br />
-                    <button
-                      type="button"
-                      onClick={handleConflictClick}
-                      className="cursor-pointer font-semibold underline"
-                    >
-                      {conflictReport?.stopTime ? (
-                        `${conflictReport?.startTime.slice(0, 16).replace("T", " ")} - ${conflictReport.stopTime.slice(0, 16).replace("T", " ")}`
-                      ) : (
-                        <>
-                          {" "}
-                          {conflictReport?.startTime
-                            .slice(0, 16)
-                            .replace("T", " ")}{" "}
-                          - <span className="">pågående</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                ) : (
-                  !isAddingReport && (
-                    <button
-                      className={`${buttonSecondaryClass} flex w-full items-center justify-center gap-2`}
-                      onClick={() => {
-                        setCurrentReport({
-                          id: "",
-                          categoryId: "",
-                          subCategoryId: "",
-                          categoryName: "",
-                          subCategoryName: "",
-                          content: "",
-                          startTime: `${selectedDate}T${selectedHour.padStart(2, "0")}:00`,
-                          stopTime: "",
-                          hour: "",
-                          date: "",
-                        });
-                        setIsAddingReport(true);
-                      }}
-                      tabIndex={selectedHour && selectedDate ? 0 : -1}
-                    >
-                      <HoverIcon
-                        outline={OutlinePlusIcon}
-                        solid={SolidPlusIcon}
-                        className="h-6 min-h-6 w-6 min-w-6"
-                      />
-                      Rapportera ny störning
-                    </button>
-                  )
-                )}
+              <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+                <Input
+                  type="date"
+                  id="selectedDate"
+                  label="Datum"
+                  value={selectedDate}
+                  onChange={(val) => setSelectedDate(String(val))}
+                  onModal
+                  required
+                />
 
-                {!isAddingReport && reports.length > 0 && (
-                  <>
-                    {reports
-                      .filter((r) => r.id !== hiddenReportId)
-                      .map((report, index) => (
-                        <div
-                          key={report.id}
-                          className="relative flex flex-col gap-4 rounded-2xl bg-[var(--bg-main)] p-4"
-                        >
-                          {report.categoryId && (
-                            <div className="flex justify-between gap-4">
-                              <div className="mb-2 flex flex-col">
-                                <div className="font-bold">
-                                  {categories.find(
-                                    (c) =>
-                                      String(c.id) ===
-                                      String(report.categoryId),
-                                  )?.name ?? report.categoryName}
-                                </div>
+                <SingleDropdown
+                  id="selectedHour"
+                  label={"Timme"}
+                  value={selectedHour}
+                  onChange={(val) => setSelectedHour(String(val))}
+                  onModal
+                  required
+                  options={hourOptions}
+                />
+              </div>
 
-                                <div className="text-sm text-[var(--text-secondary)]">
-                                  {report.subCategoryId && (
-                                    <>
-                                      {categories
-                                        .find(
-                                          (c) =>
-                                            String(c.id) ===
-                                            String(report.categoryId),
-                                        )
-                                        ?.subCategories.find(
-                                          (sc) =>
-                                            String(sc.id) ===
-                                            String(report.subCategoryId),
-                                        )?.name ?? report.subCategoryName}
-                                    </>
-                                  )}
-                                </div>
-                              </div>
+              <div
+                className={`${selectedHour && selectedDate ? "" : "pointer-events-none opacity-25"} flex flex-col gap-4`}
+              >
+                <div className="mt-8 flex items-center gap-2">
+                  <hr className="w-12 text-[var(--border-tertiary)]" />
+                  <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    2. Rapportera störningar
+                  </h3>
+                  <hr className="w-full text-[var(--border-tertiary)]" />
+                </div>
 
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  className={`${iconButtonPrimaryClass}`}
-                                  onClick={() => {
-                                    setIsEditingExistingReport(true);
-                                    setIsAddingReport(true);
-                                    setBackupEditedReport(report);
-                                  }}
-                                  tabIndex={
-                                    selectedHour && selectedDate ? 0 : -1
-                                  }
-                                >
-                                  <HoverIcon
-                                    outline={OutlinePencilIcon}
-                                    solid={SolidPencilIcon}
-                                    className="h-6 min-h-6 w-6 min-w-6"
-                                  />
-                                </button>
-                                <button
-                                  type="button"
-                                  className={`${iconButtonPrimaryClass}`}
-                                  onClick={() => {
-                                    if (report.id) {
-                                      deleteReport(report.id);
-                                    } else {
-                                      setReports((prev) =>
-                                        prev.filter((_, i) => i !== index),
-                                      );
-                                    }
-                                  }}
-                                  tabIndex={
-                                    selectedHour && selectedDate ? 0 : -1
-                                  }
-                                >
-                                  <HoverIcon
-                                    outline={OutlineTrashIcon}
-                                    solid={SolidTrashIcon}
-                                    className="h-6 min-h-6 w-6 min-w-6"
-                                  />
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                          <div className="flex justify-between gap-2">
-                            <div className="text-sm text-[var(--text-secondary)]">
-                              {report.stopTime ? (
-                                `${report.startTime?.slice(0, 16).replace("T", " ")} - ${report.stopTime?.slice(0, 16).replace("T", " ")}`
-                              ) : (
-                                <>
-                                  {report.startTime
-                                    ?.slice(0, 16)
-                                    .replace("T", " ")}{" "}
-                                  -{" "}
-                                  <span className="font-semibold text-[var(--note-error)]">
-                                    pågående
-                                  </span>
-                                </>
-                              )}
-                            </div>
-
-                            {!report.categoryId && (
-                              <div className="flex gap-2">
-                                <button
-                                  type="button"
-                                  className={`${iconButtonPrimaryClass}`}
-                                  onClick={() => {
-                                    setIsEditingExistingReport(true);
-                                    setBackupEditedReport(report);
-                                    setIsAddingReport(true);
-                                    if (report.id) {
-                                      setHiddenReportId(report.id);
-                                    }
-                                  }}
-                                >
-                                  <HoverIcon
-                                    outline={OutlinePencilIcon}
-                                    solid={SolidPencilIcon}
-                                    className="h-6 min-h-6 w-6 min-w-6"
-                                  />
-                                </button>
-                                <button
-                                  type="button"
-                                  className={`${iconButtonPrimaryClass}`}
-                                  onClick={() => {
-                                    if (report.id) {
-                                      deleteReport(report.id);
-                                    } else {
-                                      setReports((prev) =>
-                                        prev.filter((_, i) => i !== index),
-                                      );
-                                    }
-                                  }}
-                                >
-                                  <HoverIcon
-                                    outline={OutlineTrashIcon}
-                                    solid={SolidTrashIcon}
-                                    className="h-6 min-h-6 w-6 min-w-6"
-                                  />
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                          <div
-                            className="text-sm break-all"
-                            dangerouslySetInnerHTML={{ __html: report.content }}
-                          />
-                        </div>
-                      ))}
-                  </>
-                )}
-
-                {isAddingReport && (
-                  <div className="flex flex-col gap-6 rounded-2xl bg-[var(--bg-main)] p-6">
-                    {categories.length > 0 && (
-                      <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-4">
-                        <SingleDropdown
-                          id="category"
-                          label="Kategori"
-                          value={
-                            currentReport.categoryId
-                              ? String(currentReport.categoryId)
-                              : ""
-                          }
-                          options={[
-                            { label: "--- Välj kategori ---", value: "" },
-                            ...categories.map((c) => ({
-                              label: c.name,
-                              value: String(c.id),
-                            })),
-                          ]}
-                          onChange={(val) =>
-                            setCurrentReport((prev) => ({
-                              ...prev,
-                              categoryId: String(val),
-                              categoryName:
-                                categories.find((c) => String(c.id) === val)
-                                  ?.name ?? "",
-                            }))
-                          }
-                          emptyOption
-                        />
-                        {(() => {
-                          const selectedCategory = categories.find(
-                            (c) =>
-                              String(c.id) === String(currentReport.categoryId),
-                          );
-                          const subs = selectedCategory?.subCategories ?? [];
-
-                          return subs.length > 0 ? (
-                            <SingleDropdown
-                              id="subCategory"
-                              label="Underkategori"
-                              value={
-                                currentReport.subCategoryId
-                                  ? String(currentReport.subCategoryId)
-                                  : ""
-                              }
-                              onChange={(val) =>
-                                setCurrentReport((prev) => ({
-                                  ...prev,
-                                  subCategoryId: String(val),
-                                  subCategoryName:
-                                    categories
-                                      .find(
-                                        (c) =>
-                                          String(c.id) ===
-                                          String(currentReport.categoryId),
-                                      )
-                                      ?.subCategories.find(
-                                        (sc) => String(sc.id) === val,
-                                      )?.name ?? "",
-                                }))
-                              }
-                              options={[
-                                { label: "--- Välj underkategori ---", value: "" },
-                                ...subs
-                                  .filter(
-                                    (sc) =>
-                                      sc.id !== undefined &&
-                                      sc.name !== undefined,
-                                  )
-                                  .map((sc) => ({
-                                    label: sc.name,
-                                    value: String(sc.id),
-                                  })),
-                              ]}
-                              emptyOption
-                            />
-                          ) : null;
-                        })()}
-                      </div>
-                    )}
-
-                    <div className="flex flex-col gap-4 sm:flex-row">
-                      <Input
-                        type="datetime-local"
-                        id="startTime"
-                        label="Starttid"
-                        value={
-                          currentReport.startTime === ""
-                            ? `${selectedDate}T${selectedHour.padStart(2, "0")}:00`
-                            : String(currentReport.startTime)
-                        }
-                        onChange={(val) => {
-                          const start = String(val);
-                          setCurrentReport((prev) => {
-                            const updated = {
-                              ...prev,
-                              startTime: start,
-                            };
-
-                            validateTimes(
-                              props.unitId!,
-                              updated.startTime,
-                              updated.stopTime,
-                              updated.id ? updated.id : undefined,
-                            ).then((result) => {
-                              if (!result.isValid) {
-                                setValidationError(result.message);
-                              } else {
-                                setValidationError(null);
-                              }
-                            });
-                            return updated;
-                          });
-                        }}
-                        required
-                      />
-
-                      <Input
-                        type="datetime-local"
-                        id="stopTime"
-                        label="Sluttid"
-                        value={String(currentReport.stopTime) || ""}
-                        onChange={(val) => {
-                          const stop = String(val);
-                          setCurrentReport((prev) => {
-                            const updated = {
-                              ...prev,
-                              stopTime: stop,
-                            };
-
-                            validateTimes(
-                              props.unitId!,
-                              updated.startTime,
-                              updated.stopTime,
-                              updated.id ? updated.id : undefined,
-                            ).then((result) => {
-                              if (!result.isValid) {
-                                setValidationError(result.message);
-                              } else {
-                                setValidationError(null);
-                              }
-                            });
-                            return updated;
-                          });
-                        }}
-                      />
-                    </div>
-
-                    <RichTextEditor
-                      ref={editorRef}
-                      value={currentReport.content}
-                      name="content"
-                      onReady={() => {
-                        setIsEditorReady(true);
-                      }}
-                      onChange={(val) =>
-                        setCurrentReport((prev) => ({
-                          ...prev,
-                          content: val,
-                        }))
-                      }
-                    />
-
-                    <div className="flex flex-col gap-4 sm:flex-row">
+                <div className="flex flex-col justify-between gap-6">
+                  {!canAddReport &&
+                  conflictReport?.startTime.slice(0, 13) !==
+                    `${selectedDate}T${selectedHour.padStart(2, "0")}` ? (
+                    <div className="text-sm text-[var(--note-error)]">
+                      Det finns ett tidigare stopp som blockerar nya rapporter:
+                      <br />
                       <button
-                        className={`${buttonPrimaryClass} flex w-full items-center justify-center gap-2`}
                         type="button"
-                        onClick={async () => {
-                          if (!currentReport.startTime) {
-                            currentReport.startTime = `${selectedDate}T${selectedHour.padStart(2, "0")}:00`;
-                          }
-
-                          let success = false;
-
-                          if (currentReport.id) {
-                            success = await updateReport(currentReport);
-                          } else {
-                            success = await createReport(currentReport);
-                          }
-
-                          if (!success) {
-                            return;
-                          }
-
+                        onClick={handleConflictClick}
+                        className="cursor-pointer font-semibold underline"
+                      >
+                        {conflictReport?.stopTime ? (
+                          `${conflictReport?.startTime.slice(0, 16).replace("T", " ")} - ${conflictReport.stopTime.slice(0, 16).replace("T", " ")}`
+                        ) : (
+                          <>
+                            {" "}
+                            {conflictReport?.startTime
+                              .slice(0, 16)
+                              .replace("T", " ")}{" "}
+                            - <span className="">pågående</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  ) : (
+                    !isAddingReport && (
+                      <button
+                        className={`${buttonSecondaryClass} flex w-full items-center justify-center gap-2`}
+                        onClick={() => {
                           setCurrentReport({
+                            id: "",
                             categoryId: "",
                             subCategoryId: "",
                             categoryName: "",
                             subCategoryName: "",
-                            startTime: "",
-                            stopTime: "",
                             content: "",
-                            id: "",
+                            startTime: `${selectedDate}T${selectedHour.padStart(2, "0")}:00`,
+                            stopTime: "",
+                            hour: "",
+                            date: "",
                           });
-                          editorRef.current?.setContent("");
-
-                          setHiddenReportId(null);
-                          setIsAddingReport(false);
+                          setIsAddingReport(true);
                         }}
-                        disabled={!!validationError}
+                        tabIndex={selectedHour && selectedDate ? 0 : -1}
                       >
                         <HoverIcon
                           outline={OutlinePlusIcon}
                           solid={SolidPlusIcon}
                           className="h-6 min-h-6 w-6 min-w-6"
                         />
-                        Infoga
+                        Rapportera ny störning
                       </button>
+                    )
+                  )}
 
-                      <button
-                        className={`${buttonSecondaryClass} flex w-full items-center justify-center gap-2`}
-                        type="button"
-                        onClick={() => {
-                          resetReport();
-                        }}
-                      >
-                        <HoverIcon
-                          outline={OutlineXMarkIcon}
-                          solid={SolidXMarkIcon}
-                          className="h-6 min-h-6 w-6 min-w-6"
+                  {!isAddingReport && reports.length > 0 && (
+                    <>
+                      {reports
+                        .filter((r) => r.id !== hiddenReportId)
+                        .map((report, index) => (
+                          <div
+                            key={report.id}
+                            className="relative flex flex-col gap-4 rounded-2xl bg-[var(--bg-main)] p-4"
+                          >
+                            {report.categoryId && (
+                              <div className="flex justify-between gap-4">
+                                <div className="mb-2 flex flex-col">
+                                  <div className="font-bold">
+                                    {categories.find(
+                                      (c) =>
+                                        String(c.id) ===
+                                        String(report.categoryId),
+                                    )?.name ?? report.categoryName}
+                                  </div>
+
+                                  <div className="text-sm text-[var(--text-secondary)]">
+                                    {report.subCategoryId && (
+                                      <>
+                                        {categories
+                                          .find(
+                                            (c) =>
+                                              String(c.id) ===
+                                              String(report.categoryId),
+                                          )
+                                          ?.subCategories.find(
+                                            (sc) =>
+                                              String(sc.id) ===
+                                              String(report.subCategoryId),
+                                          )?.name ?? report.subCategoryName}
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    className={`${iconButtonPrimaryClass}`}
+                                    onClick={() => {
+                                      setIsEditingExistingReport(true);
+                                      setIsAddingReport(true);
+                                      setBackupEditedReport(report);
+                                    }}
+                                    tabIndex={
+                                      selectedHour && selectedDate ? 0 : -1
+                                    }
+                                  >
+                                    <HoverIcon
+                                      outline={OutlinePencilIcon}
+                                      solid={SolidPencilIcon}
+                                      className="h-6 min-h-6 w-6 min-w-6"
+                                    />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`${iconButtonPrimaryClass}`}
+                                    onClick={() =>
+                                      toggleDeleteItemModal(report.id)
+                                    }
+                                    tabIndex={
+                                      selectedHour && selectedDate ? 0 : -1
+                                    }
+                                  >
+                                    <HoverIcon
+                                      outline={OutlineTrashIcon}
+                                      solid={SolidTrashIcon}
+                                      className="h-6 min-h-6 w-6 min-w-6"
+                                    />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                            <div className="flex justify-between gap-2">
+                              <div className="text-sm text-[var(--text-secondary)]">
+                                {report.stopTime ? (
+                                  `${report.startTime?.slice(0, 16).replace("T", " ")} - ${report.stopTime?.slice(0, 16).replace("T", " ")}`
+                                ) : (
+                                  <>
+                                    {report.startTime
+                                      ?.slice(0, 16)
+                                      .replace("T", " ")}{" "}
+                                    -{" "}
+                                    <span className="font-semibold text-[var(--note-error)]">
+                                      pågående
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+
+                              {!report.categoryId && (
+                                <div className="flex gap-2">
+                                  <button
+                                    type="button"
+                                    className={`${iconButtonPrimaryClass}`}
+                                    onClick={() => {
+                                      setIsEditingExistingReport(true);
+                                      setBackupEditedReport(report);
+                                      setIsAddingReport(true);
+                                      if (report.id) {
+                                        setHiddenReportId(report.id);
+                                      }
+                                    }}
+                                  >
+                                    <HoverIcon
+                                      outline={OutlinePencilIcon}
+                                      solid={SolidPencilIcon}
+                                      className="h-6 min-h-6 w-6 min-w-6"
+                                    />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className={`${iconButtonPrimaryClass}`}
+                                    onClick={() =>
+                                      toggleDeleteItemModal(report.id)
+                                    }
+                                  >
+                                    <HoverIcon
+                                      outline={OutlineTrashIcon}
+                                      solid={SolidTrashIcon}
+                                      className="h-6 min-h-6 w-6 min-w-6"
+                                    />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            <div
+                              className="text-sm break-all"
+                              dangerouslySetInnerHTML={{
+                                __html: report.content,
+                              }}
+                            />
+                          </div>
+                        ))}
+                    </>
+                  )}
+
+                  {isAddingReport && (
+                    <div className="flex flex-col gap-6 rounded-2xl bg-[var(--bg-main)] p-6">
+                      {categories.length > 0 && (
+                        <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-4">
+                          <SingleDropdown
+                            id="category"
+                            label="Kategori"
+                            value={
+                              currentReport.categoryId
+                                ? String(currentReport.categoryId)
+                                : ""
+                            }
+                            options={[
+                              { label: "--- Välj kategori ---", value: "" },
+                              ...categories.map((c) => ({
+                                label: c.name,
+                                value: String(c.id),
+                              })),
+                            ]}
+                            onChange={(val) =>
+                              setCurrentReport((prev) => ({
+                                ...prev,
+                                categoryId: String(val),
+                                categoryName:
+                                  categories.find((c) => String(c.id) === val)
+                                    ?.name ?? "",
+                              }))
+                            }
+                            emptyOption
+                          />
+                          {(() => {
+                            const selectedCategory = categories.find(
+                              (c) =>
+                                String(c.id) ===
+                                String(currentReport.categoryId),
+                            );
+                            const subs = selectedCategory?.subCategories ?? [];
+
+                            return subs.length > 0 ? (
+                              <SingleDropdown
+                                id="subCategory"
+                                label="Underkategori"
+                                value={
+                                  currentReport.subCategoryId
+                                    ? String(currentReport.subCategoryId)
+                                    : ""
+                                }
+                                onChange={(val) =>
+                                  setCurrentReport((prev) => ({
+                                    ...prev,
+                                    subCategoryId: String(val),
+                                    subCategoryName:
+                                      categories
+                                        .find(
+                                          (c) =>
+                                            String(c.id) ===
+                                            String(currentReport.categoryId),
+                                        )
+                                        ?.subCategories.find(
+                                          (sc) => String(sc.id) === val,
+                                        )?.name ?? "",
+                                  }))
+                                }
+                                options={[
+                                  {
+                                    label: "--- Välj underkategori ---",
+                                    value: "",
+                                  },
+                                  ...subs
+                                    .filter(
+                                      (sc) =>
+                                        sc.id !== undefined &&
+                                        sc.name !== undefined,
+                                    )
+                                    .map((sc) => ({
+                                      label: sc.name,
+                                      value: String(sc.id),
+                                    })),
+                                ]}
+                                emptyOption
+                              />
+                            ) : null;
+                          })()}
+                        </div>
+                      )}
+
+                      <div className="flex flex-col gap-4 sm:flex-row">
+                        <Input
+                          type="datetime-local"
+                          id="startTime"
+                          label="Starttid"
+                          value={
+                            currentReport.startTime === ""
+                              ? `${selectedDate}T${selectedHour.padStart(2, "0")}:00`
+                              : String(currentReport.startTime)
+                          }
+                          onChange={(val) => {
+                            const start = String(val);
+                            setCurrentReport((prev) => {
+                              const updated = {
+                                ...prev,
+                                startTime: start,
+                              };
+
+                              validateTimes(
+                                props.unitId!,
+                                updated.startTime,
+                                updated.stopTime,
+                                updated.id ? updated.id : undefined,
+                              ).then((result) => {
+                                if (!result.isValid) {
+                                  setValidationError(result.message);
+                                } else {
+                                  setValidationError(null);
+                                }
+                              });
+                              return updated;
+                            });
+                          }}
+                          required
                         />
-                        Avbryt
-                      </button>
-                    </div>
 
-                    {validationError && (
-                      <div
-                        className="-mt-3 text-sm font-semibold text-[var(--note-error)]"
-                        dangerouslySetInnerHTML={{
-                          __html: validationError,
+                        <Input
+                          type="datetime-local"
+                          id="stopTime"
+                          label="Sluttid"
+                          value={String(currentReport.stopTime) || ""}
+                          onChange={(val) => {
+                            const stop = String(val);
+                            setCurrentReport((prev) => {
+                              const updated = {
+                                ...prev,
+                                stopTime: stop,
+                              };
+
+                              validateTimes(
+                                props.unitId!,
+                                updated.startTime,
+                                updated.stopTime,
+                                updated.id ? updated.id : undefined,
+                              ).then((result) => {
+                                if (!result.isValid) {
+                                  setValidationError(result.message);
+                                } else {
+                                  setValidationError(null);
+                                }
+                              });
+                              return updated;
+                            });
+                          }}
+                        />
+                      </div>
+
+                      <RichTextEditor
+                        ref={editorRef}
+                        value={currentReport.content}
+                        name="content"
+                        onReady={() => {
+                          setIsEditorReady(true);
                         }}
+                        onChange={(val) =>
+                          setCurrentReport((prev) => ({
+                            ...prev,
+                            content: val,
+                          }))
+                        }
                       />
-                    )}
-                  </div>
-                )}
+
+                      <div className="flex flex-col gap-4 sm:flex-row">
+                        <button
+                          className={`${buttonPrimaryClass} flex w-full items-center justify-center gap-2`}
+                          type="button"
+                          onClick={async () => {
+                            if (!currentReport.startTime) {
+                              currentReport.startTime = `${selectedDate}T${selectedHour.padStart(2, "0")}:00`;
+                            }
+
+                            let success = false;
+
+                            if (currentReport.id) {
+                              success = await updateReport(currentReport);
+                            } else {
+                              success = await createReport(currentReport);
+                            }
+
+                            if (!success) {
+                              return;
+                            }
+
+                            setCurrentReport({
+                              categoryId: "",
+                              subCategoryId: "",
+                              categoryName: "",
+                              subCategoryName: "",
+                              startTime: "",
+                              stopTime: "",
+                              content: "",
+                              id: "",
+                            });
+                            editorRef.current?.setContent("");
+
+                            setHiddenReportId(null);
+                            setIsAddingReport(false);
+                          }}
+                          disabled={!!validationError}
+                        >
+                          <HoverIcon
+                            outline={OutlinePlusIcon}
+                            solid={SolidPlusIcon}
+                            className="h-6 min-h-6 w-6 min-w-6"
+                          />
+                          Infoga
+                        </button>
+
+                        <button
+                          className={`${buttonSecondaryClass} flex w-full items-center justify-center gap-2`}
+                          type="button"
+                          onClick={() => {
+                            resetReport();
+                          }}
+                        >
+                          <HoverIcon
+                            outline={OutlineXMarkIcon}
+                            solid={SolidXMarkIcon}
+                            className="h-6 min-h-6 w-6 min-w-6"
+                          />
+                          Avbryt
+                        </button>
+                      </div>
+
+                      {validationError && (
+                        <div
+                          className="-mt-3 text-sm font-semibold text-[var(--note-error)]"
+                          dangerouslySetInnerHTML={{
+                            __html: validationError,
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="mt-2 mb-2 flex items-center">
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
+              <div className="mt-2 mb-2 flex items-center">
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
-              <button
+              <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+                {/* <button
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
@@ -1094,10 +1103,32 @@ const ReportModal = (props: Props) => {
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
                 Ångra
-              </button>
-            </div>
-          </form>
-        </ModalBase>
+              </button> */}
+                <button
+                  type="button"
+                  onClick={() => modalRef.current?.requestClose()}
+                  className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                >
+                  Stäng
+                </button>
+              </div>
+            </form>
+          </ModalBase>
+
+          <DeleteModal
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+              toggleDeleteItemModal();
+              setDeletingItemId(undefined);
+            }}
+            onConfirm={() => {
+              deleteReport(String(deletingItemId));
+              setReports((prev) => prev.filter((r) => r.id !== deletingItemId));
+              toggleDeleteItemModal();
+            }}
+            isNestedModal
+          />
+        </>
       )}
     </>
   );
