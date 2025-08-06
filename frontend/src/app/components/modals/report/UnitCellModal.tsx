@@ -10,6 +10,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
 import SingleDropdown from "../../common/SingleDropdown";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 
 type Props = {
   isOpen: boolean;
@@ -257,6 +258,19 @@ const UnitCellModal = (props: Props) => {
     value: String(i),
   }));
 
+  // --- DATE SELECTOR ---
+  const goToPreviousDay = () => {
+    const date = new Date(selectedDate);
+    date.setDate(date.getDate() - 1);
+    setSelectedDate(date.toISOString().split("T")[0]);
+  };
+
+  const goToNextDay = () => {
+    const date = new Date(selectedDate);
+    date.setDate(date.getDate() + 1);
+    setSelectedDate(date.toISOString().split("T")[0]);
+  };
+
   return (
     <>
       {props.isOpen && (
@@ -284,15 +298,34 @@ const UnitCellModal = (props: Props) => {
             </div>
 
             <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
-              <Input
-                type="date"
-                id="selectedDate"
-                label="Datum"
-                value={selectedDate}
-                onChange={(val) => setSelectedDate(String(val))}
-                onModal
-                required
-              />
+              <div className="ml-auto flex w-full items-center">
+                <button
+                  type="button"
+                  className={`${buttonSecondaryClass} rounded-r-none`}
+                  onClick={goToPreviousDay}
+                  aria-label="Föregående dag"
+                >
+                  <ChevronLeftIcon className="min-h-full min-w-full" />
+                </button>
+                <Input
+                  type="date"
+                  id="selectedDate"
+                  label="Datum"
+                  value={selectedDate}
+                  onChange={(val) => setSelectedDate(String(val))}
+                  onModal
+                  required
+                  notRounded
+                />
+                <button
+                  type="button"
+                  className={`${buttonSecondaryClass} rounded-l-none`}
+                  onClick={goToNextDay}
+                  aria-label="Nästa dag"
+                >
+                  <ChevronRightIcon className="min-h-full min-w-full" />
+                </button>
+              </div>
 
               <SingleDropdown
                 id="selectedHour"

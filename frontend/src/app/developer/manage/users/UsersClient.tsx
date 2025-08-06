@@ -10,6 +10,7 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { LockClosedIcon, WifiIcon } from "@heroicons/react/20/solid";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
+import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 
 type Props = {
   isConnected: boolean | null;
@@ -168,13 +169,7 @@ const UsersClient = (props: Props) => {
       getValue: (item: UserItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">Konto skapat: </span>
-          {new Date(item.creationDate).toLocaleString("sv-SE", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
+          {utcIsoToLocalDateTime(item.creationDate)}
         </p>
       ),
     },
@@ -183,15 +178,7 @@ const UsersClient = (props: Props) => {
       getValue: (item: UserItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">Senast inloggad: </span>
-          {item.lastLogin
-            ? new Date(item.lastLogin).toLocaleString("sv-SE", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "-"}
+          {item.lastLogin ? utcIsoToLocalDateTime(item.lastLogin) : "-"}
         </p>
       ),
     },

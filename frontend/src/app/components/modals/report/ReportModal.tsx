@@ -7,13 +7,16 @@ import {
   XMarkIcon as OutlineXMarkIcon,
   PencilIcon as OutlinePencilIcon,
   TrashIcon as OutlineTrashIcon,
+  InformationCircleIcon as OutlineInformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
   PlusIcon as SolidPlusIcon,
   XMarkIcon as SolidXMarkIcon,
   PencilIcon as SolidPencilIcon,
   TrashIcon as SolidTrashIcon,
+  InformationCircleIcon as SolidInformationCircleIcon,
 } from "@heroicons/react/24/solid";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import Input from "../../common/Input";
 import { useToast } from "../../toast/ToastProvider";
 import {
@@ -27,7 +30,10 @@ import RichTextEditor, {
   RichTextEditorRef,
 } from "../../richTextEditor/RichTextEditor";
 import HoverIcon from "../../common/HoverIcon";
-import { localDateTimeToUtcIso } from "@/app/helpers/timeUtils";
+import {
+  localDateTimeToUtcIso,
+  utcIsoToLocalDateTime,
+} from "@/app/helpers/timeUtils";
 import { start } from "repl";
 import DeleteModal from "../DeleteModal";
 
@@ -53,6 +59,10 @@ type Report = {
   content: string;
   hour?: string;
   date?: string;
+  creationDate?: string;
+  createdBy?: string;
+  updateDate?: string;
+  updatedBy?: string;
 };
 
 type Category = {
@@ -563,6 +573,19 @@ const ReportModal = (props: Props) => {
     value: String(i),
   }));
 
+  // --- DATE SELECTOR ---
+  const goToPreviousDay = () => {
+    const date = new Date(selectedDate);
+    date.setDate(date.getDate() - 1);
+    setSelectedDate(date.toISOString().split("T")[0]);
+  };
+
+  const goToNextDay = () => {
+    const date = new Date(selectedDate);
+    date.setDate(date.getDate() + 1);
+    setSelectedDate(date.toISOString().split("T")[0]);
+  };
+
   // --- TOGGLE MODAL(S) ---
   // --- Delete ---
   const toggleDeleteItemModal = (id?: string) => {
@@ -613,15 +636,34 @@ const ReportModal = (props: Props) => {
               </div>
 
               <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
-                <Input
-                  type="date"
-                  id="selectedDate"
-                  label="Datum"
-                  value={selectedDate}
-                  onChange={(val) => setSelectedDate(String(val))}
-                  onModal
-                  required
-                />
+                <div className="ml-auto flex w-full items-center">
+                  <button
+                    type="button"
+                    className={`${buttonSecondaryClass} rounded-r-none`}
+                    onClick={goToPreviousDay}
+                    aria-label="Föregående dag"
+                  >
+                    <ChevronLeftIcon className="min-h-full min-w-full" />
+                  </button>
+                  <Input
+                    type="date"
+                    id="selectedDate"
+                    label="Datum"
+                    value={selectedDate}
+                    onChange={(val) => setSelectedDate(String(val))}
+                    onModal
+                    required
+                    notRounded
+                  />
+                  <button
+                    type="button"
+                    className={`${buttonSecondaryClass} rounded-l-none`}
+                    onClick={goToNextDay}
+                    aria-label="Nästa dag"
+                  >
+                    <ChevronRightIcon className="min-h-full min-w-full" />
+                  </button>
+                </div>
 
                 <SingleDropdown
                   id="selectedHour"
@@ -884,6 +926,29 @@ const ReportModal = (props: Props) => {
                                 __html: report.content,
                               }}
                             />
+
+                            <div className="mt-8 flex justify-end text-sm text-[var(--text-secondary)]">
+                              <div className="flex flex-col text-right">
+                                {report.creationDate && (
+                                  <div>
+                                    <span className="font-semibold">
+                                      Skapad:
+                                    </span>{" "}
+                                    {utcIsoToLocalDateTime(report.creationDate)}{" "}
+                                    av {report.createdBy}
+                                  </div>
+                                )}
+                                {report.updateDate && (
+                                  <div>
+                                    <span className="font-semibold">
+                                      Uppdaterad:
+                                    </span>{" "}
+                                    {utcIsoToLocalDateTime(report.updateDate)}{" "}
+                                    av {report.updatedBy}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         ))}
                     </>

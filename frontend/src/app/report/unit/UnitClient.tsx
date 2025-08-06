@@ -21,19 +21,24 @@ import {
   ExclamationTriangleIcon as OutlineExclamationTriangleIcon,
   PencilSquareIcon as OutlinePencilSquareIcon,
   TrashIcon as OutlineTrashIcon,
+  InformationCircleIcon as OutlineInformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
   DocumentTextIcon as SolidDocumentTextIcon,
   ExclamationTriangleIcon as SolidExclamationTriangleIcon,
   PencilSquareIcon as SolidPencilSquareIcon,
   TrashIcon as SolidTrashIcon,
+  InformationCircleIcon as SolidInformationCircleIcon,
 } from "@heroicons/react/24/solid";
 import HoverIcon from "@/app/components/common/HoverIcon";
 import Input from "@/app/components/common/Input";
 import ReportModal from "@/app/components/modals/report/ReportModal";
 import { get } from "http";
 import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
-import { toLocalDateString } from "@/app/helpers/timeUtils";
+import {
+  toLocalDateString,
+  utcIsoToLocalDateTime,
+} from "@/app/helpers/timeUtils";
 import DeleteModal from "@/app/components/modals/DeleteModal";
 
 type Props = {
@@ -514,9 +519,9 @@ const UnitClient = (props: Props) => {
               </CustomTooltip>
             </div>
 
-            <div className="ml-auto flex max-w-max items-center gap-2">
+            <div className="ml-auto flex max-w-max items-center">
               <button
-                className={iconButtonPrimaryClass}
+                className={`${buttonSecondaryClass} rounded-r-none`}
                 onClick={goToPreviousDay}
                 aria-label="Föregående dag"
               >
@@ -528,9 +533,10 @@ const UnitClient = (props: Props) => {
                 onChange={(val) => {
                   updateDate(String(val));
                 }}
+                notRounded
               />
               <button
-                className={iconButtonPrimaryClass}
+                className={`${buttonSecondaryClass} rounded-l-none`}
                 onClick={goToNextDay}
                 aria-label="Nästa dag"
               >
@@ -977,6 +983,33 @@ const UnitClient = (props: Props) => {
                                             __html: report.content,
                                           }}
                                         />
+
+                                        <div className="mt-8 flex justify-end text-sm text-[var(--text-secondary)]">
+                                          <div className="flex flex-col text-right">
+                                            {report.creationDate && (
+                                              <div>
+                                                <span className="font-semibold">
+                                                  Skapad:
+                                                </span>{" "}
+                                                {utcIsoToLocalDateTime(
+                                                  report.creationDate,
+                                                )}{" "}
+                                                av {report.createdBy}
+                                              </div>
+                                            )}
+                                            {report.updateDate && (
+                                              <div>
+                                               <span className="font-semibold">
+                                                  Uppdaterad:
+                                                </span>{" "}
+                                                {utcIsoToLocalDateTime(
+                                                  report.updateDate,
+                                                )}{" "}
+                                                av {report.updatedBy}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
                                       </div>
                                     ));
                                   })()}
@@ -994,9 +1027,9 @@ const UnitClient = (props: Props) => {
           </div>
 
           <div className="flex w-full flex-wrap gap-4">
-            <div className="ml-auto flex max-w-max items-center gap-2">
+            <div className="ml-auto flex max-w-max items-center">
               <button
-                className={iconButtonPrimaryClass}
+                className={`${buttonSecondaryClass} rounded-r-none`}
                 onClick={goToPreviousDay}
                 aria-label="Föregående dag"
               >
@@ -1008,9 +1041,10 @@ const UnitClient = (props: Props) => {
                 onChange={(val) => {
                   updateDate(String(val));
                 }}
+                notRounded
               />
               <button
-                className={iconButtonPrimaryClass}
+                className={`${buttonSecondaryClass} rounded-l-none`}
                 onClick={goToNextDay}
                 aria-label="Nästa dag"
               >

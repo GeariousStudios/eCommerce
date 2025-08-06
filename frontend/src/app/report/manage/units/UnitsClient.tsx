@@ -18,6 +18,7 @@ import UnitModal from "@/app/components/modals/report/UnitModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { useEffect, useState } from "react";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
+import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 
 type Props = {
   isConnected: boolean | null;
@@ -221,14 +222,7 @@ const UnitsClient = (props: Props) => {
       getValue: (item: UnitItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">Skapad: </span>
-          {new Date(item.creationDate).toLocaleString("sv-SE", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}{" "}
-          av {item.createdBy}
+          {utcIsoToLocalDateTime(item.creationDate)} av {item.createdBy}
         </p>
       ),
     },
@@ -236,15 +230,8 @@ const UnitsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: UnitItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Senast uppdaterad: </span>
-          {new Date(item.updateDate).toLocaleString("sv-SE", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}{" "}
-          av {item.updatedBy}
+          <span className="font-semibold">Uppdaterad: </span>
+          {utcIsoToLocalDateTime(item.updateDate)} av {item.updatedBy}
         </p>
       ),
     },

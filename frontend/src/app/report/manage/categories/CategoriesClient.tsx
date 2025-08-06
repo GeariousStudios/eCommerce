@@ -14,6 +14,7 @@ import CategoryModal from "@/app/components/modals/report/CategoryModal"; // <--
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
+import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 
 type Props = {
   isConnected: boolean | null;
@@ -191,14 +192,7 @@ const CategoriesClient = (props: Props) => {
       getValue: (item: CategoryItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">Skapad: </span>
-          {new Date(item.creationDate).toLocaleString("sv-SE", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}{" "}
-          av {item.createdBy}
+          {utcIsoToLocalDateTime(item.creationDate)} av {item.createdBy}
         </p>
       ),
     },
@@ -206,14 +200,8 @@ const CategoriesClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: CategoryItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Senast uppdaterad: </span>
-          {new Date(item.updateDate).toLocaleString("sv-SE", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          })}{" "}
+          <span className="font-semibold">Uppdaterad: </span>
+            {utcIsoToLocalDateTime(item.updateDate)}{" "}
           av {item.updatedBy}
         </p>
       ),
