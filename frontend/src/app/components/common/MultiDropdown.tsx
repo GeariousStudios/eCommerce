@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import PortalWrapper from "../../helpers/PortalWrapper";
+import { FocusTrap } from "focus-trap-react";
 
 type OptionProps = {
   value: string;
@@ -147,73 +148,83 @@ const MultiDropdown = ({
       </label>
 
       <PortalWrapper>
-        <ul
-          data-inside-modal="true"
-          ref={(el) => {
-            dropdownRef.current = el;
-            portalContentRef.current = el;
-          }}
-          className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} ${showAbove ? "rounded-t border-b-0" : "rounded-b border-t-0"} fixed z-[var(--z-tooltip)] ml-2 list-none border-1 border-[var(--border-tertiary)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
-          role="listbox"
-          inert={!isOpen || undefined}
-        >
-          <li role="option" aria-hidden="true" hidden></li>
-          {options.map((opt, index) => (
-            <li
-              key={opt.value}
+        {isOpen && (
+          <FocusTrap
+            focusTrapOptions={{
+              clickOutsideDeactivates: true,
+              escapeDeactivates: true,
+              returnFocusOnDeactivate: true,
+            }}
+          >
+            <ul
+              data-inside-modal="true"
               ref={(el) => {
-                optionRefs.current[index] = el;
+                dropdownRef.current = el;
+                portalContentRef.current = el;
               }}
-              tabIndex={0}
-              className={`${value.includes(opt.value) ? "font-bold" : ""} cursor-pointer p-2 transition-colors duration-[var(--slow)] select-none hover:bg-[var(--accent-color)]`}
-              role="option"
-              onClick={(e) => {
-                e.stopPropagation();
-
-                let newValue: string[];
-
-                if (value.includes(opt.value)) {
-                  newValue = value.filter((v) => v !== opt.value);
-                } else {
-                  newValue = [...value, opt.value];
-                }
-
-                onChange && onChange(newValue);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") {
-                  setIsOpen(false);
-                } else if (e.key === "Tab") {
-                  e.preventDefault();
-                  const dir = e.shiftKey ? -1 : 1;
-                  const total = options.length;
-                  const nextIndex = index + dir;
-
-                  if (nextIndex < 0 || nextIndex >= total) {
-                    setIsOpen(false);
-                  } else {
-                    e.preventDefault();
-                    optionRefs.current[nextIndex]?.focus();
-                  }
-                } else if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  let newValue: string[];
-
-                  if (value.includes(opt.value)) {
-                    newValue = value.filter((v) => v !== opt.value);
-                  } else {
-                    newValue = [...value, opt.value];
-                  }
-
-                  onChange && onChange(newValue);
-                  setIsOpen(false);
-                }
-              }}
+              className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} ${showAbove ? "rounded-t border-b-0" : "rounded-b border-t-0"} fixed z-[var(--z-tooltip)] ml-2 list-none border-1 border-[var(--border-tertiary)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+              role="listbox"
+              inert={!isOpen || undefined}
             >
-              {opt.label}
-            </li>
-          ))}
-        </ul>
+              <li role="option" aria-hidden="true" hidden></li>
+              {options.map((opt, index) => (
+                <li
+                  key={opt.value}
+                  ref={(el) => {
+                    optionRefs.current[index] = el;
+                  }}
+                  tabIndex={0}
+                  className={`${value.includes(opt.value) ? "font-bold" : ""} cursor-pointer p-2 transition-colors duration-[var(--slow)] select-none hover:bg-[var(--accent-color)]`}
+                  role="option"
+                  onClick={(e) => {
+                    e.stopPropagation();
+
+                    let newValue: string[];
+
+                    if (value.includes(opt.value)) {
+                      newValue = value.filter((v) => v !== opt.value);
+                    } else {
+                      newValue = [...value, opt.value];
+                    }
+
+                    onChange && onChange(newValue);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setIsOpen(false);
+                      // } else if (e.key === "Tab") {
+                      //   e.preventDefault();
+                      //   const dir = e.shiftKey ? -1 : 1;
+                      //   const total = options.length;
+                      //   const nextIndex = index + dir;
+
+                      //   if (nextIndex < 0 || nextIndex >= total) {
+                      //     setIsOpen(false);
+                      //   } else {
+                      //     e.preventDefault();
+                      //     optionRefs.current[nextIndex]?.focus();
+                      //   }
+                    } else if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      let newValue: string[];
+
+                      if (value.includes(opt.value)) {
+                        newValue = value.filter((v) => v !== opt.value);
+                      } else {
+                        newValue = [...value, opt.value];
+                      }
+
+                      onChange && onChange(newValue);
+                      setIsOpen(false);
+                    }
+                  }}
+                >
+                  {opt.label}
+                </li>
+              ))}
+            </ul>
+          </FocusTrap>
+        )}
       </PortalWrapper>
 
       {/* This <select> is here to get form validation check */}
