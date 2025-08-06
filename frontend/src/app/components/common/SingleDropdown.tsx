@@ -18,6 +18,7 @@ type DropdownProps = {
   onModal?: boolean;
   showAbove?: boolean;
   tabIndex?: number;
+  emptyOption?: boolean;
 };
 
 const SingleDropdown = ({
@@ -30,6 +31,7 @@ const SingleDropdown = ({
   onModal = false,
   showAbove = false,
   tabIndex,
+  emptyOption = false,
 }: DropdownProps) => {
   // --- VARIABLES ---
   // --- Refs ---
@@ -123,7 +125,9 @@ const SingleDropdown = ({
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
-          <span className="grow truncate overflow-hidden text-ellipsis">
+          <span
+            className={`${emptyOption && !value ? "invisible" : ""} grow truncate overflow-hidden text-ellipsis`}
+          >
             {selectedLabel}
           </span>
           <span
@@ -139,7 +143,7 @@ const SingleDropdown = ({
 
         <label
           htmlFor={id}
-          className={`${value || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
+          className={`${value || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} "font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
         >
           {label}
           {required && <span className="ml-1 text-red-700">*</span>}

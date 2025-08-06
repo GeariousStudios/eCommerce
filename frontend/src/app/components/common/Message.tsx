@@ -42,6 +42,7 @@ const iconMap: Record<string, ElementType> = {
 
 const contentMap: Record<string, ReactNode> = {
   loading: "Laddar...",
+  reading: "Läser in...",
   auth: "Autentiserar...",
   deny: (
     <div className="flex flex-col">

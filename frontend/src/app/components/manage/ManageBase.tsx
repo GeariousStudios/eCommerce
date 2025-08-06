@@ -335,13 +335,20 @@ const ManageBase = <TItem extends { id: number }>({
     return (
       <>
         <div className="hidden md:block">
-          <Message icon="loading" content="Nästan klar..." fullscreen />
+          {/* <Message icon="loading" content="Nästan klar..." fullscreen /> */}
+          <Message icon="loading" content="reading" fullscreen />
         </div>
 
         <div className="block md:hidden">
-          <Message
+          {/* <Message
             icon="loading"
             content="Nästan klar..."
+            fullscreen
+            withinContainer
+          /> */}
+          <Message
+            icon="loading"
+            content="reading"
             fullscreen
             withinContainer
           />

@@ -13,14 +13,26 @@
 
 /* --- INPUT LABELS --- */
 input:focus ~ label,
-input[type="date"]:valid ~ label,
-input[type="time"]:valid ~ label,
-input[type="datetime-local"]:valid ~ label,
 input:not([type="date"]):not(:placeholder-shown) ~ label,
 input:not([type="time"]):not(:placeholder-shown) ~ label,
 input:not([type="datetime-local"]):not(:placeholder-shown) ~ label,
 input.placeholder ~ label,
 input:-webkit-autofill ~ label {
+  color: var(--accent-color);
+  top: 0;
+  font-weight: 600;
+}
+
+input.is-empty[type="date"] ~ label,
+input.is-empty[type="time"] ~ label,
+input.is-empty[type="datetime-local"] ~ label {
+  color: var(--text-main);
+  font-weight: normal;
+}
+
+input.is-empty:focus[type="date"] ~ label,
+input.is-empty:focus[type="time"] ~ label,
+input.is-empty:focus[type="datetime-local"] ~ label {
   color: var(--accent-color);
   top: 0;
   font-weight: 600;

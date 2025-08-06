@@ -9,13 +9,20 @@ const UnitGroupsClient = dynamic(() => import("./UnitGroupsClient"), {
   loading: () => (
     <>
       <div className="hidden md:block">
-        <Message icon="loading" content="Laddar in sidan..." fullscreen />
+        {/* <Message icon="loading" content="Laddar in sidan..." fullscreen /> */}
+        <Message icon="loading" content="reading" fullscreen />
       </div>
 
       <div className="block md:hidden">
-        <Message
+        {/* <Message
           icon="loading"
           content="Laddar in sidan..."
+          fullscreen
+          withinContainer
+        /> */}
+        <Message
+          icon="loading"
+          content="reading"
           fullscreen
           withinContainer
         />
@@ -31,11 +38,13 @@ const UnitGroupsWrapper = () => {
     return (
       <>
         <div className="hidden md:block">
-          <Message icon="loading" content="auth" fullscreen />
+          {/* <Message icon="loading" content="auth" fullscreen /> */}
+          <Message icon="loading" content="reading" fullscreen />
         </div>
 
         <div className="block md:hidden">
-          <Message icon="loading" content="auth" fullscreen withinContainer />
+          {/* <Message icon="loading" content="auth" fullscreen withinContainer /> */}
+          <Message icon="loading" content="reading" fullscreen withinContainer />
         </div>
       </>
     );
@@ -45,11 +54,11 @@ const UnitGroupsWrapper = () => {
     return (
       <>
         <div className="hidden md:block">
-          <Message icon="deny" content="auth" fullscreen />
+          <Message icon="deny" content="deny" fullscreen />
         </div>
 
         <div className="block md:hidden">
-          <Message icon="deny" content="auth" fullscreen withinContainer />
+          <Message icon="deny" content="deny" fullscreen withinContainer />
         </div>
       </>
     );

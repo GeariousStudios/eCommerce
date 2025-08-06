@@ -850,7 +850,7 @@ const ReportModal = (props: Props) => {
                               : ""
                           }
                           options={[
-                            { label: "\u00A0", value: "" },
+                            { label: "--- Välj kategori ---", value: "" },
                             ...categories.map((c) => ({
                               label: c.name,
                               value: String(c.id),
@@ -865,6 +865,7 @@ const ReportModal = (props: Props) => {
                                   ?.name ?? "",
                             }))
                           }
+                          emptyOption
                         />
                         {(() => {
                           const selectedCategory = categories.find(
@@ -899,7 +900,7 @@ const ReportModal = (props: Props) => {
                                 }))
                               }
                               options={[
-                                { label: "\u00A0", value: "" },
+                                { label: "--- Välj underkategori ---", value: "" },
                                 ...subs
                                   .filter(
                                     (sc) =>
@@ -911,6 +912,7 @@ const ReportModal = (props: Props) => {
                                     value: String(sc.id),
                                   })),
                               ]}
+                              emptyOption
                             />
                           ) : null;
                         })()}
@@ -950,6 +952,7 @@ const ReportModal = (props: Props) => {
                             return updated;
                           });
                         }}
+                        required
                       />
 
                       <Input
@@ -1041,7 +1044,7 @@ const ReportModal = (props: Props) => {
                           solid={SolidPlusIcon}
                           className="h-6 min-h-6 w-6 min-w-6"
                         />
-                        Spara
+                        Infoga
                       </button>
 
                       <button
@@ -1056,7 +1059,7 @@ const ReportModal = (props: Props) => {
                           solid={SolidXMarkIcon}
                           className="h-6 min-h-6 w-6 min-w-6"
                         />
-                        Ångra
+                        Avbryt
                       </button>
                     </div>
 

@@ -18,6 +18,7 @@ type DropdownProps = {
   onModal?: boolean;
   showAbove?: boolean;
   tabIndex?: number;
+  emptyOption?: boolean;
 };
 
 const MultiDropdown = ({
@@ -30,6 +31,7 @@ const MultiDropdown = ({
   onModal = false,
   showAbove = false,
   tabIndex,
+  emptyOption = false,
 }: DropdownProps) => {
   // --- VARIABLES ---
   // --- Refs ---
@@ -125,7 +127,9 @@ const MultiDropdown = ({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <span className="grow truncate overflow-hidden text-ellipsis">
+        <span
+          className={`${emptyOption && !value ? "invisible" : ""} grow truncate overflow-hidden text-ellipsis`}
+        >
           {displayLabel}
         </span>
         <span

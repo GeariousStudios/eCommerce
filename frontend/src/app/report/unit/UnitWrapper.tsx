@@ -9,11 +9,18 @@ const UnitClient = dynamic(() => import("./UnitClient"), {
   loading: () => (
     <>
       <div className="hidden md:block">
-        <Message icon="loading" content="Kollar tillgänglighet..." fullscreen />
+        {/* <Message icon="loading" content="Kollar tillgänglighet..." fullscreen /> */}
+        <Message icon="loading" content="reading" fullscreen />
       </div>
 
       <div className="block md:hidden">
-        <Message icon="loading" content="Kollar tillgänglighet..." fullscreen withinContainer />
+        {/* <Message
+          icon="loading"
+          content="Kollar tillgänglighet..."
+          fullscreen
+          withinContainer
+        /> */}
+        <Message icon="loading" content="reading" fullscreen withinContainer />
       </div>
     </>
   ),
@@ -24,13 +31,25 @@ const UnitWrapper = () => {
 
   if (!isAuthReady) {
     return (
-       <>
+      <>
         <div className="hidden md:block">
-          <Message icon="loading" content="Laddar in sidan..." fullscreen />
+          {/* <Message icon="loading" content="Laddar in sidan..." fullscreen /> */}
+          <Message icon="loading" content="reading" fullscreen />
         </div>
 
         <div className="block md:hidden">
-          <Message icon="loading" content="Laddar in sidan..." fullscreen withinContainer />
+          {/* <Message
+            icon="loading"
+            content="Laddar in sidan..."
+            fullscreen
+            withinContainer
+          /> */}
+          <Message
+            icon="loading"
+            content="reading"
+            fullscreen
+            withinContainer
+          />
         </div>
       </>
     );
