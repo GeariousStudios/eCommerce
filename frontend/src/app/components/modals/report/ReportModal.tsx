@@ -38,6 +38,7 @@ type Props = {
   selectedHour: string;
   onItemUpdated: () => void;
   reportId?: number;
+  categoryIds: number[];
 };
 
 type Report = {
@@ -257,7 +258,13 @@ const ReportModal = (props: Props) => {
       }
 
       if (Array.isArray(result) && result.length > 0) {
-        setCategories(result);
+        const sorted = [...result].sort((a, b) => {
+          return (
+            props.categoryIds.indexOf(Number(a.id)) -
+            props.categoryIds.indexOf(Number(b.id))
+          );
+        });
+        setCategories(sorted);
       }
     } catch (err) {
       notify("error", String(err));

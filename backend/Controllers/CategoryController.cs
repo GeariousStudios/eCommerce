@@ -147,10 +147,12 @@ namespace backend.Controllers
                                 UnitGroupName = u.UnitGroup?.Name ?? "",
                                 IsHidden = u.IsHidden,
                                 UnitColumnIds = u
-                                    .UnitToUnitColumns.Select(uuc => uuc.UnitColumnId)
+                                    .UnitToUnitColumns.OrderBy(uuc => uuc.Order)
+                                    .Select(uuc => uuc.UnitColumnId)
                                     .ToList(),
                                 CategoryIds = u
-                                    .UnitToCategories.Select(uc => uc.CategoryId)
+                                    .UnitToCategories.OrderBy(uc => uc.Order)
+                                    .Select(uc => uc.CategoryId)
                                     .ToList(),
                                 CreationDate = u.CreationDate,
                                 CreatedBy = u.CreatedBy,
@@ -205,9 +207,13 @@ namespace backend.Controllers
                         UnitGroupName = u.UnitGroup?.Name ?? "",
                         IsHidden = u.IsHidden,
                         UnitColumnIds = u
-                            .UnitToUnitColumns.Select(uuc => uuc.UnitColumnId)
+                            .UnitToUnitColumns.OrderBy(uuc => uuc.Order)
+                            .Select(uuc => uuc.UnitColumnId)
                             .ToList(),
-                        CategoryIds = u.UnitToCategories.Select(uc => uc.CategoryId).ToList(),
+                        CategoryIds = u
+                            .UnitToCategories.OrderBy(uc => uc.Order)
+                            .Select(uc => uc.CategoryId)
+                            .ToList(),
                         CreationDate = u.CreationDate,
                         CreatedBy = u.CreatedBy,
                         UpdateDate = u.UpdateDate,
@@ -230,35 +236,69 @@ namespace backend.Controllers
             return Ok(result);
         }
 
+        // [HttpGet("unit/{unitId}")]
+        // public async Task<IActionResult> GetCategoriesForUnit(int unitId)
+        // {
+        //     var categories = await _context
+        //         .Categories.Include(c => c.CategoryToSubCategories)
+        //         .ThenInclude(csc => csc.SubCategory)
+        //         .Include(c => c.UnitToCategories)
+        //         .Where(c => c.UnitToCategories.Any(uc => uc.UnitId == unitId))
+        //         .ToListAsync();
+
+        //     var result = categories.Select(c => new CategoryDto
+        //     {
+        //         Id = c.Id,
+        //         Name = c.Name,
+        //         SubCategories = c
+        //             .CategoryToSubCategories.OrderBy(csc => csc.Order)
+        //             .Select(csc => new SubCategoryDto
+        //             {
+        //                 Id = csc.SubCategory.Id,
+        //                 Name = csc.SubCategory.Name,
+        //             })
+        //             .ToList(),
+
+        //         // Meta data.
+        //         CreationDate = c.CreationDate,
+        //         CreatedBy = c.CreatedBy,
+        //         UpdateDate = c.UpdateDate,
+        //         UpdatedBy = c.UpdatedBy,
+        //     });
+
+        //     return Ok(result);
+        // }
+
         [HttpGet("unit/{unitId}")]
         public async Task<IActionResult> GetCategoriesForUnit(int unitId)
         {
-            var categories = await _context
-                .Categories.Include(c => c.CategoryToSubCategories)
+            var unitToCategories = await _context
+                .UnitToCategories.Where(uc => uc.UnitId == unitId)
+                .OrderBy(uc => uc.Order)
+                .Include(uc => uc.Category)
+                .ThenInclude(c => c.CategoryToSubCategories)
                 .ThenInclude(csc => csc.SubCategory)
-                .Include(c => c.UnitToCategories)
-                .Where(c => c.UnitToCategories.Any(uc => uc.UnitId == unitId))
                 .ToListAsync();
 
-            var result = categories.Select(c => new CategoryDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                SubCategories = c
-                    .CategoryToSubCategories.OrderBy(csc => csc.Order)
-                    .Select(csc => new SubCategoryDto
-                    {
-                        Id = csc.SubCategory.Id,
-                        Name = csc.SubCategory.Name,
-                    })
-                    .ToList(),
-
-                // Meta data.
-                CreationDate = c.CreationDate,
-                CreatedBy = c.CreatedBy,
-                UpdateDate = c.UpdateDate,
-                UpdatedBy = c.UpdatedBy,
-            });
+            var result = unitToCategories
+                .Select(uc => new CategoryDto
+                {
+                    Id = uc.Category.Id,
+                    Name = uc.Category.Name,
+                    SubCategories = uc
+                        .Category.CategoryToSubCategories.OrderBy(csc => csc.Order)
+                        .Select(csc => new SubCategoryDto
+                        {
+                            Id = csc.SubCategory.Id,
+                            Name = csc.SubCategory.Name,
+                        })
+                        .ToList(),
+                    CreationDate = uc.Category.CreationDate,
+                    CreatedBy = uc.Category.CreatedBy,
+                    UpdateDate = uc.Category.UpdateDate,
+                    UpdatedBy = uc.Category.UpdatedBy,
+                })
+                .ToList();
 
             return Ok(result);
         }

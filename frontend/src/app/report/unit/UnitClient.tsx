@@ -68,6 +68,8 @@ const UnitClient = (props: Props) => {
   const [unitName, setUnitName] = useState("");
   const [unitGroupId, setUnitGroupId] = useState("");
   const [isHidden, setIsHidden] = useState(false);
+  const [unitCategoryIds, setUnitCategoryIds] = useState<number[]>([]);
+
 
   // --- States: UnitGroup ---
   const [unitGroupName, setUnitGroupName] = useState("");
@@ -129,6 +131,7 @@ const UnitClient = (props: Props) => {
       setUnitName(result.name ?? "");
       setUnitGroupId(String(result.unitGroupId ?? ""));
       setIsHidden(result.isHidden ?? false);
+      setUnitCategoryIds(result.categoryIds ?? []);
     };
 
     if (unitId) {
@@ -416,6 +419,7 @@ const UnitClient = (props: Props) => {
             setRefetchData(true);
           }}
           unitId={parsedUnitId}
+          categoryIds={unitCategoryIds}
           reportId={Number(reportId)}
           selectedDate={reportDate}
           selectedHour={reportHour}

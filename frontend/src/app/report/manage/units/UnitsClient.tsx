@@ -187,16 +187,21 @@ const UnitsClient = (props: Props) => {
                 .length === 0 ? (
                 <span className="-mt-2">-</span>
               ) : (
-                categories
-                  .filter((cat) => item.categoryIds.includes(cat.id))
-                  .map((cat, i) => (
+                item.categoryIds.map((id) => {
+                  const cat = categories.find((c) => c.id === id);
+                  if (!cat) {
+                    return null;
+                  }
+
+                  return (
                     <span
-                      key={i}
+                      key={id}
                       className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-two)]`}
                     >
                       {cat.name}
                     </span>
-                  ))
+                  );
+                })
               )}
             </>
           </div>
@@ -300,16 +305,21 @@ const UnitsClient = (props: Props) => {
       labelDesc: "antal kategorier (fallande)",
       getValue: (item: UnitItem) => (
         <div className="flex flex-wrap gap-2">
-          {categories
-            .filter((cat) => item.categoryIds.includes(cat.id))
-            .map((cat, i) => (
+          {item.categoryIds.map((id) => {
+            const cat = categories.find((c) => c.id === id);
+            if (!cat) {
+              return null;
+            }
+
+            return (
               <span
-                key={i}
+                key={id}
                 className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-two)]`}
               >
                 {cat.name}
               </span>
-            ))}
+            );
+          })}
         </div>
       ),
       responsivePriority: 4,

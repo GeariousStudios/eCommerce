@@ -15,7 +15,8 @@ import {
 const QuillWrapper = dynamic(() => import("../../helpers/QuillWrapper"), {
   ssr: false,
 }) as ForwardRefExoticComponent<
-  ReactQuill["props"] & React.RefAttributes<ReactQuill>
+  (ReactQuill["props"] & { shouldAutoFocus?: boolean }) &
+    React.RefAttributes<ReactQuill>
 >;
 
 export type RichTextEditorRef = {
@@ -31,10 +32,11 @@ type Props = {
   required?: boolean;
   onReady?: () => void;
   onChange?: (val: string) => void;
+  shouldAutoFocus?: boolean;
 };
 
 const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
-  ({ value, name, required, onReady, onChange }, ref) => {
+  ({ value, name, required, onReady, onChange, shouldAutoFocus }, ref) => {
     const quillRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isEditorReady, setIsEditorReady] = useState(false);
@@ -58,6 +60,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
         const editor = quillRef.current?.getEditor();
         if (editor) {
           editor.clipboard.dangerouslyPasteHTML(value, "silent");
+          editor.root.blur();
         }
       },
       getTextarea: () => {
@@ -102,6 +105,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           theme="snow"
           placeholder=" "
           modules={modules}
+          shouldAutoFocus={shouldAutoFocus ?? false}
           onChange={(val) => {
             onChange?.(val);
           }}

@@ -195,7 +195,7 @@ const UnitModal = (props: Props) => {
   // --- Fetch categories ---
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${apiUrl}/category`, {
+      const response = await fetch(`${apiUrl}/category?sortBy=name&sortOrder=asc`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
