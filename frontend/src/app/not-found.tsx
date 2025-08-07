@@ -1,8 +1,7 @@
-import React from "react";
-import Message from "./components/common/Message";
+import { redirect } from "next/navigation";
 
 const NotFound = () => {
-  return <Message content="fof" fullscreen={true} />;
+    redirect("/404");
 };
 
 export default NotFound;

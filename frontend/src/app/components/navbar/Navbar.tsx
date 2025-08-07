@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   UserGroupIcon as OutlineUserGroupIcon,
   HomeIcon as OutlineHomeIcon,
@@ -27,6 +28,7 @@ import { useToast } from "../toast/ToastProvider";
 import { iconButtonPrimaryClass } from "@/app/styles/buttonClasses";
 import { FocusTrap } from "focus-trap-react";
 import useIsDesktop from "@/app/hooks/useIsDesktop";
+import { useParams } from "next/navigation";
 
 type Props = {
   hasScrollbar: boolean;
@@ -48,6 +50,8 @@ type SubmenuGroup = {
 };
 
 const Navbar = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const innerRef = useRef<HTMLDivElement>(null);
@@ -63,6 +67,8 @@ const Navbar = (props: Props) => {
   const prefix = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const token = localStorage.getItem("token");
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const params = useParams();
+  const locale = typeof params.locale === "string" ? params.locale : "sv";
 
   // --- BACKEND ---
   // --- Fetch units ---
@@ -98,7 +104,7 @@ const Navbar = (props: Props) => {
 
           acc[groupName].push({
             label: unit.name,
-            href: `/report/unit/${unit.id}`,
+            href: `/${locale}/report/unit/${unit.id}`,
           });
 
           return acc;
@@ -116,7 +122,7 @@ const Navbar = (props: Props) => {
       );
 
       if (itemsWithTitles.length > 0) {
-        setUnits([{ label: "Enheter", items: itemsWithTitles }]);
+        setUnits([{ label: t("Common/Units"), items: itemsWithTitles }]);
       } else {
         setUnits([]);
       }
@@ -258,7 +264,7 @@ const Navbar = (props: Props) => {
                     <div className="flex flex-col">
                       <div className="fixed top-0 flex h-18 transition-transform duration-[var(--slow)]">
                         <Link
-                          href="/"
+                          href={`/${locale}/`}
                           className="mt-2.25 -ml-2.25 flex h-15 max-w-17 min-w-40"
                           aria-label="Startsida"
                         >
@@ -285,7 +291,7 @@ const Navbar = (props: Props) => {
                             Utvecklare
                           </span>
                           <NavbarLink
-                            href="/developer/manage/users/"
+                            href={`/${locale}/developer/manage/users/`}
                             label="Hantera användare"
                             icon={OutlineUserGroupIcon}
                             iconHover={SolidUserGroupIcon}
@@ -299,38 +305,42 @@ const Navbar = (props: Props) => {
                       </span>
 
                       <NavbarLink
-                        href="/"
-                        label="Startsida"
+                        href={`/${locale}/`}
+                        label={t("Navbar/Home")}
                         icon={OutlineHomeIcon}
                         iconHover={SolidHomeIcon}
                       />
 
                       <NavbarSubmenu
-                        label="Rapportering"
+                        label={t("Navbar/Reporting")}
                         icon={OutlineChatBubbleBottomCenterTextIcon}
                         iconHover={SolidChatBubbleBottomCenterTextIcon}
                         menus={[
                           ...units,
                           {
-                            label: "Administrera",
+                            label: t("Common/Administrate"),
                             requiresAdmin: true,
                             items: [
                               {
-                                title: "Hantera",
-                                href: "/report/manage/categories/",
-                                label: "Kategorier",
+                                title: t("Common/Manage"),
+                                href: `/${locale}/report/manage/categories/`,
+
+                                label: t("Common/Categories"),
                               },
                               {
-                                href: "/report/manage/units/",
-                                label: "Enheter",
+                                href: `/${locale}/report/manage/units/`,
+
+                                label:  t("Common/Units"),
                               },
                               {
-                                href: "/report/manage/unit-groups/",
-                                label: "Grupper",
+                                href: `/${locale}/report/manage/unit-groups/`,
+
+                                label:  t("Common/Groups"),
                               },
                               {
-                                href: "/report/manage/unit-columns/",
-                                label: "Kolumner",
+                                href: `/${locale}/report/manage/unit-columns/`,
+
+                                label:  t("Common/Columns"),
                               },
                             ],
                           },
@@ -341,8 +351,8 @@ const Navbar = (props: Props) => {
                       <NavbarLink
                         tooltip="Ej implementerat!"
                         disabled
-                        href="#"
-                        label="Pulstavlor"
+                        href={`/${locale}#`}
+                        label={t("Navbar/Pulse boards")}
                         icon={OutlinePresentationChartLineIcon}
                         iconHover={SolidPresentationChartLineIcon}
                       />
@@ -355,18 +365,18 @@ const Navbar = (props: Props) => {
                             Admin
                           </span>
                           <NavbarSubmenu
-                            label="Nyheter"
+                            label={t("Common/News")}
                             icon={OutlineNewspaperIcon}
                             iconHover={SolidNewspaperIcon}
                             menus={[
                               {
-                                label: "Administrera",
+                                label: t("Common/Administrate"),
                                 requiresAdmin: true,
                                 items: [
                                   {
-                                    title: "Hantera",
-                                    href: "/admin/manage/news-types/",
-                                    label: "Nyhetstyper",
+                                    title: t("Common/Manage"),
+                                    href: `/${locale}/admin/manage/news-types/`,
+                                    label: t("Navbar/News types"),
                                   },
                                 ],
                               },
@@ -381,7 +391,7 @@ const Navbar = (props: Props) => {
                   </div>
                 </>
               ) : (
-                <Message icon="loading" content="Hämtar innehåll..." />
+                <Message icon="loading" content="content" />
               )}
             </div>
           </FocusTrap>

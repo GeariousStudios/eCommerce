@@ -26,7 +26,8 @@ type Props = {
   confirmOnClose?: boolean;
   confirmCloseMessage?: string;
   isDirty?: boolean;
-  isNestedModal?: boolean;
+  nestedModal?: boolean;
+  smallModal?: boolean;
 };
 
 export type ModalBaseHandle = {
@@ -73,7 +74,7 @@ const ModalBase = forwardRef((props: Props, ref) => {
   }, [props.isOpen, props.onClose]);
 
   useEffect(() => {
-    if (props.isNestedModal) {
+    if (props.nestedModal) {
       return;
     }
 
@@ -122,7 +123,7 @@ const ModalBase = forwardRef((props: Props, ref) => {
                 ref={innerRef}
                 role="dialog"
                 aria-hidden={!props.isOpen}
-                className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-3xl -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+                className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} ${props.smallModal ? "max-w-lg" : "max-w-3xl"} relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
               >
                 <div
                   className={`${props.smallGap ? "gap-8" : "gap-12"} flex max-h-[90svh] flex-col overflow-x-hidden overflow-y-auto p-4`}

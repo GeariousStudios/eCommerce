@@ -464,6 +464,10 @@ namespace eCommerce.Migrations
                     b.Property<bool>("IsGridView")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Theme")
                         .IsRequired()
                         .HasColumnType("TEXT");

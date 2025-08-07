@@ -1,0 +1,19 @@
+{
+  "UnitClient/Report data": "Rapportera data",
+
+  "Message/Invalid page": "Sidan kunde inte hittas.",
+  "Message/Loading content": "Hämtar innehåll...",
+
+  "Navbar/Home": "Startsida",
+  "Navbar/Reporting": "Rapportering",
+  "Navbar/Pulse boards": "Pulstavlor",
+  "Navbar/News types": "Nyhetstyper",
+
+  "Common/Administrate": "Administrera",
+  "Common/Manage": "Hantera",
+  "Common/Categories": "Kategorier",
+  "Common/Units": "Enheter",
+  "Common/Groups": "Grupper",
+  "Common/Columns": "Kolumner",
+  "Common/News": "Nyheter"
+}

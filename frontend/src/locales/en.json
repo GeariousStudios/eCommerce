@@ -1,0 +1,19 @@
+{
+  "UnitClient/Report data": "Report data",
+
+  "Message/Invalid page": "Invalid page.",
+  "Message/Loading content": "Loading content...",
+
+  "Navbar/Home": "Home",
+  "Navbar/Reporting": "Reporting",
+  "Navbar/Pulse boards": "Pulse boards",
+  "Navbar/News types": "News types",
+
+  "Common/Administrate": "Administrate",
+  "Common/Manage": "Manage",
+  "Common/Categories": "Categories",
+  "Common/Units": "Units",
+  "Common/Groups": "Groups",
+  "Common/Columns": "Columns",
+  "Common/News": "News"
+}

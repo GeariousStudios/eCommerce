@@ -15,7 +15,7 @@ export const buttonDeleteSecondaryClass =
 export const iconButtonPrimaryClass =
   "h-[24px] w-[24px] flex items-center justify-center cursor-pointer transition-colors duration-[var(--fast)] hover:text-[var(--button-primary)] active:text-[var(--button-primary-active)] z-[calc(var(--z-base)+1)] disabled:opacity-25 disabled:hover:text-[var(--text-main)] disabled:cursor-not-allowed";
 
-export const iconbuttonDeletePrimaryClass =
+export const iconButtonDeletePrimaryClass =
   "h-[24px] w-[24px] flex items-center justify-center cursor-pointer transition-colors duration-[var(--fast)] hover:text-[var(--button-delete)] active:text-[var(--button-delete-active)] z-[calc(var(--z-base)+1)]";
 
 // --- OTHER ---

@@ -144,7 +144,7 @@ const Topbar = (props: Props) => {
         {!isAuthReady ? (
           <Message
             icon="loading"
-            content="Hämtar innehåll..."
+            content="content"
             sideMessage
             fullscreen
             withinContainer={props.navbarHidden}

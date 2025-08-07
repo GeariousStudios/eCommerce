@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { hyperLinkButtonClass } from "@/app/styles/buttonClasses";
 import {
   ArrowPathIcon,
@@ -26,51 +27,58 @@ type Props = {
   sideMessage?: boolean;
 };
 
-const iconMap: Record<string, ElementType> = {
-  loading: ArrowPathIcon,
-  deny: IdentificationIcon,
-  server: NoSymbolIcon,
-  user: UserIcon,
-  category: TagIcon,
-  unit: InboxIcon,
-  unitGroup: InboxStackIcon,
-  beware: ExclamationCircleIcon,
-  search: MagnifyingGlassCircleIcon,
-  lock: LockClosedIcon,
-  work: WrenchScrewdriverIcon,
-};
-
-const contentMap: Record<string, ReactNode> = {
-  loading: "Laddar...",
-  reading: "Läser in...",
-  auth: "Autentiserar...",
-  deny: (
-    <div className="flex flex-col">
-      <span>Obehörig access!</span>{" "}
-      <span>
-        <Link href="/" className={`${hyperLinkButtonClass}`}>
-          Klicka här
-        </Link>{" "}
-        för att logga in.
-      </span>
-    </div>
-  ),
-  server: "Ingen kontakt med servern, försök igen senare!",
-  lock: (
-    <div className="flex flex-col">
-      <span>Sidan är ej tillgänglig för tillfället!</span>{" "}
-      <span>Försök igen senare.</span>
-    </div>
-  ),
-  fof: (
-    <div className="flex flex-col">
-      <span>Sidan kunde inte hittas.</span>
-    </div>
-  ),
-};
-
 const Message = (props: Props) => {
+  const t = useTranslations();
+
   const [Icon, setIcon] = useState<ElementType | null>(null);
+
+  const iconMap: Record<string, ElementType> = {
+    loading: ArrowPathIcon,
+    deny: IdentificationIcon,
+    server: NoSymbolIcon,
+    user: UserIcon,
+    category: TagIcon,
+    unit: InboxIcon,
+    unitGroup: InboxStackIcon,
+    beware: ExclamationCircleIcon,
+    search: MagnifyingGlassCircleIcon,
+    lock: LockClosedIcon,
+    work: WrenchScrewdriverIcon,
+  };
+
+  const contentMap: Record<string, ReactNode> = {
+    loading: "Laddar...",
+    reading: "Läser in...",
+    auth: "Autentiserar...",
+    deny: (
+      <div className="flex flex-col">
+        <span>Obehörig access!</span>{" "}
+        <span>
+          <Link href="/" className={`${hyperLinkButtonClass}`}>
+            Klicka här
+          </Link>{" "}
+          för att logga in.
+        </span>
+      </div>
+    ),
+    server: "Ingen kontakt med servern, försök igen senare!",
+    lock: (
+      <div className="flex flex-col">
+        <span>Sidan är ej tillgänglig för tillfället!</span>{" "}
+        <span>Försök igen senare.</span>
+      </div>
+    ),
+    invalid: (
+      <div className="flex flex-col">
+        <span>{t("Message/Invalid page")}</span>
+      </div>
+    ),
+    content: (
+      <div className="flex flex-col">
+        <span>{t("Message/Loading content")}</span>
+      </div>
+    ),
+  };
 
   useEffect(() => {
     setIcon(() => (props.icon ? (iconMap[props.icon] ?? null) : null));

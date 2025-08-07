@@ -6,12 +6,15 @@ const useUserPrefs = () => {
   // --- States ---
   const { isLoggedIn } = useAuthStatus();
   const [userTheme, setUserTheme] = useState<string | null>(null);
+  const [userLanguage, setUserLanguage] = useState<string | null>(null);
   const [isGridView, setIsGridView] = useState<boolean | null>(null);
   const [isLoadingUserPrefs, setIsLoadingUserPrefs] = useState(false);
 
   // --- Other ---
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token");
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   /* --- BACKEND --- */
   useEffect(() => {
@@ -33,6 +36,7 @@ const useUserPrefs = () => {
 
         const result = await response.json();
         setUserTheme(result.theme);
+        setUserLanguage(result.language);
         setIsGridView(result.isGridView);
       } catch (err) {
       } finally {
@@ -54,6 +58,20 @@ const useUserPrefs = () => {
         body: JSON.stringify({ theme: newTheme }),
       });
       setUserTheme(newTheme);
+    } catch (err) {}
+  };
+
+  const updateUserLanguage = async (newLanguage: string) => {
+    try {
+      await fetch(`${apiUrl}/user-preferences/language`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ language: newLanguage }),
+      });
+      setUserLanguage(newLanguage);
     } catch (err) {}
   };
 
@@ -80,9 +98,20 @@ const useUserPrefs = () => {
     }
   }, [userTheme]);
 
+  // --- UPDATE USER LANGUAGE ---
+  useEffect(() => {
+    if (userLanguage) {
+      document.documentElement.setAttribute("data-language", userLanguage);
+      localStorage.setItem("language", userLanguage);
+      window.dispatchEvent(new Event("language-changed"));
+    }
+  }, [userLanguage]);
+
   return {
     userTheme,
     updateUserTheme,
+    userLanguage,
+    updateUserLanguage,
     isGridView,
     updateIsGridView,
     isLoadingUserPrefs,

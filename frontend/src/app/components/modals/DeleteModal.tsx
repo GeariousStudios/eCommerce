@@ -15,7 +15,7 @@ type Props = {
   onConfirm: () => void;
   confirmOnDelete?: boolean;
   confirmDeleteMessage?: string | ReactNode;
-  isNestedModal?: boolean;
+  nestedModal?: boolean;
 };
 
 const DeleteModal = (props: Props) => {
@@ -48,17 +48,18 @@ const DeleteModal = (props: Props) => {
           onClose={() => props.onClose()}
           icon={TrashIcon}
           label="Är du säker?"
-          disableClickOutside={showConfirmModal || props.isNestedModal}
-          isNestedModal={props.isNestedModal}
+          disableClickOutside={showConfirmModal || props.nestedModal}
+          nestedModal={props.nestedModal}
+          smallModal
         >
           <div className="relative flex flex-col gap-8">
-            <p>Ett borttaget objekt går ej att få tillbaka.</p>
+            <p>Ett borttaget objekt går inte att få tillbaka.</p>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
               <button
                 type="button"
                 onClick={requestDelete}
-                className={`${buttonDeletePrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
                 Ta bort
               </button>
@@ -67,7 +68,7 @@ const DeleteModal = (props: Props) => {
                 onClick={props.onClose}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Ångra
+                Avbryt
               </button>
             </div>
           </div>

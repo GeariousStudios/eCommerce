@@ -1,4 +1,4 @@
-import UnitsWrapper from "./UnitsWrapper";
+import UnitsWrapper from "@/app/report/manage/units/UnitsWrapper";
 
 const Units = () => {
   return <UnitsWrapper />;

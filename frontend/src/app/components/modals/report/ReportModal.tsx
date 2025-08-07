@@ -139,7 +139,7 @@ const ReportModal = (props: Props) => {
     fetchCategories();
 
     setReports([]);
-    setSelectedHour("");
+    setSelectedHour(props.selectedHour);
     setSelectedDate(props.selectedDate);
     setIsAddingReport(false);
     setCanAddReport(true);
@@ -715,7 +715,7 @@ const ReportModal = (props: Props) => {
                   ) : (
                     !isAddingReport && (
                       <button
-                        className={`${buttonSecondaryClass} flex w-full items-center justify-center gap-2`}
+                        className={`${buttonPrimaryClass} flex w-full items-center justify-center gap-2`}
                         onClick={() => {
                           setCurrentReport({
                             id: "",
@@ -731,7 +731,8 @@ const ReportModal = (props: Props) => {
                           });
                           setIsAddingReport(true);
                         }}
-                        tabIndex={selectedHour && selectedDate ? 0 : -1}
+                          tabIndex={selectedHour && selectedDate ? 0 : -1}
+                          // disabled={!selectedDate || !selectedHour}
                       >
                         <HoverIcon
                           outline={OutlinePlusIcon}
@@ -785,7 +786,7 @@ const ReportModal = (props: Props) => {
                                 <div className="flex gap-2">
                                   <button
                                     type="button"
-                                    className={`${iconButtonPrimaryClass}`}
+                                    className={`${iconButtonPrimaryClass} group`}
                                     onClick={() => {
                                       setIsEditingExistingReport(true);
                                       setIsAddingReport(true);
@@ -803,7 +804,7 @@ const ReportModal = (props: Props) => {
                                   </button>
                                   <button
                                     type="button"
-                                    className={`${iconButtonPrimaryClass}`}
+                                    className={`${iconButtonPrimaryClass} group`}
                                     onClick={() =>
                                       toggleDeleteItemModal(report.id)
                                     }
@@ -888,7 +889,7 @@ const ReportModal = (props: Props) => {
                                 <div className="flex gap-2">
                                   <button
                                     type="button"
-                                    className={`${iconButtonPrimaryClass}`}
+                                    className={`${iconButtonPrimaryClass} group`}
                                     onClick={() => {
                                       setIsEditingExistingReport(true);
                                       setBackupEditedReport(report);
@@ -906,7 +907,7 @@ const ReportModal = (props: Props) => {
                                   </button>
                                   <button
                                     type="button"
-                                    className={`${iconButtonPrimaryClass}`}
+                                    className={`${iconButtonPrimaryClass} group`}
                                     onClick={() =>
                                       toggleDeleteItemModal(report.id)
                                     }
@@ -1214,7 +1215,7 @@ const ReportModal = (props: Props) => {
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Ångra
+                Avbryt
               </button> */}
                 <button
                   type="button"
@@ -1238,7 +1239,7 @@ const ReportModal = (props: Props) => {
               setReports((prev) => prev.filter((r) => r.id !== deletingItemId));
               toggleDeleteItemModal();
             }}
-            isNestedModal
+            nestedModal
           />
         </>
       )}

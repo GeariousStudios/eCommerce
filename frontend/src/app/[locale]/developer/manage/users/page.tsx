@@ -1,4 +1,4 @@
-import UsersWrapper from "./UsersWrapper";
+import UsersWrapper from "@/app/developer/manage/users/UsersWrapper";
 
 const Users = () => {
   return <UsersWrapper />;

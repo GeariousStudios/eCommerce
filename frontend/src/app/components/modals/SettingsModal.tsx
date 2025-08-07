@@ -20,9 +20,11 @@ import useAuthStatus from "@/app/hooks/useAuthStatus";
 import {
   buttonSecondaryClass,
   iconButtonPrimaryClass,
+  roundedButtonClass,
 } from "@/app/styles/buttonClasses";
 import Input from "../common/Input";
 import CustomTooltip from "../common/CustomTooltip";
+import useLanguage from "@/app/hooks/useLanguage";
 
 type Props = {
   isOpen: boolean;
@@ -32,9 +34,6 @@ type Props = {
 
 const SettingsModal = (props: Props) => {
   // --- VARIABLES ---
-  // --- Refs ---
-  const themeRef = useRef<HTMLButtonElement>(null);
-
   // --- States ---
   const [isGeneralOpen, setIsGeneralOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -47,6 +46,7 @@ const SettingsModal = (props: Props) => {
 
   // --- Other ---
   const { toggleTheme, currentTheme } = useTheme();
+  const { toggleLanguage, currentLanguage } = useLanguage();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
   const { notify } = useToast();
@@ -285,6 +285,47 @@ const SettingsModal = (props: Props) => {
                       }}
                       onModal
                     />
+                  </span>
+                </div>
+
+                <hr className={`${hrClass}`} />
+
+                <div className={`${itemRowClass}`}>
+                  <span>Språk</span>
+                  <span>
+                    <button
+                      onClick={() => {
+                        toggleLanguage();
+                      }}
+                      className={`${roundedButtonClass} relative flex !h-10 !w-10 overflow-hidden`}
+                    >
+                      <div className="absolute inset-0 origin-center">
+                        <div
+                          className={`absolute inset-0 ${
+                            currentLanguage === "sv"
+                              ? "bg-blue-500"
+                              : "bg-white"
+                          }`}
+                        >
+                          {/* Vertikalt korsstreck */}
+                          <div
+                            className={`absolute top-0 bottom-0 left-[40%] w-[20%] ${
+                              currentLanguage === "sv"
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                            }`}
+                          />
+                          {/* Horisontellt korsstreck */}
+                          <div
+                            className={`absolute top-[40%] right-0 left-0 h-[20%] ${
+                              currentLanguage === "sv"
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                            }`}
+                          />
+                        </div>
+                      </div>
+                    </button>
                   </span>
                 </div>
 

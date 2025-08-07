@@ -3,7 +3,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import Navbar from "../components/navbar/Navbar";
 import Topbar from "../components/topbar/Topbar";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 type Props = {
   children: ReactNode;
@@ -34,10 +34,15 @@ const LayoutWrapper = (props: Props) => {
   // --- OTHER ---
   const pathname = usePathname();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const params = useParams();
+  const locale = typeof params.locale === "string" ? params.locale : "sv";
 
   // --- IF UNIT, GET UNIT INFO ---
   useEffect(() => {
-    const parts = pathname.split("/").filter(Boolean);
+    const parts = pathname
+      .split("/")
+      .filter(Boolean)
+      .filter((p) => p !== locale);
     if (parts.length >= 3 && parts[0] === "report" && parts[1] === "unit") {
       const unitId = parts[2];
 
@@ -75,6 +80,7 @@ const LayoutWrapper = (props: Props) => {
   > = {
     // --- General ---
     manage: { label: "Administrera", clickable: false },
+    "404": { label: "", clickable: false },
 
     // --- Report ---
     report: { label: "Rapportering", clickable: false },
@@ -105,7 +111,10 @@ const LayoutWrapper = (props: Props) => {
       return undefined;
     }
 
-    const parts = path.split("/").filter(Boolean);
+    const parts = path
+      .split("/")
+      .filter(Boolean)
+      .filter((p) => p !== locale);
 
     // If developer, remove manage.
     const filteredParts =
@@ -119,7 +128,8 @@ const LayoutWrapper = (props: Props) => {
       return {
         label:
           translation?.label ??
-          (key === filteredParts[2] && filteredParts[1] === "unit" && unitName
+          // (key === filteredParts[2] && filteredParts[1] === "unit" && unitName
+          (filteredParts[1] === "unit" && index === 2 && unitName
             ? unitName
             : part.charAt(0).toUpperCase() + part.slice(1)),
         href: "/" + filteredParts.slice(0, index + 1).join("/"),
@@ -129,7 +139,7 @@ const LayoutWrapper = (props: Props) => {
     });
 
     if (
-      pathname.includes("/report/unit/") &&
+      pathname.includes(`${locale}/report/unit/`) &&
       unitGroupId &&
       unitGroupName &&
       unitName

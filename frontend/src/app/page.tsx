@@ -1,7 +1,5 @@
-import HomeWrapper from "./HomeWrapper";
+import { redirect } from "next/navigation";
 
-const Home = () => {
-  return <HomeWrapper />;
-};
-
-export default Home;
+export default function Home() {
+  redirect("/sv");
+}

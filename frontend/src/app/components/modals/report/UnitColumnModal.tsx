@@ -309,7 +309,7 @@ const UnitColumnModal = (props: Props) => {
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Ångra
+                Avbryt
               </button>
             </div>
           </form>

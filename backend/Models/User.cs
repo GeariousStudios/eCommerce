@@ -46,6 +46,7 @@ namespace backend.Models
     {
         public int Id { get; set; }
         public string Theme { get; set; } = "light";
+        public string Language { get; set; } = "sv";
         public bool IsGridView { get; set; } = false;
         public int UserId { get; set; }
         public User User { get; set; } = null!;

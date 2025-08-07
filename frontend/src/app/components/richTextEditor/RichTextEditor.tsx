@@ -76,6 +76,18 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           setIsEditorReady(true);
           onReady?.();
           clearInterval(interval);
+
+          editor.clipboard.addMatcher(
+            Node.ELEMENT_NODE,
+            (_node: any, delta: any) => {
+              delta.ops.forEach((op: any) => {
+                if (op.attributes) {
+                  delete op.attributes;
+                }
+              });
+              return delta;
+            },
+          );
         }
       }, 50);
 

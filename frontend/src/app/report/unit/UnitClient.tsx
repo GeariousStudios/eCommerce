@@ -22,6 +22,9 @@ import {
   PencilSquareIcon as OutlinePencilSquareIcon,
   TrashIcon as OutlineTrashIcon,
   InformationCircleIcon as OutlineInformationCircleIcon,
+  PlusIcon as OutlinePlusIcon,
+  XMarkIcon as OutlineXMarkIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import {
   DocumentTextIcon as SolidDocumentTextIcon,
@@ -29,6 +32,8 @@ import {
   PencilSquareIcon as SolidPencilSquareIcon,
   TrashIcon as SolidTrashIcon,
   InformationCircleIcon as SolidInformationCircleIcon,
+  PlusIcon as SolidPlusIcon,
+  XMarkIcon as SolidXMarkIcon,
 } from "@heroicons/react/24/solid";
 import HoverIcon from "@/app/components/common/HoverIcon";
 import Input from "@/app/components/common/Input";
@@ -316,6 +321,7 @@ const UnitClient = (props: Props) => {
 
   const updateDate = (newDate: string) => {
     setSelectedDate(newDate);
+    setIsChangingDate(true);
     setRefetchData(true);
 
     const current = new URLSearchParams(searchParams.toString());
@@ -328,8 +334,6 @@ const UnitClient = (props: Props) => {
     if (!unitId || !selectedDate || !refetchData) {
       return;
     }
-
-    setIsChangingDate(true);
 
     const fetchCells = async () => {
       const response = await fetch(
@@ -452,7 +456,6 @@ const UnitClient = (props: Props) => {
             setReports((prev) => prev.filter((r) => r.id !== deletingItemId));
             toggleDeleteItemModal();
           }}
-          isNestedModal
         />
 
         {/* --- CONTENT --- */}
@@ -519,29 +522,43 @@ const UnitClient = (props: Props) => {
               </CustomTooltip>
             </div>
 
-            <div className="ml-auto flex max-w-max items-center">
-              <button
-                className={`${buttonSecondaryClass} rounded-r-none`}
-                onClick={goToPreviousDay}
-                aria-label="Föregående dag"
-              >
-                <ChevronLeftIcon className="min-h-full min-w-full" />
-              </button>
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={(val) => {
-                  updateDate(String(val));
-                }}
-                notRounded
-              />
-              <button
-                className={`${buttonSecondaryClass} rounded-l-none`}
-                onClick={goToNextDay}
-                aria-label="Nästa dag"
-              >
-                <ChevronRightIcon className="min-h-full min-w-full" />
-              </button>
+            <div className="ml-auto flex max-w-max flex-wrap items-center gap-4">
+              <CustomTooltip content={`${refetchData && !isChangingDate ? "Uppdaterar..." : "Uppdatera sidan"}`}>
+                <button
+                  className={`${buttonSecondaryClass} group flex items-center justify-center`}
+                  onClick={() => setRefetchData(true)}
+                  aria-label="Nästa dag"
+                  disabled={refetchData && !isChangingDate}
+                >
+                  <ArrowPathIcon
+                    className={`${refetchData && !isChangingDate ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} min-h-full min-w-full`}
+                  />
+                </button>
+              </CustomTooltip>
+              <div className="flex">
+                <button
+                  className={`${buttonSecondaryClass} rounded-r-none`}
+                  onClick={goToPreviousDay}
+                  aria-label="Föregående dag"
+                >
+                  <ChevronLeftIcon className="min-h-full min-w-full" />
+                </button>
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(val) => {
+                    updateDate(String(val));
+                  }}
+                  notRounded
+                />
+                <button
+                  className={`${buttonSecondaryClass} rounded-l-none`}
+                  onClick={goToNextDay}
+                  aria-label="Nästa dag"
+                >
+                  <ChevronRightIcon className="min-h-full min-w-full" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -740,6 +757,26 @@ const UnitClient = (props: Props) => {
                             >
                               <td colSpan={unitColumnNames.length + 3}>
                                 <div className="flex flex-col gap-4 p-4">
+                                  <button
+                                    className={`${iconButtonPrimaryClass} ml-auto flex items-center justify-center gap-2`}
+                                    onClick={() => {
+                                      const startDate = new Date(
+                                        `${selectedDate}T${hour.toString().padStart(2, "0")}:00:00`,
+                                      );
+
+                                      toggleReportModal(
+                                        undefined,
+                                        startDate.getHours(),
+                                        toLocalDateString(startDate),
+                                      );
+                                    }}
+                                  >
+                                    <HoverIcon
+                                      outline={OutlinePlusIcon}
+                                      solid={SolidPlusIcon}
+                                      className="h-6 min-h-6 w-6 min-w-6"
+                                    />
+                                  </button>
                                   {(() => {
                                     const hourReports = reports.filter(
                                       (report) => {
@@ -779,13 +816,13 @@ const UnitClient = (props: Props) => {
                                       },
                                     );
 
-                                    if (hourReports.length === 0) {
-                                      return (
-                                        <div className="text-sm text-[var(--text-secondary)]">
-                                          Inga störningar rapporterade
-                                        </div>
-                                      );
-                                    }
+                                    // if (hourReports.length === 0) {
+                                    //   return (
+                                    //     <div className="text-sm text-[var(--text-secondary)]">
+                                    //       Inga störningar rapporterade. Rapportera ny störning
+                                    //     </div>
+                                    //   );
+                                    // }
 
                                     return hourReports.map((report, index) => (
                                       <div
@@ -810,7 +847,7 @@ const UnitClient = (props: Props) => {
                                               <div className="flex gap-2">
                                                 <button
                                                   type="button"
-                                                  className={`${iconButtonPrimaryClass}`}
+                                                  className={`${iconButtonPrimaryClass} group`}
                                                   onClick={() => {
                                                     const startDate = new Date(
                                                       report.startTime,
@@ -837,7 +874,7 @@ const UnitClient = (props: Props) => {
                                                 </button>
                                                 <button
                                                   type="button"
-                                                  className={`${iconButtonPrimaryClass}`}
+                                                  className={`${iconButtonPrimaryClass} group`}
                                                   onClick={() =>
                                                     toggleDeleteItemModal(
                                                       report.id,
@@ -934,7 +971,7 @@ const UnitClient = (props: Props) => {
                                               <div className="flex gap-2">
                                                 <button
                                                   type="button"
-                                                  className={`${iconButtonPrimaryClass}`}
+                                                  className={`${iconButtonPrimaryClass} group`}
                                                   onClick={() => {
                                                     const startDate = new Date(
                                                       report.startTime,
@@ -961,7 +998,7 @@ const UnitClient = (props: Props) => {
                                                 </button>
                                                 <button
                                                   type="button"
-                                                  className={`${iconButtonPrimaryClass}`}
+                                                  className={`${iconButtonPrimaryClass} group`}
                                                   onClick={() =>
                                                     toggleDeleteItemModal(
                                                       report.id,
@@ -999,7 +1036,7 @@ const UnitClient = (props: Props) => {
                                             )}
                                             {report.updateDate && (
                                               <div>
-                                               <span className="font-semibold">
+                                                <span className="font-semibold">
                                                   Uppdaterad:
                                                 </span>{" "}
                                                 {utcIsoToLocalDateTime(
@@ -1026,32 +1063,15 @@ const UnitClient = (props: Props) => {
             </table>
           </div>
 
-          <div className="flex w-full flex-wrap gap-4">
-            <div className="ml-auto flex max-w-max items-center">
-              <button
-                className={`${buttonSecondaryClass} rounded-r-none`}
-                onClick={goToPreviousDay}
-                aria-label="Föregående dag"
-              >
-                <ChevronLeftIcon className="min-h-full min-w-full" />
-              </button>
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={(val) => {
-                  updateDate(String(val));
-                }}
-                notRounded
-              />
-              <button
-                className={`${buttonSecondaryClass} rounded-l-none`}
-                onClick={goToNextDay}
-                aria-label="Nästa dag"
-              >
-                <ChevronRightIcon className="min-h-full min-w-full" />
-              </button>
-            </div>
-          </div>
+          <CustomTooltip content="Scrolla till toppen av sidan">
+            <button
+              className={`${buttonSecondaryClass} ml-auto`}
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              aria-label="Scrolla till toppen av sidan"
+            >
+              <ChevronUpIcon className="min-h-full min-w-full" />
+            </button>
+          </CustomTooltip>
         </div>
       </>
     );

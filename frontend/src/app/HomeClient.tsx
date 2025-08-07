@@ -1,10 +1,14 @@
 "use client";
 
 import {
-  PencilSquareIcon,
   PlusIcon,
-  TrashIcon,
+  PencilSquareIcon as OutlinePencilSquareIcon,
+  TrashIcon as OutlineTrashIcon,
 } from "@heroicons/react/24/outline";
+import {
+  PencilSquareIcon as SolidPencilSquareIcon,
+  TrashIcon as SolidTrashIcon,
+} from "@heroicons/react/24/solid";
 import { FormEvent, useEffect, useState } from "react";
 import NewsModal from "./components/modals/NewsModal";
 import DeleteModal from "./components/modals/DeleteModal";
@@ -15,11 +19,12 @@ import Message from "./components/common/Message";
 import {
   buttonPrimaryClass,
   hyperLinkButtonClass,
-  iconbuttonDeletePrimaryClass,
+  iconButtonDeletePrimaryClass,
   iconButtonPrimaryClass,
 } from "./styles/buttonClasses";
 import Link from "next/link";
 import useAuthStatus from "./hooks/useAuthStatus";
+import HoverIcon from "./components/common/HoverIcon";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -288,7 +293,7 @@ const HomeClient = (props: Props) => {
               <div>
                 {newsItems.map((item, index) => (
                   <div key={index}>
-                    <article className="group duration-fast flex flex-col p-2 transition-colors hover:bg-[var(--bg-navbar-link)]">
+                    <article className="group/newsItem duration-fast flex flex-col p-2 transition-colors hover:bg-[var(--bg-navbar-link)]">
                       <time className="text-xs uppercase" dateTime={item.date}>
                         {new Date(item.date).toLocaleDateString("sv-SE", {
                           day: "numeric",
@@ -302,32 +307,40 @@ const HomeClient = (props: Props) => {
                           {item.typeName}
                         </h3>
                         {props.isLoggedIn !== false && props.isAdmin && (
-                          <div className="mr-2 hidden gap-2 group-hover:flex">
-                            <CustomTooltip
+                          <div className="mr-2 hidden gap-2 group-hover/newsItem:flex">
+                            {/* <CustomTooltip
                               content="Redigera nyhet"
                               hideOnClick={true}
+                            > */}
+                            <button
+                              type="button"
+                              className={`${iconButtonPrimaryClass} group`}
+                              onClick={() => openNewsModal(item.id)}
                             >
-                              <button
-                                type="button"
-                                className={`${iconButtonPrimaryClass}`}
-                                onClick={() => openNewsModal(item.id)}
-                              >
-                                <PencilSquareIcon />
-                              </button>
-                            </CustomTooltip>
+                              <HoverIcon
+                                outline={OutlinePencilSquareIcon}
+                                solid={SolidPencilSquareIcon}
+                                className="h-6 min-h-6 w-6 min-w-6"
+                              />
+                            </button>
+                            {/* </CustomTooltip> */}
 
-                            <CustomTooltip
+                            {/* <CustomTooltip
                               content="Ta bort nyhet"
                               hideOnClick={true}
+                            > */}
+                            <button
+                              type="button"
+                              className={`${iconButtonPrimaryClass} group`}
+                              onClick={() => toggleDeleteModal(item.id)}
                             >
-                              <button
-                                type="button"
-                                className={`${iconbuttonDeletePrimaryClass}`}
-                                onClick={() => toggleDeleteModal(item.id)}
-                              >
-                                <TrashIcon />
-                              </button>
-                            </CustomTooltip>
+                              <HoverIcon
+                                outline={OutlineTrashIcon}
+                                solid={SolidTrashIcon}
+                                className="h-6 min-h-6 w-6 min-w-6"
+                              />
+                            </button>
+                            {/* </CustomTooltip> */}
                           </div>
                         )}
                       </div>

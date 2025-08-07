@@ -1,4 +1,4 @@
-import UnitGroupsWrapper from "./UnitGroupsWrapper";
+import UnitGroupsWrapper from "@/app/report/manage/unit-groups/UnitGroupsWrapper";
 
 const UnitGroups = () => {
   return <UnitGroupsWrapper />;

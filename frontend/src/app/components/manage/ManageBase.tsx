@@ -430,13 +430,13 @@ const ManageBase = <TItem extends { id: number }>({
             content={
               selectedItems.length === 0
                 ? `Välj en eller fler ${itemName}`
-                : `Ta bort användare (${selectedItems.length})`
+                : `Ta bort ${itemName} (${selectedItems.length})`
             }
             lgHidden={selectedItems.length > 0}
             showOnTouch={selectedItems.length === 0}
           >
             <button
-              className={`${buttonDeleteSecondaryClass} 3xs:ml-auto group lg:w-auto lg:px-4`}
+              className={`${buttonSecondaryClass} 3xs:ml-auto group lg:w-auto lg:px-4`}
               onClick={() => toggleDeleteItemModal(selectedItems)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -643,7 +643,7 @@ const ManageBase = <TItem extends { id: number }>({
               <div className="flex min-h-72 items-center">
                 <Message
                   icon="loading"
-                  content="Hämtar innehåll..."
+                  content="content"
                   sideMessage={(items.length ?? 0) <= 2}
                 />
               </div>
@@ -781,7 +781,7 @@ const ManageBase = <TItem extends { id: number }>({
                       {loadingState ?? (
                         <Message
                           icon="loading"
-                          content="Hämtar innehåll..."
+                          content="content"
                           sideMessage={(items.length ?? 0) <= 2}
                         />
                       )}

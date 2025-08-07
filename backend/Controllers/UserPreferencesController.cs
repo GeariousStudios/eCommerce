@@ -38,6 +38,7 @@ namespace backend.Controllers
                 new
                 {
                     theme = user.UserPreferences.Theme,
+                    language = user.UserPreferences.Language,
                     isGridView = user.UserPreferences.IsGridView,
                 }
             );
@@ -74,6 +75,37 @@ namespace backend.Controllers
             return Ok(new { message = "Temat uppdaterades!" });
         }
 
+        [HttpPut("language")]
+        public async Task<IActionResult> UpdateLanguage([FromBody] UpdateLanguageRequest req)
+        {
+            var username = User.Identity?.Name;
+            var language = req.Language;
+
+            if (username == null)
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context
+                .Users.Include(u => u.UserPreferences)
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user?.UserPreferences == null)
+            {
+                return NotFound();
+            }
+
+            if (language != "sv" && language != "en")
+            {
+                return BadRequest(new { error = "Ogiltigt språk" });
+            }
+
+            user.UserPreferences.Language = language;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Språket uppdaterades!" });
+        }
+
         [HttpPut("view")]
         public async Task<IActionResult> UpdateViewPreference(
             [FromBody] UpdateViewPreferenceRequest req
@@ -107,6 +139,11 @@ namespace backend.Controllers
 public class UpdateThemeRequest
 {
     public required string Theme { get; set; }
+}
+
+public class UpdateLanguageRequest
+{
+    public required string Language { get; set; }
 }
 
 public class UpdateViewPreferenceRequest
