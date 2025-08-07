@@ -10,7 +10,7 @@ const UnitClient = dynamic(() => import("./UnitClient"), {
     <>
       <div className="hidden md:block">
         {/* <Message icon="loading" content="Kollar tillgänglighet..." fullscreen /> */}
-        <Message icon="loading" content="reading" fullscreen />
+        <Message icon="loading" content="loading" fullscreen />
       </div>
 
       <div className="block md:hidden">
@@ -20,7 +20,7 @@ const UnitClient = dynamic(() => import("./UnitClient"), {
           fullscreen
           withinContainer
         /> */}
-        <Message icon="loading" content="reading" fullscreen withinContainer />
+        <Message icon="loading" content="loading" fullscreen withinContainer />
       </div>
     </>
   ),
@@ -34,7 +34,7 @@ const UnitWrapper = () => {
       <>
         <div className="hidden md:block">
           {/* <Message icon="loading" content="Laddar in sidan..." fullscreen /> */}
-          <Message icon="loading" content="reading" fullscreen />
+          <Message icon="loading" content="loading" fullscreen />
         </div>
 
         <div className="block md:hidden">
@@ -46,7 +46,7 @@ const UnitWrapper = () => {
           /> */}
           <Message
             icon="loading"
-            content="reading"
+            content="loading"
             fullscreen
             withinContainer
           />

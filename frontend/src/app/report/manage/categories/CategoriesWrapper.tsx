@@ -10,7 +10,7 @@ const CategoriesClient = dynamic(() => import("./CategoriesClient"), {
     <>
       <div className="hidden md:block">
         {/* <Message icon="loading" content="Laddar in sidan..." fullscreen /> */}
-        <Message icon="loading" content="reading" fullscreen />
+        <Message icon="loading" content="loading" fullscreen />
       </div>
 
       <div className="block md:hidden">
@@ -22,7 +22,7 @@ const CategoriesClient = dynamic(() => import("./CategoriesClient"), {
         /> */}
         <Message
           icon="loading"
-          content="reading"
+          content="loading"
           fullscreen
           withinContainer
         />
@@ -38,11 +38,11 @@ const CategoriesWrapper = () => {
     return (
       <>
         <div className="hidden md:block">
-          <Message icon="loading" content="reading" fullscreen />
+          <Message icon="loading" content="loading" fullscreen />
         </div>
 
         <div className="block md:hidden">
-          <Message icon="loading" content="reading" fullscreen withinContainer />
+          <Message icon="loading" content="loading" fullscreen withinContainer />
         </div>
       </>
     );

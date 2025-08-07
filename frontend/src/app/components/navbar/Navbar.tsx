@@ -28,7 +28,6 @@ import { useToast } from "../toast/ToastProvider";
 import { iconButtonPrimaryClass } from "@/app/styles/buttonClasses";
 import { FocusTrap } from "focus-trap-react";
 import useIsDesktop from "@/app/hooks/useIsDesktop";
-import { useParams } from "next/navigation";
 
 type Props = {
   hasScrollbar: boolean;
@@ -58,6 +57,7 @@ const Navbar = (props: Props) => {
 
   // --- States ---
   const [units, setUnits] = useState<SubmenuGroup[]>([]);
+  const [unitItems, setUnitItems] = useState<SubmenuItem[]>([]);
 
   // --- Other ---
   const { isAuthReady, isDev, isAdmin } = useAuthStatus();
@@ -67,8 +67,6 @@ const Navbar = (props: Props) => {
   const prefix = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const token = localStorage.getItem("token");
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const params = useParams();
-  const locale = typeof params.locale === "string" ? params.locale : "sv";
 
   // --- BACKEND ---
   // --- Fetch units ---
@@ -104,7 +102,7 @@ const Navbar = (props: Props) => {
 
           acc[groupName].push({
             label: unit.name,
-            href: `/${locale}/report/unit/${unit.id}`,
+            href: `/report/unit/${unit.id}`,
           });
 
           return acc;
@@ -121,11 +119,7 @@ const Navbar = (props: Props) => {
         ],
       );
 
-      if (itemsWithTitles.length > 0) {
-        setUnits([{ label: t("Common/Units"), items: itemsWithTitles }]);
-      } else {
-        setUnits([]);
-      }
+      setUnitItems(itemsWithTitles);
     } catch (err) {}
   };
 
@@ -264,7 +258,7 @@ const Navbar = (props: Props) => {
                     <div className="flex flex-col">
                       <div className="fixed top-0 flex h-18 transition-transform duration-[var(--slow)]">
                         <Link
-                          href={`/${locale}/`}
+                          href={`/`}
                           className="mt-2.25 -ml-2.25 flex h-15 max-w-17 min-w-40"
                           aria-label="Startsida"
                         >
@@ -288,11 +282,11 @@ const Navbar = (props: Props) => {
                       {isAuthReady && isDev && (
                         <div>
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                            Utvecklare
+                            {t("Common/Developer")}
                           </span>
                           <NavbarLink
-                            href={`/${locale}/developer/manage/users/`}
-                            label="Hantera användare"
+                            href={`/developer/manage/users/`}
+                            label={t("Common/Users")}
                             icon={OutlineUserGroupIcon}
                             iconHover={SolidUserGroupIcon}
                           />
@@ -301,11 +295,11 @@ const Navbar = (props: Props) => {
                       )}
 
                       <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                        Din dashboard
+                        {t("Navbar/Your dashboard")}
                       </span>
 
                       <NavbarLink
-                        href={`/${locale}/`}
+                        href={`/`}
                         label={t("Navbar/Home")}
                         icon={OutlineHomeIcon}
                         iconHover={SolidHomeIcon}
@@ -316,31 +310,30 @@ const Navbar = (props: Props) => {
                         icon={OutlineChatBubbleBottomCenterTextIcon}
                         iconHover={SolidChatBubbleBottomCenterTextIcon}
                         menus={[
-                          ...units,
+                          ...(unitItems.length > 0
+                            ? [{ label: t("Common/Units"), items: unitItems }]
+                            : []),
                           {
                             label: t("Common/Administrate"),
                             requiresAdmin: true,
                             items: [
                               {
                                 title: t("Common/Manage"),
-                                href: `/${locale}/report/manage/categories/`,
+                                href: `/report/manage/categories/`,
 
                                 label: t("Common/Categories"),
                               },
                               {
-                                href: `/${locale}/report/manage/units/`,
-
-                                label:  t("Common/Units"),
+                                href: `/report/manage/units/`,
+                                label: t("Common/Units"),
                               },
                               {
-                                href: `/${locale}/report/manage/unit-groups/`,
-
-                                label:  t("Common/Groups"),
+                                href: `/report/manage/unit-groups/`,
+                                label: t("Common/Groups"),
                               },
                               {
-                                href: `/${locale}/report/manage/unit-columns/`,
-
-                                label:  t("Common/Columns"),
+                                href: `/report/manage/unit-columns/`,
+                                label: t("Common/Columns"),
                               },
                             ],
                           },
@@ -349,9 +342,9 @@ const Navbar = (props: Props) => {
                       />
 
                       <NavbarLink
-                        tooltip="Ej implementerat!"
+                        tooltip={t("Common/Not implemented")}
                         disabled
-                        href={`/${locale}#`}
+                        href={`#`}
                         label={t("Navbar/Pulse boards")}
                         icon={OutlinePresentationChartLineIcon}
                         iconHover={SolidPresentationChartLineIcon}
@@ -362,7 +355,7 @@ const Navbar = (props: Props) => {
                           <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
 
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                            Admin
+                            {t("Common/Admin")}
                           </span>
                           <NavbarSubmenu
                             label={t("Common/News")}
@@ -375,8 +368,8 @@ const Navbar = (props: Props) => {
                                 items: [
                                   {
                                     title: t("Common/Manage"),
-                                    href: `/${locale}/admin/manage/news-types/`,
-                                    label: t("Navbar/News types"),
+                                    href: `/admin/manage/news/news-types/`,
+                                    label: t("Navbar/Types"),
                                   },
                                 ],
                               },

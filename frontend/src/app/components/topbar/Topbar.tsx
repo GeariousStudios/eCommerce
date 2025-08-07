@@ -35,6 +35,7 @@ import TopbarLink from "./TopbarLink";
 import useTheme from "@/app/hooks/useTheme";
 import SettingsModal from "../modals/SettingsModal";
 import Link from "next/link";
+import useLanguage from "@/app/hooks/useLanguage";
 
 type Props = {
   hasScrollbar: boolean;
@@ -75,6 +76,7 @@ const Topbar = (props: Props) => {
     fetchAuthData,
   } = useAuthStatus();
   const { toggleTheme, currentTheme } = useTheme();
+  const { toggleLanguage, currentLanguage } = useLanguage();
 
   // --- HIDE TOPBAR ON SCROLL ---
   useEffect(() => {
@@ -314,16 +316,56 @@ const Topbar = (props: Props) => {
                   isOpen={userIconClicked}
                   onClose={() => setUserIconClicked(false)}
                 >
-                  {isLoggedIn && (
-                    <div className="relative">
-                      <span className="font-semibold break-words text-[var(--accent-color)]">
-                        {firstName && lastName
-                          ? firstName + " " + lastName
-                          : firstName || username}
-                      </span>
-                      <hr className="absolute mt-4 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
+                  <div className="relative">
+                    <div className="flex justify-between gap-4">
+                      {isLoggedIn ? (
+                        <span className="font-semibold break-words text-[var(--accent-color)]">
+                          {firstName && lastName
+                            ? firstName + " " + lastName
+                            : firstName || username}
+                        </span>
+                      ) : (
+                        <span className="font-semibold break-words text-[var(--accent-color)]">
+                          Ingen är inloggad
+                        </span>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          toggleLanguage();
+                        }}
+                        className={`${roundedButtonClass} relative flex !h-6 min-h-6 !w-6 min-w-6 overflow-hidden`}
+                        aria-label={`${currentLanguage === "sv" ? "Byt till engelska" : "Byt till svenska"}`}
+                      >
+                        <div className="absolute inset-0 origin-center">
+                          <div
+                            className={`absolute inset-0 ${
+                              currentLanguage === "sv"
+                                ? "bg-blue-500"
+                                : "bg-white"
+                            }`}
+                          >
+                            <div
+                              className={`absolute top-0 bottom-0 left-[40%] w-[20%] ${
+                                currentLanguage === "sv"
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                              }`}
+                            />
+                            <div
+                              className={`absolute top-[40%] right-0 left-0 h-[20%] ${
+                                currentLanguage === "sv"
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                              }`}
+                            />
+                          </div>
+                        </div>
+                      </button>
                     </div>
-                  )}
+                    <hr className="absolute mt-4 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
+                  </div>
+
                   <div>
                     <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                       Hantera

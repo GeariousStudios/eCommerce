@@ -15,6 +15,7 @@ import {
 import MenuDropdown from "../common/MenuDropdown";
 import Input from "../common/Input";
 import CustomTooltip from "../common/CustomTooltip";
+import { useTranslations } from "next-intl";
 
 // --- PROPS ---
 type FilterData = {
@@ -214,6 +215,7 @@ export const ThCell = ({
   onSort: (field: string) => void;
   classNameAddition?: string;
 }) => {
+  const t = useTranslations();
   const getSortIcon = (field: string) => {
     if (sortBy !== field) {
       return <ChevronUpDownIcon className="h-6 w-6" />;
@@ -230,9 +232,9 @@ export const ThCell = ({
       content={
         sortBy === sortingItem
           ? sortOrder === "asc"
-            ? "Sortera " + labelAsc
-            : "Sortera " + labelDesc
-          : "Sortera " + labelDesc
+            ? t("Manage/Sort") + labelAsc
+            : t("Manage/Sort") + labelDesc
+          : t("Manage/Sort") + labelDesc
       }
     >
       <th

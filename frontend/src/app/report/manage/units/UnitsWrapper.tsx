@@ -10,7 +10,7 @@ const UnitsClient = dynamic(() => import("./UnitsClient"), {
     <>
       <div className="hidden md:block">
         {/* <Message icon="loading" content="Laddar in sidan..." fullscreen /> */}
-        <Message icon="loading" content="reading" fullscreen />
+        <Message icon="loading" content="loading" fullscreen />
       </div>
 
       <div className="block md:hidden">
@@ -20,7 +20,7 @@ const UnitsClient = dynamic(() => import("./UnitsClient"), {
           fullscreen
           withinContainer
         /> */}
-        <Message icon="loading" content="reading" fullscreen withinContainer />
+        <Message icon="loading" content="loading" fullscreen withinContainer />
       </div>
     </>
   ),
@@ -34,12 +34,12 @@ const UnitsWrapper = () => {
       <>
         <div className="hidden md:block">
           {/* <Message icon="loading" content="auth" fullscreen /> */}
-          <Message icon="loading" content="reading" fullscreen />
+          <Message icon="loading" content="loading" fullscreen />
         </div>
 
         <div className="block md:hidden">
           {/* <Message icon="loading" content="auth" fullscreen withinContainer /> */}
-          <Message icon="loading" content="reading" fullscreen withinContainer />
+          <Message icon="loading" content="loading" fullscreen withinContainer />
         </div>
       </>
     );

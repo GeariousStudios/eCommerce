@@ -45,6 +45,7 @@ import {
   utcIsoToLocalDateTime,
 } from "@/app/helpers/timeUtils";
 import DeleteModal from "@/app/components/modals/DeleteModal";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -61,6 +62,8 @@ export const tdClass =
   "px-4 py-2 h-[40px] text-left break-all border-1 border-[var(--border-secondary)] flex-inline items-center justify-center";
 
 const UnitClient = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Other ---
   const params = useParams();
@@ -464,7 +467,7 @@ const UnitClient = (props: Props) => {
             <div className="flex gap-4">
               {/* --- Report data top --- */}
               <CustomTooltip
-                content={`${!props.isReporter ? "Du saknar behörighet!" : unitColumnNames.length > 0 ? "Rapportera data" : "Det finns ingen kolumner att rapportera någon data i"}`}
+                content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Report data") : t("Unit/No columns")}`}
                 lgHidden={
                   unitColumnNames.length > 0 && props.isReporter === true
                 }
@@ -487,13 +490,15 @@ const UnitClient = (props: Props) => {
                       solid={SolidDocumentTextIcon}
                       className="h-6 min-h-6 w-6 min-w-6"
                     />
-                    <span className="hidden lg:block">Rapportera data</span>
+                    <span className="hidden lg:block">
+                      {t("Unit/Report data")}
+                    </span>
                   </div>
                 </button>
               </CustomTooltip>
 
               <CustomTooltip
-                content={`${!props.isReporter ? "Du saknar behörighet!" : "Rapportera störningar"}`}
+                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Report disruptions")}`}
                 lgHidden={props.isReporter === true}
               >
                 <button
@@ -515,7 +520,7 @@ const UnitClient = (props: Props) => {
                       className="h-6 min-h-6 w-6 min-w-6"
                     />
                     <span className="hidden lg:block">
-                      Rapportera störningar
+                      {t("Unit/Report disruptions")}
                     </span>
                   </div>
                 </button>
@@ -523,11 +528,13 @@ const UnitClient = (props: Props) => {
             </div>
 
             <div className="ml-auto flex max-w-max flex-wrap items-center gap-4">
-              <CustomTooltip content={`${refetchData && !isChangingDate ? "Uppdaterar..." : "Uppdatera sidan"}`}>
+              <CustomTooltip
+                content={`${refetchData && !isChangingDate ? t("Common/Updating") : t("Unit/Update page")}`}
+              >
                 <button
                   className={`${buttonSecondaryClass} group flex items-center justify-center`}
                   onClick={() => setRefetchData(true)}
-                  aria-label="Nästa dag"
+                  aria-label={t("Unit/Update page")}
                   disabled={refetchData && !isChangingDate}
                 >
                   <ArrowPathIcon
@@ -539,7 +546,7 @@ const UnitClient = (props: Props) => {
                 <button
                   className={`${buttonSecondaryClass} rounded-r-none`}
                   onClick={goToPreviousDay}
-                  aria-label="Föregående dag"
+                  aria-label={t("Unit/Previous day")}
                 >
                   <ChevronLeftIcon className="min-h-full min-w-full" />
                 </button>
@@ -554,7 +561,7 @@ const UnitClient = (props: Props) => {
                 <button
                   className={`${buttonSecondaryClass} rounded-l-none`}
                   onClick={goToNextDay}
-                  aria-label="Nästa dag"
+                  aria-label={t("Unit/Next day")}
                 >
                   <ChevronRightIcon className="min-h-full min-w-full" />
                 </button>
@@ -579,7 +586,7 @@ const UnitClient = (props: Props) => {
                       className={`${thClass} sticky left-0 w-[52.5px] cursor-pointer bg-[var(--bg-grid-header)] whitespace-nowrap transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
                       onClick={toggleAllRows}
                       role="button"
-                      aria-label="Öppna/stäng alla"
+                      aria-label={t("Unit/Open or collapse")}
                     >
                       <div className={iconButtonPrimaryClass}>
                         {allExpanded ? <ChevronDownIcon /> : <ChevronUpIcon />}
@@ -588,12 +595,12 @@ const UnitClient = (props: Props) => {
                     <th
                       className={`${thClass} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
                     >
-                      Tid
+                      {t("Unit/Time")}
                     </th>
                     <th
                       className={`${thClass} ${unitColumnNames.length > 0 ? "w-0" : ""} whitespace-nowrap`}
                     >
-                      Störningar
+                      {t("Unit/Disruptions")}
                     </th>
 
                     {unitColumnNames.map((col, i) => (
@@ -612,7 +619,7 @@ const UnitClient = (props: Props) => {
                       colSpan={unitColumnNames.length + 3}
                       className={`${tdClass} h-[960px]`}
                     >
-                      <Message icon="loading" content="loading" />
+                      <Message icon="loading" content="content" />
                     </td>
                   </tr>
                 ) : (
@@ -682,7 +689,9 @@ const UnitClient = (props: Props) => {
                                   <>
                                     {filteredReports.length}{" "}
                                     {hasOngoing && (
-                                      <CustomTooltip content="Pågående störning">
+                                      <CustomTooltip
+                                        content={t("Unit/Ongoing disruption")}
+                                      >
                                         <span className="ml-1 text-[var(--note-error)]">
                                           &#x26A0;
                                         </span>
@@ -705,9 +714,9 @@ const UnitClient = (props: Props) => {
                               const displayValue =
                                 dataType === "Boolean"
                                   ? cell?.value === true
-                                    ? "Ja"
+                                    ? t("Common/Yes")
                                     : cell?.value === "false"
-                                      ? "Nej"
+                                      ? t("Common/No")
                                       : ""
                                   : (cell?.intValue ?? cell?.value ?? "");
 
@@ -720,7 +729,7 @@ const UnitClient = (props: Props) => {
                                     {displayValue}
 
                                     <CustomTooltip
-                                      content={`${!props.isReporter ? "Du saknar behörighet!" : unitColumnNames.length > 0 ? "Rapportera data" : "Det finns ingen kolumner att rapportera någon data i"}`}
+                                      content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Report data") : t("Unit/No columns")}`}
                                       lgHidden={
                                         unitColumnNames.length > 0 &&
                                         props.isReporter === true
@@ -757,26 +766,32 @@ const UnitClient = (props: Props) => {
                             >
                               <td colSpan={unitColumnNames.length + 3}>
                                 <div className="flex flex-col gap-4 p-4">
-                                  <button
-                                    className={`${iconButtonPrimaryClass} ml-auto flex items-center justify-center gap-2`}
-                                    onClick={() => {
-                                      const startDate = new Date(
-                                        `${selectedDate}T${hour.toString().padStart(2, "0")}:00:00`,
-                                      );
-
-                                      toggleReportModal(
-                                        undefined,
-                                        startDate.getHours(),
-                                        toLocalDateString(startDate),
-                                      );
-                                    }}
+                                  <CustomTooltip
+                                    content={`${!props.isReporter ? t("Common/No access") : t("Unit/Report disruptions")}`}
+                                    lgHidden={props.isReporter === true}
                                   >
-                                    <HoverIcon
-                                      outline={OutlinePlusIcon}
-                                      solid={SolidPlusIcon}
-                                      className="h-6 min-h-6 w-6 min-w-6"
-                                    />
-                                  </button>
+                                    <button
+                                      className={`${iconButtonPrimaryClass} ml-auto flex items-center justify-center gap-2`}
+                                      onClick={() => {
+                                        const startDate = new Date(
+                                          `${selectedDate}T${hour.toString().padStart(2, "0")}:00:00`,
+                                        );
+
+                                        toggleReportModal(
+                                          undefined,
+                                          startDate.getHours(),
+                                          toLocalDateString(startDate),
+                                        );
+                                      }}
+                                      disabled={!props.isReporter}
+                                    >
+                                      <HoverIcon
+                                        outline={OutlinePlusIcon}
+                                        solid={SolidPlusIcon}
+                                        className="h-6 min-h-6 w-6 min-w-6"
+                                      />
+                                    </button>
+                                  </CustomTooltip>
                                   {(() => {
                                     const hourReports = reports.filter(
                                       (report) => {
@@ -816,14 +831,6 @@ const UnitClient = (props: Props) => {
                                       },
                                     );
 
-                                    // if (hourReports.length === 0) {
-                                    //   return (
-                                    //     <div className="text-sm text-[var(--text-secondary)]">
-                                    //       Inga störningar rapporterade. Rapportera ny störning
-                                    //     </div>
-                                    //   );
-                                    // }
-
                                     return hourReports.map((report, index) => (
                                       <div
                                         key={`${report.id ?? "temp"}-${report.startTime ?? "unknown"}-${index}`}
@@ -843,50 +850,68 @@ const UnitClient = (props: Props) => {
                                               )}
                                             </div>
 
-                                            {props.isReporter && (
+                                            {report.categoryId && (
                                               <div className="flex gap-2">
-                                                <button
-                                                  type="button"
-                                                  className={`${iconButtonPrimaryClass} group`}
-                                                  onClick={() => {
-                                                    const startDate = new Date(
-                                                      report.startTime,
-                                                    );
-
-                                                    toggleReportModal(
-                                                      report.id,
-                                                      startDate.getHours(),
-                                                      toLocalDateString(
-                                                        startDate,
-                                                      ),
-                                                    );
-                                                  }}
-                                                >
-                                                  <HoverIcon
-                                                    outline={
-                                                      OutlinePencilSquareIcon
-                                                    }
-                                                    solid={
-                                                      SolidPencilSquareIcon
-                                                    }
-                                                    className="h-6 min-h-6 w-6 min-w-6"
-                                                  />
-                                                </button>
-                                                <button
-                                                  type="button"
-                                                  className={`${iconButtonPrimaryClass} group`}
-                                                  onClick={() =>
-                                                    toggleDeleteItemModal(
-                                                      report.id,
-                                                    )
+                                                <CustomTooltip
+                                                  content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit disruption")}`}
+                                                  lgHidden={
+                                                    props.isReporter === true
                                                   }
                                                 >
-                                                  <HoverIcon
-                                                    outline={OutlineTrashIcon}
-                                                    solid={SolidTrashIcon}
-                                                    className="h-6 min-h-6 w-6 min-w-6"
-                                                  />
-                                                </button>
+                                                  <button
+                                                    type="button"
+                                                    className={`${iconButtonPrimaryClass} group`}
+                                                    onClick={() => {
+                                                      const startDate =
+                                                        new Date(
+                                                          report.startTime,
+                                                        );
+
+                                                      toggleReportModal(
+                                                        report.id,
+                                                        startDate.getHours(),
+                                                        toLocalDateString(
+                                                          startDate,
+                                                        ),
+                                                      );
+                                                    }}
+                                                    disabled={!props.isReporter}
+                                                  >
+                                                    <HoverIcon
+                                                      outline={
+                                                        OutlinePencilSquareIcon
+                                                      }
+                                                      solid={
+                                                        SolidPencilSquareIcon
+                                                      }
+                                                      className="h-6 min-h-6 w-6 min-w-6"
+                                                    />
+                                                  </button>
+                                                </CustomTooltip>
+
+                                                <CustomTooltip
+                                                  content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete disruption")}`}
+                                                  lgHidden={
+                                                    props.isReporter === true
+                                                  }
+                                                >
+                                                  <button
+                                                    type="button"
+                                                    className={`${iconButtonPrimaryClass} group`}
+                                                    onClick={() =>
+                                                      toggleDeleteItemModal(
+                                                        report.id,
+                                                      )
+                                                    }
+                                                    disabled={!props.isReporter}
+                                                  >
+                                                    <HoverIcon
+                                                      outline={OutlineTrashIcon}
+                                                      solid={SolidTrashIcon}
+                                                      className="h-6 min-h-6 w-6 min-w-6"
+                                                    />
+                                                  </button>
+                                                </CustomTooltip>
                                               </div>
                                             )}
                                           </div>
@@ -920,18 +945,18 @@ const UnitClient = (props: Props) => {
                                                 const parts: string[] = [];
                                                 if (diffDays > 0)
                                                   parts.push(
-                                                    `${diffDays} ${diffDays === 1 ? "dag" : "dagar"}`,
+                                                    `${diffDays} ${diffDays === 1 ? t("Common/day") : t("Common/days")}`,
                                                   );
                                                 if (diffHours > 0)
                                                   parts.push(
-                                                    `${diffHours} ${diffHours === 1 ? "timme" : "timmar"}`,
+                                                    `${diffHours} ${diffHours === 1 ? t("Common/hour") : t("Common/hours")}`,
                                                   );
                                                 if (
                                                   diffMinutes > 0 ||
                                                   parts.length === 0
                                                 )
                                                   parts.push(
-                                                    `${diffMinutes} ${diffMinutes === 1 ? "minut" : "minuter"}`,
+                                                    `${diffMinutes} ${diffMinutes === 1 ? t("Common/minute") : t("Common/minutes")}`,
                                                   );
 
                                                 const duration =
@@ -960,15 +985,20 @@ const UnitClient = (props: Props) => {
                                                   .replace("T", " ")}{" "}
                                                 -{" "}
                                                 <span className="font-semibold text-[var(--note-error)]">
-                                                  pågående
+                                                  {t("Unit/ongoing")}
                                                 </span>
                                               </>
                                             )}
                                           </div>
 
-                                          {!report.categoryId &&
-                                            props.isReporter && (
-                                              <div className="flex gap-2">
+                                          {!report.categoryId && (
+                                            <div className="flex gap-2">
+                                              <CustomTooltip
+                                                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit disruption")}`}
+                                                lgHidden={
+                                                  props.isReporter === true
+                                                }
+                                              >
                                                 <button
                                                   type="button"
                                                   className={`${iconButtonPrimaryClass} group`}
@@ -985,6 +1015,7 @@ const UnitClient = (props: Props) => {
                                                       ),
                                                     );
                                                   }}
+                                                  disabled={!props.isReporter}
                                                 >
                                                   <HoverIcon
                                                     outline={
@@ -996,6 +1027,14 @@ const UnitClient = (props: Props) => {
                                                     className="h-6 min-h-6 w-6 min-w-6"
                                                   />
                                                 </button>
+                                              </CustomTooltip>
+
+                                              <CustomTooltip
+                                                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete disruption")}`}
+                                                lgHidden={
+                                                  props.isReporter === true
+                                                }
+                                              >
                                                 <button
                                                   type="button"
                                                   className={`${iconButtonPrimaryClass} group`}
@@ -1004,6 +1043,7 @@ const UnitClient = (props: Props) => {
                                                       report.id,
                                                     )
                                                   }
+                                                  disabled={!props.isReporter}
                                                 >
                                                   <HoverIcon
                                                     outline={OutlineTrashIcon}
@@ -1011,8 +1051,9 @@ const UnitClient = (props: Props) => {
                                                     className="h-6 min-h-6 w-6 min-w-6"
                                                   />
                                                 </button>
-                                              </div>
-                                            )}
+                                              </CustomTooltip>
+                                            </div>
+                                          )}
                                         </div>
                                         <div
                                           className="text-sm break-all"
@@ -1026,23 +1067,25 @@ const UnitClient = (props: Props) => {
                                             {report.creationDate && (
                                               <div>
                                                 <span className="font-semibold">
-                                                  Skapad:
+                                                  {t("Common/Created")}
                                                 </span>{" "}
                                                 {utcIsoToLocalDateTime(
                                                   report.creationDate,
                                                 )}{" "}
-                                                av {report.createdBy}
+                                                {t("Common/by")}{" "}
+                                                {report.createdBy}
                                               </div>
                                             )}
                                             {report.updateDate && (
                                               <div>
                                                 <span className="font-semibold">
-                                                  Uppdaterad:
+                                                  {t("Common/Updated")}
                                                 </span>{" "}
                                                 {utcIsoToLocalDateTime(
                                                   report.updateDate,
                                                 )}{" "}
-                                                av {report.updatedBy}
+                                                {t("Common/by")}{" "}
+                                                {report.updatedBy}
                                               </div>
                                             )}
                                           </div>
@@ -1063,11 +1106,11 @@ const UnitClient = (props: Props) => {
             </table>
           </div>
 
-          <CustomTooltip content="Scrolla till toppen av sidan">
+          <CustomTooltip content={t("Unit/Scroll to top")}>
             <button
               className={`${buttonSecondaryClass} ml-auto`}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              aria-label="Scrolla till toppen av sidan"
+              aria-label={t("Unit/Scroll to top")}
             >
               <ChevronUpIcon className="min-h-full min-w-full" />
             </button>

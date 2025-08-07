@@ -25,6 +25,7 @@ import {
 import Input from "../common/Input";
 import CustomTooltip from "../common/CustomTooltip";
 import useLanguage from "@/app/hooks/useLanguage";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -33,6 +34,8 @@ type Props = {
 };
 
 const SettingsModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- States ---
   const [isGeneralOpen, setIsGeneralOpen] = useState(false);
@@ -241,7 +244,7 @@ const SettingsModal = (props: Props) => {
           </li>
 
           {/* --- Notifications --- */}
-          <CustomTooltip content="Ej implementerat!" showOnTouch>
+          <CustomTooltip content={t("Common/Not implemented")} showOnTouch>
             <li>
               <ModalLink
                 disabled
@@ -297,7 +300,8 @@ const SettingsModal = (props: Props) => {
                       onClick={() => {
                         toggleLanguage();
                       }}
-                      className={`${roundedButtonClass} relative flex !h-10 !w-10 overflow-hidden`}
+                      className={`${roundedButtonClass} relative flex !h-10 min-h-10 !w-10 min-w-10 overflow-hidden`}
+                      aria-label={`${currentLanguage === "sv" ? "Byt till engelska" : "Byt till svenska"}`}
                     >
                       <div className="absolute inset-0 origin-center">
                         <div
@@ -307,7 +311,6 @@ const SettingsModal = (props: Props) => {
                               : "bg-white"
                           }`}
                         >
-                          {/* Vertikalt korsstreck */}
                           <div
                             className={`absolute top-0 bottom-0 left-[40%] w-[20%] ${
                               currentLanguage === "sv"
@@ -315,7 +318,6 @@ const SettingsModal = (props: Props) => {
                                 : "bg-red-500"
                             }`}
                           />
-                          {/* Horisontellt korsstreck */}
                           <div
                             className={`absolute top-[40%] right-0 left-0 h-[20%] ${
                               currentLanguage === "sv"

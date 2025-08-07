@@ -1,6 +1,6 @@
 "use client";
 
-import { useToast } from "../../../components/toast/ToastProvider";
+import { useToast } from "../../../../components/toast/ToastProvider";
 import useManage from "@/app/hooks/useManage";
 import { NewsTypeFilters, NewsTypeItem } from "@/app/types/manageTypes"; // <-- Unique.
 import { deleteContent, fetchContent } from "@/app/apis/manage/newsTypesApi"; // <-- Unique.
@@ -73,7 +73,7 @@ const NewsTypesClient = (props: Props) => {
           counts: result.counts,
         };
       } catch (err: any) {
-        notify("error", err.message || "Kunde inte hämta nyhetstyper"); // <-- Unique.
+        notify("error", err.message || "Kunde inte hämta typer"); // <-- Unique.
         return {
           items: [],
           total: 0,
@@ -106,7 +106,7 @@ const NewsTypesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", "Nyhetstyp borttagen!", 4000); // <-- Unique.
+      notify("success", "Typ borttagen!", 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -162,7 +162,7 @@ const NewsTypesClient = (props: Props) => {
   return (
     <>
       <ManageBase<NewsTypeItem> // <-- Unique.
-        itemName="nyhetstyp" // <-- Unique.
+        itemName="typ" // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

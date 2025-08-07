@@ -11,12 +11,14 @@ import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { LockClosedIcon, WifiIcon } from "@heroicons/react/20/solid";
 import CustomTooltip from "@/app/components/common/CustomTooltip";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isConnected: boolean | null;
 };
 
 const UsersClient = (props: Props) => {
+  const t = useTranslations();
   // <--- Unique.
   // --- VARIABLES ---
   const {
@@ -76,7 +78,10 @@ const UsersClient = (props: Props) => {
           counts: result.counts,
         };
       } catch (err: any) {
-        notify("error", err.message || "Kunde inte hämta användare"); // <-- Unique
+        notify(
+          "error",
+          err.message || t("Manage/Failed to fetch") + t("Common/users"),
+        ); // <-- Unique
         return {
           items: [],
           total: 0,
@@ -109,7 +114,7 @@ const UsersClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", "Användare borttagen!", 4000); // <-- Unique.
+      notify("success", t("Common/User") + t("Manage/removed"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -126,7 +131,7 @@ const UsersClient = (props: Props) => {
               <span className="flex items-center gap-2">
                 {item.username}{" "}
                 {item.isLocked && (
-                  <CustomTooltip content="Detta konto är låst!" showOnTouch>
+                  <CustomTooltip content={t("Users/Locked user")} showOnTouch>
                     <LockClosedIcon className="h-5 w-5 cursor-help text-[var(--locked)]" />
                   </CustomTooltip>
                 )}
@@ -135,7 +140,9 @@ const UsersClient = (props: Props) => {
                 content={
                   <span>
                     <span className="font-extrabold">{item.username}</span>{" "}
-                    {item.isOnline ? "är online" : "är offline"}
+                    {item.isOnline
+                      ? t("Common/is") + " online"
+                      : t("Common/is") + " offline"}
                   </span>
                 }
                 showOnTouch
@@ -151,7 +158,10 @@ const UsersClient = (props: Props) => {
             <span>{item.email?.trim() ? item.email : null}</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Behörigheter:</span>
+            <span className="w-full font-semibold">
+              {" "}
+              {t("Users/Permissions")}:
+            </span>
             {item.roles.map((role, i) => (
               <span
                 key={i}
@@ -168,7 +178,7 @@ const UsersClient = (props: Props) => {
       key: "creationDate",
       getValue: (item: UserItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Konto skapat: </span>
+          <span className="font-semibold">{t("Common/Created")} </span>
           {utcIsoToLocalDateTime(item.creationDate)}
         </p>
       ),
@@ -177,7 +187,7 @@ const UsersClient = (props: Props) => {
       key: "lastLogin",
       getValue: (item: UserItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Senast inloggad: </span>
+          <span className="font-semibold">{t("Users/Last login")} </span>
           {item.lastLogin ? utcIsoToLocalDateTime(item.lastLogin) : "-"}
         </p>
       ),
@@ -188,46 +198,46 @@ const UsersClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "username",
-      label: "Användarnamn",
+      label: t("Common/Username"),
       sortingItem: "username",
-      labelAsc: "användarnamn Ö-A",
-      labelDesc: "användarnamn A-Ö",
+      labelAsc: t("Common/username") + " Ö-A",
+      labelDesc: t("Common/username") + " A-Ö",
       getValue: (item: UserItem) => item.username,
       responsivePriority: 0,
     },
     {
       key: "firstName",
-      label: "Förnamn",
+      label: t("Users/First name"),
       sortingItem: "firstName",
-      labelAsc: "förnamn Ö-A",
-      labelDesc: "förnamn A-Ö",
+      labelAsc: t("Users/first name") + " Ö-A",
+      labelDesc: t("Users/first name") + " A-Ö",
       getValue: (item: UserItem) => item.firstName,
       responsivePriority: 2,
     },
     {
       key: "lastName",
-      label: "Efternamn",
+      label: t("Users/Last name"),
       sortingItem: "lastName",
-      labelAsc: "efternamn Ö-A",
-      labelDesc: "efternamn A-Ö",
+      labelAsc: t("Users/last name") + " Ö-A",
+      labelDesc: t("Users/last name") + " A-Ö",
       getValue: (item: UserItem) => item.lastName,
       responsivePriority: 3,
     },
     {
       key: "email",
-      label: "Mejladress",
+      label: t("Users/Email"),
       sortingItem: "email",
-      labelAsc: "mejladress Ö-A",
-      labelDesc: "mejladress A-Ö",
+      labelAsc: t("Users/email") + " Ö-A",
+      labelDesc: t("Users/email") + " A-Ö",
       getValue: (item: UserItem) => item.email,
       responsivePriority: 4,
     },
     {
       key: "roles",
-      label: "Behörigheter",
+      label: t("Users/Permissions"),
       sortingItem: "roles",
-      labelAsc: "behörigheter Ö-A",
-      labelDesc: "behörigheter A-Ö",
+      labelAsc: t("Users/permissions") + " Ö-A",
+      labelDesc: t("Users/permissions") + " A-Ö",
       getValue: (item: UserItem) => (
         <div className="flex flex-wrap gap-2">
           {item.roles.map((role, i) => (
@@ -246,15 +256,15 @@ const UsersClient = (props: Props) => {
       key: "isLocked",
       label: "Status",
       sortingItem: "status",
-      labelAsc: "låsta konton",
-      labelDesc: "upplåsta konton",
+      labelAsc: t("Users/locked users"),
+      labelDesc: t("Users/locked users"),
       classNameAddition: "w-[100px] min-w-[100px]",
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: UserItem) => (
         <span
           className={`${badgeClass} ${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
         >
-          {item.isLocked ? "Låst" : "Upplåst"}
+          {item.isLocked ? t("Users/Locked") : t("Users/Unlocked")}
         </span>
       ),
       responsivePriority: 5,
@@ -310,7 +320,7 @@ const UsersClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: "Behörigheter",
+      label: t("Users/Permissions"),
       breakpoint: "ml",
       options: [
         {
@@ -338,13 +348,13 @@ const UsersClient = (props: Props) => {
       breakpoint: "lg",
       options: [
         {
-          label: "Låsta konton",
+          label: t("Users/Locked users"),
           isSelected: filterControls.showLocked,
           setSelected: filterControls.setShowLocked,
           count: counts?.status?.["Locked"] ?? 0,
         },
         {
-          label: "Upplåsta konton",
+          label: t("Users/Unlocked users"),
           isSelected: filterControls.showUnlocked,
           setSelected: filterControls.setShowUnlocked,
           count: counts?.status?.["Unlocked"] ?? 0,
@@ -356,7 +366,7 @@ const UsersClient = (props: Props) => {
   return (
     <>
       <ManageBase<UserItem> // <-- Unique.
-        itemName="användare" // <-- Unique.
+        itemName={t("Common/user")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

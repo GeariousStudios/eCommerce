@@ -10,7 +10,7 @@ const UnitColumnsClient = dynamic(() => import("./UnitColumnsClient"), {
     <>
       <div className="hidden md:block">
         {/* <Message icon="loading" content="Laddar in sidan..." fullscreen /> */}
-        <Message icon="loading" content="reading" fullscreen />
+        <Message icon="loading" content="loading" fullscreen />
       </div>
 
       <div className="block md:hidden">
@@ -22,7 +22,7 @@ const UnitColumnsClient = dynamic(() => import("./UnitColumnsClient"), {
         /> */}
         <Message
           icon="loading"
-          content="reading"
+          content="loading"
           fullscreen
           withinContainer
         />
@@ -39,12 +39,12 @@ const UnitColumnsWrapper = () => {
       <>
         <div className="hidden md:block">
           {/* <Message icon="loading" content="auth" fullscreen /> */}
-          <Message icon="loading" content="reading" fullscreen />
+          <Message icon="loading" content="loading" fullscreen />
         </div>
 
         <div className="block md:hidden">
           {/* <Message icon="loading" content="auth" fullscreen withinContainer /> */}
-          <Message icon="loading" content="reading" fullscreen withinContainer />
+          <Message icon="loading" content="loading" fullscreen withinContainer />
         </div>
       </>
     );

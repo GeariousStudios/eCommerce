@@ -3,7 +3,8 @@
 import { ReactNode, useEffect, useState } from "react";
 import Navbar from "../components/navbar/Navbar";
 import Topbar from "../components/topbar/Topbar";
-import { useParams, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type Props = {
   children: ReactNode;
@@ -17,6 +18,8 @@ type Breadcrumb = {
 };
 
 const LayoutWrapper = (props: Props) => {
+  const t = useTranslations();
+
   // --- STATES ---
   const [hasScrollbar, setHasScrollbar] = useState(false);
   // const [navbarHidden, setNavbarHidden] = useState(false);
@@ -34,15 +37,10 @@ const LayoutWrapper = (props: Props) => {
   // --- OTHER ---
   const pathname = usePathname();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const params = useParams();
-  const locale = typeof params.locale === "string" ? params.locale : "sv";
 
   // --- IF UNIT, GET UNIT INFO ---
   useEffect(() => {
-    const parts = pathname
-      .split("/")
-      .filter(Boolean)
-      .filter((p) => p !== locale);
+    const parts = pathname.split("/").filter(Boolean);
     if (parts.length >= 3 && parts[0] === "report" && parts[1] === "unit") {
       const unitId = parts[2];
 
@@ -79,30 +77,30 @@ const LayoutWrapper = (props: Props) => {
     { label: string; clickable?: boolean }
   > = {
     // --- General ---
-    manage: { label: "Administrera", clickable: false },
-    "404": { label: "", clickable: false },
+    manage: { label: t("Common/Administrate"), clickable: false },
 
     // --- Report ---
-    report: { label: "Rapportering", clickable: false },
-    categories: { label: "Kategorier", clickable: false },
-    units: { label: "Enheter", clickable: false },
-    unit: { label: "Enheter", clickable: false },
+    report: { label: t("Navbar/Reporting"), clickable: false },
+    categories: { label: t("Common/Categories"), clickable: false },
+    units: { label: t("Common/Units"), clickable: false },
+    unit: { label: t("Common/Units"), clickable: false },
     "unit-groups": {
-      label: "Grupper",
+      label: t("Common/Groups"),
       clickable: false,
     },
     "unit-columns": {
-      label: "Kolumner",
+      label: t("Common/Columns"),
       clickable: false,
     },
 
     // --- Developer ---
-    developer: { label: "Utvecklare", clickable: false },
-    users: { label: "Hantera användare", clickable: false },
+    developer: { label: t("Common/Developer"), clickable: false },
+    users: { label: t("Common/Users"), clickable: false },
 
     // --- Admin ---
-    admin: { label: "Admin", clickable: false },
-    "news-types": { label: "Nyhetstyper", clickable: false },
+    admin: { label: t("Common/Admin"), clickable: false },
+    news: { label: t("Common/News"), clickable: false },
+    "news-types": { label: t("Navbar/Types"), clickable: false },
   };
 
   // --- CREATE BREADCRUMBS ---
@@ -111,10 +109,24 @@ const LayoutWrapper = (props: Props) => {
       return undefined;
     }
 
-    const parts = path
-      .split("/")
-      .filter(Boolean)
-      .filter((p) => p !== locale);
+    const parts = path.split("/").filter(Boolean);
+
+    const knownKeys = Object.keys(breadcrumbTranslation);
+
+    const isKnown =
+      knownKeys.includes(parts[0]?.toLowerCase()) ||
+      (parts[0] === "report" && parts[1] === "unit" && parts[2]);
+
+    if (!isKnown) {
+      return [
+        {
+          label: t("Message/Invalid page"),
+          href: "/",
+          clickable: false,
+          isActive: true,
+        },
+      ];
+    }
 
     // If developer, remove manage.
     const filteredParts =
@@ -128,7 +140,6 @@ const LayoutWrapper = (props: Props) => {
       return {
         label:
           translation?.label ??
-          // (key === filteredParts[2] && filteredParts[1] === "unit" && unitName
           (filteredParts[1] === "unit" && index === 2 && unitName
             ? unitName
             : part.charAt(0).toUpperCase() + part.slice(1)),
@@ -139,7 +150,7 @@ const LayoutWrapper = (props: Props) => {
     });
 
     if (
-      pathname.includes(`${locale}/report/unit/`) &&
+      pathname.includes(`report/unit/`) &&
       unitGroupId &&
       unitGroupName &&
       unitName

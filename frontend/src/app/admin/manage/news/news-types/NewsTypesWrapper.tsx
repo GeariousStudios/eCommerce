@@ -1,8 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Message from "../../../components/common/Message";
-import useAuthStatus from "../../../hooks/useAuthStatus";
+import Message from "../../../../components/common/Message";
+import useAuthStatus from "../../../../hooks/useAuthStatus";
 
 const NewsTypesClient = dynamic(() => import("./NewsTypesClient"), {
   ssr: false,
@@ -10,7 +10,7 @@ const NewsTypesClient = dynamic(() => import("./NewsTypesClient"), {
     <>
       <div className="hidden md:block">
         {/* <Message icon="loading" content="Laddar in sidan..." fullscreen /> */}
-        <Message icon="loading" content="reading" fullscreen />
+        <Message icon="loading" content="loading" fullscreen />
       </div>
 
       <div className="block md:hidden">
@@ -22,7 +22,7 @@ const NewsTypesClient = dynamic(() => import("./NewsTypesClient"), {
         /> */}
         <Message
           icon="loading"
-          content="reading"
+          content="loading"
           fullscreen
           withinContainer
         />
@@ -39,12 +39,12 @@ const NewsTypesWrapper = () => {
       <>
         <div className="hidden md:block">
           {/* <Message icon="loading" content="auth" fullscreen /> */}
-          <Message icon="loading" content="reading" fullscreen />
+          <Message icon="loading" content="loading" fullscreen />
         </div>
 
         <div className="block md:hidden">
           {/* <Message icon="loading" content="auth" fullscreen withinContainer /> */}
-          <Message icon="loading" content="reading" fullscreen withinContainer />
+          <Message icon="loading" content="loading" fullscreen withinContainer />
         </div>
       </>
     );

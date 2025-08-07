@@ -47,35 +47,34 @@ const Message = (props: Props) => {
   };
 
   const contentMap: Record<string, ReactNode> = {
-    loading: "Laddar...",
-    reading: "Läser in...",
-    auth: "Autentiserar...",
+    loading: t("Message/Loading"),
+    auth:  t("Message/Auth"),
     deny: (
       <div className="flex flex-col">
-        <span>Obehörig access!</span>{" "}
+        <span>{t("Message/Deny1")}</span>{" "}
         <span>
           <Link href="/" className={`${hyperLinkButtonClass}`}>
-            Klicka här
+            {t("Message/Deny2")}
           </Link>{" "}
-          för att logga in.
+          {t("Message/Deny3")}
         </span>
       </div>
     ),
-    server: "Ingen kontakt med servern, försök igen senare!",
+    server: t("Message/Server"),
     lock: (
       <div className="flex flex-col">
-        <span>Sidan är ej tillgänglig för tillfället!</span>{" "}
-        <span>Försök igen senare.</span>
+        <span>{t("Message/Lock1")}</span>
+        <span>{t("Message/Lock2")}</span>
       </div>
     ),
     invalid: (
       <div className="flex flex-col">
-        <span>{t("Message/Invalid page")}</span>
+        <span>{t("Message/Invalid")}</span>
       </div>
     ),
     content: (
       <div className="flex flex-col">
-        <span>{t("Message/Loading content")}</span>
+        <span>{t("Message/Content")}</span>
       </div>
     ),
   };

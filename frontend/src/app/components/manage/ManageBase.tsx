@@ -59,6 +59,7 @@ import {
 import SideMenu from "../sideMenu/SideMenu";
 import useUserPrefs from "@/app/hooks/useUserPrefs";
 import HoverIcon from "../common/HoverIcon";
+import { useTranslations } from "next-intl";
 
 // --- PROPS ---
 export type ManageBaseProps<TItem> = {
@@ -168,6 +169,7 @@ const ManageBase = <TItem extends { id: number }>({
 
   filters,
 }: ManageBaseProps<TItem>) => {
+  const t = useTranslations();
   // --- VARIABLES ---
   // --- States ---
   const [filterAllOpen, setFilterAllOpen] = useState(false);
@@ -336,7 +338,7 @@ const ManageBase = <TItem extends { id: number }>({
       <>
         <div className="hidden md:block">
           {/* <Message icon="loading" content="Nästan klar..." fullscreen /> */}
-          <Message icon="loading" content="reading" fullscreen />
+          <Message icon="loading" content="loading" fullscreen />
         </div>
 
         <div className="block md:hidden">
@@ -348,7 +350,7 @@ const ManageBase = <TItem extends { id: number }>({
           /> */}
           <Message
             icon="loading"
-            content="reading"
+            content="loading"
             fullscreen
             withinContainer
           />
@@ -363,7 +365,10 @@ const ManageBase = <TItem extends { id: number }>({
         {/* --- ITEM EDITING --- */}
         <div className="flex flex-wrap gap-4">
           {/* --- Add item --- */}
-          <CustomTooltip content={`Lägg till ny ${itemName}`} lgHidden={true}>
+          <CustomTooltip
+            content={`${t("Manage/Create")} ${" "} ${itemName}`}
+            lgHidden={true}
+          >
             <button
               className={`${buttonPrimaryClass} group lg:w-max lg:px-4`}
               onClick={() => {
@@ -383,7 +388,9 @@ const ManageBase = <TItem extends { id: number }>({
                   solid={SolidPlusIcon}
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
-                <span className="hidden lg:block">Lägg till ny {itemName}</span>
+                <span className="hidden lg:block">
+                  {t("Manage/Create")} {itemName}
+                </span>
               </div>
             </button>
           </CustomTooltip>
@@ -392,10 +399,10 @@ const ManageBase = <TItem extends { id: number }>({
           <CustomTooltip
             content={
               selectedItems.length === 0
-                ? `Välj en ${itemName}`
+                ? `${t("Manage/Select1")} ${" "} ${itemName}`
                 : selectedItems.length === 1
-                  ? `Redigera ${itemName}`
-                  : `Du kan bara redigera en ${itemName} i taget!`
+                  ? `${t("Manage/Edit")} ${" "} ${itemName}`
+                  : `${t("Manage/Edit limit1")} ${" "} ${itemName} ${" "} ${t("Manage/Edit limit2")}`
             }
             lgHidden={selectedItems.length === 1}
             showOnTouch={selectedItems.length === 0 || selectedItems.length > 1}
@@ -420,7 +427,9 @@ const ManageBase = <TItem extends { id: number }>({
                   solid={SolidPencilSquareIcon}
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
-                <span className="hidden lg:block">Redigera {itemName}</span>
+                <span className="hidden lg:block">
+                  {t("Manage/Edit")} {itemName}
+                </span>
               </div>
             </button>
           </CustomTooltip>
@@ -429,8 +438,8 @@ const ManageBase = <TItem extends { id: number }>({
           <CustomTooltip
             content={
               selectedItems.length === 0
-                ? `Välj en eller fler ${itemName}`
-                : `Ta bort ${itemName} (${selectedItems.length})`
+                ? `${t("Manage/Select2")} ${" "} ${itemName}`
+                : `${t("Manage/Delete")} ${" "} ${itemName} ${" "} (${selectedItems.length})`
             }
             lgHidden={selectedItems.length > 0}
             showOnTouch={selectedItems.length === 0}
@@ -454,7 +463,7 @@ const ManageBase = <TItem extends { id: number }>({
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
                 <span className="hidden lg:block">
-                  Ta bort {itemName}
+                  {t("Manage/Delete")} {itemName}
                   <span>
                     {selectedItems.length > 0
                       ? ` (${selectedItems.length})`
@@ -475,7 +484,7 @@ const ManageBase = <TItem extends { id: number }>({
             <div className="flex w-full items-center justify-start">
               <Input
                 icon={<MagnifyingGlassIcon />}
-                placeholder={`Sök ${itemName}...`}
+                placeholder={`${t("Common/Search")} ${itemName}...`}
                 value={searchTerm}
                 onChange={(val) => onSearchChange(String(val).toLowerCase())}
               />
@@ -485,7 +494,7 @@ const ManageBase = <TItem extends { id: number }>({
         <div className="flex flex-wrap gap-4">
           <div className="flex gap-4">
             <CustomTooltip
-              content={`${isGrid ? "Växla till tabellvy" : "Växla till kortvy"}`}
+              content={`${isGrid ? t("Manage/Table view") : t("Manage/Grid view")}`}
               showOnTouch
             >
               <button
@@ -548,7 +557,7 @@ const ManageBase = <TItem extends { id: number }>({
               }}
             >
               <span className={`${filterClass} xs:flex hidden`}>
-                Alla filter
+                {t("Manage/All filters")}
               </span>
               <AdjustmentsHorizontalIcon className={`${filterIconClass}`} />
             </button>
@@ -557,7 +566,7 @@ const ManageBase = <TItem extends { id: number }>({
               triggerRef={smallFilterRefs.current[0]}
               isOpen={filterAllOpen}
               onClose={() => setFilterAllOpen(false)}
-              label="Alla filter"
+              label={t("Manage/All filters")}
             >
               <div className="flex h-full flex-col justify-between">
                 <div className="flex flex-col">
@@ -581,7 +590,7 @@ const ManageBase = <TItem extends { id: number }>({
                     onClick={() => setFilterAllOpen(false)}
                     className={`${buttonPrimaryClass} w-full`}
                   >
-                    Visa{" "}
+                    {t("Manage/View")}{" "}
                     <span className="font-normal">
                       {pagination?.totalItems ?? 0}
                     </span>
@@ -595,7 +604,7 @@ const ManageBase = <TItem extends { id: number }>({
                       )
                     }
                   >
-                    Rensa alla
+                    {t("Manage/Clear all")}
                   </button>
                 </div>
               </div>
@@ -608,7 +617,7 @@ const ManageBase = <TItem extends { id: number }>({
       {filterChips.length > 0 && (
         <div className="flex flex-wrap gap-4">
           <span className="flex items-center font-semibold text-[var(--text-secondary)]">
-            Aktiva filter:
+            {t("Manage/Active filters")}:
           </span>
           {filterChips.map((chip, idx) => (
             <FilterChip
@@ -623,7 +632,7 @@ const ManageBase = <TItem extends { id: number }>({
             onClick={() => clearFilters()}
           >
             <span className="font-semibold text-[var(--accent-color)]">
-              Rensa alla
+              {t("Manage/Clear all")}
             </span>
           </button>
         </div>
@@ -651,10 +660,7 @@ const ManageBase = <TItem extends { id: number }>({
           ) : items.length === 0 ? (
             (emptyState ?? (
               <div className="flex min-h-72 items-center">
-                <Message
-                  icon="search"
-                  content="Det finns inget innehåll att visa."
-                />
+                <Message icon="search" content={t("Manage/No content")} />
               </div>
             ))
           ) : (
@@ -800,7 +806,7 @@ const ManageBase = <TItem extends { id: number }>({
                       {emptyState ?? (
                         <Message
                           icon="search"
-                          content="Det finns inget innehåll att visa."
+                          content={t("Manage/No content")}
                         />
                       )}
                     </td>
@@ -895,14 +901,14 @@ const ManageBase = <TItem extends { id: number }>({
         <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
           {/* --- Showing info --- */}
           <span className="flex w-[175.23px] text-[var(--text-secondary)]">
-            Visar{" "}
+            {t("Manage/Viewing")}{" "}
             {pagination.totalItems === 0
               ? "0-0"
               : `${(pagination.currentPage - 1) * pagination.itemsPerPage + 1}-${Math.min(
                   pagination.currentPage * pagination.itemsPerPage,
                   pagination.totalItems ?? 0,
                 )}`}{" "}
-            av {pagination.totalItems ?? 0}
+            {t("Manage/out of")} {pagination.totalItems ?? 0}
           </span>
 
           {/* --- Change pages --- */}
@@ -968,7 +974,7 @@ const ManageBase = <TItem extends { id: number }>({
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="">Antal per sida:</span>
+            <span className="">{t("Manage/Amount")}</span>
             <div className="3xs:min-w-20">
               <div id="portal-root" />
               <SingleDropdown
