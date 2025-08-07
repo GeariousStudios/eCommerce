@@ -1,0 +1,82 @@
+{
+  "Common/Unauthorized": "No authorized user logged in",
+  "Common/NotLoggedIn": "No user is logged in",
+  "Common/ValidationError": "Validation error",
+  "Common/Yes": "Yes",
+  "Common/No": "No",
+  "Common/ErrorPrefix": "An error occurred: ",
+
+  "UserPrefs/NotFound": "User preferences could not be found",
+  "UserPrefs/ThemeInvalid": "Invalid theme",
+  "UserPrefs/ThemeUpdated": "Theme updated!",
+  "UserPrefs/LanguageInvalid": "Invalid language",
+  "UserPrefs/LanguageUpdated": "Language updated!",
+  "UserPrefs/ViewUpdated": "View preference updated!",
+
+  "Users/NotFound": "User could not be found in the database",
+  "Users/UsernameTaken": "Username is already taken",
+  "Users/InvalidRole": "Invalid role: {0}",
+  "Users/CannotDeleteOnline": "Cannot delete an account that is online!",
+  "Users/Deleted": "User deleted!",
+  "Users/CannotChangeUsernameOnline": "Cannot change username for an online account!",
+  "Users/CannotChangePasswordOnline": "Cannot change password for an online account!",
+  "Users/CannotChangeRolesOnline": "Cannot change roles for an online account!",
+  "Users/ProfileUpdated": "Profile updated!",
+
+  "User/MissingCredentials": "Username and password are required",
+  "User/InvalidCredentials": "Incorrect username or password",
+  "User/UserLocked": "The user is locked",
+  "User/LogoutSuccess": "Logout successful!",
+
+  "UnitGroup/NotFound": "Group could not be found in the database",
+  "UnitGroup/InUse": "Cannot delete a group that is in use",
+  "UnitGroup/Deleted": "Group deleted!",
+  "UnitGroup/NameTaken": "A group with this name already exists!",
+  "UnitGroup/Unknown": "Unknown group",
+
+  "Unit/NotFound": "Unit could not be found in the database",
+  "Unit/Deleted": "Unit deleted!",
+  "Unit/MaxColumns": "A unit can have a maximum of 4 columns!",
+  "Unit/NameTakenInGroup": "A unit with this name already exists in the same group!",
+  "Unit/VisibilityVisible": "Visible",
+  "Unit/VisibilityHidden": "Hidden",
+
+  "UnitColumn/NotFound": "Column could not be found in the database",
+  "UnitColumn/InUse": "Cannot delete a column that is in use",
+  "UnitColumn/Deleted": "Column deleted!",
+  "UnitColumn/NameTaken": "A column with this name already exists!",
+  "UnitColumn/CannotChangeTypeInUse": "The data type cannot be changed because the column is already used in stored cells",
+
+  "UnitCell/NotFound": "The cell could not be found in the database",
+  "UnitCell/Deleted": "Cell deleted!",
+  "UnitCell/Duplicate": "A cell with the same column, unit, time and date already exists!",
+  "UnitCell/DateRangeInvalid": "End date must be after start date!",
+  "UnitCell/Updated": "Data updated",
+
+  "SubCategory/NotFound": "Sub category could not be found in the database",
+  "SubCategory/Deleted": "Sub category deleted!",
+  "SubCategory/SomeNotFound": "One or more sub categories could not be found",
+  "SubCategory/ExistsInCategory": "Sub category {0} already exists in this category!",
+
+  "Report/NotFound": "Report could not be found in the database",
+  "Report/Deleted": "Report deleted!",
+  "Report/EndAfterStart": "End time must be later than start time",
+  "Report/Overlap": "The disruption must not overlap another disruption:<br>{0} - {1}",
+  "Report/Ongoing": "ongoing",
+
+  "NewsType/NotFound": "Type could not be found in the database",
+  "NewsType/Deleted": "Type deleted!",
+  "NewsType/NameTaken": "A type with this name already exists!",
+
+  "News/NotFound": "News item could not be found in the database",
+  "News/Deleted": "News item deleted!",
+  "News/ChooseType": "Select a news type",
+  "News/MissingHeadline": "Enter a headline",
+  "News/MissingContent": "Enter content",
+  "NewsType/Invalid": "Invalid news type",
+
+  "Category/NotFound": "The category could not be found in the database",
+  "Category/InUse": "Cannot delete a category that is in use",
+  "Category/Deleted": "Category deleted!",
+  "Category/NameTaken": "A category with this name already exists!"
+}

@@ -13,10 +13,33 @@ namespace backend.Controllers
     public class UserManagementController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ITranslationService _t;
 
-        public UserManagementController(AppDbContext context)
+        public UserManagementController(AppDbContext context, ITranslationService t)
         {
             _context = context;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpGet]
@@ -67,10 +90,10 @@ namespace backend.Controllers
                 "username" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Username.ToLower())
                     : query.OrderBy(u => u.Username.ToLower()),
-                "firstName" => sortOrder == "desc"
+                "firstname" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.FirstName.ToLower())
                     : query.OrderBy(u => u.FirstName.ToLower()),
-                "lastName" => sortOrder == "desc"
+                "lastname" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.LastName.ToLower())
                     : query.OrderBy(u => u.LastName.ToLower()),
                 "email" => sortOrder == "desc"
@@ -156,11 +179,12 @@ namespace backend.Controllers
         [HttpGet("fetch/{id}")]
         public async Task<IActionResult> GetUser(int id)
         {
+            var lang = await GetLangAsync();
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
             var result = new UserDto
@@ -185,27 +209,31 @@ namespace backend.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
+            var lang = await GetLangAsync();
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
             if (user.IsOnline)
             {
-                return BadRequest(new { message = "Kan inte ta bort ett konto som är online!" });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Users/CannotDeleteOnline", lang) }
+                );
             }
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Användare borttagen!" });
+            return Ok(new { message = await _t.GetAsync("Users/Deleted", lang) });
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateUser(CreateUserDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -215,7 +243,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingUser = await _context.Users.FirstOrDefaultAsync(u =>
@@ -224,7 +254,7 @@ namespace backend.Controllers
 
             if (existingUser != null)
             {
-                return BadRequest(new { message = "Användarnamnet är upptaget" });
+                return BadRequest(new { message = await _t.GetAsync("Users/UsernameTaken", lang) });
             }
 
             // Parse from string to enum.
@@ -237,7 +267,15 @@ namespace backend.Controllers
                 }
                 else
                 {
-                    return BadRequest(new { message = $"Ogiltig roll: {role}" });
+                    return BadRequest(
+                        new
+                        {
+                            message = string.Format(
+                                await _t.GetAsync("Users/InvalidRole", lang),
+                                role
+                            ),
+                        }
+                    );
                 }
             }
 
@@ -276,11 +314,12 @@ namespace backend.Controllers
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateUser(int id, UpdateUserDto dto)
         {
+            var lang = await GetLangAsync();
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -292,7 +331,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingUser = await _context.Users.FirstOrDefaultAsync(u =>
@@ -301,7 +342,7 @@ namespace backend.Controllers
 
             if (existingUser != null)
             {
-                return BadRequest(new { message = "Användarnamnet är upptaget" });
+                return BadRequest(new { message = await _t.GetAsync("Users/UsernameTaken", lang) });
             }
 
             // Parse from string to enum.
@@ -314,7 +355,15 @@ namespace backend.Controllers
                 }
                 else
                 {
-                    return BadRequest(new { message = $"Ogiltig roll: {role}" });
+                    return BadRequest(
+                        new
+                        {
+                            message = string.Format(
+                                await _t.GetAsync("Users/InvalidRole", lang),
+                                role
+                            ),
+                        }
+                    );
                 }
             }
 
@@ -323,21 +372,27 @@ namespace backend.Controllers
                 if (user.Username != dto.Username)
                 {
                     return BadRequest(
-                        new { message = "Kan inte byta användarnamn på ett konto som är online!" }
+                        new
+                        {
+                            message = await _t.GetAsync("Users/CannotChangeUsernameOnline", lang),
+                        }
                     );
                 }
 
                 if (!string.IsNullOrWhiteSpace(dto.Password))
                 {
                     return BadRequest(
-                        new { message = "Kan inte byta lösenord på ett konto som är online!" }
+                        new
+                        {
+                            message = await _t.GetAsync("Users/CannotChangePasswordOnline", lang),
+                        }
                     );
                 }
 
                 if (user.Roles != userRoles)
                 {
                     return BadRequest(
-                        new { message = "Kan inte ändra roller på ett konto som är online!" }
+                        new { message = await _t.GetAsync("Users/CannotChangeRolesOnline", lang) }
                     );
                 }
             }

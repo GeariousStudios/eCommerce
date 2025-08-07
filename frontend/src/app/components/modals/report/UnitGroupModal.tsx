@@ -9,6 +9,7 @@ import {
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -18,6 +19,8 @@ type Props = {
 };
 
 const UnitGroupModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
@@ -100,14 +103,14 @@ const UnitGroupModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", "Grupp skapad!", 4000);
+      notify("success", t("Common/Group") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -198,14 +201,14 @@ const UnitGroupModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", "Grupp uppdaterad!", 4000);
+      notify("success", t("Common/Group") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -237,7 +240,9 @@ const UnitGroupModal = (props: Props) => {
           onClose={() => props.onClose()}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
           label={
-            props.itemId ? "Redigera grupp" : "Lägg till ny grupp"
+            props.itemId
+              ? t("Manage/Edit") + " " + t("Common/group")
+              : t("Manage/Add") + " " + t("Common/group")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -252,14 +257,14 @@ const UnitGroupModal = (props: Props) => {
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Uppgifter om gruppen
+                {t("GroupModal/Info1")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
               <Input
-                label={"Namn"}
+                label={t("Common/Name")}
                 value={name}
                 onChange={(val) => {
                   setName(String(val));
@@ -275,14 +280,14 @@ const UnitGroupModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? "Uppdatera" : "Lägg till"}
+                {props.itemId ? t("Modal/Edit") : t("Modal/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Avbryt
+                {t("Modal/Abort")}
               </button>
             </div>
           </form>

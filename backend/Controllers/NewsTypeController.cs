@@ -14,11 +14,38 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
+        private readonly ITranslationService _t;
 
-        public NewsTypeController(AppDbContext context, UserService userService)
+        public NewsTypeController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t
+        )
         {
             _context = context;
             _userService = userService;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpGet]
@@ -79,11 +106,12 @@ namespace backend.Controllers
         [HttpGet("fetch/{id}")]
         public async Task<IActionResult> GetNewsType(int id)
         {
+            var lang = await GetLangAsync();
             var newsType = await _context.NewsTypes.FindAsync(id);
 
             if (newsType == null)
             {
-                return NotFound(new { message = "Nyhetstypen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("NewsType/NotFound", lang) });
             }
 
             var result = new NewsTypeDto { Id = newsType.Id, Name = newsType.Name };
@@ -95,23 +123,25 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteNewsType(int id)
         {
+            var lang = await GetLangAsync();
             var newsType = await _context.NewsTypes.FindAsync(id);
 
             if (newsType == null)
             {
-                return NotFound(new { message = "Nyhetstypen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("NewsType/NotFound", lang) });
             }
 
             _context.NewsTypes.Remove(newsType);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Nyhetstyp borttagen!" });
+            return Ok(new { message = await _t.GetAsync("NewsType/Deleted", lang) });
         }
 
         [HttpPost("create")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateNewsType(CreateNewsTypeDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -121,7 +151,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingNewsType = await _context.NewsTypes.FirstOrDefaultAsync(t =>
@@ -130,14 +162,16 @@ namespace backend.Controllers
 
             if (existingNewsType != null)
             {
-                return BadRequest(new { message = "En nyhetstyp med detta namn finns redan!" });
+                return BadRequest(new { message = await _t.GetAsync("NewsType/NameTaken", lang) });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (createdBy, userId) = userInfo.Value;
@@ -175,11 +209,12 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateNewsType(int id, UpdateNewsTypeDto dto)
         {
+            var lang = await GetLangAsync();
             var newsType = await _context.NewsTypes.FindAsync(id);
 
             if (newsType == null)
             {
-                return NotFound(new { message = "Nyhetstypen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("NewsType/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -191,7 +226,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingNewsType = await _context.NewsTypes.FirstOrDefaultAsync(t =>
@@ -200,14 +237,16 @@ namespace backend.Controllers
 
             if (existingNewsType != null)
             {
-                return BadRequest(new { message = "En nyhetstyp med detta namn finns redan!" });
+                return BadRequest(new { message = await _t.GetAsync("NewsType/NameTaken", lang) });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (updatedBy, userId) = userInfo.Value;

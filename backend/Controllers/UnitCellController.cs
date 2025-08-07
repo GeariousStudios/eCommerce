@@ -14,11 +14,38 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
+        private readonly ITranslationService _t;
 
-        public UnitCellController(AppDbContext context, UserService userService)
+        public UnitCellController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t
+        )
         {
             _context = context;
             _userService = userService;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         // Called when user wants to get all cell-data for the selected unit.
@@ -60,9 +87,12 @@ namespace backend.Controllers
             [FromQuery] DateOnly end
         )
         {
+            var lang = await GetLangAsync();
             if (end < start)
             {
-                return BadRequest(new { message = "Slutdatum måste vara efter startdatum!" });
+                return BadRequest(
+                    new { message = await _t.GetAsync("UnitCell/DateRangeInvalid", lang) }
+                );
             }
 
             var cells = await _context
@@ -166,13 +196,14 @@ namespace backend.Controllers
             DateOnly date
         )
         {
+            var lang = await GetLangAsync();
             var cell = await _context.UnitCells.FirstOrDefaultAsync(c =>
                 c.UnitId == unitId && c.ColumnId == columnId && c.Hour == hour && c.Date == date
             );
 
             if (cell == null)
             {
-                return NotFound(new { message = "Cellen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("UnitCell/NotFound", lang) });
             }
 
             _context.UnitCells.Remove(cell);
@@ -181,13 +212,14 @@ namespace backend.Controllers
             await UpdateHasDataFlag(columnId);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Cell borttagen!" });
+            return Ok(new { message = await _t.GetAsync("UnitCell/Deleted", lang) });
         }
 
         [HttpPost("create")]
         [Authorize(Roles = "Reporter")]
         public async Task<IActionResult> CreateCell(CreateUnitCellDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -197,7 +229,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingCell = await _context.UnitCells.AnyAsync(c =>
@@ -209,16 +243,16 @@ namespace backend.Controllers
 
             if (existingCell)
             {
-                return BadRequest(
-                    new { message = "En cell med samma kolumn, enhet, tid och datum finns redan!" }
-                );
+                return BadRequest(new { message = await _t.GetAsync("UnitCell/Duplicate", lang) });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (createdBy, userId) = userInfo.Value;
@@ -272,11 +306,12 @@ namespace backend.Controllers
         [Authorize(Roles = "Reporter")]
         public async Task<IActionResult> UpdateCell(int id, UpdateUnitCellDto dto)
         {
+            var lang = await GetLangAsync();
             var cell = await _context.UnitCells.FirstOrDefaultAsync(c => c.Id == id);
 
             if (cell == null)
             {
-                return NotFound(new { message = "Cellen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("UnitCell/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -288,14 +323,18 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (updatedBy, userId) = userInfo.Value;
@@ -337,6 +376,7 @@ namespace backend.Controllers
         [Authorize(Roles = "Reporter")]
         public async Task<IActionResult> UpdateCells(int unitId, [FromBody] UpdateUnitCellsDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -346,14 +386,18 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (updatedBy, userId) = userInfo.Value;
@@ -405,7 +449,7 @@ namespace backend.Controllers
             await UpdateHasDataFlags(affectedColumnIds);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Data uppdaterad" });
+            return Ok(new { message = await _t.GetAsync("UnitCell/Updated", lang) });
         }
 
         private async Task UpdateHasDataFlag(int columnId)

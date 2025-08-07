@@ -13,6 +13,7 @@ import ModalBase, { ModalBaseHandle } from "../ModalBase";
 import MultiDropdown from "../../common/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "../../common/DragDrop";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -27,6 +28,8 @@ type SubCategoryDto = {
 };
 
 const CategoryModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
@@ -132,7 +135,7 @@ const CategoryModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
@@ -149,7 +152,7 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Kategori skapad!", 4000);
+      notify("success", t("Common/Category") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -219,7 +222,7 @@ const CategoryModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
@@ -236,7 +239,7 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Kategori uppdaterad!", 4000);
+      notify("success", t("Common/Category") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -278,7 +281,7 @@ const CategoryModal = (props: Props) => {
 
   const fetchAllSubCategories = async () => {
     try {
-      const response = await fetch(`${apiUrl}/subcategory`, {
+      const response = await fetch(`${apiUrl}/sub-category`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -305,7 +308,7 @@ const CategoryModal = (props: Props) => {
     const trimmed = newSubCategory.trim();
 
     if (!trimmed) {
-      notify("error", "Ange namnet på underkategorin först");
+      notify("error", t("CategoryModal/Error1"));
       return;
     }
 
@@ -315,7 +318,7 @@ const CategoryModal = (props: Props) => {
 
     if (match) {
       if (subCategoryIds.includes(match.id)) {
-        notify("error", "En underkategori med samma namn finns redan");
+        notify("error", t("CategoryModal/Error2"));
         return;
       }
 
@@ -422,7 +425,11 @@ const CategoryModal = (props: Props) => {
             props.onClose();
           }}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={props.itemId ? "Redigera kategori" : "Lägg till ny kategori"}
+          label={
+            props.itemId
+              ? t("Manage/Edit") + " " + t("Common/category")
+              : t("Manage/Add") + " " + t("Common/category")
+          }
           confirmOnClose
           isDirty={isDirty}
         >
@@ -436,7 +443,7 @@ const CategoryModal = (props: Props) => {
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Uppgifter om kategorin
+                {t("CategoryModal/Info1")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
@@ -444,7 +451,7 @@ const CategoryModal = (props: Props) => {
             <div className="mb-8 flex w-full flex-col gap-6 sm:flex-row sm:gap-4">
               <div className="w-full">
                 <Input
-                  label={"Namn"}
+                  label={t("Common/Name")}
                   value={name}
                   onChange={(val) => setName(String(val))}
                   onModal
@@ -456,7 +463,7 @@ const CategoryModal = (props: Props) => {
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Underkategorier
+                {t("CategoryModal/Info2")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
@@ -472,7 +479,7 @@ const CategoryModal = (props: Props) => {
                     createSubCategory();
                   }
                 }}
-                placeholder="Skapa underkategorier här..."
+                placeholder={t("CategoryModal/Placeholder text")}
               />
 
               <button
@@ -508,7 +515,7 @@ const CategoryModal = (props: Props) => {
                 />
 
                 <span className="text-sm text-[var(--text-secondary)] italic">
-                  Dra i underkategorierna för att ändra ordningen
+                  {t("CategoryModal/Drag and drop")}
                 </span>
               </>
             )}
@@ -519,14 +526,14 @@ const CategoryModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? "Uppdatera" : "Lägg till"}
+                {props.itemId ? t("Modal/Edit") : t("Modal/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Avbryt
+                {t("Modal/Abort")}
               </button>
             </div>
           </form>

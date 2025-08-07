@@ -15,11 +15,38 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
+        private readonly ITranslationService _t;
 
-        public UnitGroupController(AppDbContext context, UserService userService)
+        public UnitGroupController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t
+        )
         {
             _context = context;
             _userService = userService;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpGet]
@@ -101,11 +128,12 @@ namespace backend.Controllers
         [HttpGet("fetch/{id}")]
         public async Task<IActionResult> GetUnitGroup(int id)
         {
+            var lang = await GetLangAsync();
             var unit = await _context.UnitGroups.FindAsync(id);
 
             if (unit == null)
             {
-                return NotFound(new { message = "Gruppen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
             }
 
             var result = new UnitGroupDto
@@ -122,30 +150,32 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUnitGroup(int id)
         {
+            var lang = await GetLangAsync();
             var unitGroup = await _context
                 .UnitGroups.Include(u => u.Units)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unitGroup == null)
             {
-                return NotFound(new { message = "Gruppen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
             }
 
             if (unitGroup.Units.Any())
             {
-                return BadRequest(new { message = "Kan inte ta bort en grupp som används" });
+                return BadRequest(new { message = await _t.GetAsync("UnitGroup/InUse", lang) });
             }
 
             _context.UnitGroups.Remove(unitGroup);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Grupp borttagen!" });
+            return Ok(new { message = await _t.GetAsync("UnitGroup/Deleted", lang) });
         }
 
         [HttpPost("create")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateUnitGroup(CreateUnitGroupDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -155,7 +185,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingUnitGroup = await _context.UnitGroups.FirstOrDefaultAsync(u =>
@@ -164,14 +196,16 @@ namespace backend.Controllers
 
             if (existingUnitGroup != null)
             {
-                return BadRequest(new { message = "En grupp med detta namn finns redan!" });
+                return BadRequest(new { message = await _t.GetAsync("UnitGroup/NameTaken", lang) });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (createdBy, userId) = userInfo.Value;
@@ -210,11 +244,12 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUnitGroup(int id, UpdateUnitGroupDto dto)
         {
+            var lang = await GetLangAsync();
             var unitGroup = await _context.UnitGroups.FindAsync(id);
 
             if (unitGroup == null)
             {
-                return NotFound(new { message = "Gruppen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -226,7 +261,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingUnitGroup = await _context.UnitGroups.FirstOrDefaultAsync(u =>
@@ -235,14 +272,16 @@ namespace backend.Controllers
 
             if (existingUnitGroup != null)
             {
-                return BadRequest(new { message = "En grupp med detta namn finns redan!" });
+                return BadRequest(new { message = await _t.GetAsync("UnitGroup/NameTaken", lang) });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (updatedBy, userId) = userInfo.Value;

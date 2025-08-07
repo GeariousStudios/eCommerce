@@ -14,11 +14,38 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
+        private readonly ITranslationService _t;
 
-        public UnitColumnController(AppDbContext context, UserService userService)
+        public UnitColumnController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t
+        )
         {
             _context = context;
             _userService = userService;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpGet]
@@ -143,6 +170,7 @@ namespace backend.Controllers
         [HttpGet("fetch/{id}")]
         public async Task<IActionResult> GetColumn(int id)
         {
+            var lang = await GetLangAsync();
             var column = await _context
                 .UnitColumns.Include(c => c.UnitToUnitColumns)
                 .ThenInclude(uuc => uuc.Unit)
@@ -150,7 +178,7 @@ namespace backend.Controllers
 
             if (column == null)
             {
-                return NotFound(new { message = "Kolumnen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("UnitColumn/NotFound", lang) });
             }
 
             var result = new UnitColumnDto
@@ -170,6 +198,7 @@ namespace backend.Controllers
         [HttpGet("unit/{unitId}")]
         public async Task<IActionResult> GetColumnsForUnit(int unitId)
         {
+            var lang = await GetLangAsync();
             var unit = await _context
                 .Units.Include(u => u.UnitToUnitColumns.OrderBy(uc => uc.Order))
                 .ThenInclude(uuc => uuc.UnitColumn)
@@ -177,7 +206,7 @@ namespace backend.Controllers
 
             if (unit == null)
             {
-                return NotFound(new { message = "Enheten kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
             }
 
             var result = unit
@@ -203,13 +232,14 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteColumn(int id)
         {
+            var lang = await GetLangAsync();
             var column = await _context
                 .UnitColumns.Include(c => c.UnitToUnitColumns)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (column == null)
             {
-                return NotFound(new { message = "Kolumnen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("UnitColumn/NotFound", lang) });
             }
 
             var isInUse = column.UnitToUnitColumns != null && column.UnitToUnitColumns.Any();
@@ -217,7 +247,7 @@ namespace backend.Controllers
 
             if (isInUse)
             {
-                return BadRequest(new { message = "Kan inte ta bort en kolumn som används" });
+                return BadRequest(new { message = await _t.GetAsync("UnitColumn/InUse", lang) });
             }
 
             // if (hasStoredData)
@@ -230,13 +260,14 @@ namespace backend.Controllers
             _context.UnitColumns.Remove(column);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Kolumn borttagen!" });
+            return Ok(new { message = await _t.GetAsync("UnitColumn/Deleted", lang) });
         }
 
         [HttpPost("create")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateColumn(CreateUnitColumnDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -246,7 +277,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingColumn = await _context.UnitColumns.FirstOrDefaultAsync(c =>
@@ -255,14 +288,18 @@ namespace backend.Controllers
 
             if (existingColumn != null)
             {
-                return BadRequest(new { message = "En kolumn med detta namn finns redan!" });
+                return BadRequest(
+                    new { message = await _t.GetAsync("UnitColumn/NameTaken", lang) }
+                );
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (createdBy, userId) = userInfo.Value;
@@ -303,13 +340,14 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateColumn(int id, UpdateUnitColumnDto dto)
         {
+            var lang = await GetLangAsync();
             var column = await _context
                 .UnitColumns.Include(c => c.UnitToUnitColumns)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (column == null)
             {
-                return NotFound(new { message = "Kolumnen kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("UnitColumn/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -321,7 +359,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingColumn = await _context.UnitColumns.FirstOrDefaultAsync(c =>
@@ -330,7 +370,9 @@ namespace backend.Controllers
 
             if (existingColumn != null)
             {
-                return BadRequest(new { message = "En kolumn med detta namn finns redan!" });
+                return BadRequest(
+                    new { message = await _t.GetAsync("UnitColumn/NameTaken", lang) }
+                );
             }
 
             if (column.DataType != dto.DataType)
@@ -342,7 +384,7 @@ namespace backend.Controllers
                     return BadRequest(
                         new
                         {
-                            message = "Datatypen kan inte ändras eftersom kolumnen redan används i sparade celler",
+                            message = await _t.GetAsync("UnitColumn/CannotChangeTypeInUse", lang),
                         }
                     );
                 }
@@ -354,7 +396,9 @@ namespace backend.Controllers
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (updatedBy, userId) = userInfo.Value;

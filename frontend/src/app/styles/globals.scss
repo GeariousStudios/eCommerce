@@ -263,6 +263,7 @@ th:focus-visible {
     }
 
     &::after {
+      content: attr(tooltip-title);
       display: flex;
       align-items: center;
       background-color: var(--bg-tooltip);
@@ -273,7 +274,6 @@ th:focus-visible {
       color: var(--text-main-reverse);
       padding: 0.4rem 0.6rem;
       bottom: 100%;
-      white-space: pre;
     }
 
     &::before {
@@ -298,44 +298,51 @@ th:focus-visible {
 
     &::after {
       bottom: 125%;
+      white-space: pre;
     }
   }
 
-  .ql-bold::after {
-    content: "Fetstil\A(Ctrl+B)";
+  .ql-italic {
+    &::after {
+      white-space: pre;
+    }
   }
 
-  .ql-italic::after {
-    content: "Kursiv stil\A(Ctrl+I)";
-  }
+  // .ql-bold::after {
+  //   content: "Fetstil\A(Ctrl+B)";
+  // }
 
-  .ql-underline::after {
-    content: "Understrykning\A(Ctrl+U)";
-  }
+  // .ql-italic::after {
+  //   content: "Kursiv stil\A(Ctrl+I)";
+  // }
 
-  .ql-strike::after {
-    content: "Genomstrykning";
-  }
+  // .ql-underline::after {
+  //   content: "Understrykning\A(Ctrl+U)";
+  // }
 
-  .ql-color::after {
-    content: "Textfärg";
-  }
+  // .ql-strike::after {
+  //   content: "Genomstrykning";
+  // }
 
-  .ql-background::after {
-    content: "Bakgrundsfärg";
-  }
+  // .ql-color::after {
+  //   content: "Textfärg";
+  // }
 
-  .ql-list[value="ordered"]::after {
-    content: "Numrerad lista";
-  }
+  // .ql-background::after {
+  //   content: "Bakgrundsfärg";
+  // }
 
-  .ql-list[value="bullet"]::after {
-    content: "Punktlista";
-  }
+  // .ql-list[value="ordered"]::after {
+  //   content: "Numrerad lista";
+  // }
 
-  .ql-clean::after {
-    content: "Rensa formattering";
-  }
+  // .ql-list[value="bullet"]::after {
+  //   content: "Punktlista";
+  // }
+
+  // .ql-clean::after {
+  //   content: "Rensa formattering";
+  // }
 }
 
 .ql-editor {

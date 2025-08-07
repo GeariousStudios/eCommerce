@@ -383,3 +383,6 @@ D:\repos\eCommerce\backend\bin\Debug\net8.0\runtimes\win-arm64\native\e_sqlite3.
 D:\repos\eCommerce\backend\bin\Debug\net8.0\runtimes\win-x64\native\e_sqlite3.dll
 D:\repos\eCommerce\backend\bin\Debug\net8.0\runtimes\win-x86\native\e_sqlite3.dll
 C:\Users\se52374\OneDrive - Fresenius\PC\Documents\GitHub\eCommerce\backend\obj\Debug\net8.0\staticwebassets.build.json.cache
+D:\repos\eCommerce\backend\bin\Debug\net8.0\Translations\sv.json
+D:\repos\eCommerce\backend\bin\Debug\net8.0\Newtonsoft.Json.dll
+D:\repos\eCommerce\backend\bin\Debug\net8.0\Translations\en.json

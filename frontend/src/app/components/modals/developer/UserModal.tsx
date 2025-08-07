@@ -12,6 +12,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import MultiDropdown from "../../common/MultiDropdown";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -21,6 +22,8 @@ type Props = {
 };
 
 const UserModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
@@ -141,13 +144,13 @@ const UserModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Användare skapad!", 4000);
+      notify("success", t("Common/User") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -262,13 +265,13 @@ const UserModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Användare uppdaterad!", 4000);
+      notify("success", t("Common/User") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -338,7 +341,11 @@ const UserModal = (props: Props) => {
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={props.itemId ? "Redigera användare" : "Lägg till ny användare"}
+          label={
+            props.itemId
+              ? t("Manage/Edit") + " " + t("Common/user")
+              : t("Manage/Add") + " " + t("Common/user")
+          }
           confirmOnClose
           isDirty={isDirty}
         >
@@ -350,7 +357,7 @@ const UserModal = (props: Props) => {
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Inloggningsuppgifter
+                {t("UserModal/Info1")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
@@ -358,7 +365,7 @@ const UserModal = (props: Props) => {
             <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
               <Input
                 id="username"
-                label={"Användarnamn"}
+                label={t("Common/Username")}
                 value={username}
                 onChange={(val) => setUsername(String(val))}
                 onModal={true}
@@ -370,7 +377,7 @@ const UserModal = (props: Props) => {
                 <Input
                   type="password"
                   id="password"
-                  label={"Lösenord"}
+                  label={t("Common/Password")}
                   value={password}
                   placeholder="•••••••••"
                   onChange={(val) => setPassword(String(val))}
@@ -380,7 +387,7 @@ const UserModal = (props: Props) => {
                 <Input
                   type="password"
                   id="password"
-                  label={"Lösenord"}
+                  label={t("Common/Password")}
                   value={password}
                   onChange={(val) => setPassword(String(val))}
                   onModal={true}
@@ -393,7 +400,7 @@ const UserModal = (props: Props) => {
             <div className="mt-8 flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Användardetaljer
+                {t("UserModal/Info2")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
@@ -401,7 +408,7 @@ const UserModal = (props: Props) => {
             <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
               <Input
                 id="email"
-                label={"Mejladress"}
+                label={t("Users/Email")}
                 value={email}
                 onChange={(val) => setEmail(String(val))}
                 onModal={true}
@@ -410,7 +417,7 @@ const UserModal = (props: Props) => {
               <div className="flex w-full gap-6 sm:gap-4">
                 <Input
                   id="firstName"
-                  label={"Förnamn"}
+                  label={t("Users/First name")}
                   value={firstName}
                   onChange={(val) => setFirstName(String(val))}
                   onModal={true}
@@ -418,7 +425,7 @@ const UserModal = (props: Props) => {
 
                 <Input
                   id="lastName"
-                  label={"Efternamn"}
+                  label={t("Users/Last name")}
                   value={lastName}
                   onChange={(val) => setLastName(String(val))}
                   onModal={true}
@@ -429,7 +436,7 @@ const UserModal = (props: Props) => {
             <div className="mt-8 flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Behörigheter och status
+                {t("UserModal/Info3")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
@@ -437,7 +444,7 @@ const UserModal = (props: Props) => {
             <div className="mb-8 flex justify-between gap-4">
               <div className="flex w-[calc(50%-0.375rem)] min-w-36">
                 <MultiDropdown
-                  label="Behörigheter"
+                  label={t("Users/Permissions")}
                   options={[
                     { label: "Admin", value: "Admin" },
                     { label: "Developer", value: "Developer" },
@@ -460,7 +467,7 @@ const UserModal = (props: Props) => {
                 >
                   <div className={switchKnobClass(isLocked)} />
                 </button>
-                <span className="mb-0.5">Lås konto</span>
+                <span className="mb-0.5">{t("UserModal/Lock user")}</span>
               </div>
             </div>
 
@@ -470,14 +477,14 @@ const UserModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? "Uppdatera" : "Lägg till"}
+                {props.itemId ? t("Modal/Edit") : t("Modal/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Avbryt
+                {t("Modal/Abort")}
               </button>
             </div>
           </form>

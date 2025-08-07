@@ -14,23 +14,51 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
+        private readonly ITranslationService _t;
 
-        public ReportController(AppDbContext context, UserService userService)
+        public ReportController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t
+        )
         {
             _context = context;
             _userService = userService;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetReport(int id)
         {
+            var lang = await GetLangAsync();
             var report = await _context
                 .Reports.Include(r => r.Unit)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (report == null)
             {
-                return BadRequest(new { message = "Rapporten kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Report/NotFound", lang) });
             }
 
             var result = new ReportDto
@@ -199,23 +227,25 @@ namespace backend.Controllers
         [Authorize(Roles = "Reporter")]
         public async Task<IActionResult> DeleteReport(int id)
         {
+            var lang = await GetLangAsync();
             var report = await _context.Reports.FindAsync(id);
 
             if (report == null)
             {
-                return NotFound(new { message = "Post kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Report/NotFound", lang) });
             }
 
             _context.Reports.Remove(report);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Post borttagen!" });
+            return Ok(new { message = await _t.GetAsync("Report/Deleted", lang) });
         }
 
         [HttpPost("create")]
         [Authorize(Roles = "Reporter")]
         public async Task<IActionResult> CreateReport(CreateReportDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -225,14 +255,21 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var allReports = await _context
                 .Reports.Where(r => r.UnitId == dto.UnitId)
                 .ToListAsync();
 
-            var validationMessage = ValidateReportTimes(allReports, dto.StartTime, dto.StopTime);
+            var validationMessage = ValidateReportTimesAsync(
+                lang,
+                allReports,
+                dto.StartTime,
+                dto.StopTime
+            );
 
             if (validationMessage != null)
             {
@@ -243,7 +280,9 @@ namespace backend.Controllers
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (createdBy, userId) = userInfo.Value;
@@ -310,13 +349,14 @@ namespace backend.Controllers
         [Authorize(Roles = "Reporter")]
         public async Task<IActionResult> UpdateReport(int id, UpdateReportDto dto)
         {
+            var lang = await GetLangAsync();
             var report = await _context
                 .Reports.Include(r => r.Unit)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (report == null)
             {
-                return NotFound(new { message = "Post kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Report/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -328,14 +368,17 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var allReports = await _context
                 .Reports.Where(r => r.UnitId == report.UnitId)
                 .ToListAsync();
 
-            var validationMessage = ValidateReportTimes(
+            var validationMessage = ValidateReportTimesAsync(
+                lang,
                 allReports,
                 dto.StartTime,
                 dto.StopTime,
@@ -351,7 +394,9 @@ namespace backend.Controllers
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (updatedBy, userId) = userInfo.Value;
@@ -448,9 +493,10 @@ namespace backend.Controllers
             [FromQuery] int? reportId = null
         )
         {
+            var lang = await GetLangAsync();
             var allReports = await _context.Reports.Where(r => r.UnitId == unitId).ToListAsync();
 
-            var message = ValidateReportTimes(allReports, startTime, stopTime, reportId);
+            var message = ValidateReportTimesAsync(lang, allReports, startTime, stopTime, reportId);
 
             if (message != null)
             {
@@ -460,7 +506,8 @@ namespace backend.Controllers
             return Ok(new { isValid = true });
         }
 
-        private string? ValidateReportTimes(
+        private async Task<string?> ValidateReportTimesAsync(
+            string lang,
             List<Report> allReports,
             DateTime startTime,
             DateTime? stopTime = null,
@@ -469,7 +516,7 @@ namespace backend.Controllers
         {
             if (stopTime.HasValue && startTime >= stopTime)
             {
-                return "Sluttid måste vara senare än starttid";
+                return await _t.GetAsync("Report/EndAfterStart", lang);
             }
 
             if (currentReportId.HasValue)
@@ -487,9 +534,26 @@ namespace backend.Controllers
 
                 bool overlaps = newStart < existingStop && newStop > existingStart;
 
+                // if (overlaps)
+                // {
+                //     return $"Stoppet får inte överlappa ett annat stopp:<br>{existingStart:yyyy-MM-dd HH:mm} - {(existing.StopTime != null ? existing.StopTime.Value.ToString("yyyy-MM-dd HH:mm") : "pågående")}";
+                // }
+
                 if (overlaps)
                 {
-                    return $"Stoppet får inte överlappa ett annat stopp:<br>{existingStart:yyyy-MM-dd HH:mm} - {(existing.StopTime != null ? existing.StopTime.Value.ToString("yyyy-MM-dd HH:mm") : "pågående")}";
+                    var ongoing = await _t.GetAsync("Report/Ongoing", lang);
+                    var stopLabel =
+                        existing.StopTime != null
+                            ? existing.StopTime.Value.ToString("yyyy-MM-dd HH:mm")
+                            : ongoing;
+
+                    var rangeText = $"{existingStart:yyyy-MM-dd HH:mm} - {stopLabel}";
+                    var template = await _t.GetAsync("Report/Overlap", lang);
+                    return string.Format(
+                        template,
+                        rangeText.Split(" - ")[0],
+                        rangeText.Split(" - ")[1]
+                    );
                 }
             }
 

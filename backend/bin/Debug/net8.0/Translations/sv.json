@@ -1,0 +1,82 @@
+{
+  "Common/Unauthorized": "Ingen behörig användare inloggad",
+  "Common/NotLoggedIn": "Ingen användare är inloggad",
+  "Common/ValidationError": "Valideringsfel",
+  "Common/Yes": "Ja",
+  "Common/No": "Nej",
+  "Common/ErrorPrefix": "Ett fel uppstod: ",
+
+  "UserPrefs/NotFound": "Användarens preferenser kunde inte hittas",
+  "UserPrefs/ThemeInvalid": "Ogiltigt tema",
+  "UserPrefs/ThemeUpdated": "Temat uppdaterades!",
+  "UserPrefs/LanguageInvalid": "Ogiltigt språk",
+  "UserPrefs/LanguageUpdated": "Språket uppdaterades!",
+  "UserPrefs/ViewUpdated": "Vy-preferens uppdaterades!",
+
+  "Users/NotFound": "Användaren kunde inte hittas i databasen",
+  "Users/UsernameTaken": "Användarnamnet är upptaget",
+  "Users/InvalidRole": "Ogiltig roll: {0}",
+  "Users/CannotDeleteOnline": "Kan inte ta bort ett konto som är online!",
+  "Users/Deleted": "Användare borttagen!",
+  "Users/CannotChangeUsernameOnline": "Kan inte byta användarnamn på ett konto som är online!",
+  "Users/CannotChangePasswordOnline": "Kan inte byta lösenord på ett konto som är online!",
+  "Users/CannotChangeRolesOnline": "Kan inte ändra roller på ett konto som är online!",
+  "Users/ProfileUpdated": "Profil uppdaterad!",
+
+  "User/MissingCredentials": "Användarnamn och lösenord måste fyllas i",
+  "User/InvalidCredentials": "Felaktigt användarnamn eller lösenord",
+  "User/UserLocked": "Användaren är låst",
+  "User/LogoutSuccess": "Utloggning lyckades!",
+
+  "UnitGroup/NotFound": "Gruppen kunde inte hittas i databasen",
+  "UnitGroup/InUse": "Kan inte ta bort en grupp som används",
+  "UnitGroup/Deleted": "Grupp borttagen!",
+  "UnitGroup/NameTaken": "En grupp med detta namn finns redan!",
+  "UnitGroup/Unknown": "Okänd grupp",
+
+  "Unit/NotFound": "Enheten kunde inte hittas i databasen",
+  "Unit/Deleted": "Enhet borttagen!",
+  "Unit/MaxColumns": "En enhet kan ha max 4 kolumner!",
+  "Unit/NameTakenInGroup": "En enhet med detta namn finns redan i samma grupp!",
+  "Unit/VisibilityVisible": "Synlig",
+  "Unit/VisibilityHidden": "Dold",
+
+  "UnitColumn/NotFound": "Kolumnen kunde inte hittas i databasen",
+  "UnitColumn/InUse": "Kan inte ta bort en kolumn som används",
+  "UnitColumn/Deleted": "Kolumn borttagen!",
+  "UnitColumn/NameTaken": "En kolumn med detta namn finns redan!",
+  "UnitColumn/CannotChangeTypeInUse": "Datatypen kan inte ändras eftersom kolumnen redan används i sparade celler",
+
+  "UnitCell/NotFound": "Cellen kunde inte hittas i databasen",
+  "UnitCell/Deleted": "Cell borttagen!",
+  "UnitCell/Duplicate": "En cell med samma kolumn, enhet, tid och datum finns redan!",
+  "UnitCell/DateRangeInvalid": "Slutdatum måste vara efter startdatum!",
+  "UnitCell/Updated": "Data uppdaterad",
+
+  "SubCategory/NotFound": "Underkategorin kunde inte hittas i databasen",
+  "SubCategory/Deleted": "Underkategori borttagen!",
+  "SubCategory/SomeNotFound": "En eller flera underkategorier kunde inte hittas",
+  "SubCategory/ExistsInCategory": "Underkategori {0} finns redan i denna kategori!",
+
+  "Report/NotFound": "Rapporten kunde inte hittas i databasen",
+  "Report/Deleted": "Post borttagen!",
+  "Report/EndAfterStart": "Sluttid måste vara senare än starttid",
+  "Report/Overlap": "Stoppet får inte överlappa ett annat stopp:<br>{0} - {1}",
+  "Report/Ongoing": "pågående",
+
+  "NewsType/NotFound": "Typen kunde inte hittas i databasen",
+  "NewsType/Deleted": "Typ borttagen!",
+  "NewsType/NameTaken": "En typ med detta namn finns redan!",
+
+  "News/NotFound": "Nyheten kunde inte hittas i databasen",
+  "News/Deleted": "Nyhet borttagen!",
+  "News/ChooseType": "Välj nyhetstyp",
+  "News/MissingHeadline": "Fyll i rubrik",
+  "News/MissingContent": "Fyll i innehåll",
+  "NewsType/Invalid": "Ogiltig nyhetstyp",
+
+  "Category/NotFound": "Kategorin kunde inte hittas i databasen",
+  "Category/InUse": "Kan inte ta bort en kategori som används",
+  "Category/Deleted": "Kategori borttagen!",
+  "Category/NameTaken": "Kategori med detta namn finns redan!"
+}

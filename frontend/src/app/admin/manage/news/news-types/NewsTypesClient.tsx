@@ -112,7 +112,7 @@ const NewsTypesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Types/Type") + t("Manage/removed"), 4000); // <-- Unique.
+      notify("success", t("Types/Type") + t("Manage/deleted"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }

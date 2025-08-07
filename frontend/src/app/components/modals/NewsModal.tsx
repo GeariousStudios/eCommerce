@@ -13,6 +13,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import { useToast } from "../toast/ToastProvider";
 import ModalBase, { ModalBaseHandle } from "./ModalBase";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -27,6 +28,8 @@ type NewsTypeOptions = {
 };
 
 const NewsModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const editorRef = useRef<RichTextEditorRef>(null);
@@ -111,7 +114,7 @@ const NewsModal = (props: Props) => {
       } else {
         props.onClose();
         props.onNewsUpdated();
-        notify("success", "Nyhet skapad!", 4000);
+        notify("success", t("NewsModal/News item") + t("Modal/created"), 4000);
       }
     } catch (err) {
       notify("error", String(err));
@@ -178,7 +181,9 @@ const NewsModal = (props: Props) => {
     setOriginalTypeId(result.typeId ?? "");
 
     const matchedType = newsTypes.find((t) => t.id === result.typeId);
-    setTypeName(matchedType?.name ?? result.typeName ?? "Okänd typ");
+    setTypeName(
+      matchedType?.name ?? result.typeName ?? t("NewsModal/Unknown type"),
+    );
 
     setHeadline(result.headline ?? "");
     setOriginalHeadline(result.headline ?? "");
@@ -227,7 +232,7 @@ const NewsModal = (props: Props) => {
 
       props.onClose();
       props.onNewsUpdated();
-      notify("success", "Nyhet uppdaterad!", 4000);
+      notify("success", t("NewsModal/News item") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -306,7 +311,11 @@ const NewsModal = (props: Props) => {
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
           icon={props.newsId ? PencilSquareIcon : PlusIcon}
-          label={props.newsId ? "Redigera nyhet" : "Lägg till nyhet"}
+          label={
+            props.newsId
+              ? t("Manage/Edit") + " " + t("NewsModal/news item")
+              : t("Manage/Add") + " " + t("NewsModal/news item")
+          }
           confirmOnClose
           isDirty={isDirty}
         >
@@ -320,7 +329,7 @@ const NewsModal = (props: Props) => {
             <Input
               id="date"
               type="date"
-              label={"Datum"}
+              label={t("Common/Date")}
               value={date}
               onChange={(val) => setDate(String(val))}
               onModal
@@ -328,13 +337,18 @@ const NewsModal = (props: Props) => {
             />
 
             <SingleDropdown
-              label="Nyhetstyp"
+              label={t("NewsModal/News type")}
               value={typeId}
               onChange={setTypeId}
               options={[
                 ...(newsTypes.some((t) => t.id === typeId) || !typeId
                   ? []
-                  : [{ value: typeId, label: typeName || "Okänd typ" }]),
+                  : [
+                      {
+                        value: typeId,
+                        label: typeName || t("NewsModal/Unknown type"),
+                      },
+                    ]),
                 ...newsTypes.map((t) => ({
                   label: t.name,
                   value: t.id,
@@ -346,7 +360,7 @@ const NewsModal = (props: Props) => {
 
             <Input
               id="headline"
-              label={"Rubrik"}
+              label={t("NewsModal/Headline")}
               value={headline}
               onChange={(val) => setHeadline(String(val))}
               onModal
@@ -370,14 +384,14 @@ const NewsModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.newsId ? "Uppdatera" : "Lägg till"}
+                {props.newsId ? t("Modal/Update") : t("Modal/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Avbryt
+                {t("Modal/Abort")}
               </button>
             </div>
           </form>

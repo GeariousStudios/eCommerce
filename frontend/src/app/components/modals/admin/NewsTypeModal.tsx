@@ -9,6 +9,7 @@ import {
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -18,6 +19,8 @@ type Props = {
 };
 
 const NewsTypeModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
@@ -100,13 +103,13 @@ const NewsTypeModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Nyhetstyp skapad!", 4000);
+      notify("success", t("Types/Type") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -197,13 +200,13 @@ const NewsTypeModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Nyhetstyp uppdaterad!", 4000);
+      notify("success", t("Types/Type") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -234,7 +237,11 @@ const NewsTypeModal = (props: Props) => {
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={props.itemId ? "Redigera nyhetstyp" : "Lägg till ny nyhetstyp"}
+          label={
+            props.itemId
+              ? t("Manage/Edit") + " " + t("Types/type")
+              : t("Manage/Add") + " " + t("Types/type")
+          }
           confirmOnClose
           isDirty={isDirty}
         >
@@ -248,14 +255,14 @@ const NewsTypeModal = (props: Props) => {
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-main)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Uppgifter om nyhetstypen
+                {t("NewsTypeModal/Info1")}
               </h3>
               <hr className="w-full text-[var(--border-main)]" />
             </div>
 
             <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
               <Input
-                label={"Namn"}
+                label={t("Common/Name")}
                 value={name}
                 onChange={(val) => {
                   setName(String(val));
@@ -271,14 +278,14 @@ const NewsTypeModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? "Uppdatera" : "Lägg till"}
+                {props.itemId ? t("Modal/Update") : t("Modal/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Avbryt
+                {t("Modal/Abort")}
               </button>
             </div>
           </form>

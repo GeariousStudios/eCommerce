@@ -14,44 +14,72 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
+        private readonly ITranslationService _t;
 
-        public NewsController(AppDbContext context, UserService userService)
+        public NewsController(AppDbContext context, UserService userService, ITranslationService t)
         {
             _context = context;
             _userService = userService;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost("create")]
         public async Task<IActionResult> CreateNewsItem(CreateNewsDto dto)
         {
+            var lang = await GetLangAsync();
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             if (dto.TypeId <= 0)
             {
-                return BadRequest(new { message = "Välj nyhetstyp" });
+                return BadRequest(new { message = await _t.GetAsync("News/ChooseType", lang) });
             }
 
             if (string.IsNullOrWhiteSpace(dto.Headline))
             {
-                return BadRequest(new { message = "Fyll i rubrik" });
+                return BadRequest(
+                    new { message = await _t.GetAsync("News/MissingHeadline", lang) }
+                );
             }
 
             if (dto.Content == "<p><br></p>")
             {
-                return BadRequest(new { message = "Fyll i innehåll" });
+                return BadRequest(new { message = await _t.GetAsync("News/MissingContent", lang) });
             }
 
             var newsType = await _context.NewsTypes.FirstOrDefaultAsync(t => t.Id == dto.TypeId);
 
             if (newsType == null)
             {
-                return BadRequest(new { message = "Ogiltig nyhetstyp" });
+                return BadRequest(new { message = await _t.GetAsync("NewsType/Invalid", lang) });
             }
 
             var (createdBy, userId) = userInfo.Value;
@@ -105,11 +133,12 @@ namespace backend.Controllers
         [HttpGet("fetch/{id}")]
         public async Task<IActionResult> GetNewsItem(int id)
         {
+            var lang = await GetLangAsync();
             var newsItem = await _context.News.FindAsync(id);
 
             if (newsItem == null)
             {
-                return NotFound(new { message = "Nyheten kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("News/NotFound", lang) });
             }
 
             return Ok(newsItem);
@@ -119,39 +148,44 @@ namespace backend.Controllers
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateNewsItem(int id, UpdateNewsDto dto)
         {
+            var lang = await GetLangAsync();
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var newsItem = await _context.News.FindAsync(id);
             if (newsItem == null)
             {
-                return NotFound(new { message = "Nyheten kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("News/NotFound", lang) });
             }
 
             if (dto.TypeId <= 0)
             {
-                return BadRequest(new { message = "Välj nyhetstyp" });
+                return BadRequest(new { message = await _t.GetAsync("News/ChooseType", lang) });
             }
 
             if (string.IsNullOrWhiteSpace(dto.Headline))
             {
-                return BadRequest(new { message = "Fyll i rubrik" });
+                return BadRequest(
+                    new { message = await _t.GetAsync("News/MissingHeadline", lang) }
+                );
             }
 
             if (dto.Content == "<p><br></p>")
             {
-                return BadRequest(new { message = "Fyll i innehåll" });
+                return BadRequest(new { message = await _t.GetAsync("News/MissingContent", lang) });
             }
 
             var newsType = await _context.NewsTypes.FirstOrDefaultAsync(t => t.Id == dto.TypeId);
 
             if (newsType == null)
             {
-                return BadRequest(new { message = "Nyhetstypen kunde inte hittas i databasen" });
+                return BadRequest(new { message = await _t.GetAsync("NewsType/NotFound", lang) });
             }
 
             var (updatedBy, userId) = userInfo.Value;
@@ -190,17 +224,18 @@ namespace backend.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteNewsItem(int id)
         {
+            var lang = await GetLangAsync();
             var newsItem = await _context.News.FindAsync(id);
 
             if (newsItem == null)
             {
-                return NotFound(new { message = "Nyheten hittades inte" });
+                return NotFound(new { message = await _t.GetAsync("News/NotFound", lang) });
             }
 
             _context.News.Remove(newsItem);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Nyhet borttagen!" });
+            return Ok(new { message = await _t.GetAsync("News/Deleted", lang) });
         }
     }
 }

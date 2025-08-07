@@ -13,16 +13,43 @@ namespace backend.Controllers
 {
     [ApiController]
     [Authorize(Roles = "Admin")]
-    [Route("subcategory")]
+    [Route("sub-category")]
     public class SubCategoryController : ControllerBase
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
+        private readonly ITranslationService _t;
 
-        public SubCategoryController(AppDbContext context, UserService userService)
+        public SubCategoryController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t
+        )
         {
             _context = context;
             _userService = userService;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpGet]
@@ -39,13 +66,14 @@ namespace backend.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteSubCategory(int id)
         {
+            var lang = await GetLangAsync();
             var subCategory = await _context
                 .SubCategories.Include(c => c.CategoryToSubCategories)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (subCategory == null)
             {
-                return NotFound(new { message = "Underkategorin kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("SubCategory/NotFound", lang) });
             }
 
             // var isInUse =
@@ -62,12 +90,13 @@ namespace backend.Controllers
             _context.SubCategories.Remove(subCategory);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Underkategori borttagen!" });
+            return Ok(new { message = await _t.GetAsync("SubCategory/Deleted", lang) });
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateSubCategory(CreateSubCategoryDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -77,14 +106,18 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (createdBy, userId) = userInfo.Value;
@@ -131,13 +164,14 @@ namespace backend.Controllers
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateSubCategory(int id, UpdateSubCategoryDto dto)
         {
+            var lang = await GetLangAsync();
             var subCategory = await _context
                 .SubCategories.Include(c => c.CategoryToSubCategories)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (subCategory == null)
             {
-                return NotFound(new { message = "Underkategorin kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("SubCategory/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -149,14 +183,18 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (updatedBy, userId) = userInfo.Value;

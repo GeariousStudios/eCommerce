@@ -15,11 +15,34 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
+        private readonly ITranslationService _t;
 
-        public UnitController(AppDbContext context, UserService userService)
+        public UnitController(AppDbContext context, UserService userService, ITranslationService t)
         {
             _context = context;
             _userService = userService;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpGet]
@@ -177,6 +200,7 @@ namespace backend.Controllers
         [HttpGet("fetch/{id}")]
         public async Task<IActionResult> GetUnit(int id)
         {
+            var lang = await GetLangAsync();
             var unit = await _context
                 .Units.Include(u => u.UnitGroup)
                 .Include(u => u.UnitToUnitColumns)
@@ -187,8 +211,10 @@ namespace backend.Controllers
 
             if (unit == null)
             {
-                return NotFound(new { message = "Enheten kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
             }
+
+            var unknownGroup = await _t.GetAsync("UnitGroup/Unknown", lang);
 
             var result = new UnitDto
             {
@@ -196,7 +222,7 @@ namespace backend.Controllers
                 Name = unit.Name,
                 IsHidden = unit.IsHidden,
                 UnitGroupId = unit.UnitGroupId,
-                UnitGroupName = unit.UnitGroup.Name,
+                UnitGroupName = unit.UnitGroup.Name ?? unknownGroup,
                 UnitColumnIds = unit
                     .UnitToUnitColumns.OrderBy(uc => uc.Order)
                     .Select(x => x.UnitColumnId)
@@ -220,11 +246,12 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUnit(int id)
         {
+            var lang = await GetLangAsync();
             var unit = await _context.Units.FindAsync(id);
 
             if (unit == null)
             {
-                return NotFound(new { message = "Enheten kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
             }
 
             var affectedColumnIds = await _context
@@ -247,13 +274,14 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Enhet borttagen!" });
+            return Ok(new { message = await _t.GetAsync("Unit/Deleted", lang) });
         }
 
         [HttpPost("create")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateUnit(CreateUnitDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -263,14 +291,16 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var unitGroup = await _context.UnitGroups.FindAsync(dto.UnitGroupId);
 
             if (unitGroup == null)
             {
-                return NotFound(new { message = "Gruppen kunde inte hittas" });
+                return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
             }
 
             var existingUnit = await _context.Units.FirstOrDefaultAsync(u =>
@@ -280,20 +310,22 @@ namespace backend.Controllers
             if (existingUnit != null && existingUnit.UnitGroupId == unitGroup.Id)
             {
                 return BadRequest(
-                    new { message = "En enhet med detta namn finns redan i samma grupp!" }
+                    new { message = await _t.GetAsync("Unit/NameTakenInGroup", lang) }
                 );
             }
 
             if (dto.UnitColumnIds.Count > 4)
             {
-                return BadRequest(new { message = "En enhet kan ha max 4 kolumner!" });
+                return BadRequest(new { message = await _t.GetAsync("Unit/MaxColumns", lang) });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (createdBy, userId) = userInfo.Value;
@@ -355,6 +387,7 @@ namespace backend.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateUnit(int id, UpdateUnitDto dto)
         {
+            var lang = await GetLangAsync();
             var unit = await _context
                 .Units.Include(u => u.UnitToUnitColumns)
                 .Include(u => u.UnitToCategories)
@@ -362,7 +395,7 @@ namespace backend.Controllers
 
             if (unit == null)
             {
-                return NotFound(new { message = "Enheten kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -374,14 +407,16 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var unitGroup = await _context.UnitGroups.FindAsync(dto.UnitGroupId);
 
             if (unitGroup == null)
             {
-                return NotFound(new { message = "Gruppen kunde inte hittas" });
+                return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
             }
 
             var existingUnit = await _context.Units.FirstOrDefaultAsync(u =>
@@ -391,20 +426,22 @@ namespace backend.Controllers
             if (existingUnit != null && existingUnit.UnitGroupId == unitGroup.Id)
             {
                 return BadRequest(
-                    new { message = "En enhet med detta namn finns redan i samma grupp!" }
+                    new { message = await _t.GetAsync("Unit/NameTakenInGroup", lang) }
                 );
             }
 
             if (dto.UnitColumnIds.Count > 4)
             {
-                return BadRequest(new { message = "En enhet kan ha max 4 kolumner!" });
+                return BadRequest(new { message = await _t.GetAsync("Unit/MaxColumns", lang) });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (updatedBy, userId) = userInfo.Value;

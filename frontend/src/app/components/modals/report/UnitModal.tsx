@@ -16,6 +16,7 @@ import SingleDropdown from "../../common/SingleDropdown";
 import MultiDropdown from "../../common/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "../../common/DragDrop";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -40,6 +41,8 @@ type CategoryOptions = {
 };
 
 const UnitModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
@@ -157,14 +160,14 @@ const UnitModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", <>Enhet skapad!</>, 4000);
+      notify("success", t("Common/Unit") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -195,12 +198,15 @@ const UnitModal = (props: Props) => {
   // --- Fetch categories ---
   const fetchCategories = async () => {
     try {
-      const response = await fetch(`${apiUrl}/category?sortBy=name&sortOrder=asc`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/category?sortBy=name&sortOrder=asc`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       const result = await response.json();
 
@@ -331,14 +337,14 @@ const UnitModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", "Enhet uppdaterad!", 4000);
+      notify("success", t("Common/Unit") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -424,7 +430,11 @@ const UnitModal = (props: Props) => {
           isOpen={props.isOpen}
           onClose={() => props.onClose()}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={props.itemId ? "Redigera enhet" : "Lägg till ny enhet"}
+          label={
+            props.itemId
+              ? t("Manage/Edit") + " " + t("Common/unit")
+              : t("Manage/Add") + " " + t("Common/unit")
+          }
           confirmOnClose
           isDirty={isDirty}
         >
@@ -436,14 +446,14 @@ const UnitModal = (props: Props) => {
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Uppgifter om enheten
+                {t("UnitModal/Info1")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
               <Input
-                label={"Namn"}
+                label={t("Common/Name")}
                 value={name}
                 onChange={(val) => {
                   setName(String(val));
@@ -455,7 +465,7 @@ const UnitModal = (props: Props) => {
               <div className="flex w-full gap-6 sm:gap-4">
                 <SingleDropdown
                   id="unitGroup"
-                  label={"Grupp"}
+                  label={t("Common/Group")}
                   value={unitGroup}
                   onChange={(val) => {
                     setUnitGroup(String(val));
@@ -473,14 +483,14 @@ const UnitModal = (props: Props) => {
             <div className="mt-8 flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Kolumner
+                {t("UnitModal/Info2")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="flex gap-4">
               <MultiDropdown
-                label="Kolumner"
+                label={t("Common/Columns")}
                 value={unitColumnIds.map(String)}
                 onChange={(val: string[]) => setUnitColumnIds(val.map(Number))}
                 options={unitColumns.map((c) => ({
@@ -519,7 +529,7 @@ const UnitModal = (props: Props) => {
                   }}
                 />
                 <span className="text-sm text-[var(--text-secondary)] italic">
-                  Dra i kolumnerna för att ändra ordningen
+                  {t("UnitModal/Drag and drop1")}
                 </span>
               </>
             )}
@@ -527,14 +537,14 @@ const UnitModal = (props: Props) => {
             <div className="mt-8 flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Kategorier
+                {t("UnitModal/Info3")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="flex gap-4">
               <MultiDropdown
-                label="Kategorier"
+                label={t("Common/Categories")}
                 value={categoryIds.map(String)}
                 onChange={(val: string[]) => setCategoryIds(val.map(Number))}
                 options={categories.map((c) => ({
@@ -571,7 +581,7 @@ const UnitModal = (props: Props) => {
                   }}
                 />
                 <span className="text-sm text-[var(--text-secondary)] italic">
-                  Dra i kolumnerna för att ändra ordningen
+                  {t("UnitModal/Drag and drop2")}
                 </span>
               </>
             )}
@@ -595,7 +605,7 @@ const UnitModal = (props: Props) => {
                 >
                   <div className={switchKnobClass(isHidden)} />
                 </button>
-                <span className="mb-0.5">Göm enhet</span>
+                <span className="mb-0.5">{t("UnitModal/Hide unit")}</span>
               </div>
             </div>
 
@@ -605,14 +615,14 @@ const UnitModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? "Uppdatera" : "Lägg till"}
+                {props.itemId ? t("Modal/Edit") : t("Modal/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Avbryt
+                {t("Modal/Abort")}
               </button>
             </div>
           </form>

@@ -77,6 +77,8 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<UserService>();
 
+builder.Services.AddSingleton<ITranslationService, TranslationService>();
+
 var app = builder.Build();
 
 app.UseRouting();

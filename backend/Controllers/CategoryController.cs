@@ -19,11 +19,38 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserService _userService;
+        private readonly ITranslationService _t;
 
-        public CategoryController(AppDbContext context, UserService userService)
+        public CategoryController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t
+        )
         {
             _context = context;
             _userService = userService;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpGet]
@@ -181,6 +208,7 @@ namespace backend.Controllers
         [HttpGet("fetch/{id}")]
         public async Task<IActionResult> GetCategory(int id)
         {
+            var lang = await GetLangAsync();
             var category = await _context
                 .Categories.Include(c => c.UnitToCategories)
                 .ThenInclude(uc => uc.Unit)
@@ -190,7 +218,7 @@ namespace backend.Controllers
 
             if (category == null)
             {
-                return NotFound(new { message = "Kategorin kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Category/NotFound", lang) });
             }
 
             var result = new CategoryDto
@@ -236,39 +264,6 @@ namespace backend.Controllers
             return Ok(result);
         }
 
-        // [HttpGet("unit/{unitId}")]
-        // public async Task<IActionResult> GetCategoriesForUnit(int unitId)
-        // {
-        //     var categories = await _context
-        //         .Categories.Include(c => c.CategoryToSubCategories)
-        //         .ThenInclude(csc => csc.SubCategory)
-        //         .Include(c => c.UnitToCategories)
-        //         .Where(c => c.UnitToCategories.Any(uc => uc.UnitId == unitId))
-        //         .ToListAsync();
-
-        //     var result = categories.Select(c => new CategoryDto
-        //     {
-        //         Id = c.Id,
-        //         Name = c.Name,
-        //         SubCategories = c
-        //             .CategoryToSubCategories.OrderBy(csc => csc.Order)
-        //             .Select(csc => new SubCategoryDto
-        //             {
-        //                 Id = csc.SubCategory.Id,
-        //                 Name = csc.SubCategory.Name,
-        //             })
-        //             .ToList(),
-
-        //         // Meta data.
-        //         CreationDate = c.CreationDate,
-        //         CreatedBy = c.CreatedBy,
-        //         UpdateDate = c.UpdateDate,
-        //         UpdatedBy = c.UpdatedBy,
-        //     });
-
-        //     return Ok(result);
-        // }
-
         [HttpGet("unit/{unitId}")]
         public async Task<IActionResult> GetCategoriesForUnit(int unitId)
         {
@@ -306,20 +301,21 @@ namespace backend.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
+            var lang = await GetLangAsync();
             var category = await _context
                 .Categories.Include(c => c.UnitToCategories)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)
             {
-                return NotFound(new { message = "Kategorin kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Category/NotFound", lang) });
             }
 
             var isInUse = category.UnitToCategories != null && category.UnitToCategories.Any();
 
             if (isInUse)
             {
-                return BadRequest(new { message = "Kan inte ta bort en kategori som används" });
+                return BadRequest(new { message = await _t.GetAsync("Category/InUse", lang) });
             }
 
             var subCategoryIds = category
@@ -341,12 +337,13 @@ namespace backend.Controllers
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Kategori borttagen!" });
+            return Ok(new { message = await _t.GetAsync("Category/Deleted", lang) });
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateCategory(CreateCategoryDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -356,7 +353,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingCategory = await _context.Categories.FirstOrDefaultAsync(c =>
@@ -365,14 +364,16 @@ namespace backend.Controllers
 
             if (existingCategory != null)
             {
-                return BadRequest(new { message = "Kategori med detta namn finns redan!" });
+                return BadRequest(new { message = await _t.GetAsync("Category/NameTaken", lang) });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             if (dto.SubCategoryIds != null && dto.SubCategoryIds.Any())
@@ -384,7 +385,7 @@ namespace backend.Controllers
                 if (subCategories.Count != dto.SubCategoryIds.Length)
                 {
                     return BadRequest(
-                        new { message = "En eller flera underkategorier kunde inte hittas" }
+                        new { message = await _t.GetAsync("SubCategory/SomeNotFound", lang) }
                     );
                 }
             }
@@ -408,7 +409,7 @@ namespace backend.Controllers
                     if (existingSubCategories.Count != subCategoryIds.Length)
                     {
                         return BadRequest(
-                            new { message = "En eller flera underkategorier kunde inte hittas" }
+                            new { message = await _t.GetAsync("SubCategory/SomeNotFound", lang) }
                         );
                     }
 
@@ -441,12 +442,8 @@ namespace backend.Controllers
 
                         if (conflictingSubCategory != null)
                         {
-                            return BadRequest(
-                                new
-                                {
-                                    message = $"Underkategori {trimmed} finns redan i denna kategori!",
-                                }
-                            );
+                            var template = await _t.GetAsync("SubCategory/ExistsInCategory", lang);
+                            return BadRequest(new { message = string.Format(template, trimmed) });
                         }
 
                         var newSubCategory = new SubCategory
@@ -524,13 +521,15 @@ namespace backend.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, new { message = "Ett fel uppstod: " + ex.Message });
+                var prefix = await _t.GetAsync("Common/ErrorPrefix", await GetLangAsync());
+                return StatusCode(500, new { message = prefix + ex.Message });
             }
         }
 
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDto dto)
         {
+            var lang = await GetLangAsync();
             var category = await _context
                 .Categories.Include(c => c.UnitToCategories)
                 .Include(c => c.CategoryToSubCategories)
@@ -539,7 +538,7 @@ namespace backend.Controllers
 
             if (category == null)
             {
-                return NotFound(new { message = "Kategorin kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Category/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -551,7 +550,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingCategory = await _context.Categories.FirstOrDefaultAsync(c =>
@@ -560,14 +561,16 @@ namespace backend.Controllers
 
             if (existingCategory != null)
             {
-                return BadRequest(new { message = "Kategori med detta namn finns redan!" });
+                return BadRequest(new { message = await _t.GetAsync("Category/NameTaken", lang) });
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
-                return Unauthorized(new { message = "Ingen behörig användare inloggad" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var (updatedBy, userId) = userInfo.Value;
@@ -588,7 +591,7 @@ namespace backend.Controllers
 
                     if (existingSubCategories.Count != subCategoryIds.Length)
                         return BadRequest(
-                            new { message = "En eller flera underkategorier kunde inte hittas" }
+                            new { message = await _t.GetAsync("SubCategory/SomeNotFound", lang) }
                         );
 
                     var orderedIds = subCategoryIds.Where(id =>
@@ -621,12 +624,8 @@ namespace backend.Controllers
 
                         if (isDuplicateInSameCategory)
                         {
-                            return BadRequest(
-                                new
-                                {
-                                    message = $"Underkategori {trimmed} finns redan i denna kategori!",
-                                }
-                            );
+                            var template = await _t.GetAsync("SubCategory/ExistsInCategory", lang);
+                            return BadRequest(new { message = string.Format(template, trimmed) });
                         }
 
                         var newSubCategory = new SubCategory
@@ -719,8 +718,8 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
-                return StatusCode(500, new { message = "Ett fel uppstod: " + ex.Message });
+                var prefix = await _t.GetAsync("Common/ErrorPrefix", await GetLangAsync());
+                return StatusCode(500, new { message = prefix + ex.Message });
             }
         }
     }

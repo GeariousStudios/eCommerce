@@ -77,7 +77,10 @@ const SettingsModal = (props: Props) => {
     } catch (err) {
     } finally {
       localStorage.removeItem("token");
-      localStorage.setItem("postLogoutToast", "Du är nu utloggad!");
+      localStorage.setItem(
+        "postLogoutToast",
+        t("SettingsModal/Logout message"),
+      );
       window.location.reload();
     }
   };
@@ -110,7 +113,7 @@ const SettingsModal = (props: Props) => {
       }
 
       if (Object.keys(updatedFields).length === 0) {
-        notify("info", "Inga ändringar att spara!");
+        notify("info", t("Modal/Nothing"));
         setEditingField(null);
         return;
       }
@@ -160,11 +163,11 @@ const SettingsModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
-      notify("success", "Profil uppdaterad!", 4000);
+      notify("success", t("SettingsModal/Profile") + t("Modal/updated"), 4000);
       setEditingField(null);
 
       if (props.onProfileUpdated) {
@@ -208,7 +211,7 @@ const SettingsModal = (props: Props) => {
     <ModalBase
       isOpen={props.isOpen}
       onClose={props.onClose}
-      label="Inställningar"
+      label={t("Common/Settings")}
       icon={SolidCog6ToothIcon}
       smallGap
     >
@@ -222,7 +225,7 @@ const SettingsModal = (props: Props) => {
                 disableAll();
                 setIsGeneralOpen(true);
               }}
-              label="Allmänt"
+              label={t("SettingsModal/General")}
               icon={OutlineCog6ToothIcon}
               iconHover={SolidCog6ToothIcon}
               isActive={isGeneralOpen}
@@ -236,7 +239,7 @@ const SettingsModal = (props: Props) => {
                 disableAll();
                 setIsProfileOpen(true);
               }}
-              label="Profil"
+              label={t("SettingsModal/Profile")}
               icon={OutlineUserCircleIcon}
               iconHover={SolidUserCircleIcon}
               isActive={isProfileOpen}
@@ -252,7 +255,7 @@ const SettingsModal = (props: Props) => {
                 //   disableAll();
                 //   setIsNotificationsOpen(true);
                 // }}
-                label="Aviseringar"
+                label={t("SettingsModal/Notifications")}
                 icon={OutlineBellIcon}
                 iconHover={SolidBellIcon}
                 isActive={isNotificationsOpen}
@@ -274,8 +277,8 @@ const SettingsModal = (props: Props) => {
                   <span className="w-24">
                     <SingleDropdown
                       options={[
-                        { label: "Mörkt", value: "dark" },
-                        { label: "Ljust", value: "light" },
+                        { label: t("Common/Dark"), value: "dark" },
+                        { label: t("Common/Light"), value: "light" },
                       ]}
                       value={currentTheme ?? ""}
                       onChange={(val) => {
@@ -294,7 +297,7 @@ const SettingsModal = (props: Props) => {
                 <hr className={`${hrClass}`} />
 
                 <div className={`${itemRowClass}`}>
-                  <span>Språk</span>
+                  <span>{t("SettingsModal/Language")}</span>
                   <span>
                     <button
                       onClick={() => {
@@ -334,7 +337,7 @@ const SettingsModal = (props: Props) => {
                 <hr className={`${hrClass}`} />
 
                 <div className={`${itemRowClass}`}>
-                  <span>Logga ut befintlig användare</span>
+                  <span> {t("SettingsModal/Logout user")}</span>
                   <span>
                     <button
                       onClick={() => {
@@ -343,7 +346,7 @@ const SettingsModal = (props: Props) => {
                       }}
                       className={`${buttonSecondaryClass} w-full rounded-full px-4`}
                     >
-                      Logga ut
+                      {t("Common/Logout")}
                     </button>
                   </span>
                 </div>
@@ -353,14 +356,17 @@ const SettingsModal = (props: Props) => {
               <div className="w-full">
                 <div id="portal-root" />
                 <div className={`${itemRowClass}`}>
-                  <span>Användarnamn</span>
+                  <span>{t("Common/Username")}</span>
                   <div className="flex items-center gap-4">
                     <CustomTooltip side="left" content={username} showOnTouch>
                       <span className="w-48 truncate overflow-x-hidden">
                         {username}
                       </span>
                     </CustomTooltip>
-                    <CustomTooltip content="Ej redigerbar!" showOnTouch>
+                    <CustomTooltip
+                      content={t("SettingsModal/Uneditable")}
+                      showOnTouch
+                    >
                       <button
                         className={`${iconButtonPrimaryClass} !h-6 !w-6`}
                         disabled
@@ -374,7 +380,7 @@ const SettingsModal = (props: Props) => {
                 <hr className={`${hrClass}`} />
 
                 <div className={`${itemRowClass}`}>
-                  <span>Lösenord</span>
+                  <span>{t("Common/Password")}</span>
 
                   {username === "master" ? (
                     <div className="flex items-center gap-4">
@@ -428,7 +434,7 @@ const SettingsModal = (props: Props) => {
                 <hr className={`${hrClass}`} />
 
                 <div className={`${itemRowClass}`}>
-                  <span>Förnamn</span>
+                  <span>{t("Users/First name")}</span>
 
                   {editingField === "firstName" ? (
                     <div className="flex items-center gap-4">
@@ -476,7 +482,7 @@ const SettingsModal = (props: Props) => {
                 <hr className={`${hrClass}`} />
 
                 <div className={`${itemRowClass}`}>
-                  <span>Efternamn</span>
+                  <span>{t("Users/Last name")}</span>
 
                   {editingField === "lastName" ? (
                     <div className="flex items-center gap-4">
@@ -520,7 +526,7 @@ const SettingsModal = (props: Props) => {
                 <hr className={`${hrClass}`} />
 
                 <div className={`${itemRowClass}`}>
-                  <span>Mejladress</span>
+                  <span>{t("Users/Email")}</span>
 
                   {editingField === "email" ? (
                     <div className="flex items-center gap-4">

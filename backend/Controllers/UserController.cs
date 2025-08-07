@@ -16,19 +16,49 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ITranslationService _t;
 
-        public UserController(AppDbContext context, IConfiguration configuration)
+        public UserController(
+            AppDbContext context,
+            IConfiguration configuration,
+            ITranslationService t
+        )
         {
             _context = context;
             _configuration = configuration;
+            _t = t;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {
+            var lang = await GetLangAsync();
             if (string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password))
             {
-                return BadRequest(new { message = "Användarnamn och lösenord måste fyllas i" });
+                return BadRequest(
+                    new { message = await _t.GetAsync("User/MissingCredentials", lang) }
+                );
             }
 
             var loweredUsername = dto.Username.ToLower();
@@ -39,17 +69,21 @@ namespace backend.Controllers
 
             if (user == null)
             {
-                return Unauthorized(new { message = "Felaktigt användarnamn eller lösenord" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("User/InvalidCredentials", lang) }
+                );
             }
 
             if (user.IsLocked)
             {
-                return Unauthorized(new { message = "Användaren är låst" });
+                return Unauthorized(new { message = await _t.GetAsync("User/UserLocked", lang) });
             }
 
             if (!user.VerifyPassword(dto.Password))
             {
-                return Unauthorized(new { message = "Felaktigt användarnamn eller lösenord" });
+                return Unauthorized(
+                    new { message = await _t.GetAsync("User/InvalidCredentials", lang) }
+                );
             }
 
             await _context.SaveChangesAsync();
@@ -134,42 +168,44 @@ namespace backend.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
+            var lang = await GetLangAsync();
             var loggedInUser = User.Identity?.Name;
 
             if (loggedInUser == null)
             {
-                return BadRequest(new { message = "Ingen användare är inloggad" });
+                return BadRequest(new { message = await _t.GetAsync("Common/NotLoggedIn", lang) });
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loggedInUser);
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas" });
+                return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
             user.IsOnline = false;
             user.CurrentSessionId = null;
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Utloggning lyckades!" });
+            return Ok(new { message = await _t.GetAsync("User/LogoutSuccess", lang) });
         }
 
         [HttpGet("info")]
         public async Task<IActionResult> Info()
         {
+            var lang = await GetLangAsync();
             var loggedInUser = User.Identity?.Name;
 
             if (loggedInUser == null)
             {
-                return NotFound(new { message = "Ingen användare är inloggad" });
+                return NotFound(new { message = await _t.GetAsync("Common/NotLoggedIn", lang) });
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loggedInUser);
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas" });
+                return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
             var roles = user
@@ -205,6 +241,7 @@ namespace backend.Controllers
         [HttpPut("update-profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -214,19 +251,23 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var username = User.Identity?.Name;
             if (username == null)
             {
-                return Unauthorized();
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas" });
+                return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
             // Username.
@@ -238,7 +279,9 @@ namespace backend.Controllers
 
                 if (existingUser != null)
                 {
-                    return BadRequest(new { message = "Användarnamnet är upptaget" });
+                    return BadRequest(
+                        new { message = await _t.GetAsync("Users/UsernameTaken", lang) }
+                    );
                 }
 
                 user.Username = dto.Username;
@@ -265,7 +308,7 @@ namespace backend.Controllers
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Profil uppdaterad!" });
+            return Ok(new { message = await _t.GetAsync("Users/ProfileUpdated", lang) });
         }
     }
 }

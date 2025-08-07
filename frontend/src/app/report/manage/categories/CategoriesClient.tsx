@@ -132,7 +132,7 @@ const CategoriesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Category") + t("Manage/removed"), 4000); // <-- Unique.
+      notify("success", t("Common/Category") + t("Manage/deleted"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }

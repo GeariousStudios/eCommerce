@@ -36,6 +36,7 @@ import {
 } from "@/app/helpers/timeUtils";
 import { start } from "repl";
 import DeleteModal from "../DeleteModal";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -76,6 +77,8 @@ type Category = {
 };
 
 const ReportModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const editorRef = useRef<RichTextEditorRef>(null);
@@ -196,7 +199,7 @@ const ReportModal = (props: Props) => {
         setBackupEditedReport({ ...result, id: String(result.id) });
         setHiddenReportId(result.id);
       } catch (err) {
-        notify("error", "Kunde inte hämta rapport");
+        notify("error", t("Manage/Failed to fetch") + t("Common/report"));
       }
     };
 
@@ -302,7 +305,7 @@ const ReportModal = (props: Props) => {
       setCanAddReport(result.canAdd);
       setConflictReport(result.conflictReport || null);
     } catch (err) {
-      notify("error", "Kunde inte kontrollera rapportstatus");
+      notify("error", t("ReportModal/Failed to check"));
     }
   };
 
@@ -346,7 +349,10 @@ const ReportModal = (props: Props) => {
 
       await fetchReportsForHour();
       props.onItemUpdated();
-      notify("success", "Störningsrapport skapad");
+      notify(
+        "success",
+        t("ReportModal/Disruption report") + t("Modal/created"),
+      );
       return true;
     } catch (err) {
       notify("error", String(err));
@@ -391,7 +397,10 @@ const ReportModal = (props: Props) => {
 
       await fetchReportsForHour();
       props.onItemUpdated();
-      notify("success", "Störningsrapport uppdaterad");
+      notify(
+        "success",
+        t("ReportModal/Disruption report") + t("Modal/updated"),
+      );
       return true;
     } catch (err) {
       notify("error", String(err));
@@ -423,7 +432,10 @@ const ReportModal = (props: Props) => {
 
       setReports((prev) => prev.filter((r) => r.id !== id));
       props.onItemUpdated();
-      notify("success", "Störningsrapport raderad");
+      notify(
+        "success",
+        t("ReportModal/Disruption report") + t("Manage/deleted"),
+      );
     } catch (err) {
       notify("error", String(err));
     }
@@ -434,13 +446,13 @@ const ReportModal = (props: Props) => {
     event.preventDefault();
     props.onClose();
     props.onItemUpdated();
-    notify("success", "Ändringar sparade!", 4000);
+    notify("success", t("Common/Changes saved"), 4000);
   };
 
-  const handleSaveClick = () => {
-    resetReport();
-    formRef.current?.requestSubmit();
-  };
+  // const handleSaveClick = () => {
+  //   resetReport();
+  //   formRef.current?.requestSubmit();
+  // };
 
   const handleConflictClick = () => {
     if (!conflictReport?.id) {
@@ -617,7 +629,7 @@ const ReportModal = (props: Props) => {
               props.onClose();
             }}
             icon={ExclamationTriangleIcon}
-            label={`Rapportera störningar: ${selectedDate}`}
+            label={`${t("Unit/Report disruptions")}: ${selectedDate}`}
             confirmOnClose
             isDirty={isDirty}
             disableClickOutside={isDeleteModalOpen}
@@ -630,7 +642,7 @@ const ReportModal = (props: Props) => {
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-[var(--border-tertiary)]" />
                 <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                  1. Välj tidpunkt
+                  {t("ReportModal/Info1")}
                 </h3>
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
@@ -641,14 +653,14 @@ const ReportModal = (props: Props) => {
                     type="button"
                     className={`${buttonSecondaryClass} rounded-r-none`}
                     onClick={goToPreviousDay}
-                    aria-label="Föregående dag"
+                    aria-label={t("Unit/Previous day")}
                   >
                     <ChevronLeftIcon className="min-h-full min-w-full" />
                   </button>
                   <Input
                     type="date"
                     id="selectedDate"
-                    label="Datum"
+                    label={t("Common/Date")}
                     value={selectedDate}
                     onChange={(val) => setSelectedDate(String(val))}
                     onModal
@@ -659,7 +671,7 @@ const ReportModal = (props: Props) => {
                     type="button"
                     className={`${buttonSecondaryClass} rounded-l-none`}
                     onClick={goToNextDay}
-                    aria-label="Nästa dag"
+                    aria-label={t("Unit/Next day")}
                   >
                     <ChevronRightIcon className="min-h-full min-w-full" />
                   </button>
@@ -667,7 +679,7 @@ const ReportModal = (props: Props) => {
 
                 <SingleDropdown
                   id="selectedHour"
-                  label={"Timme"}
+                  label={t("Common/Hour")}
                   value={selectedHour}
                   onChange={(val) => setSelectedHour(String(val))}
                   onModal
@@ -682,7 +694,7 @@ const ReportModal = (props: Props) => {
                 <div className="mt-8 flex items-center gap-2">
                   <hr className="w-12 text-[var(--border-tertiary)]" />
                   <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                    2. Rapportera störningar
+                    {t("ReportModal/Info2")}
                   </h3>
                   <hr className="w-full text-[var(--border-tertiary)]" />
                 </div>
@@ -692,7 +704,7 @@ const ReportModal = (props: Props) => {
                   conflictReport?.startTime.slice(0, 13) !==
                     `${selectedDate}T${selectedHour.padStart(2, "0")}` ? (
                     <div className="text-sm text-[var(--note-error)]">
-                      Det finns ett tidigare stopp som blockerar nya rapporter:
+                      {t("ReportModal/Blocking stop")}
                       <br />
                       <button
                         type="button"
@@ -707,7 +719,7 @@ const ReportModal = (props: Props) => {
                             {conflictReport?.startTime
                               .slice(0, 16)
                               .replace("T", " ")}{" "}
-                            - <span className="">pågående</span>
+                            - <span className="">{t("Unit/ongoing")}</span>
                           </>
                         )}
                       </button>
@@ -731,15 +743,15 @@ const ReportModal = (props: Props) => {
                           });
                           setIsAddingReport(true);
                         }}
-                          tabIndex={selectedHour && selectedDate ? 0 : -1}
-                          // disabled={!selectedDate || !selectedHour}
+                        tabIndex={selectedHour && selectedDate ? 0 : -1}
+                        // disabled={!selectedDate || !selectedHour}
                       >
                         <HoverIcon
                           outline={OutlinePlusIcon}
                           solid={SolidPlusIcon}
                           className="h-6 min-h-6 w-6 min-w-6"
                         />
-                        Rapportera ny störning
+                        {t("ReportModal/Report new disruption")}
                       </button>
                     )
                   )}
@@ -843,15 +855,15 @@ const ReportModal = (props: Props) => {
                                     const parts: string[] = [];
                                     if (diffDays > 0)
                                       parts.push(
-                                        `${diffDays} ${diffDays === 1 ? "dag" : "dagar"}`,
+                                        `${diffDays} ${diffDays === 1 ? t("Common/day") : t("Common/days")}`,
                                       );
                                     if (diffHours > 0)
                                       parts.push(
-                                        `${diffHours} ${diffHours === 1 ? "timme" : "timmar"}`,
+                                        `${diffHours} ${diffHours === 1 ? t("Common/hour") : t("Common/hours")}`,
                                       );
                                     if (diffMinutes > 0 || parts.length === 0)
                                       parts.push(
-                                        `${diffMinutes} ${diffMinutes === 1 ? "minut" : "minuter"}`,
+                                        `${diffMinutes} ${diffMinutes === 1 ? t("Common/minute") : t("Common/minutes")}`,
                                       );
 
                                     const duration = parts.join(" ");
@@ -879,7 +891,7 @@ const ReportModal = (props: Props) => {
                                       .replace("T", " ")}{" "}
                                     -{" "}
                                     <span className="font-semibold text-[var(--note-error)]">
-                                      pågående
+                                      {t("Unit/ongoing")}
                                     </span>
                                   </>
                                 )}
@@ -933,19 +945,19 @@ const ReportModal = (props: Props) => {
                                 {report.creationDate && (
                                   <div>
                                     <span className="font-semibold">
-                                      Skapad:
+                                      {t("Common/Created")}
                                     </span>{" "}
                                     {utcIsoToLocalDateTime(report.creationDate)}{" "}
-                                    av {report.createdBy}
+                                    {t("Common/by")} {report.createdBy}
                                   </div>
                                 )}
                                 {report.updateDate && (
                                   <div>
                                     <span className="font-semibold">
-                                      Uppdaterad:
+                                      {t("Common/Updated")}
                                     </span>{" "}
                                     {utcIsoToLocalDateTime(report.updateDate)}{" "}
-                                    av {report.updatedBy}
+                                    {t("Common/by")} {report.updatedBy}
                                   </div>
                                 )}
                               </div>
@@ -961,14 +973,17 @@ const ReportModal = (props: Props) => {
                         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-4">
                           <SingleDropdown
                             id="category"
-                            label="Kategori"
+                            label={t("Common/Category")}
                             value={
                               currentReport.categoryId
                                 ? String(currentReport.categoryId)
                                 : ""
                             }
                             options={[
-                              { label: "--- Välj kategori ---", value: "" },
+                              {
+                                label: t("ReportModal/Choose category"),
+                                value: "",
+                              },
                               ...categories.map((c) => ({
                                 label: c.name,
                                 value: String(c.id),
@@ -996,7 +1011,7 @@ const ReportModal = (props: Props) => {
                             return subs.length > 0 ? (
                               <SingleDropdown
                                 id="subCategory"
-                                label="Underkategori"
+                                label={t("Common/Sub category")}
                                 value={
                                   currentReport.subCategoryId
                                     ? String(currentReport.subCategoryId)
@@ -1020,7 +1035,7 @@ const ReportModal = (props: Props) => {
                                 }
                                 options={[
                                   {
-                                    label: "--- Välj underkategori ---",
+                                    label: t("ReportModal/Choose sub category"),
                                     value: "",
                                   },
                                   ...subs
@@ -1045,7 +1060,7 @@ const ReportModal = (props: Props) => {
                         <Input
                           type="datetime-local"
                           id="startTime"
-                          label="Starttid"
+                          label={t("ReportModal/Start time")}
                           value={
                             currentReport.startTime === ""
                               ? `${selectedDate}T${selectedHour.padStart(2, "0")}:00`
@@ -1080,7 +1095,7 @@ const ReportModal = (props: Props) => {
                         <Input
                           type="datetime-local"
                           id="stopTime"
-                          label="Sluttid"
+                          label={t("ReportModal/Stop time")}
                           value={String(currentReport.stopTime) || ""}
                           onChange={(val) => {
                             const stop = String(val);
@@ -1166,7 +1181,7 @@ const ReportModal = (props: Props) => {
                             solid={SolidPlusIcon}
                             className="h-6 min-h-6 w-6 min-w-6"
                           />
-                          Infoga
+                          {currentReport.id ? t("Modal/Save") : t("Modal/Add")}
                         </button>
 
                         <button
@@ -1181,7 +1196,7 @@ const ReportModal = (props: Props) => {
                             solid={SolidXMarkIcon}
                             className="h-6 min-h-6 w-6 min-w-6"
                           />
-                          Avbryt
+                          {t("Modal/Abort")}
                         </button>
                       </div>
 
@@ -1222,7 +1237,7 @@ const ReportModal = (props: Props) => {
                   onClick={() => modalRef.current?.requestClose()}
                   className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
                 >
-                  Stäng
+                  {t("Common/Close")}
                 </button>
               </div>
             </form>

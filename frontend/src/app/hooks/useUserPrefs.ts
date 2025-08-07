@@ -27,7 +27,10 @@ const useUserPrefs = () => {
       setIsLoadingUserPrefs(true);
       try {
         const response = await fetch(`${apiUrl}/user-preferences`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "X-User-Language": localStorage.getItem("language") || "sv",
+          },
         });
 
         if (!response.ok) {

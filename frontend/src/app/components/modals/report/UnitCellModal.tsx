@@ -11,6 +11,7 @@ import {
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
 import SingleDropdown from "../../common/SingleDropdown";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -27,6 +28,8 @@ type UnitColumnOptions = {
 };
 
 const UnitCellModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
@@ -236,13 +239,13 @@ const UnitCellModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Ändringar sparade!", 4000);
+      notify("success", t("UnitCellModal/Changes saved"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -281,7 +284,7 @@ const UnitCellModal = (props: Props) => {
             props.onClose();
           }}
           icon={DocumentTextIcon}
-          label={`Rapportera data: ${selectedDate}`}
+          label={`${t("Unit/Report data")}: ${selectedDate}`}
           confirmOnClose
         >
           <form
@@ -292,7 +295,7 @@ const UnitCellModal = (props: Props) => {
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                1. Välj tidpunkt
+                {t("UnitCellModal/Info1")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
@@ -303,14 +306,14 @@ const UnitCellModal = (props: Props) => {
                   type="button"
                   className={`${buttonSecondaryClass} rounded-r-none`}
                   onClick={goToPreviousDay}
-                  aria-label="Föregående dag"
+                  aria-label={t("Unit/Previous day")}
                 >
                   <ChevronLeftIcon className="min-h-full min-w-full" />
                 </button>
                 <Input
                   type="date"
                   id="selectedDate"
-                  label="Datum"
+                  label={t("Common/Date")}
                   value={selectedDate}
                   onChange={(val) => setSelectedDate(String(val))}
                   onModal
@@ -321,7 +324,7 @@ const UnitCellModal = (props: Props) => {
                   type="button"
                   className={`${buttonSecondaryClass} rounded-l-none`}
                   onClick={goToNextDay}
-                  aria-label="Nästa dag"
+                  aria-label={t("Unit/Next day")}
                 >
                   <ChevronRightIcon className="min-h-full min-w-full" />
                 </button>
@@ -329,7 +332,7 @@ const UnitCellModal = (props: Props) => {
 
               <SingleDropdown
                 id="selectedHour"
-                label={"Timme"}
+                label={t("Common/Hour")}
                 value={selectedHour}
                 onChange={(val) => setSelectedHour(String(val))}
                 onModal
@@ -344,7 +347,7 @@ const UnitCellModal = (props: Props) => {
               <div className="mt-8 flex items-center gap-2">
                 <hr className="w-12 text-[var(--border-tertiary)]" />
                 <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                  2. Rapportera data
+                  {t("UnitCellModal/Info2")}
                 </h3>
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
@@ -409,14 +412,14 @@ const UnitCellModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                Spara
+                {t("Modal/Save")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Avbryt
+                {t("Modal/Abort")}
               </button>
             </div>
           </form>

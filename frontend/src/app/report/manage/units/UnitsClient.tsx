@@ -142,7 +142,7 @@ const UnitsClient = (props: Props) => {
       await deleteContent(id);
       await fetchItems();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Unit") + t("Manage/removed"), 4000); // <-- Unique.
+      notify("success", t("Common/Unit") + t("Manage/deleted"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }

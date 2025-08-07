@@ -19,12 +19,7 @@ import {
   Cog6ToothIcon as OutlineCog6ToothIcon,
   MoonIcon as OutlineMoonIcon,
   SunIcon as OutlineSunIcon,
-  ChevronDoubleRightIcon,
   Bars2Icon,
-  Bars3Icon,
-  Bars3CenterLeftIcon,
-  Bars3BottomLeftIcon,
-  Bars4Icon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../toast/ToastProvider";
@@ -36,6 +31,7 @@ import useTheme from "@/app/hooks/useTheme";
 import SettingsModal from "../modals/SettingsModal";
 import Link from "next/link";
 import useLanguage from "@/app/hooks/useLanguage";
+import { useTranslations } from "next-intl";
 
 type Props = {
   hasScrollbar: boolean;
@@ -50,6 +46,8 @@ type Props = {
 };
 
 const Topbar = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const userIconRef = useRef<HTMLButtonElement>(null);
@@ -110,7 +108,10 @@ const Topbar = (props: Props) => {
     } catch (err) {
     } finally {
       localStorage.removeItem("token");
-      localStorage.setItem("postLogoutToast", "Du är nu utloggad!");
+      localStorage.setItem(
+        "postLogoutToast",
+        t("SettingsModal/Logout message"),
+      );
       window.location.reload();
     }
   };
@@ -138,7 +139,6 @@ const Topbar = (props: Props) => {
         onClose={() => setIsSettingsModalOpen(false)}
         onProfileUpdated={fetchAuthData}
       />
-      {/* max-w-[calc(100%-16rem)]"}  */}
       <div
         inert={!isVisible}
         className={`${isVisible ? "translate-y-0" : "-translate-y-full"} fixed z-[calc(var(--z-overlay)-2)] flex h-18 w-full justify-between gap-4 border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] px-4 py-2 transition-[max-width,translate] duration-[var(--medium)]`}
@@ -157,22 +157,6 @@ const Topbar = (props: Props) => {
             <div
               className={`${!props.navbarHidden ? (props.hasScrollbar ? "md:ml-67" : "md:ml-64") : ""} flex items-center gap-4`}
             >
-              {/* {props.navbarHidden && (
-                <div className="flex h-17.5 transition-transform duration-[var(--slow)]">
-                  <Link
-                    href="/"
-                    className="mt-1.25 -ml-2.25 flex h-15 max-w-13 min-w-13"
-                    aria-label="Startsida"
-                  >
-                    <img
-                      src={`${prefix}/images/logo_clpsd_${currentTheme === "dark" ? "dark" : "light"}.svg`}
-                      alt="Logga"
-                      className="h-full w-full"
-                    />
-                  </Link>
-                </div>
-              )} */}
-
               <button
                 onClick={() => props.setNavbarHidden(false)}
                 className={`${iconButtonPrimaryClass} ${props.navbarHidden ? "block" : "md:hidden"} h-6 min-h-6 w-6 min-w-6`}
@@ -231,7 +215,7 @@ const Topbar = (props: Props) => {
               ) : isLoggedIn ? (
                 <div className="flex flex-wrap items-center">
                   <div className="xs:flex hidden">
-                    <span className="">Välkommen tillbaka,&nbsp;</span>
+                    <span className="">{t("SettingsModal/Welcome")}&nbsp;</span>
                     <div>
                       <span className="font-semibold text-[var(--accent-color)]">
                         {firstName ? firstName : username}
@@ -273,7 +257,7 @@ const Topbar = (props: Props) => {
                     isOpen={bellIconClicked}
                     onClose={() => setBellIconClicked(false)}
                   >
-                    <span>Du har inga nya meddelanden.</span>
+                    <span>{t("SettingsModal/No messages")}</span>
                   </MenuDropdown>
                 </div>
               )}
@@ -368,14 +352,14 @@ const Topbar = (props: Props) => {
 
                   <div>
                     <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                      Hantera
+                      {t("Common/Manage")}
                     </span>
                     <TopbarLink
                       onClick={toggleTheme}
                       label={
                         currentTheme === "dark"
-                          ? "Byt till ljust tema"
-                          : "Byt till mörkt tema"
+                          ? t("SettingsModal/Light theme")
+                          : t("SettingsModal/Dark theme")
                       }
                       icon={
                         currentTheme === "dark"
@@ -392,7 +376,7 @@ const Topbar = (props: Props) => {
                           closeAllMenus();
                           setIsSettingsModalOpen(true);
                         }}
-                        label="Inställningar"
+                        label={t("Common/Settings")}
                         icon={OutlineCog6ToothIcon}
                         iconHover={SolidCog6ToothIcon}
                       />
@@ -407,14 +391,14 @@ const Topbar = (props: Props) => {
                     {isLoggedIn ? (
                       <TopbarLink
                         onClick={handleLogout}
-                        label="Logga ut"
+                        label={t("Common/Logout")}
                         icon={OutlineArrowLeftEndOnRectangleIcon}
                         iconHover={SolidArrowLeftEndOnRectangleIcon}
                       />
                     ) : (
                       <TopbarLink
                         href="/"
-                        label="Logga in"
+                        label={t("Common/Login")}
                         icon={OutlineArrowRightEndOnRectangleIcon}
                         iconHover={SolidArrowRightEndOnRectangleIcon}
                       />

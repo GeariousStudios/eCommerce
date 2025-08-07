@@ -366,7 +366,7 @@ const ManageBase = <TItem extends { id: number }>({
         <div className="flex flex-wrap gap-4">
           {/* --- Add item --- */}
           <CustomTooltip
-            content={`${t("Manage/Create")} ${" "} ${itemName}`}
+            content={`${t("Manage/Add")} ${" "} ${itemName}`}
             lgHidden={true}
           >
             <button
@@ -389,7 +389,7 @@ const ManageBase = <TItem extends { id: number }>({
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
                 <span className="hidden lg:block">
-                  {t("Manage/Create")} {itemName}
+                  {t("Manage/Add")} {itemName}
                 </span>
               </div>
             </button>

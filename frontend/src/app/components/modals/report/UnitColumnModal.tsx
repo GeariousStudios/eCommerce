@@ -11,6 +11,7 @@ import {
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
 import { dataTypeOptions, UnitColumnDataType } from "@/app/types/manageTypes";
 import SingleDropdown from "../../common/SingleDropdown";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -20,6 +21,8 @@ type Props = {
 };
 
 const UnitColumnModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
@@ -113,13 +116,13 @@ const UnitColumnModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Kolumn skapad!", 4000);
+      notify("success", t("Common/Column") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -214,13 +217,13 @@ const UnitColumnModal = (props: Props) => {
           return;
         }
 
-        notify("error", "Ett okänt fel inträffade");
+        notify("error", t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", "Kolumn uppdaterad!", 4000);
+      notify("success", t("Common/Column") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", String(err));
     }
@@ -252,7 +255,9 @@ const UnitColumnModal = (props: Props) => {
           onClose={() => props.onClose()}
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
           label={
-            props.itemId ? "Redigera kolumn" : "Lägg till ny kolumn"
+            props.itemId
+              ? t("Manage/Edit") + " " + t("Common/column")
+              : t("Manage/Add") + " " + t("Common/column")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -267,7 +272,7 @@ const UnitColumnModal = (props: Props) => {
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Uppgifter om kolumnen
+                {t("ColumnModal/Info1")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
@@ -275,7 +280,7 @@ const UnitColumnModal = (props: Props) => {
             <div className="mb-8 flex w-full flex-col gap-6 sm:flex-row sm:gap-4">
               <div className="w-full sm:w-1/2">
                 <Input
-                  label={"Namn"}
+                  label={t("Common/Name")}
                   value={name}
                   onChange={(val) => setName(String(val))}
                   onModal={true}
@@ -286,7 +291,7 @@ const UnitColumnModal = (props: Props) => {
               <div className="w-full sm:w-1/2">
                 <SingleDropdown
                   id="dataType"
-                  label={"Datatyp"}
+                  label={t("Columns/Data type")}
                   value={dataType ?? ""}
                   onChange={(val) => setDataType(val as UnitColumnDataType)}
                   onModal
@@ -302,14 +307,14 @@ const UnitColumnModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? "Uppdatera" : "Lägg till"}
+                {props.itemId ? t("Modal/Edit") : t("Modal/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
                 className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
               >
-                Avbryt
+                {t("Modal/Abort")}
               </button>
             </div>
           </form>
