@@ -8,12 +8,15 @@ import ManageBase from "@/app/components/manage/ManageBase";
 import NewsTypeModal from "@/app/components/modals/admin/NewsTypeModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isConnected: boolean | null;
 };
 
 const NewsTypesClient = (props: Props) => {
+  const t = useTranslations();
+
   // <-- Unique.
   // --- VARIABLES ---
   const {
@@ -73,7 +76,10 @@ const NewsTypesClient = (props: Props) => {
           counts: result.counts,
         };
       } catch (err: any) {
-        notify("error", err.message || "Kunde inte hämta typer"); // <-- Unique.
+        notify(
+          "error",
+          err.message || t("Manage/Failed to fetch") + t("Common/types"),
+        ); // <-- Unique
         return {
           items: [],
           total: 0,
@@ -106,7 +112,7 @@ const NewsTypesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", "Typ borttagen!", 4000); // <-- Unique.
+      notify("success", t("Types/Type") + t("Manage/removed"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -130,8 +136,9 @@ const NewsTypesClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: NewsTypeItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Skapad: </span>
-          {utcIsoToLocalDateTime(item.creationDate)} av {item.createdBy}
+          <span className="font-semibold">{t("Common/Created")}</span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          {item.createdBy}
         </p>
       ),
     },
@@ -139,8 +146,9 @@ const NewsTypesClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: NewsTypeItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Uppdaterad: </span>
-          {utcIsoToLocalDateTime(item.updateDate)} av {item.updatedBy}
+          <span className="font-semibold">{t("Common/Updated")}</span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          {item.updatedBy}
         </p>
       ),
     },
@@ -150,10 +158,10 @@ const NewsTypesClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: "Namn",
+      label: t("Common/Name"),
       sortingItem: "name",
-      labelAsc: "namn Ö-A",
-      labelDesc: "namn A-Ö",
+      labelAsc: t("Common/name") + " Ö-A",
+      labelDesc: t("Common/name") + " A-Ö",
       getValue: (item: NewsTypeItem) => item.name,
       responsivePriority: 0,
     },
@@ -162,7 +170,7 @@ const NewsTypesClient = (props: Props) => {
   return (
     <>
       <ManageBase<NewsTypeItem> // <-- Unique.
-        itemName="typ" // <-- Unique.
+        itemName={t("Types/type")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

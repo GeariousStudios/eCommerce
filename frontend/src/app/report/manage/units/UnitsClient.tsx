@@ -19,12 +19,15 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { useEffect, useState } from "react";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isConnected: boolean | null;
 };
 
 const UnitsClient = (props: Props) => {
+  const t = useTranslations();
+
   // <-- Unique.
   // --- VARIABLES ---
   const {
@@ -84,7 +87,10 @@ const UnitsClient = (props: Props) => {
           counts: result.counts,
         };
       } catch (err: any) {
-        notify("error", err.message || "Kunde inte hämta enheter"); // <-- Unique.
+        notify(
+          "error",
+          err.message || t("Manage/Failed to fetch") + t("Common/units"),
+        ); // <-- Unique
         return {
           items: [],
           total: 0,
@@ -136,7 +142,7 @@ const UnitsClient = (props: Props) => {
       await deleteContent(id);
       await fetchItems();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", "Enhet borttagen!", 4000); // <-- Unique.
+      notify("success", t("Common/Unit") + t("Manage/removed"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -154,11 +160,13 @@ const UnitsClient = (props: Props) => {
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Tillhör grupp:</span>
+            <span className="w-full font-semibold">
+              {t("Units/Belongs to")}:
+            </span>
             <span className="-mt-2">{item.unitGroupName}</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Kolumner:</span>
+            <span className="w-full font-semibold">{t("Common/Columns")}:</span>
             <>
               {item.unitColumnIds.length === 0 ? (
                 <span className="-mt-2">-</span>
@@ -182,7 +190,9 @@ const UnitsClient = (props: Props) => {
             </>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Kategorier:</span>
+            <span className="w-full font-semibold">
+              {t("Common/Categories")}:
+            </span>
             <>
               {categories.filter((cat) => item.categoryIds.includes(cat.id))
                 .length === 0 ? (
@@ -211,7 +221,7 @@ const UnitsClient = (props: Props) => {
             <span
               className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} text-[var(--text-main-reverse)]`}
             >
-              {item.isHidden ? "Gömd" : "Synlig"}
+              {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
             </span>
           </div>
         </div>
@@ -221,8 +231,9 @@ const UnitsClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: UnitItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Skapad: </span>
-          {utcIsoToLocalDateTime(item.creationDate)} av {item.createdBy}
+          <span className="font-semibold">{t("Common/Created")}</span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          {item.createdBy}
         </p>
       ),
     },
@@ -230,8 +241,9 @@ const UnitsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: UnitItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Uppdaterad: </span>
-          {utcIsoToLocalDateTime(item.updateDate)} av {item.updatedBy}
+          <span className="font-semibold">{t("Common/Updated")}</span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          {item.updatedBy}
         </p>
       ),
     },
@@ -241,28 +253,28 @@ const UnitsClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: "Namn",
+      label: t("Common/Name"),
       sortingItem: "name",
-      labelAsc: "namn Ö-A",
-      labelDesc: "namn A-Ö",
+      labelAsc: t("Common/name") + " Ö-A",
+      labelDesc: t("Common/name") + " A-Ö",
       getValue: (item: UnitItem) => item.name,
       responsivePriority: 0,
     },
     {
       key: "unitGroupName",
-      label: "Tillhör grupp",
+      label: t("Units/Belongs to"),
       sortingItem: "unitgroupname",
-      labelAsc: "grupp Ö-A",
-      labelDesc: "grupp A-Ö",
+      labelAsc: t("Common/group") + " Ö-A",
+      labelDesc: t("Common/group") + " A-Ö",
       getValue: (item: UnitItem) => item.unitGroupName,
       responsivePriority: 2,
     },
     {
       key: "unitColumns",
-      label: "Kolumner",
+      label: t("Common/Columns"),
       sortingItem: "unitcolumncount",
-      labelAsc: "antal kolumner (stigande)",
-      labelDesc: "antal kolumner (fallande)",
+      labelAsc: t("Units/column amount") + t("Manage/ascending"),
+      labelDesc: t("Units/column amount") + t("Manage/descending"),
       getValue: (item: UnitItem) => (
         <div className="flex flex-wrap gap-2">
           {item.unitColumnIds.map((id) => {
@@ -286,10 +298,10 @@ const UnitsClient = (props: Props) => {
     },
     {
       key: "categories",
-      label: "Kategorier",
+      label: t("Common/Categories"),
       sortingItem: "categorycount",
-      labelAsc: "antal kategorier (stigande)",
-      labelDesc: "antal kategorier (fallande)",
+      labelAsc: t("Units/category amount") + t("Manage/ascending"),
+      labelDesc: t("Units/category amount") + t("Manage/descending"),
       getValue: (item: UnitItem) => (
         <div className="flex flex-wrap gap-2">
           {item.categoryIds.map((id) => {
@@ -315,15 +327,15 @@ const UnitsClient = (props: Props) => {
       key: "isHidden",
       label: "Status",
       sortingItem: "visibilitycount",
-      labelAsc: "gömda enheter",
-      labelDesc: "synliga enheter",
+      labelAsc: t("Units/hidden units"),
+      labelDesc: t("Units/visible units"),
       classNameAddition: "w-[100px] min-w-[100px]",
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: UnitItem) => (
         <span
           className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
         >
-          {item.isHidden ? "Gömd" : "Synlig"}
+          {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
         </span>
       ),
       responsivePriority: 1,
@@ -389,13 +401,13 @@ const UnitsClient = (props: Props) => {
       breakpoint: "ml",
       options: [
         {
-          label: "Synliga enheter",
+          label: t("Units/Visible units"),
           isSelected: filterControls.showVisible,
           setSelected: filterControls.setShowVisible,
           count: counts?.visibilityCount?.["Visible"] ?? 0,
         },
         {
-          label: "Gömda enheter",
+          label: t("Units/Hidden units"),
           isSelected: filterControls.showHidden,
           setSelected: filterControls.setShowHidden,
           count: counts?.visibilityCount?.["Hidden"] ?? 0,
@@ -403,7 +415,7 @@ const UnitsClient = (props: Props) => {
       ],
     },
     {
-      label: "Tillhör grupp",
+      label: t("Units/Belongs to"),
       breakpoint: "lg",
       options: unitGroups.map((group) => ({
         label: group.name,
@@ -420,7 +432,7 @@ const UnitsClient = (props: Props) => {
       })),
     },
     {
-      label: "Kolumner",
+      label: t("Common/Columns"),
       breakpoint: "xl",
       options: unitColumns.map((col) => ({
         label: col.name,
@@ -431,7 +443,7 @@ const UnitsClient = (props: Props) => {
       })),
     },
     {
-      label: "Kategorier",
+      label: t("Common/Categories"),
       breakpoint: "2xl",
       options: categories.map((cat) => ({
         label: cat.name,
@@ -446,7 +458,7 @@ const UnitsClient = (props: Props) => {
   return (
     <>
       <ManageBase<UnitItem> // <-- Unique.
-        itemName="enhet" // <-- Unique.
+        itemName={t("Common/unit")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}
@@ -504,14 +516,13 @@ const UnitsClient = (props: Props) => {
         confirmOnDelete
         confirmDeleteMessage={
           <>
-            Tar du bort en enhet så tar du även bort all knuten data.
+            {t("Units/Confirm1")}
             <br />
             <br />
-            Om enheten innehåller data som är viktig för verksamheten, t.ex. vid
-            trendning, så är det bättre att gömma den.
+            {t("Units/Confirm2")}
             <br />
             <br />
-            Vill du ta bort ändå?
+            {t("Units/Confirm3")}
           </>
         }
       />

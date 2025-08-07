@@ -399,7 +399,7 @@ const ManageBase = <TItem extends { id: number }>({
           <CustomTooltip
             content={
               selectedItems.length === 0
-                ? `${t("Manage/Select1")} ${" "} ${itemName}`
+                ? `${t("Manage/Select")} ${" "} ${itemName}`
                 : selectedItems.length === 1
                   ? `${t("Manage/Edit")} ${" "} ${itemName}`
                   : `${t("Manage/Edit limit1")} ${" "} ${itemName} ${" "} ${t("Manage/Edit limit2")}`
@@ -438,7 +438,7 @@ const ManageBase = <TItem extends { id: number }>({
           <CustomTooltip
             content={
               selectedItems.length === 0
-                ? `${t("Manage/Select2")} ${" "} ${itemName}`
+                ? `${t("Manage/Select")} ${" "} ${itemName}`
                 : `${t("Manage/Delete")} ${" "} ${itemName} ${" "} (${selectedItems.length})`
             }
             lgHidden={selectedItems.length > 0}

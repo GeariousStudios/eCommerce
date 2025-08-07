@@ -128,9 +128,10 @@ const LayoutWrapper = (props: Props) => {
       ];
     }
 
-    // If developer, remove manage.
-    const filteredParts =
-      parts[0] === "developer" ? parts.filter((p) => p !== "manage") : parts;
+    // If developer, remove manage. <-- DISABLED!
+    // const filteredParts =
+    //   parts[0] === "developer" ? parts.filter((p) => p !== "manage") : parts;
+    const filteredParts = parts;
 
     let breadcrumbs: Breadcrumb[] = filteredParts.map((part, index) => {
       const key = part.toLowerCase();

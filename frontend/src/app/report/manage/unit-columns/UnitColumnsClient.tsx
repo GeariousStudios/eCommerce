@@ -20,12 +20,15 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isConnected: boolean | null;
 };
 
 const UnitColumnsClient = (props: Props) => {
+  const t = useTranslations();
+
   // <-- Unique.
   // --- VARIABLES ---
   const {
@@ -85,7 +88,10 @@ const UnitColumnsClient = (props: Props) => {
           counts: result.counts,
         };
       } catch (err: any) {
-        notify("error", err.message || "Kunde inte hämta kolumner"); // <-- Unique.
+        notify(
+          "error",
+          err.message || t("Manage/Failed to fetch") + t("Common/columns"),
+        ); // <-- Unique
         return {
           items: [],
           total: 0,
@@ -131,7 +137,7 @@ const UnitColumnsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", "Kolumn borttagen!", 4000); // <-- Unique.
+      notify("success", t("Common/Column") + t("Manage/removed"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -149,7 +155,7 @@ const UnitColumnsClient = (props: Props) => {
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Används av enheter:</span>
+            <span className="w-full font-semibold">{t("Manage/Used by")}:</span>
             {item.units.length === 0 ? (
               <span className="-mt-2">-</span>
             ) : (
@@ -179,8 +185,9 @@ const UnitColumnsClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: UnitColumnItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Skapad: </span>
-          {utcIsoToLocalDateTime(item.creationDate)} av {item.createdBy}
+          <span className="font-semibold">{t("Common/Created")}</span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          {item.createdBy}
         </p>
       ),
     },
@@ -188,8 +195,9 @@ const UnitColumnsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: UnitColumnItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Uppdaterad: </span>
-          {utcIsoToLocalDateTime(item.updateDate)} av {item.updatedBy}
+          <span className="font-semibold">{t("Common/Updated")}</span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          {item.updatedBy}
         </p>
       ),
     },
@@ -199,25 +207,25 @@ const UnitColumnsClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: "Namn",
+      label: t("Common/Name"),
       sortingItem: "name",
-      labelAsc: "namn Ö-A",
-      labelDesc: "namn A-Ö",
+      labelAsc: t("Common/name") + " Ö-A",
+      labelDesc: t("Common/name") + " A-Ö",
       getValue: (item: UnitColumnItem) => item.name,
       responsivePriority: 0,
     },
     {
       key: "datatyp",
-      label: "Datatyp",
+      label: t("Columns/Data type"),
       getValue: (item: UnitColumnItem) => item.dataType,
       responsivePriority: 1,
     },
     {
       key: "units",
-      label: "Används av enheter",
+      label: t("Manage/Used by"),
       sortingItem: "unitcount",
-      labelAsc: "antal enheter (stigande)",
-      labelDesc: "antal enheter (fallande)",
+      labelAsc: t("Manage/unit amount") + t("Manage/ascending"),
+      labelDesc: t("Manage/unit amount") + t("Manage/descending"),
       getValue: (item: UnitColumnItem) => (
         <div className="flex flex-wrap gap-2">
           {item.units.map((unit, i) => {
@@ -243,17 +251,17 @@ const UnitColumnsClient = (props: Props) => {
     },
     {
       key: "hasData",
-      label: "Har data",
+      label: t("Columns/Has data"),
       sortingItem: "hasData",
-      labelAsc: "på kolumner som har data",
-      labelDesc: "på kolumner som inte har någon data",
+      labelAsc: t("Columns/Data1"),
+      labelDesc: t("Columns/Data2"),
       classNameAddition: "w-[120px] min-w-[120px]",
       childClassNameAddition: "w-[92px] min-w-[92px]",
       getValue: (item: UnitColumnItem) => (
         <span
           className={`${badgeClass} ${item.hasData ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
         >
-          {item.hasData ? "Ja" : "Nej"}
+          {item.hasData ? t("Common/Yes") : t("Common/No")}
         </span>
       ),
       responsivePriority: 3,
@@ -305,7 +313,7 @@ const UnitColumnsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: "Datatyp",
+      label: t("Columns/Data type"),
       breakpoint: "ml",
       options: dataTypeOptions.map(({ label, value }) => ({
         label,
@@ -321,7 +329,7 @@ const UnitColumnsClient = (props: Props) => {
       })),
     },
     {
-      label: "Används av enheter",
+      label: t("Manage/Used by"),
       breakpoint: "lg",
       options: units.map((unit) => {
         const isDuplicate = nameCounts[unit.name] > 1;
@@ -340,17 +348,17 @@ const UnitColumnsClient = (props: Props) => {
       }),
     },
     {
-      label: "Har data",
+      label: t("Columns/Has data"),
       breakpoint: "xl",
       options: [
         {
-          label: "Ja",
+          label: t("Common/Yes"),
           isSelected: filterControls.showHasData,
           setSelected: filterControls.setShowHasData,
           count: counts?.hasData?.["True"] ?? 0,
         },
         {
-          label: "Nej",
+          label: t("Common/No"),
           isSelected: filterControls.showNoData,
           setSelected: filterControls.setShowNoData,
           count: counts?.hasData?.["False"] ?? 0,
@@ -376,7 +384,7 @@ const UnitColumnsClient = (props: Props) => {
   return (
     <>
       <ManageBase<UnitColumnItem> // <-- Unique.
-        itemName="kolumn" // <-- Unique.
+        itemName={t("Common/column")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}
@@ -432,7 +440,7 @@ const UnitColumnsClient = (props: Props) => {
           setSelectedItems([]);
         }}
         confirmOnDelete={anySelectedHasData()}
-        confirmDeleteMessage="Om du tar bort valda objekt så förlorar du även den data som finns kopplad. Vill du ta bort ändå?"
+        confirmDeleteMessage={t("Columns/Confirm")}
       />
     </>
   );

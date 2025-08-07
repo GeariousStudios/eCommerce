@@ -15,12 +15,15 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isConnected: boolean | null;
 };
 
 const CategoriesClient = (props: Props) => {
+  const t = useTranslations();
+
   // <-- Unique.
   // --- VARIABLES ---
   const {
@@ -80,7 +83,10 @@ const CategoriesClient = (props: Props) => {
           counts: result.counts,
         };
       } catch (err: any) {
-        notify("error", err.message || "Kunde inte hämta kategorier"); // <-- Unique.
+        notify(
+          "error",
+          err.message || t("Manage/Failed to fetch") + t("Common/categories"),
+        ); // <-- Unique
         return {
           items: [],
           total: 0,
@@ -126,7 +132,7 @@ const CategoriesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", "Kategori borttagen!", 4000); // <-- Unique.
+      notify("success", t("Common/Category") + t("Manage/removed"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -144,7 +150,9 @@ const CategoriesClient = (props: Props) => {
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Underkategorier:</span>
+            <span className="w-full font-semibold">
+              {t("Categories/Sub categories")}:
+            </span>
             <>
               {item.subCategories.length === 0 ? (
                 <span className="-mt-2">-</span>
@@ -161,7 +169,7 @@ const CategoriesClient = (props: Props) => {
             </>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Används av enheter:</span>
+            <span className="w-full font-semibold">{t("Manage/Used by")}:</span>
             {item.units.length === 0 ? (
               <span className="-mt-2">-</span>
             ) : (
@@ -191,8 +199,9 @@ const CategoriesClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: CategoryItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Skapad: </span>
-          {utcIsoToLocalDateTime(item.creationDate)} av {item.createdBy}
+          <span className="font-semibold">{t("Common/Created")}</span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          {item.createdBy}
         </p>
       ),
     },
@@ -200,9 +209,9 @@ const CategoriesClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: CategoryItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Uppdaterad: </span>
-            {utcIsoToLocalDateTime(item.updateDate)}{" "}
-          av {item.updatedBy}
+          <span className="font-semibold">{t("Common/Updated")}</span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          {item.updatedBy}
         </p>
       ),
     },
@@ -212,19 +221,19 @@ const CategoriesClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: "Namn",
+      label: t("Common/Name"),
       sortingItem: "name",
-      labelAsc: "namn Ö-A",
-      labelDesc: "namn A-Ö",
+      labelAsc: t("Common/name") + " Ö-A",
+      labelDesc: t("Common/name") + " A-Ö",
       getValue: (item: CategoryItem) => item.name,
       responsivePriority: 0,
     },
     {
       key: "subCategories",
-      label: "Underkategorier",
+      label: t("Categories/Sub categories"),
       sortingItem: "subCategories",
-      labelAsc: "antal underkategorier (stigande)",
-      labelDesc: "antal underkategorier (fallande)",
+      labelAsc: t("Categories/sub category amount") + t("Manage/ascending"),
+      labelDesc: t("Categories/sub category amount") + t("Manage/descending"),
       getValue: (item: CategoryItem) => (
         <div className="flex flex-wrap gap-2">
           {item.subCategories.map((category, i) => (
@@ -241,10 +250,10 @@ const CategoriesClient = (props: Props) => {
     },
     {
       key: "units",
-      label: "Används av enheter",
+      label: t("Manage/Used by"),
       sortingItem: "unitcount",
-      labelAsc: "antal enheter (stigande)",
-      labelDesc: "antal enheter (fallande)",
+      labelAsc: t("Manage/unit amount") + t("Manage/ascending"),
+      labelDesc: t("Manage/unit amount") + t("Manage/descending"),
       getValue: (item: CategoryItem) => (
         <div className="flex flex-wrap gap-2">
           {item.units.map((unit, i) => {
@@ -302,17 +311,17 @@ const CategoriesClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: "Underkategorier",
+      label: t("Categories/Sub categories"),
       breakpoint: "ml",
       options: [
         {
-          label: "Har underkategorier",
+          label: t("Categories/Has sub categories"),
           isSelected: filterControls.showWithSubCategories,
           setSelected: filterControls.setShowWithSubCategories,
           count: counts?.subCategoryCount?.["With"] ?? 0,
         },
         {
-          label: "Inga underkategorier",
+          label: t("Categories/No sub categories"),
           isSelected: filterControls.showWithoutSubCategories,
           setSelected: filterControls.setShowWithoutSubCategories,
           count: counts?.subCategoryCount?.["Without"] ?? 0,
@@ -320,7 +329,7 @@ const CategoriesClient = (props: Props) => {
       ],
     },
     {
-      label: "Används av enheter",
+      label: t("Manage/Used by"),
       breakpoint: "lg",
       options: units.map((unit) => {
         const isDuplicate = nameCounts[unit.name] > 1;
@@ -350,7 +359,7 @@ const CategoriesClient = (props: Props) => {
   return (
     <>
       <ManageBase<CategoryItem> // <-- Unique.
-        itemName="kategori" // <-- Unique.
+        itemName={t("Common/category")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

@@ -15,12 +15,15 @@ import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isConnected: boolean | null;
 };
 
 const UnitGroupsClient = (props: Props) => {
+  const t = useTranslations();
+
   // <-- Unique.
   // --- VARIABLES ---
   const {
@@ -80,7 +83,10 @@ const UnitGroupsClient = (props: Props) => {
           counts: result.counts,
         };
       } catch (err: any) {
-        notify("error", err.message || "Kunde inte hämta grupper"); // <-- Unique.
+        notify(
+          "error",
+          err.message || t("Manage/Failed to fetch") + t("Common/groups"),
+        ); // <-- Unique
         return {
           items: [],
           total: 0,
@@ -126,7 +132,7 @@ const UnitGroupsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", "Grupp borttagen!", 4000); // <-- Unique.
+      notify("success", t("Common/Group") + t("Manage/removed"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -144,7 +150,7 @@ const UnitGroupsClient = (props: Props) => {
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Används av enheter:</span>
+            <span className="w-full font-semibold">{t("Manage/Used by")}:</span>
             {item.units.length === 0 ? (
               <span className="-mt-2">-</span>
             ) : (
@@ -169,8 +175,9 @@ const UnitGroupsClient = (props: Props) => {
       key: "creationDate, createdBy",
       getValue: (item: UnitGroupItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Skapad: </span>
-          {utcIsoToLocalDateTime(item.creationDate)} av {item.createdBy}
+          <span className="font-semibold">{t("Common/Created")}</span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          {item.createdBy}
         </p>
       ),
     },
@@ -178,8 +185,9 @@ const UnitGroupsClient = (props: Props) => {
       key: "updateDate, updatedBy",
       getValue: (item: UnitGroupItem) => (
         <p className="flex flex-col">
-          <span className="font-semibold">Uppdaterad: </span>
-          {utcIsoToLocalDateTime(item.updateDate)} av {item.updatedBy}
+          <span className="font-semibold">{t("Common/Updated")}</span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          {item.updatedBy}
         </p>
       ),
     },
@@ -189,19 +197,19 @@ const UnitGroupsClient = (props: Props) => {
   const tableItems = () => [
     {
       key: "name",
-      label: "Namn",
+      label: t("Common/Name"),
       sortingItem: "name",
-      labelAsc: "namn Ö-A",
-      labelDesc: "namn A-Ö",
+      labelAsc: t("Common/name") + " Ö-A",
+      labelDesc: t("Common/name") + " A-Ö",
       getValue: (item: UnitGroupItem) => item.name,
       responsivePriority: 0,
     },
     {
       key: "units",
-      label: "Används av enheter",
+      label: t("Manage/Used by"),
       sortingItem: "unitcount",
-      labelAsc: "antal enheter (stigande)",
-      labelDesc: "antal enheter (fallande)",
+      labelAsc: t("Manage/unit amount") + t("Manage/ascending"),
+      labelDesc: t("Manage/unit amount") + t("Manage/descending"),
       getValue: (item: UnitGroupItem) => (
         <div className="flex flex-wrap gap-2">
           {(item.units ?? []).map((unit, i) => {
@@ -238,7 +246,7 @@ const UnitGroupsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: "Används av enheter",
+      label: t("Manage/Used by"),
       breakpoint: "ml",
       options: units.map((unit) => {
         const label = unit.name;
@@ -264,7 +272,7 @@ const UnitGroupsClient = (props: Props) => {
   return (
     <>
       <ManageBase<UnitGroupItem> // <-- Unique.
-        itemName="grupp" // <-- Unique.
+        itemName={t("Common/group")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}
