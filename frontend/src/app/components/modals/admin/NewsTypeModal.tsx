@@ -59,6 +59,7 @@ const NewsTypeModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/news-type/create`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -122,6 +123,7 @@ const NewsTypeModal = (props: Props) => {
         `${apiUrl}/news-type/fetch/${props.itemId}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -155,6 +157,7 @@ const NewsTypeModal = (props: Props) => {
         {
           method: "PUT",
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },

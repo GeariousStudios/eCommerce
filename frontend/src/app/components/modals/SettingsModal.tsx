@@ -70,6 +70,7 @@ const SettingsModal = (props: Props) => {
       await fetch(`${apiUrl}/user/logout`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -121,6 +122,7 @@ const SettingsModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/user/update-profile`, {
         method: "PUT",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -304,7 +306,11 @@ const SettingsModal = (props: Props) => {
                         toggleLanguage();
                       }}
                       className={`${roundedButtonClass} relative flex !h-10 min-h-10 !w-10 min-w-10 overflow-hidden`}
-                      aria-label={`${currentLanguage === "sv" ? "Byt till engelska" : "Byt till svenska"}`}
+                      aria-label={
+                        currentLanguage === "sv"
+                          ? t("SettingsModal/Switch to English")
+                          : t("SettingsModal/Switch to Swedish")
+                      }
                     >
                       <div className="absolute inset-0 origin-center">
                         <div

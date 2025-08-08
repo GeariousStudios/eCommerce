@@ -264,7 +264,7 @@ namespace backend.Controllers
                 .Reports.Where(r => r.UnitId == dto.UnitId)
                 .ToListAsync();
 
-            var validationMessage = ValidateReportTimesAsync(
+            var validationMessage = await ValidateReportTimesAsync(
                 lang,
                 allReports,
                 dto.StartTime,
@@ -377,7 +377,7 @@ namespace backend.Controllers
                 .Reports.Where(r => r.UnitId == report.UnitId)
                 .ToListAsync();
 
-            var validationMessage = ValidateReportTimesAsync(
+            var validationMessage = await ValidateReportTimesAsync(
                 lang,
                 allReports,
                 dto.StartTime,
@@ -496,7 +496,13 @@ namespace backend.Controllers
             var lang = await GetLangAsync();
             var allReports = await _context.Reports.Where(r => r.UnitId == unitId).ToListAsync();
 
-            var message = ValidateReportTimesAsync(lang, allReports, startTime, stopTime, reportId);
+            var message = await ValidateReportTimesAsync(
+                lang,
+                allReports,
+                startTime,
+                stopTime,
+                reportId
+            );
 
             if (message != null)
             {

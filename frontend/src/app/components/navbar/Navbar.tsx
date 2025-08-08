@@ -76,6 +76,7 @@ const Navbar = (props: Props) => {
         `${apiUrl}/unit?sortBy=unitGroupName&sortOrder=asc`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
           },
         },
@@ -250,7 +251,7 @@ const Navbar = (props: Props) => {
                     ref={innerRef}
                     id="navbar-menu"
                     role="navigation"
-                    aria-label="Huvudmeny"
+                    aria-label={t("Navbar/Main menu")}
                     className={
                       "flex h-full flex-col gap-4 overflow-x-hidden p-4"
                     }
@@ -260,11 +261,11 @@ const Navbar = (props: Props) => {
                         <Link
                           href={`/`}
                           className="mt-2.25 -ml-2.25 flex h-15 max-w-17 min-w-40"
-                          aria-label="Startsida"
+                          aria-label={t("Navbar/Home")}
                         >
                           <img
                             src={`${prefix}/images/logo_expnd_${currentTheme === "dark" ? "dark" : "light"}.svg`}
-                            alt="Logga"
+                            alt={t("Navbar/Logo")}
                             className="h-full w-full"
                           />
                         </Link>

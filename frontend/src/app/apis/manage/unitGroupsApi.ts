@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { UnitGroupFilters, UnitGroupItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
@@ -37,6 +38,7 @@ export const fetchContent = async ({
 
   const response = await fetch(`${apiUrl}/unit-group?${params}`, {
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
@@ -59,6 +61,7 @@ export const deleteContent = async (id: number): Promise<void> => {
   const response = await fetch(`${apiUrl}/unit-group/delete/${id}`, {
     method: "DELETE",
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
@@ -70,7 +73,8 @@ export const deleteContent = async (id: number): Promise<void> => {
   }
 
   if (!response.ok) {
-    let errorMessage = "Kunde inte ta bort gruppen";
+    const t = useTranslations();
+    let errorMessage = t("Api/Failed to delete") + t("Common/group");
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorMessage;
@@ -90,6 +94,7 @@ export type UnitOption = {
 export const fetchUnits = async (): Promise<UnitOption[]> => {
   const response = await fetch(`${apiUrl}/unit?sortBy=name&sortOrder=asc`, {
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },

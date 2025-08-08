@@ -28,8 +28,8 @@ const useUserPrefs = () => {
       try {
         const response = await fetch(`${apiUrl}/user-preferences`, {
           headers: {
-            Authorization: `Bearer ${token}`,
             "X-User-Language": localStorage.getItem("language") || "sv",
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -55,6 +55,7 @@ const useUserPrefs = () => {
       await fetch(`${apiUrl}/user-preferences/theme`, {
         method: "PUT",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -69,6 +70,7 @@ const useUserPrefs = () => {
       await fetch(`${apiUrl}/user-preferences/language`, {
         method: "PUT",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -83,6 +85,7 @@ const useUserPrefs = () => {
       await fetch(`${apiUrl}/user-preferences/view`, {
         method: "PUT",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },

@@ -3,7 +3,7 @@
 import { useToast } from "../../../components/toast/ToastProvider";
 import useManage from "@/app/hooks/useManage";
 import {
-  dataTypeOptions,
+  getDataTypeOptions,
   UnitColumnDataType,
   UnitColumnFilters,
   UnitColumnItem,
@@ -315,7 +315,7 @@ const UnitColumnsClient = (props: Props) => {
     {
       label: t("Columns/Data type"),
       breakpoint: "ml",
-      options: dataTypeOptions.map(({ label, value }) => ({
+      options: getDataTypeOptions(t).map(({ label, value }) => ({
         label,
         isSelected: filterControls.selectedDataTypes.includes(value),
         setSelected: (val: boolean) => {

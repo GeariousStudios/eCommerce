@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+
 // --- developer/manage/UsersClient.tsx ---
 export type UserItem = {
   id: number;
@@ -86,18 +88,18 @@ export type UnitFilters = {
 
 // --- report/manage/UnitColumnsClient.tsx ---
 export type UnitColumnDataType = "Number" | "Text" | "Boolean";
-export const dataTypeOptions: { label: string; value: UnitColumnDataType }[] = [
+export const getDataTypeOptions = (t: (key: string) => string) => [
   {
-    label: "Number",
-    value: "Number",
+    label: t("Common/Number"),
+    value: "Number" as UnitColumnDataType,
   },
   {
-    label: "Text",
-    value: "Text",
+    label: t("Common/Text"),
+    value: "Text" as UnitColumnDataType,
   },
   // {
-  //   label: "Boolean",
-  //   value: "Boolean",
+  //   label: t("Common/Boolean"),
+  //   value: "Boolean" as UnitColumnDataType,
   // },
 ];
 

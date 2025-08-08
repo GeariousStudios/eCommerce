@@ -1,6 +1,7 @@
 import { FocusTrap } from "focus-trap-react";
 import { ReactNode, RefObject, useEffect, useRef } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { useTranslations } from "next-intl";
 
 type Props = {
   children: ReactNode;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 const SideMenu = (props: Props) => {
+  const t = useTranslations();
   const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,7 +49,7 @@ const SideMenu = (props: Props) => {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Sidomeny"
+        aria-label={t("Navbar/Side menu")}
         onMouseDown={(e) => {
           e.preventDefault();
           e.stopPropagation();

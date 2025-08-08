@@ -59,7 +59,7 @@ const useAuthStatus = () => {
       }
 
       const loginResponse = await fetch(`${apiUrl}/user/check-login`, {
-        headers: {
+        headers: {"X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -89,7 +89,7 @@ const useAuthStatus = () => {
       // --- User info ---
       if (loggedIn) {
         const infoResponse = await fetch(`${apiUrl}/user/info`, {
-          headers: {
+          headers: {"X-User-Language": localStorage.getItem("language") || "sv",
             Authorization: `Bearer ${token}`,
           },
         });

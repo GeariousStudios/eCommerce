@@ -88,6 +88,7 @@ const CategoryModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/category/create`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -174,6 +175,7 @@ const CategoryModal = (props: Props) => {
         {
           method: "PUT",
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -250,6 +252,7 @@ const CategoryModal = (props: Props) => {
     try {
       const response = await fetch(`${apiUrl}/category/fetch/${props.itemId}`, {
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -283,6 +286,7 @@ const CategoryModal = (props: Props) => {
     try {
       const response = await fetch(`${apiUrl}/sub-category`, {
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },

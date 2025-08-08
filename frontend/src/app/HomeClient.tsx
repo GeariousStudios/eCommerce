@@ -82,7 +82,10 @@ const HomeClient = (props: Props) => {
       setIsLoadingNews(true);
 
       const response = await fetch(`${apiUrl}/news/fetch`, {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+        },
       });
 
       const result = await response.json();
@@ -104,6 +107,7 @@ const HomeClient = (props: Props) => {
       const response = await fetch(`${apiUrl}/news/delete/${id}`, {
         method: "DELETE",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -116,7 +120,7 @@ const HomeClient = (props: Props) => {
       } else {
         setNewsItems((prev) => prev.filter((item) => item.id !== id));
         selectedItemId == null;
-        notify("success", "Nyhet borttagen!", 4000);
+        notify("success", t("NewsModal/News item") + t("Manage/deleted"), 4000);
       }
     } catch (err) {
       notify("error", String(err));
@@ -137,7 +141,10 @@ const HomeClient = (props: Props) => {
     try {
       const response = await fetch(`${apiUrl}/user/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           username,
           password,
@@ -356,7 +363,8 @@ const HomeClient = (props: Props) => {
 
                       <div dangerouslySetInnerHTML={{ __html: item.content }} />
                       <small className="text-[var(--text-secondary)] italic">
-                        {t("Common/Updated")}: {utcIsoToLocalDateTime(item.updateDate)}{" "}
+                        {t("Common/Updated")}:{" "}
+                        {utcIsoToLocalDateTime(item.updateDate)}{" "}
                         {t("Common/by")} {item.updatedBy}
                       </small>
                     </article>

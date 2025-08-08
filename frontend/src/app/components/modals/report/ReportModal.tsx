@@ -179,6 +179,7 @@ const ReportModal = (props: Props) => {
       try {
         const response = await fetch(`${apiUrl}/report/${props.reportId}`, {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -234,6 +235,7 @@ const ReportModal = (props: Props) => {
         `${apiUrl}/report/${props.unitId}/${selectedDate}/${selectedHour}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -262,6 +264,7 @@ const ReportModal = (props: Props) => {
     try {
       const response = await fetch(`${apiUrl}/category/unit/${props.unitId}`, {
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -295,6 +298,7 @@ const ReportModal = (props: Props) => {
         `${apiUrl}/report/can-add/${props.unitId}/${selectedDate}/${selectedHour}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -318,6 +322,7 @@ const ReportModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/report/create`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -369,6 +374,7 @@ const ReportModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/report/update/${report.id}`, {
         method: "PUT",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -413,6 +419,7 @@ const ReportModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/report/delete/${id}`, {
         method: "DELETE",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -513,6 +520,7 @@ const ReportModal = (props: Props) => {
 
       const response = await fetch(`${apiUrl}/report/validate-time?${params}`, {
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },

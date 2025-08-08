@@ -9,7 +9,10 @@ import {
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
-import { dataTypeOptions, UnitColumnDataType } from "@/app/types/manageTypes";
+import {
+  getDataTypeOptions,
+  UnitColumnDataType,
+} from "@/app/types/manageTypes";
 import SingleDropdown from "../../common/SingleDropdown";
 import { useTranslations } from "next-intl";
 
@@ -64,13 +67,10 @@ const UnitColumnModal = (props: Props) => {
     event.preventDefault();
 
     try {
-      console.log("Skickar till API:", {
-        name,
-        dataType,
-      });
       const response = await fetch(`${apiUrl}/unit-column/create`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -135,6 +135,7 @@ const UnitColumnModal = (props: Props) => {
         `${apiUrl}/unit-column/fetch/${props.itemId}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -171,6 +172,7 @@ const UnitColumnModal = (props: Props) => {
         {
           method: "PUT",
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -295,7 +297,7 @@ const UnitColumnModal = (props: Props) => {
                   value={dataType ?? ""}
                   onChange={(val) => setDataType(val as UnitColumnDataType)}
                   onModal
-                  options={dataTypeOptions}
+                  options={getDataTypeOptions(t)}
                   required
                 />
               </div>

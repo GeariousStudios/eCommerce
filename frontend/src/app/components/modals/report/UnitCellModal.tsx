@@ -86,6 +86,7 @@ const UnitCellModal = (props: Props) => {
         `${apiUrl}/unit-column/unit/${props.unitId}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -125,6 +126,7 @@ const UnitCellModal = (props: Props) => {
         `${apiUrl}/unit-cell/${props.unitId}/${date}/${hour}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -191,6 +193,7 @@ const UnitCellModal = (props: Props) => {
         {
           method: "PUT",
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -365,8 +368,8 @@ const UnitCellModal = (props: Props) => {
                         label={col.name}
                         value={String(value)}
                         options={[
-                          { label: "Ja", value: "true" },
-                          { label: "Nej", value: "false" },
+                          { label: t("Common/Yes"), value: "true" },
+                          { label: t("Common/No"), value: "false" },
                         ]}
                         onChange={(val) =>
                           setUnitCells((prev) => ({

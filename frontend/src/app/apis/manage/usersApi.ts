@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { UserFilters, UserItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
@@ -41,6 +42,7 @@ export const fetchContent = async ({
 
   const response = await fetch(`${apiUrl}/user-management?${params}`, {
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
@@ -63,6 +65,7 @@ export const deleteContent = async (id: number): Promise<void> => {
   const response = await fetch(`${apiUrl}/user-management/delete/${id}`, {
     method: "DELETE",
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
@@ -73,8 +76,9 @@ export const deleteContent = async (id: number): Promise<void> => {
     return;
   }
 
-   if (!response.ok) {
-    let errorMessage = "Kunde inte ta bort användaren";
+  if (!response.ok) {
+    const t = useTranslations();
+    let errorMessage = t("Api/Failed to delete") + t("Common/user");
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorMessage;

@@ -220,7 +220,7 @@ const SingleDropdown = ({
           tabIndex={-1}
           className="pointer-events-none absolute top-1/2 w-full opacity-0"
         >
-          <option value="">Välj...</option>
+          <option value="">...</option>
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}

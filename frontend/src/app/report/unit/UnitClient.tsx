@@ -127,6 +127,7 @@ const UnitClient = (props: Props) => {
       try {
         const response = await fetch(`${apiUrl}/unit/fetch/${unitId}`, {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
           },
         });
@@ -167,6 +168,7 @@ const UnitClient = (props: Props) => {
           `${apiUrl}/unit-group/fetch/${unitGroupId}`,
           {
             headers: {
+              "X-User-Language": localStorage.getItem("language") || "sv",
               "Content-Type": "application/json",
             },
           },
@@ -203,6 +205,7 @@ const UnitClient = (props: Props) => {
       try {
         const response = await fetch(`${apiUrl}/unit-column/unit/${unitId}`, {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
           },
         });
@@ -233,6 +236,7 @@ const UnitClient = (props: Props) => {
       const response = await fetch(`${apiUrl}/report/delete/${id}`, {
         method: "DELETE",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -343,6 +347,7 @@ const UnitClient = (props: Props) => {
         `${apiUrl}/unit-cell/${unitId}/${selectedDate}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
           },
         },
@@ -366,6 +371,7 @@ const UnitClient = (props: Props) => {
         `${apiUrl}/report/range/${unitId}?start=${dayStart.toISOString()}&end=${dayEnd.toISOString()}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
           },
         },
@@ -383,6 +389,7 @@ const UnitClient = (props: Props) => {
     const fetchOngoingReports = async () => {
       const response = await fetch(`${apiUrl}/report/ongoing/${unitId}`, {
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
         },
       });

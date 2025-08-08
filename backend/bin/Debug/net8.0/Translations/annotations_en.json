@@ -1,0 +1,16 @@
+{
+  "Validation/Please enter": "Please enter {0}",
+  "Validation/Please select": "Please select {0}",
+  "Validation/cannot contain spaces": "{0} cannot contain spaces",
+  "Validation/is invalid": "{0} is invalid",
+
+  "Common/a name": "a name",
+  "Unit/a group": "a group",
+
+  "User/a username": "a username",
+  "User/Username": "Username",
+  "User/a password": "a password",
+  "User/Password": "password",
+  "User/Email": "Email",
+  "User/at least one role": "at least one role"
+}

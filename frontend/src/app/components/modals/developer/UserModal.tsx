@@ -94,6 +94,7 @@ const UserModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/user-management/create`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -163,6 +164,7 @@ const UserModal = (props: Props) => {
         `${apiUrl}/user-management/fetch/${props.itemId}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -214,6 +216,7 @@ const UserModal = (props: Props) => {
         {
           method: "PUT",
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },

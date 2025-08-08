@@ -217,7 +217,7 @@ const UnitsClient = (props: Props) => {
             </>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">Status:</span>
+            <span className="w-full font-semibold">{t("Common/Status")}:</span>
             <span
               className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} text-[var(--text-main-reverse)]`}
             >
@@ -325,7 +325,7 @@ const UnitsClient = (props: Props) => {
     },
     {
       key: "isHidden",
-      label: "Status",
+      label: t("Common/Status"),
       sortingItem: "visibilitycount",
       labelAsc: t("Units/hidden units"),
       labelDesc: t("Units/visible units"),
@@ -397,7 +397,7 @@ const UnitsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: "Status",
+      label: t("Common/Status"),
       breakpoint: "ml",
       options: [
         {

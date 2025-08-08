@@ -23,7 +23,6 @@ public class TranslationService : ITranslationService
     {
         var map = await LoadAsync(language);
 
-        // Fallback till sv om valt språk saknas/helt tomt
         if (language != "sv" && map.Count == 0)
             map = await LoadAsync("sv");
 
@@ -32,18 +31,33 @@ public class TranslationService : ITranslationService
 
     private Task<IReadOnlyDictionary<string, string>> LoadAsync(string lang)
     {
-        // Cachea Tasken
         return _cache.GetOrAdd(lang, LoadFileAsync);
     }
 
     private async Task<IReadOnlyDictionary<string, string>> LoadFileAsync(string lang)
     {
-        var path = Path.Combine(_root, $"{lang}.json");
-        if (!File.Exists(path))
-            return new Dictionary<string, string>();
+        var result = new Dictionary<string, string>();
 
-        var json = await File.ReadAllTextAsync(path);
-        return System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json)
-            ?? new Dictionary<string, string>();
+        var files = new[]
+        {
+            Path.Combine(_root, $"{lang}.json"),
+            Path.Combine(_root, $"annotations_{lang}.json"),
+        };
+
+        foreach (var file in files)
+        {
+            if (!File.Exists(file))
+                continue;
+
+            var json = await File.ReadAllTextAsync(file);
+            var dict =
+                System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json)
+                ?? new Dictionary<string, string>();
+
+            foreach (var kv in dict)
+                result[kv.Key] = kv.Value;
+        }
+
+        return result;
     }
 }

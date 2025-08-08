@@ -57,6 +57,10 @@
   "Common/Changes saved": "Ändringar sparade!",
   "Common/report": "rapport",
   "Common/Close": "Stäng",
+  "Common/Status": "Status",
+  "Common/Number": "Number",
+  "Common/Text": "Text",
+  "Common/Boolean": "Boolean",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
@@ -74,6 +78,9 @@
   "Navbar/Pulse boards": "Pulstavlor",
   "Navbar/Types": "Typer",
   "Navbar/Your dashboard": "Din dashboard",
+  "Navbar/Main menu": "Huvudmeny",
+  "Navbar/Logo": "Logga",
+  "Navbar/Side menu": "Sidomeny",
 
   "Home/Add news": "Lägg till nyhet",
   "Home/Edit news": "Redigera nyhet",
@@ -200,6 +207,10 @@
   "SettingsModal/Light theme": "Byt till ljust tema",
   "SettingsModal/Dark theme": "Byt till mörkt tema",
   "SettingsModal/No messages": "Du har inga nya meddelanden.",
+  "SettingsModal/Switch to English": "Byt till engelska",
+  "SettingsModal/Switch to Swedish": "Byt till svenska",
+  "SettingsModal/No one logged in": "Ingen är inloggad",
+  "SettingsModal/Session": "Session",
 
   "NewsTypeModal/Info1": "Uppgifter om typen",
 
@@ -239,6 +250,8 @@
   "ReportModal/Choose sub category": "--- Välj underkategori ---",
   "ReportModal/Start time": "Starttid",
   "ReportModal/Stop time": "Stopptid",
+
+  "Api/Failed to delete": "Kunde inte ta bort ",
 
   "toolbar": {
     "bold": "Fetstil (Ctrl+B)",

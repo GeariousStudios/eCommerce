@@ -254,7 +254,7 @@ const UsersClient = (props: Props) => {
     },
     {
       key: "isLocked",
-      label: "Status",
+      label: t("Common/Status"),
       sortingItem: "status",
       labelAsc: t("Users/locked users"),
       labelDesc: t("Users/locked users"),
@@ -344,7 +344,7 @@ const UsersClient = (props: Props) => {
       ],
     },
     {
-      label: "Status",
+      label: t("Common/Status"),
       breakpoint: "lg",
       options: [
         {

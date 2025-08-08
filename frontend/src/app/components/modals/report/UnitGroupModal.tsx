@@ -59,6 +59,7 @@ const UnitGroupModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/unit-group/create`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -123,6 +124,7 @@ const UnitGroupModal = (props: Props) => {
         `${apiUrl}/unit-group/fetch/${props.itemId}`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -156,6 +158,7 @@ const UnitGroupModal = (props: Props) => {
         {
           method: "PUT",
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },

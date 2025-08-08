@@ -1,17 +1,28 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
+using backend;
 using backend.Data;
 using backend.Models;
 using backend.Models.ManyToMany;
 using backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 var key = configuration["Jwt:Key"];
+
+builder.Services.AddSingleton<ITranslationService, TranslationService>();
+builder.Services.AddSingleton<IStringLocalizerFactory, JsonStringLocalizerFactory>();
+
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()))
+    .AddDataAnnotationsLocalization();
 
 builder
     .Services.AddAuthentication(options =>
@@ -34,13 +45,13 @@ builder
         };
     });
 
-builder
-    .Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
-;
+// builder
+//     .Services.AddControllers()
+//     .AddJsonOptions(options =>
+//     {
+//         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+//     });
+
 builder.Services.AddEndpointsApiExplorer();
 
 /* --- Home --- */
@@ -76,8 +87,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<UserService>();
-
-builder.Services.AddSingleton<ITranslationService, TranslationService>();
 
 var app = builder.Build();
 

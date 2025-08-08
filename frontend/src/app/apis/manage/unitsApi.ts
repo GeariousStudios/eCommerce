@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { UnitFilters, UnitItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
@@ -55,6 +56,7 @@ export const fetchContent = async ({
 
   const response = await fetch(`${apiUrl}/unit?${params}`, {
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
@@ -77,6 +79,7 @@ export const deleteContent = async (id: number): Promise<void> => {
   const response = await fetch(`${apiUrl}/unit/delete/${id}`, {
     method: "DELETE",
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
@@ -88,7 +91,8 @@ export const deleteContent = async (id: number): Promise<void> => {
   }
 
   if (!response.ok) {
-    let errorMessage = "Kunde inte ta bort enheten";
+    const t = useTranslations();
+    let errorMessage = t("Api/Failed to delete") + t("Common/unit");
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorMessage;
@@ -107,6 +111,7 @@ export type UnitGroupOption = {
 export const fetchUnitGroups = async (): Promise<UnitGroupOption[]> => {
   const response = await fetch(`${apiUrl}/unit-group`, {
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
@@ -129,6 +134,7 @@ export type UnitColumnOption = {
 export const fetchUnitColumns = async (): Promise<UnitColumnOption[]> => {
   const response = await fetch(`${apiUrl}/unit-column`, {
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
@@ -151,6 +157,7 @@ export type CategoryOption = {
 export const fetchCategories = async (): Promise<CategoryOption[]> => {
   const response = await fetch(`${apiUrl}/category`, {
     headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },

@@ -101,6 +101,7 @@ const Topbar = (props: Props) => {
       await fetch(`${apiUrl}/user/logout`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -310,7 +311,7 @@ const Topbar = (props: Props) => {
                         </span>
                       ) : (
                         <span className="font-semibold break-words text-[var(--accent-color)]">
-                          Ingen är inloggad
+                          {t("SettingsModal/No one logged in")}
                         </span>
                       )}
 
@@ -319,7 +320,11 @@ const Topbar = (props: Props) => {
                           toggleLanguage();
                         }}
                         className={`${roundedButtonClass} relative flex !h-6 min-h-6 !w-6 min-w-6 overflow-hidden`}
-                        aria-label={`${currentLanguage === "sv" ? "Byt till engelska" : "Byt till svenska"}`}
+                        aria-label={
+                          currentLanguage === "sv"
+                            ? t("SettingsModal/Switch to English")
+                            : t("SettingsModal/Switch to Swedish")
+                        }
                       >
                         <div className="absolute inset-0 origin-center">
                           <div
@@ -386,7 +391,7 @@ const Topbar = (props: Props) => {
                   <div className="relative">
                     <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
                     <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
-                      Session
+                      {t("SettingsModal/Session")}
                     </span>
                     {isLoggedIn ? (
                       <TopbarLink

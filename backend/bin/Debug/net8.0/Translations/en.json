@@ -71,7 +71,7 @@
   "News/NotFound": "News item could not be found in the database",
   "News/Deleted": "News item deleted!",
   "News/ChooseType": "Select a news type",
-  "News/MissingHeadline": "Enter a headliaane",
+  "News/MissingHeadline": "Enter a headline",
   "News/MissingContent": "Enter content",
   "NewsType/Invalid": "Invalid news type",
 

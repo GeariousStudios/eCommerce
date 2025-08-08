@@ -7,20 +7,17 @@ namespace backend.Dtos.User
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "[1] Fyll i användarnamn")]
-        [RegularExpression(
-            @"^\S+$",
-            ErrorMessage = "[2] Användarnamn får inte innehålla mellanslag"
-        )]
+        [Required(ErrorMessage = "[1|User/a username] Validation/Please enter")]
+        [RegularExpression(@"^\S+$", ErrorMessage = "[2|User/Username] Validation/cannot contain spaces")]
         public string Username { get; set; } = string.Empty;
 
-        [RegularExpression(@"^\S+$", ErrorMessage = "[3] Lösenord får inte innehålla mellanslag")]
+        [RegularExpression(@"^\S+$", ErrorMessage = "[3|User/Password] Validation/cannot contain spaces")]
         public string Password { get; set; } = string.Empty;
 
-        [EmailAddress(ErrorMessage = "[4] Mejladress är ogiltig")]
+        [EmailAddress(ErrorMessage = "[4|User/Email] Validation/is invalid")]
         public string? Email { get; set; }
 
-        [Required(ErrorMessage = "[5] Välj minst en roll")]
+        [Required(ErrorMessage = "[5|User/at least one role] Validation/Please enter")]
         public string[] Roles { get; set; } = Array.Empty<string>();
         public bool IsLocked { get; set; }
     }

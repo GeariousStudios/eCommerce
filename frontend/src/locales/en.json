@@ -57,6 +57,10 @@
   "Common/Changes saved": "Changes saved!",
   "Common/report": "report",
   "Common/Close": "Close",
+  "Common/Status": "Status",
+  "Common/Number": "Number",
+  "Common/Text": "Text",
+  "Common/Boolean": "Boolean",
 
   "Message/Loading": "Loading...",
   "Message/Auth": "Authenticating...",
@@ -74,6 +78,9 @@
   "Navbar/Pulse boards": "Pulse boards",
   "Navbar/Types": "Types",
   "Navbar/Your dashboard": "Your dashboard",
+  "Navbar/Main menu": "Main menu",
+  "Navbar/Logo": "Logo",
+  "Navbar/Side menu": "Side menu",
 
   "Home/Add news": "Add news item",
   "Home/Edit news": "Edit news item",
@@ -200,6 +207,10 @@
   "SettingsModal/Light theme": "Change to light theme",
   "SettingsModal/Dark theme": "Change to dark theme",
   "SettingsModal/No messages": "You have no new messages.",
+  "SettingsModal/Switch to English": "Switch to English",
+  "SettingsModal/Switch to Swedish": "Switch to Swedish",
+  "SettingsModal/No one logged in": "No one logged in",
+  "SettingsModal/Session": "Session",
 
   "NewsTypeModal/Info1": "Details about the type",
 
@@ -239,6 +250,8 @@
   "ReportModal/Choose sub category": "--- Choose sub category ---",
   "ReportModal/Start time": "Start time",
   "ReportModal/Stop time": "Stop time",
+
+  "Api/Failed to delete": "Failed to delete ",
 
   "toolbar": {
     "bold": "Bold (Ctrl+B)",

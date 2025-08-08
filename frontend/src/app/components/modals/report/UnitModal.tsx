@@ -112,6 +112,7 @@ const UnitModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/unit/create`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -178,6 +179,7 @@ const UnitModal = (props: Props) => {
     try {
       const response = await fetch(`${apiUrl}/unit-column`, {
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -202,6 +204,7 @@ const UnitModal = (props: Props) => {
         `${apiUrl}/category?sortBy=name&sortOrder=asc`,
         {
           headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
@@ -225,6 +228,7 @@ const UnitModal = (props: Props) => {
     try {
       const response = await fetch(`${apiUrl}/unit-group`, {
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -247,6 +251,7 @@ const UnitModal = (props: Props) => {
     try {
       const response = await fetch(`${apiUrl}/unit/fetch/${props.itemId}`, {
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -289,6 +294,7 @@ const UnitModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/unit/update/${props.itemId}`, {
         method: "PUT",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -589,7 +595,7 @@ const UnitModal = (props: Props) => {
             <div className="mt-8 flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                Status
+                {t("Common/Status")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
