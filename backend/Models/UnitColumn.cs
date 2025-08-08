@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using backend.Models.ManyToMany;
 
 namespace backend.Models
@@ -5,6 +6,8 @@ namespace backend.Models
     public class UnitColumn
     {
         public int Id { get; set; }
+
+        [MaxLength(32)]
         public string Name { get; set; } = string.Empty;
         public UnitColumnDataType DataType { get; set; }
         public bool HasData { get; set; } = false;

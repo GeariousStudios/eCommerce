@@ -397,6 +397,13 @@ namespace backend.Controllers
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(dto.Password) && dto.Password.Length < 8)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("Users/PasswordTooShort", lang) }
+                );
+            }
+
             user.Username = dto.Username;
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;

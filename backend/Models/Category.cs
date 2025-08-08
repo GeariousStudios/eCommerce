@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using backend.Models.ManyToMany;
 
 namespace backend.Models
@@ -5,6 +6,8 @@ namespace backend.Models
     public class Category
     {
         public int Id { get; set; }
+
+        [MaxLength(32)]
         public string Name { get; set; } = string.Empty;
 
         // Meta data.

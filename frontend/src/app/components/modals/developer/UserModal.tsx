@@ -13,6 +13,7 @@ import {
 import MultiDropdown from "../../common/MultiDropdown";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
 import { useTranslations } from "next-intl";
+import { userConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -371,9 +372,10 @@ const UserModal = (props: Props) => {
                 label={t("Common/Username")}
                 value={username}
                 onChange={(val) => setUsername(String(val))}
-                onModal={true}
+                onModal
                 required
                 autoComplete="new-username"
+                {...userConstraints.username}
               />
 
               {props.itemId !== null ? (
@@ -384,7 +386,8 @@ const UserModal = (props: Props) => {
                   value={password}
                   placeholder="•••••••••"
                   onChange={(val) => setPassword(String(val))}
-                  onModal={true}
+                  onModal
+                  {...userConstraints.password}
                 />
               ) : (
                 <Input
@@ -393,9 +396,10 @@ const UserModal = (props: Props) => {
                   label={t("Common/Password")}
                   value={password}
                   onChange={(val) => setPassword(String(val))}
-                  onModal={true}
+                  onModal
                   required
                   autoComplete="new-password"
+                  {...userConstraints.password}
                 />
               )}
             </div>
@@ -414,7 +418,8 @@ const UserModal = (props: Props) => {
                 label={t("Users/Email")}
                 value={email}
                 onChange={(val) => setEmail(String(val))}
-                onModal={true}
+                onModal
+                {...userConstraints.email}
               />
 
               <div className="flex w-full gap-6 sm:gap-4">
@@ -423,7 +428,8 @@ const UserModal = (props: Props) => {
                   label={t("Users/First name")}
                   value={firstName}
                   onChange={(val) => setFirstName(String(val))}
-                  onModal={true}
+                  onModal
+                  {...userConstraints.firstName}
                 />
 
                 <Input
@@ -431,7 +437,8 @@ const UserModal = (props: Props) => {
                   label={t("Users/Last name")}
                   value={lastName}
                   onChange={(val) => setLastName(String(val))}
-                  onModal={true}
+                  onModal
+                  {...userConstraints.lastName}
                 />
               </div>
             </div>

@@ -17,6 +17,7 @@ import MultiDropdown from "../../common/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "../../common/DragDrop";
 import { useTranslations } from "next-intl";
+import { unitConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -464,8 +465,9 @@ const UnitModal = (props: Props) => {
                 onChange={(val) => {
                   setName(String(val));
                 }}
-                onModal={true}
+                onModal
                 required
+                {...unitConstraints.name}
               />
 
               <div className="flex w-full gap-6 sm:gap-4">

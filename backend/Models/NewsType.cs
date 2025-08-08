@@ -1,8 +1,12 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models
 {
     public class NewsType
     {
         public int Id { get; set; }
+
+        [MaxLength(32)]
         public string Name { get; set; } = string.Empty;
 
         // Meta data.

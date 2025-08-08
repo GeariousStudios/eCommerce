@@ -8,7 +8,12 @@ import {
 import Message from "../../components/common/Message";
 import CustomTooltip from "../../components/common/CustomTooltip";
 import { useToast } from "../../components/toast/ToastProvider";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import {
+  useParams,
+  useSearchParams,
+  useRouter,
+  notFound,
+} from "next/navigation";
 import {
   ChevronDownIcon,
   ChevronLeftIcon,
@@ -21,9 +26,7 @@ import {
   ExclamationTriangleIcon as OutlineExclamationTriangleIcon,
   PencilSquareIcon as OutlinePencilSquareIcon,
   TrashIcon as OutlineTrashIcon,
-  InformationCircleIcon as OutlineInformationCircleIcon,
   PlusIcon as OutlinePlusIcon,
-  XMarkIcon as OutlineXMarkIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -31,14 +34,11 @@ import {
   ExclamationTriangleIcon as SolidExclamationTriangleIcon,
   PencilSquareIcon as SolidPencilSquareIcon,
   TrashIcon as SolidTrashIcon,
-  InformationCircleIcon as SolidInformationCircleIcon,
   PlusIcon as SolidPlusIcon,
-  XMarkIcon as SolidXMarkIcon,
 } from "@heroicons/react/24/solid";
 import HoverIcon from "@/app/components/common/HoverIcon";
 import Input from "@/app/components/common/Input";
 import ReportModal from "@/app/components/modals/report/ReportModal";
-import { get } from "http";
 import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
 import {
   toLocalDateString,
@@ -66,8 +66,13 @@ const UnitClient = (props: Props) => {
 
   // --- VARIABLES ---
   // --- Other ---
-  const params = useParams();
-  const unitId = params?.id;
+  // const params = useParams();
+  // const unitId = params?.id;
+  const { groupId, unitId } = useParams() as {
+    groupId?: string;
+    unitId?: string;
+  };
+  const parsedGroupId = groupId ? Number(groupId) : undefined;
   const parsedUnitId = unitId ? Number(unitId) : undefined;
 
   const searchParams = useSearchParams();
@@ -113,6 +118,9 @@ const UnitClient = (props: Props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isManualRefresh, setIsManualRefresh] = useState(true);
 
+  const [isInvalid, setIsInvalid] = useState(false);
+  const [isUnitValid, setIsUnitValid] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState(() => {
     return dateParam || new Date().toISOString().split("T")[0];
   });
@@ -123,8 +131,14 @@ const UnitClient = (props: Props) => {
   // --- BACKEND ---
   // --- Fetch unit ---
   useEffect(() => {
+    if (!unitId) {
+      return;
+    }
+
     const fetchUnit = async () => {
       try {
+        setIsUnitValid(false);
+        setIsLoading(true);
         const response = await fetch(`${apiUrl}/unit/fetch/${unitId}`, {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -134,13 +148,24 @@ const UnitClient = (props: Props) => {
 
         const result = await response.json();
 
+        if (
+          parsedGroupId !== undefined &&
+          result?.unitGroupId !== parsedGroupId
+        ) {
+          setIsInvalid(true);
+          return;
+        }
+
         if (!response.ok) {
           notify("error", result.message);
         } else {
           fillUnitData(result);
+          setIsUnitValid(true);
         }
       } catch (err) {
         notify("error", String(err));
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -151,9 +176,7 @@ const UnitClient = (props: Props) => {
       setUnitCategoryIds(result.categoryIds ?? []);
     };
 
-    if (unitId) {
-      fetchUnit();
-    }
+    fetchUnit();
   }, [unitId]);
 
   // --- Fetch unit group ---
@@ -183,8 +206,6 @@ const UnitClient = (props: Props) => {
         }
       } catch (err) {
         notify("error", String(err));
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -197,7 +218,7 @@ const UnitClient = (props: Props) => {
 
   // --- Fetch unit columns ---
   useEffect(() => {
-    if (!unitId) {
+    if (!unitId || !isUnitValid) {
       return;
     }
 
@@ -228,7 +249,7 @@ const UnitClient = (props: Props) => {
     };
 
     fetchUnitColumns();
-  }, [unitId]);
+  }, [unitId, isUnitValid]);
 
   // --- Delete report ---
   const deleteReport = async (id: string) => {
@@ -340,7 +361,7 @@ const UnitClient = (props: Props) => {
   };
 
   useEffect(() => {
-    if (!unitId || !selectedDate || !refetchData) {
+    if (!unitId || !selectedDate || !refetchData || isInvalid) {
       return;
     }
 
@@ -422,11 +443,13 @@ const UnitClient = (props: Props) => {
         setRefetchData(false);
         setIsManualRefresh(false);
       });
-  }, [unitId, selectedDate, refetchData]);
+  }, [unitId, selectedDate, refetchData, isInvalid]);
 
-  if (!isLoading && isHidden) {
+  if (!isLoading && isHidden && !isInvalid) {
     return <Message icon="lock" content="lock" fullscreen={true} />;
-  } else if (!isLoading && !isHidden) {
+  } else if (!isLoading && !isHidden && isInvalid) {
+    return <Message content="invalid" fullscreen={true} />;
+  } else if (!isLoading && !isHidden && !isInvalid) {
     return (
       <>
         {/* --- MODALS --- */}

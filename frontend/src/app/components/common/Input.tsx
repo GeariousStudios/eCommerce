@@ -19,6 +19,9 @@ type InputProps = {
   onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   tabIndex?: number;
   notRounded?: boolean;
+  maxLength?: number;
+  minLength?: number;
+  pattern?: string;
 };
 
 const isDarkTheme = () => {
@@ -49,6 +52,9 @@ const Input = ({
   onKeyDown,
   tabIndex,
   notRounded = false,
+  minLength,
+  maxLength,
+  pattern,
 }: InputProps & { icon?: ReactNode }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -67,6 +73,9 @@ const Input = ({
         className={`${isCheckbox || isRadio ? "flex items-center justify-center" : "w-full"} ${isDarkTheme() ? "dark-calendar" : ""} relative`}
       >
         <input
+          maxLength={maxLength}
+          minLength={minLength}
+          pattern={pattern}
           ref={(el) => {
             if (el) {
               el.indeterminate = !!indeterminate;
@@ -96,10 +105,20 @@ const Input = ({
                 onChange?.(numericValue.toString());
               }
             } else {
+              let v = e.target.value;
+
+              if (pattern && /\s/.test(pattern) === false) {
+                v = v.replace(/\s/g, "");
+              }
+
+              if (typeof maxLength === "number") {
+                v = v.slice(0, maxLength);
+              }
+              
               if (isCheckbox || isRadio) {
                 onChange?.(e.target.checked);
               } else {
-                onChange?.(e.target.value);
+                onChange?.(v);
               }
             }
           }}

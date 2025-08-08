@@ -201,7 +201,7 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} ${isActive ? "text-[var(--accent-color)]" : ""} group flex h-[40px] cursor-pointer items-center rounded-lg p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)] w-full justify-between`}
+                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} ${isActive ? "text-[var(--accent-color)]" : ""} group flex h-[40px] w-full cursor-pointer items-center justify-between rounded-lg p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]`}
               >
                 <div className="flex items-center gap-4">
                   <span className="relative flex h-6 w-6 items-center">
@@ -213,7 +213,7 @@ const NavbarSubmenu = (props: Props) => {
                     />
                   </span>
                   <span
-                    className={`${isActive ? "font-bold" : ""} truncate overflow-hidden flex`}
+                    className={`${isActive ? "font-bold" : ""} flex truncate overflow-hidden`}
                   >
                     {props.label}
                   </span>
@@ -222,7 +222,7 @@ const NavbarSubmenu = (props: Props) => {
                 <ChevronRightIcon
                   className={`${
                     isOpen ? "rotate-180 text-[var(--accent-color)]" : ""
-                  } rotate-0 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)] h-6 w-6`}
+                  } h-6 w-6 rotate-0 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]`}
                 />
               </button>
             </div>
@@ -273,7 +273,7 @@ const NavbarSubmenu = (props: Props) => {
                                     (!item.requiresDev || isDev) && (
                                       <div>
                                         <li
-                                          className={`${item.title ? "truncate pt-4 pb-1 text-xs font-semibold uppercase" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
+                                          className={`${item.title ? "pt-4 pb-1 text-xs font-semibold break-all uppercase" : ""} ${!item.title && index === 0 ? "pt-2" : ""}`}
                                         >
                                           {item.title ?? ""}
                                         </li>
@@ -293,7 +293,7 @@ const NavbarSubmenu = (props: Props) => {
                                               onClick={item.onClick}
                                               tabIndex={isOpen ? 0 : -1}
                                               className={
-                                                "flex h-full w-full cursor-pointer truncate p-2 text-sm break-all text-[var(--text-navbar)]"
+                                                "flex h-full w-full cursor-pointer p-2 text-sm break-all text-[var(--text-navbar)]"
                                               }
                                             >
                                               {item.label}

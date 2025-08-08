@@ -3,8 +3,11 @@
   "Validation/Please select": "Please select {0}",
   "Validation/cannot contain spaces": "{0} cannot contain spaces",
   "Validation/is invalid": "{0} is invalid",
+  "Validation/cannot exceed": "{0} cannot exceed {1} characters",
+  "Validation/must be at least": "{0} must be at least {1} characters",
 
   "Common/a name": "a name",
+  "Common/Name": "Name",
 
   "Unit/a group": "a group",
 
@@ -14,6 +17,8 @@
   "User/Password": "Password",
   "User/Email": "Email",
   "User/at least one role": "at least one role",
+  "User/First name": "First name",
+  "User/Last name": "Last name",
 
   "UnitColumn/a data type": "a data type",
 

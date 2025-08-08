@@ -66,24 +66,39 @@ namespace backend.Services
                 var format = _ts.GetAsync(messageKey, lang).GetAwaiter().GetResult();
 
                 object[] finalArgs;
+                Func<object, object> translateArg = a =>
+                {
+                    if (a is string s)
+                    {
+                        var ts = _ts.GetAsync(s, lang).GetAwaiter().GetResult();
+                        return string.IsNullOrEmpty(ts) ? s : ts;
+                    }
+                    return a;
+                };
+
                 if (!string.IsNullOrEmpty(displayKey))
                 {
                     var translatedDisplay = _ts.GetAsync(displayKey, lang).GetAwaiter().GetResult();
-                    finalArgs = new object[] { translatedDisplay };
+                    var rest = (arguments ?? Array.Empty<object>()).Select(translateArg);
+                    finalArgs = new object[] { translatedDisplay }
+                        .Concat(rest)
+                        .ToArray();
                 }
                 else
                 {
-                    finalArgs = arguments
-                        .Select(a =>
-                        {
-                            if (a is string s)
-                            {
-                                var ts = _ts.GetAsync(s, lang).GetAwaiter().GetResult();
-                                return string.IsNullOrEmpty(ts) ? s : ts;
-                            }
-                            return a;
-                        })
-                        .ToArray();
+                    finalArgs = (arguments ?? Array.Empty<object>()).Select(translateArg).ToArray();
+                }
+
+                var placeholders =
+                    Regex
+                        .Matches(format, @"\{\d+\}")
+                        .Select(m => int.Parse(m.Value.Trim('{', '}')))
+                        .DefaultIfEmpty(-1)
+                        .Max() + 1;
+
+                if (finalArgs.Length < placeholders)
+                {
+                    Array.Resize(ref finalArgs, placeholders);
                 }
 
                 var value = string.Format(format, finalArgs);

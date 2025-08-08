@@ -270,6 +270,13 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
+            if (!string.IsNullOrWhiteSpace(dto.Password) && dto.Password.Length < 8)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("Users/PasswordTooShort", lang) }
+                );
+            }
+
             // Username.
             if (!string.IsNullOrWhiteSpace(dto.Username) && dto.Username != user.Username)
             {

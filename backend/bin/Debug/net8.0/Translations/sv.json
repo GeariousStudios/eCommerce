@@ -22,6 +22,7 @@
   "Users/CannotChangePasswordOnline": "Kan inte byta lösenord på ett konto som är online!",
   "Users/CannotChangeRolesOnline": "Kan inte ändra roller på ett konto som är online!",
   "Users/ProfileUpdated": "Profil uppdaterad!",
+  "Users/PasswordTooShort": "Lösenord måste vara minst 8 tecken",
 
   "User/MissingCredentials": "Användarnamn och lösenord måste fyllas i",
   "User/InvalidCredentials": "Felaktigt användarnamn eller lösenord",

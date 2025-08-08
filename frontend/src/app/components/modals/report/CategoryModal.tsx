@@ -14,6 +14,7 @@ import MultiDropdown from "../../common/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "../../common/DragDrop";
 import { useTranslations } from "next-intl";
+import { categoryConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -460,6 +461,7 @@ const CategoryModal = (props: Props) => {
                   onChange={(val) => setName(String(val))}
                   onModal
                   required
+                  {...categoryConstraints.name}
                 />
               </div>
             </div>
@@ -484,6 +486,7 @@ const CategoryModal = (props: Props) => {
                   }
                 }}
                 placeholder={t("CategoryModal/Placeholder text")}
+                {...categoryConstraints.subCategoryName}
               />
 
               <button

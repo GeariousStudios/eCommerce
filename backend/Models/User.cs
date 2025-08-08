@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace backend.Models
@@ -5,13 +6,23 @@ namespace backend.Models
     public class User
     {
         public int Id { get; set; }
+
+        [MaxLength(32)]
         public string FirstName { get; set; } = string.Empty;
+
+        [MaxLength(32)]
         public string LastName { get; set; } = string.Empty;
+
+        [Required, MaxLength(16)]
         public string Username { get; set; } = string.Empty;
+
+        [MaxLength(320)]
         public string Email { get; set; } = string.Empty;
         public UserRoles Roles { get; set; }
 
         public UserPreferences UserPreferences { get; set; } = null!;
+
+        [Required]
         public string PasswordHash { get; set; } = string.Empty;
 
         [NotMapped]

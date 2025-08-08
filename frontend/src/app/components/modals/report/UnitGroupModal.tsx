@@ -10,6 +10,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
 import { useTranslations } from "next-intl";
+import { unitGroupConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -272,8 +273,9 @@ const UnitGroupModal = (props: Props) => {
                 onChange={(val) => {
                   setName(String(val));
                 }}
-                onModal={true}
+                onModal
                 required
+                {...unitGroupConstraints.name}
               />
             </div>
 

@@ -168,7 +168,7 @@ const Topbar = (props: Props) => {
 
               {props.breadcrumbs?.length ? (
                 <div className="flex items-center">
-                  <div className="flex flex-wrap md:hidden">
+                  {/* <div className="flex flex-wrap md:hidden">
                     {props.breadcrumbs.length > 1 && (
                       <>
                         <span className="xs:inline hidden md:hidden">
@@ -184,9 +184,10 @@ const Topbar = (props: Props) => {
                         {props.breadcrumbs[0].label}
                       </span>
                     )}
-                  </div>
+                  </div> 
 
-                  <div className="hidden flex-wrap items-center md:flex">
+                  <div className="hidden flex-wrap items-center md:flex"> */}
+                  <div className="flex flex-wrap items-center">
                     {props.breadcrumbs.map((item, idx) => (
                       <span key={item.href}>
                         {item.clickable ? (

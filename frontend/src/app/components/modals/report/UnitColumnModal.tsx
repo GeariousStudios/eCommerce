@@ -15,6 +15,7 @@ import {
 } from "@/app/types/manageTypes";
 import SingleDropdown from "../../common/SingleDropdown";
 import { useTranslations } from "next-intl";
+import { unitColumnConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -285,8 +286,9 @@ const UnitColumnModal = (props: Props) => {
                   label={t("Common/Name")}
                   value={name}
                   onChange={(val) => setName(String(val))}
-                  onModal={true}
+                  onModal
                   required
+                  {...unitColumnConstraints.name}
                 />
               </div>
 

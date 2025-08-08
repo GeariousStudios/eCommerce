@@ -38,27 +38,28 @@ const LayoutWrapper = (props: Props) => {
   const pathname = usePathname();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  // --- IF UNIT, GET UNIT INFO ---
+  // --- IF UNIT, GET UNIT/GROUP INFO ---
   useEffect(() => {
     const parts = pathname.split("/").filter(Boolean);
-    if (parts.length >= 3 && parts[0] === "report" && parts[1] === "unit") {
-      const unitId = parts[2];
+    if (parts.length >= 3 && parts[0] === "report" && parts[1] === "units") {
+      const groupId = parts[2];
+      const unitId = parts[3];
 
       fetch(`${apiUrl}/unit/fetch/${unitId}`)
         .then((res) => res.json())
-        .then((data) => {
-          if (data?.name) {
-            setUnitName(data.name);
+        .then((unit) => {
+          if (unit?.name) {
+            setUnitName(unit.name);
           }
 
-          if (data?.unitGroupId) {
-            setUnitGroupId(String(data.unitGroupId));
+          if (unit?.unitGroupId) {
+            setUnitGroupId(String(unit.unitGroupId));
 
-            fetch(`${apiUrl}/unit-group/fetch/${data.unitGroupId}`)
+            fetch(`${apiUrl}/unit-group/fetch/${unit.unitGroupId}`)
               .then((res) => res.json())
-              .then((groupData) => {
-                if (groupData?.name) {
-                  setUnitGroupName(groupData.name);
+              .then((group) => {
+                if (group?.name) {
+                  setUnitGroupName(group.name);
                 }
               })
               .catch(() => {});
@@ -77,10 +78,10 @@ const LayoutWrapper = (props: Props) => {
     { label: string; clickable?: boolean }
   > = {
     // --- General ---
-    manage: { label: t("Common/Administrate"), clickable: false },
+    manage: { label: t("Common/Manage"), clickable: false },
 
     // --- Report ---
-    report: { label: t("Navbar/Reporting"), clickable: false },
+    report: { label: t("Navbar/Report"), clickable: false },
     categories: { label: t("Common/Categories"), clickable: false },
     units: { label: t("Common/Units"), clickable: false },
     unit: { label: t("Common/Units"), clickable: false },
@@ -115,7 +116,7 @@ const LayoutWrapper = (props: Props) => {
 
     const isKnown =
       knownKeys.includes(parts[0]?.toLowerCase()) ||
-      (parts[0] === "report" && parts[1] === "unit" && parts[2]);
+      (parts[0] === "report" && parts[1] === "units" && parts[2] && parts[3]);
 
     if (!isKnown) {
       return [
@@ -138,16 +139,30 @@ const LayoutWrapper = (props: Props) => {
       const translation = breadcrumbTranslation[key];
       const isLast = index === filteredParts.length - 1;
 
-      return {
-        label:
-          translation?.label ??
-          (filteredParts[1] === "unit" && index === 2 && unitName
-            ? unitName
-            : part.charAt(0).toUpperCase() + part.slice(1)),
-        href: "/" + filteredParts.slice(0, index + 1).join("/"),
-        clickable: isLast ? false : (translation?.clickable ?? false),
-        isActive: isLast,
-      };
+      const isUnitsPath =
+        filteredParts[0] === "report" && filteredParts[1] === "units";
+
+      const label =
+        isUnitsPath && index === 2 && (unitGroupName || unitGroupId)
+          ? (unitGroupName ?? unitGroupId!)
+          :
+            isUnitsPath && index === 3 && unitName
+            ? unitName!
+            :
+              (translation?.label ??
+              part.charAt(0).toUpperCase() + part.slice(1));
+
+      const clickable = isLast
+        ? false
+        : (translation?.clickable ??
+          (isUnitsPath && index === 1));
+
+      const href =
+        isUnitsPath && index === 1
+          ? "/report/units"
+          : "/" + filteredParts.slice(0, index + 1).join("/");
+
+      return { label, href, clickable, isActive: isLast };
     });
 
     if (

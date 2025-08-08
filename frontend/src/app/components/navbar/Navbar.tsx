@@ -103,7 +103,7 @@ const Navbar = (props: Props) => {
 
           acc[groupName].push({
             label: unit.name,
-            href: `/report/unit/${unit.id}`,
+            href: `/report/units/${unit.unitGroupId}/${unit.id}`,
           });
 
           return acc;
@@ -307,7 +307,7 @@ const Navbar = (props: Props) => {
                       />
 
                       <NavbarSubmenu
-                        label={t("Navbar/Reporting")}
+                        label={t("Navbar/Report")}
                         icon={OutlineChatBubbleBottomCenterTextIcon}
                         iconHover={SolidChatBubbleBottomCenterTextIcon}
                         menus={[

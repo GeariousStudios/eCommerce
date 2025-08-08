@@ -22,6 +22,7 @@
   "Users/CannotChangePasswordOnline": "Cannot change password for an online account!",
   "Users/CannotChangeRolesOnline": "Cannot change roles for an online account!",
   "Users/ProfileUpdated": "Profile updated!",
+  "Users/PasswordTooShort": "Password must be at least 8 characters",
 
   "User/MissingCredentials": "Username and password are required",
   "User/InvalidCredentials": "Incorrect username or password",

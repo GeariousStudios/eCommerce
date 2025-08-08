@@ -3,9 +3,12 @@
   "Validation/Please select": "Välj {0}",
   "Validation/cannot contain spaces": "{0} får inte innehålla mellanslag",
   "Validation/is invalid": "{0} är ogiltig",
+  "Validation/cannot exceed": "{0} får inte vara längre än {1} tecken",
+  "Validation/must be at least": "{0} måste vara minst {1} tecken",
 
   "Common/a name": "ett namn",
-  
+  "Common/Name": "Namn",
+
   "Unit/a group": "en grupp",
 
   "User/a username": "ett användarnamn",
@@ -14,6 +17,8 @@
   "User/Password": "Lösenord",
   "User/Email": "Mejladress",
   "User/at least one role": "minst en roll",
+  "User/First name": "Förnamn",
+  "User/Last name": "Efternamn",
 
   "UnitColumn/a data type": "en datatyp",
 
