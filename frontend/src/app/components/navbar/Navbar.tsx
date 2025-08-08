@@ -192,7 +192,7 @@ const Navbar = (props: Props) => {
       <div
         className={`${
           !props.navbarHidden
-            ? "fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50 md:static md:h-auto md:w-auto md:bg-transparent"
+            ? "fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/50 md:static md:h-auto md:w-auto md:bg-transparent"
             : ""
         }`}
         onPointerDown={() => toggleNavbar()}

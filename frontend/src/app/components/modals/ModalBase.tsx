@@ -112,7 +112,7 @@ const ModalBase = forwardRef((props: Props, ref) => {
   return (
     <>
       {props.isOpen && (
-        <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
+        <div className="fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/50">
           <FocusTrap
             focusTrapOptions={{
               initialFocus: false,
@@ -166,7 +166,7 @@ const ModalBase = forwardRef((props: Props, ref) => {
             escapeDeactivates: false,
           }}
         >
-          <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/75">
+          <div className="fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/75">
             <div className="relative top-1/2">
               <div className="relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-md -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]">
                 <p className="mb-6 text-[var(--text-main)]">

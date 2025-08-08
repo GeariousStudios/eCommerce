@@ -61,6 +61,7 @@
   "Common/Number": "Number",
   "Common/Text": "Text",
   "Common/Boolean": "Boolean",
+  "Common/Edit": "Redigera",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
@@ -107,7 +108,6 @@
   "Manage/deleted": " borttagen!",
   "Manage/Add": "Lägg till ny",
   "Manage/Delete": "Ta bort",
-  "Manage/Edit": "Redigera",
   "Manage/Select": "Välj en",
   "Manage/Edit limit1": "Du kan bara redigera en",
   "Manage/Edit limit2": "i taget",
@@ -178,7 +178,6 @@
   "Modal/created": " skapad!",
   "Modal/updated": " uppdaterad!",
   "Modal/Add": "Lägg till",
-  "Modal/Edit": "Redigera",
   "Modal/Update": "Uppdatera",
   "Modal/Save": "Spara",
   "Modal/Nothing": "Inga ändringar att spara!",

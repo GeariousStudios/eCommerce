@@ -401,7 +401,7 @@ const ManageBase = <TItem extends { id: number }>({
               selectedItems.length === 0
                 ? `${t("Manage/Select")} ${" "} ${itemName}`
                 : selectedItems.length === 1
-                  ? `${t("Manage/Edit")} ${" "} ${itemName}`
+                  ? `${t("Common/Edit")} ${" "} ${itemName}`
                   : `${t("Manage/Edit limit1")} ${" "} ${itemName} ${" "} ${t("Manage/Edit limit2")}`
             }
             lgHidden={selectedItems.length === 1}
@@ -428,7 +428,7 @@ const ManageBase = <TItem extends { id: number }>({
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
                 <span className="hidden lg:block">
-                  {t("Manage/Edit")} {itemName}
+                  {t("Common/Edit")} {itemName}
                 </span>
               </div>
             </button>

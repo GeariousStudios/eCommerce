@@ -431,7 +431,7 @@ const CategoryModal = (props: Props) => {
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
           label={
             props.itemId
-              ? t("Manage/Edit") + " " + t("Common/category")
+              ? t("Common/Edit") + " " + t("Common/category")
               : t("Manage/Add") + " " + t("Common/category")
           }
           confirmOnClose
@@ -530,7 +530,7 @@ const CategoryModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? t("Modal/Edit") : t("Modal/Add")}
+                {props.itemId ? t("Modal/Save") : t("Modal/Add")}
               </button>
               <button
                 type="button"

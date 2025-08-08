@@ -319,7 +319,7 @@ const NewsModal = (props: Props) => {
           icon={props.newsId ? PencilSquareIcon : PlusIcon}
           label={
             props.newsId
-              ? t("Manage/Edit") + " " + t("NewsModal/news item")
+              ? t("Common/Edit") + " " + t("NewsModal/news item")
               : t("Manage/Add") + " " + t("NewsModal/news item")
           }
           confirmOnClose

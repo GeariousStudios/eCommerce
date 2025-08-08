@@ -111,7 +111,7 @@ const UnitClient = (props: Props) => {
 
   // --- States: Other ---
   const [isLoading, setIsLoading] = useState(true);
-  const [isChangingDate, setIsChangingDate] = useState(true);
+  const [isManualRefresh, setIsManualRefresh] = useState(true);
 
   const [selectedDate, setSelectedDate] = useState(() => {
     return dateParam || new Date().toISOString().split("T")[0];
@@ -255,7 +255,10 @@ const UnitClient = (props: Props) => {
       }
 
       setReports((prev) => prev.filter((r) => r.id !== id));
-      notify("success", "Störningsrapport raderad");
+      notify(
+        "success",
+        t("ReportModal/Disruption report") + t("Manage/deleted"),
+      );
     } catch (err) {
       notify("error", String(err));
     }
@@ -328,7 +331,6 @@ const UnitClient = (props: Props) => {
 
   const updateDate = (newDate: string) => {
     setSelectedDate(newDate);
-    setIsChangingDate(true);
     setRefetchData(true);
 
     const current = new URLSearchParams(searchParams.toString());
@@ -418,11 +420,8 @@ const UnitClient = (props: Props) => {
       })
       .finally(() => {
         setRefetchData(false);
-        setIsChangingDate(false);
+        setIsManualRefresh(false);
       });
-
-    fetchCells();
-    fetchReports();
   }, [unitId, selectedDate, refetchData]);
 
   if (!isLoading && isHidden) {
@@ -536,16 +535,19 @@ const UnitClient = (props: Props) => {
 
             <div className="ml-auto flex max-w-max flex-wrap items-center gap-4">
               <CustomTooltip
-                content={`${refetchData && !isChangingDate ? t("Common/Updating") : t("Unit/Update page")}`}
+                content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Unit/Update page")}`}
               >
                 <button
                   className={`${buttonSecondaryClass} group flex items-center justify-center`}
-                  onClick={() => setRefetchData(true)}
+                  onClick={() => {
+                    setIsManualRefresh(true);
+                    setRefetchData(true);
+                  }}
                   aria-label={t("Unit/Update page")}
-                  disabled={refetchData && !isChangingDate}
+                  disabled={isManualRefresh && refetchData}
                 >
                   <ArrowPathIcon
-                    className={`${refetchData && !isChangingDate ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} min-h-full min-w-full`}
+                    className={`${refetchData && isManualRefresh ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} min-h-full min-w-full`}
                   />
                 </button>
               </CustomTooltip>
@@ -579,7 +581,7 @@ const UnitClient = (props: Props) => {
           <div className="w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
             <table className="w-full max-w-full min-w-fit border-collapse overflow-x-auto">
               <thead className="bg-[var(--bg-grid-header)]">
-                {isChangingDate ? (
+                {refetchData ? (
                   <tr>
                     <th
                       colSpan={unitColumnNames.length + 3}
@@ -619,7 +621,7 @@ const UnitClient = (props: Props) => {
                 )}
               </thead>
               <tbody>
-                {isChangingDate ? (
+                {refetchData ? (
                   <tr>
                     {/* 960px = h-[tdClass] * 24 */}
                     <td

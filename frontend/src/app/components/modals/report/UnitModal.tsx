@@ -438,7 +438,7 @@ const UnitModal = (props: Props) => {
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
           label={
             props.itemId
-              ? t("Manage/Edit") + " " + t("Common/unit")
+              ? t("Common/Edit") + " " + t("Common/unit")
               : t("Manage/Add") + " " + t("Common/unit")
           }
           confirmOnClose
@@ -621,7 +621,7 @@ const UnitModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? t("Modal/Edit") : t("Modal/Add")}
+                {props.itemId ? t("Modal/Save") : t("Modal/Add")}
               </button>
               <button
                 type="button"
