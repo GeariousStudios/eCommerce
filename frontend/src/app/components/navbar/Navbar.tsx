@@ -214,24 +214,40 @@ const Navbar = (props: Props) => {
         icon: "UserGroupIcon",
       },
       {
-        href: "/report/manage/categories/",
-        label: t("Common/Manage") + " " + t("Common/categories"),
-        // icon: "TagIcon",
+        href: "/admin/manage/units/categories/",
+        // label: t("Common/Manage") + " / " + t("Common/Categories"),
+        label: t("Common/Categories"),
+        icon: "WrenchIcon",
       },
       {
-        href: "/report/manage/units/",
-        label: t("Common/Manage") + " " + t("Common/units"),
-        // icon: "SquaresPlusIcon",
+        href: "/admin/manage/units/",
+        // label: t("Common/Manage") + " / " + t("Common/Units"),
+        label: t("Common/Units"),
+        icon: "WrenchIcon",
       },
       {
-        href: "/report/manage/unit-groups/",
-        label: t("Common/Manage") + " " + t("Common/groups"),
-        // icon: "Squares2X2Icon",
+        href: "/admin/manage/units/unit-groups/",
+        // label: t("Common/Manage") + " / " + t("Common/Groups"),
+        label: t("Common/Groups"),
+        icon: "WrenchIcon",
       },
       {
-        href: "/report/manage/unit-columns/",
-        label: t("Common/Manage") + " " + t("Common/columns"),
-        // icon: "ViewColumnsIcon",
+        href: "/admin/manage/units/unit-columns/",
+        // label: t("Common/Manage") + " / " + t("Common/Columns"),
+        label: t("Common/Columns"),
+        icon: "WrenchIcon",
+      },
+      {
+        href: "/admin/manage/news/news-types/",
+        // label: t("Common/Manage") + " / " + t("Navbar/Types"),
+        label: t("Navbar/Types"),
+        icon: "WrenchIcon",
+      },
+      {
+        href: "/admin/manage/shifts/",
+        // label: t("Common/Manage") + " / " + t("Navbar/Types"),
+        label: t("Navbar/Shifts"),
+        icon: "WrenchIcon",
       },
     ];
 
@@ -381,7 +397,7 @@ const Navbar = (props: Props) => {
                         <Outline.ChevronDoubleLeftIcon />
                       </button>
 
-                      <hr className="mt-1 mb-8 rounded-full text-[var(--border-main)]" />
+                      <hr className="mt-1 mb-7 rounded-full text-[var(--border-main)]" />
 
                       {/* --- USER FAVOURITES --- */}
                       {resolvedFavourites.length > 0 && (
@@ -418,7 +434,7 @@ const Navbar = (props: Props) => {
                             }}
                           />
 
-                          <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
+                          <hr className="mt-4 mb-7 rounded-full text-[var(--border-main)]" />
                         </div>
                       )}
 
@@ -436,7 +452,7 @@ const Navbar = (props: Props) => {
                             )}
                             onToggleFavourite={onToggleFavourite}
                           />
-                          <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
+                          <hr className="mt-4 mb-7 rounded-full text-[var(--border-main)]" />
                         </div>
                       )}
 
@@ -466,67 +482,6 @@ const Navbar = (props: Props) => {
                                 },
                               ]
                             : []),
-                          {
-                            label: t("Common/Administrate"),
-                            items: [
-                              {
-                                title: t("Common/Manage"),
-                                href: "/report/manage/categories/",
-                                label: t("Common/Categories"),
-
-                                overrideLabel:
-                                  t("Common/Manage") +
-                                  " " +
-                                  t("Common/categories"),
-                                // icon: "TagIcon",
-                                onToggleFavourite,
-                                isFavourite: favourites.some(
-                                  (f) =>
-                                    f.href === "/report/manage/categories/",
-                                ),
-                              },
-                              {
-                                href: "/report/manage/units/",
-                                label: t("Common/Units"),
-
-                                overrideLabel:
-                                  t("Common/Manage") + " " + t("Common/units"),
-                                // icon: "SquaresPlusIcon",
-                                onToggleFavourite,
-                                isFavourite: favourites.some(
-                                  (f) => f.href === "/report/manage/units/",
-                                ),
-                              },
-                              {
-                                href: "/report/manage/unit-groups/",
-                                label: t("Common/Groups"),
-
-                                overrideLabel:
-                                  t("Common/Manage") + " " + t("Common/groups"),
-                                // icon: "Squares2X2Icon",
-                                onToggleFavourite,
-                                isFavourite: favourites.some(
-                                  (f) =>
-                                    f.href === "/report/manage/unit-groups/",
-                                ),
-                              },
-                              {
-                                href: "/report/manage/unit-columns/",
-                                label: t("Common/Columns"),
-
-                                overrideLabel:
-                                  t("Common/Manage") +
-                                  " " +
-                                  t("Common/columns"),
-                                // icon: "ViewColumnsIcon",
-                                onToggleFavourite,
-                                isFavourite: favourites.some(
-                                  (f) =>
-                                    f.href === "/report/manage/unit-columns/",
-                                ),
-                              },
-                            ],
-                          },
                         ]}
                       />
 
@@ -540,24 +495,93 @@ const Navbar = (props: Props) => {
 
                       {isAdmin && (
                         <div>
-                          <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
+                          <hr className="mt-4 mb-7 rounded-full text-[var(--border-main)]" />
 
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                             {t("Common/Admin")}
                           </span>
                           <NavbarSubmenu
-                            label={t("Common/News")}
-                            icon={Outline.NewspaperIcon}
-                            iconHover={Solid.NewspaperIcon}
+                            label={t("Common/Manage")}
+                            icon={Outline.WrenchIcon}
+                            iconHover={Solid.WrenchIcon}
+                            requiresAdmin
                             menus={[
                               {
-                                label: t("Common/Administrate"),
-                                requiresAdmin: true,
+                                label: t("Common/Units"),
                                 items: [
                                   {
-                                    title: t("Common/Manage"),
-                                    href: `/admin/manage/news/news-types/`,
+                                    href: "/admin/manage/units/unit-groups/",
+                                    label: t("Common/Groups"),
+                                    onToggleFavourite,
+                                    isFavourite: favourites.some(
+                                      (f) =>
+                                        f.href ===
+                                        "/admin/manage/units/unit-groups/",
+                                    ),
+                                  },
+                                  {
+                                    href: "/admin/manage/units/",
+                                    label: t("Common/Units"),
+
+                                    onToggleFavourite,
+                                    isFavourite: favourites.some(
+                                      (f) => f.href === "/admin/manage/units/",
+                                    ),
+                                  },
+                                  {
+                                    title: t("Navbar/Report"),
+                                    href: "/admin/manage/units/categories/",
+                                    label: t("Common/Categories"),
+
+                                    onToggleFavourite,
+                                    isFavourite: favourites.some(
+                                      (f) =>
+                                        f.href ===
+                                        "/admin/manage/units/categories/",
+                                    ),
+                                  },
+                                  {
+                                    href: "/admin/manage/units/unit-columns/",
+                                    label: t("Common/Columns"),
+
+                                    onToggleFavourite,
+                                    isFavourite: favourites.some(
+                                      (f) =>
+                                        f.href ===
+                                        "/admin/manage/units/unit-columns/",
+                                    ),
+                                  },
+                                ],
+                              },
+                              {
+                                label: t("Navbar/Shifts"),
+                                items: [
+                                  {
+                                    href: "/admin/manage/shifts/",
+                                    label: t("Navbar/Shifts"),
+
+                                    onToggleFavourite,
+                                    isFavourite: favourites.some(
+                                      (f) =>
+                                        f.href ===
+                                        "/admin/manage/shifts/",
+                                    ),
+                                  },
+                                ],
+                              },
+                              {
+                                label: t("Common/News"),
+                                items: [
+                                  {
+                                    href: "/admin/manage/news/news-types/",
                                     label: t("Navbar/Types"),
+
+                                    onToggleFavourite,
+                                    isFavourite: favourites.some(
+                                      (f) =>
+                                        f.href ===
+                                        "/admin/manage/news/news-types/",
+                                    ),
                                   },
                                 ],
                               },

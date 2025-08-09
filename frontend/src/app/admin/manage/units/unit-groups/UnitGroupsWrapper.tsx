@@ -1,10 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Message from "../../../components/common/Message";
-import useAuthStatus from "../../../hooks/useAuthStatus";
+import Message from "../../../../components/common/Message";
+import useAuthStatus from "../../../../hooks/useAuthStatus";
 
-const UsersClient = dynamic(() => import("./UsersClient"), {
+const UnitGroupsClient = dynamic(() => import("./UnitGroupsClient"), {
   ssr: false,
   loading: () => (
     <>
@@ -13,19 +13,14 @@ const UsersClient = dynamic(() => import("./UsersClient"), {
       </div>
 
       <div className="block md:hidden">
-        <Message
-          icon="loading"
-          content="loading"
-          fullscreen
-          withinContainer
-        />
+        <Message icon="loading" content="loading" fullscreen withinContainer />
       </div>
     </>
   ),
 });
 
-const UsersWrapper = () => {
-  const { isAuthReady, isDev, isConnected } = useAuthStatus();
+const UnitGroupsWrapper = () => {
+  const { isAuthReady, isAdmin, isConnected } = useAuthStatus();
 
   if (!isAuthReady) {
     return (
@@ -35,13 +30,18 @@ const UsersWrapper = () => {
         </div>
 
         <div className="block md:hidden">
-          <Message icon="loading" content="loading" fullscreen withinContainer />
+          <Message
+            icon="loading"
+            content="loading"
+            fullscreen
+            withinContainer
+          />
         </div>
       </>
     );
   }
 
-  if (!isDev) {
+  if (!isAdmin) {
     return (
       <>
         <div className="hidden md:block">
@@ -55,7 +55,7 @@ const UsersWrapper = () => {
     );
   }
 
-  return <UsersClient isConnected={isConnected} />;
+  return <UnitGroupsClient isConnected={isConnected} />;
 };
 
-export default UsersWrapper;
+export default UnitGroupsWrapper;

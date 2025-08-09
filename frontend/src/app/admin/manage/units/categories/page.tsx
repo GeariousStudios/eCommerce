@@ -1,4 +1,4 @@
-import CategoriesWrapper from "@/app/report/manage/categories/CategoriesWrapper";
+import CategoriesWrapper from "@/app/admin/manage/units/categories/CategoriesWrapper";
 
 const Categories = () => {
   return <CategoriesWrapper />;

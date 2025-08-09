@@ -1,10 +1,10 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import Navbar from "../components/navbar/Navbar";
 import Topbar from "../components/topbar/Topbar";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 type Props = {
   children: ReactNode;
@@ -17,12 +17,14 @@ type Breadcrumb = {
   isActive: boolean;
 };
 
+const sameCrumbs = (a?: Breadcrumb[], b?: Breadcrumb[]) =>
+  JSON.stringify(a) === JSON.stringify(b);
+
 const LayoutWrapper = (props: Props) => {
   const t = useTranslations();
 
   // --- STATES ---
   const [hasScrollbar, setHasScrollbar] = useState(false);
-  // const [navbarHidden, setNavbarHidden] = useState(false);
   const [navbarHidden, setNavbarHidden] = useState(() => {
     if (typeof window !== "undefined") {
       return window.matchMedia("(max-width: 767px)").matches;
@@ -34,13 +36,21 @@ const LayoutWrapper = (props: Props) => {
   const [unitGroupId, setUnitGroupId] = useState<string | null>(null);
   const [unitGroupName, setUnitGroupName] = useState<string | null>(null);
 
+  const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[] | undefined>(
+    undefined,
+  );
+  const [breadcrumbsReady, setBreadcrumbsReady] = useState(false);
+
   // --- OTHER ---
   const pathname = usePathname();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const parts = pathname.split("/").filter(Boolean);
+  const isUnitsPath =
+    parts.length >= 3 && parts[0] === "report" && parts[1] === "units";
+  const [breadcrumbsLoading, setBreadcrumbsLoading] = useState(false);
 
   // --- IF UNIT, GET UNIT/GROUP INFO ---
   useEffect(() => {
-    const parts = pathname.split("/").filter(Boolean);
     if (parts.length >= 3 && parts[0] === "report" && parts[1] === "units") {
       const groupId = parts[2];
       const unitId = parts[3];
@@ -73,55 +83,106 @@ const LayoutWrapper = (props: Props) => {
   }, [pathname]);
 
   // --- BREADCRUMB TRANSLATION ---
-  const breadcrumbTranslation: Record<
-    string,
-    { label: string; clickable?: boolean }
-  > = {
-    // --- General ---
-    manage: { label: t("Common/Manage"), clickable: false },
+  type CrumbMap = Record<string, { label: string; clickable?: boolean }>;
 
-    // --- Report ---
-    report: { label: t("Navbar/Report"), clickable: false },
-    categories: { label: t("Common/Categories"), clickable: false },
-    units: { label: t("Common/Units"), clickable: false },
-    unit: { label: t("Common/Units"), clickable: false },
-    "unit-groups": {
-      label: t("Common/Groups"),
-      clickable: false,
-    },
-    "unit-columns": {
-      label: t("Common/Columns"),
-      clickable: false,
-    },
+  const breadcrumbTranslation = useMemo<CrumbMap>(
+    () => ({
+      // --- General ---
+      manage: { label: t("Common/Manage"), clickable: false },
 
-    // --- Developer ---
-    developer: { label: t("Common/Developer"), clickable: false },
-    users: { label: t("Common/Users"), clickable: false },
+      // --- Report ---
+      report: { label: t("Navbar/Report"), clickable: false },
+      unit: { label: t("Common/Units"), clickable: false },
 
-    // --- Admin ---
-    admin: { label: t("Common/Admin"), clickable: false },
-    news: { label: t("Common/News"), clickable: false },
-    "news-types": { label: t("Navbar/Types"), clickable: false },
-  };
+      // --- Admin ---
+      admin: { label: t("Common/Admin"), clickable: false },
+
+      "unit-groups": {
+        label: t("Common/Groups"),
+        clickable: false,
+      },
+      units: { label: t("Common/Units"), clickable: false },
+      categories: { label: t("Common/Categories"), clickable: false },
+      "unit-columns": {
+        label: t("Common/Columns"),
+        clickable: false,
+      },
+
+      news: { label: t("Common/News"), clickable: false },
+      "news-types": { label: t("Navbar/Types"), clickable: false },
+
+      shifts: { label: t("Navbar/Shifts"), clickable: false },
+
+      // --- Developer ---
+      developer: { label: t("Common/Developer"), clickable: false },
+      users: { label: t("Common/Users"), clickable: false },
+    }),
+    [t],
+  );
 
   // --- CREATE BREADCRUMBS ---
-  const createBreadcrumbs = (path: string): Breadcrumb[] | undefined => {
+  const createBreadcrumbs = (
+    path: string,
+    names?: {
+      unitName?: string | null;
+      unitGroupId?: string | null;
+      unitGroupName?: string | null;
+    },
+  ): Breadcrumb[] | undefined => {
     if (path === "/") {
       return undefined;
     }
 
-    const parts = path.split("/").filter(Boolean);
+    const localParts = path.split("/").filter(Boolean);
+    const filteredParts = localParts;
+    const crumbs: Breadcrumb[] = [];
 
-    const knownKeys = Object.keys(breadcrumbTranslation);
+    const { unitName, unitGroupId, unitGroupName } = names || {};
 
-    const isKnown =
-      knownKeys.includes(parts[0]?.toLowerCase()) ||
-      (parts[0] === "report" && parts[1] === "units" && parts[2] && parts[3]);
+    const localIsUnitsPath =
+      filteredParts[0] === "report" && filteredParts[1] === "units";
 
-    if (!isKnown) {
+    for (let index = 0; index < filteredParts.length; index++) {
+      const part = filteredParts[index];
+      const key = part.toLowerCase();
+      const translation = breadcrumbTranslation[key];
+      const isLast = index === filteredParts.length - 1;
+
+      // --- Special cases ---
+      const isUnitsSpecialKnown =
+        (localIsUnitsPath && index === 2 && (unitGroupName || unitGroupId)) ||
+        (isUnitsPath && index === 3 && unitName);
+
+      // --- Don't continue if invalid segment ---
+      if (!translation && !isUnitsSpecialKnown) {
+        break;
+      }
+
+      const label =
+        localIsUnitsPath && index === 2 && (unitGroupName || unitGroupId)
+          ? (unitGroupName ?? unitGroupId!)
+          : localIsUnitsPath && index === 3 && unitName
+            ? unitName!
+            : (translation?.label ??
+              part.charAt(0).toUpperCase() + part.slice(1));
+
+      const clickable = isLast
+        ? false
+        : (translation?.clickable ?? (localIsUnitsPath && index === 1));
+
+      const href =
+        localIsUnitsPath && index === 1
+          ? "/report/units"
+          : "/" + filteredParts.slice(0, index + 1).join("/");
+
+      crumbs.push({ label, href, clickable, isActive: isLast });
+    }
+
+    // --- Invalid page if invalid href ---
+    if (crumbs.length < filteredParts.length) {
       return [
         {
-          label: t("Message/Invalid page"),
+          label: t("Message/Invalid"),
           href: "/",
           clickable: false,
           isActive: true,
@@ -129,65 +190,73 @@ const LayoutWrapper = (props: Props) => {
       ];
     }
 
-    // If developer, remove manage. <-- DISABLED!
-    // const filteredParts =
-    //   parts[0] === "developer" ? parts.filter((p) => p !== "manage") : parts;
-    const filteredParts = parts;
-
-    let breadcrumbs: Breadcrumb[] = filteredParts.map((part, index) => {
-      const key = part.toLowerCase();
-      const translation = breadcrumbTranslation[key];
-      const isLast = index === filteredParts.length - 1;
-
-      const isUnitsPath =
-        filteredParts[0] === "report" && filteredParts[1] === "units";
-
-      const label =
-        isUnitsPath && index === 2 && (unitGroupName || unitGroupId)
-          ? (unitGroupName ?? unitGroupId!)
-          :
-            isUnitsPath && index === 3 && unitName
-            ? unitName!
-            :
-              (translation?.label ??
-              part.charAt(0).toUpperCase() + part.slice(1));
-
-      const clickable = isLast
-        ? false
-        : (translation?.clickable ??
-          (isUnitsPath && index === 1));
-
-      const href =
-        isUnitsPath && index === 1
-          ? "/report/units"
-          : "/" + filteredParts.slice(0, index + 1).join("/");
-
-      return { label, href, clickable, isActive: isLast };
-    });
-
-    if (
-      pathname.includes(`report/unit/`) &&
-      unitGroupId &&
-      unitGroupName &&
-      unitName
-    ) {
-      const unitIndex = breadcrumbs.findIndex(
-        (b: Breadcrumb) => b.label === unitName,
-      );
-      if (unitIndex !== -1) {
-        breadcrumbs.splice(unitIndex, 0, {
-          label: unitGroupName,
-          href: "#",
-          clickable: false,
-          isActive: false,
-        });
-      }
-    }
-
-    return breadcrumbs;
+    return crumbs.length === 0 ? undefined : crumbs;
   };
 
-  const breadcrumbs = createBreadcrumbs(pathname);
+  useEffect(() => {
+    let isMounted = true;
+    setBreadcrumbsReady(false);
+
+    const localParts = pathname.split("/").filter(Boolean);
+    const localIsUnitsPath =
+      localParts.length >= 3 &&
+      localParts[0] === "report" &&
+      localParts[1] === "units";
+
+    if (!localIsUnitsPath) {
+      const next = createBreadcrumbs(pathname, {
+        unitName,
+        unitGroupId,
+        unitGroupName,
+      });
+
+      if (isMounted) {
+        setBreadcrumbs(next);
+        setBreadcrumbsReady(true);
+      }
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const groupId = localParts[2];
+    const unitId = localParts[3];
+
+    const fetchGroup = groupId
+      ? fetch(`${apiUrl}/unit-group/fetch/${groupId}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)
+      : Promise.resolve(null);
+
+    const fetchUnit = unitId
+      ? fetch(`${apiUrl}/unit/fetch/${unitId}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)
+      : Promise.resolve(null);
+
+    Promise.all([fetchGroup, fetchUnit]).then(([group, unit]) => {
+      if (!isMounted) {
+        return;
+      }
+
+      const names = {
+        unitName: unit?.name ?? null,
+        unitGroupId: groupId ?? null,
+        unitGroupName: group?.name ?? null,
+      };
+
+      const next = createBreadcrumbs(pathname, names);
+
+      if (!sameCrumbs(breadcrumbs, next)) {
+        setBreadcrumbs(next);
+      }
+      setBreadcrumbsReady(true);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname, apiUrl, t, unitName, unitGroupId, unitGroupName]);
 
   return (
     <>
@@ -202,6 +271,7 @@ const LayoutWrapper = (props: Props) => {
         breadcrumbs={breadcrumbs}
         navbarHidden={navbarHidden}
         setNavbarHidden={setNavbarHidden}
+        breadcrumbsLoading={breadcrumbsLoading}
       />
       <div className="flex">
         <div

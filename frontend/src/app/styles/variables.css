@@ -72,6 +72,8 @@
   --badge-main: var(--text-main-dark);
   --badge-main-reverse: var(--text-main-light);
 
+  --skeleton-bg: #4a4a4a;
+
   /* --- NAVBAR --- */
   --bg-navbar: #1a1a1a;
   --bg-navbar-link: #3a3a3a;
@@ -139,6 +141,8 @@
 
   --badge-main: var(--text-main-light);
   --badge-main-reverse: var(--text-main-dark);
+
+  --skeleton-bg: #c0c0c1;
 
   /* --- NAVBAR --- */
   --bg-navbar: #f0f0f0;

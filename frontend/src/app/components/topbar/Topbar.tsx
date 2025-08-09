@@ -43,6 +43,7 @@ type Props = {
     clickable: boolean;
     isActive: boolean;
   }[];
+  breadcrumbsLoading?: boolean;
 };
 
 const Topbar = (props: Props) => {
@@ -166,7 +167,9 @@ const Topbar = (props: Props) => {
                 <Bars2Icon />
               </button>
 
-              {props.breadcrumbs?.length ? (
+              {props.breadcrumbsLoading ? (
+                <span className="animate-shimmer h-6 w-64" />
+              ) : props.breadcrumbs?.length ? (
                 <div className="flex items-center">
                   {/* <div className="flex flex-wrap md:hidden">
                     {props.breadcrumbs.length > 1 && (
@@ -216,15 +219,15 @@ const Topbar = (props: Props) => {
                 </div>
               ) : isLoggedIn ? (
                 <div className="flex flex-wrap items-center">
-                  <div className="xs:flex hidden">
-                    <span className="">{t("SettingsModal/Welcome")}&nbsp;</span>
-                    <div>
-                      <span className="font-semibold text-[var(--accent-color)]">
-                        {firstName ? firstName : username}
-                      </span>
-                      !
-                    </div>
+                  {/* <div className="xs:flex hidden"> */}
+                  <span className="">{t("SettingsModal/Welcome")}&nbsp;</span>
+                  <div>
+                    <span className="font-semibold text-[var(--accent-color)]">
+                      {firstName ? firstName : username}
+                    </span>
+                    !
                   </div>
+                  {/* </div> */}
                 </div>
               ) : (
                 <span></span>

@@ -27,19 +27,7 @@ const NavbarLink = (props: Props) => {
   // --- Other ---
   const pathname = usePathname();
   const strip = (s: string) => s.replace(/\/+$/, "") || "/";
-  const isActivePath = (path: string, href: string) => {
-    const p = strip(path);
-    const h = strip(href);
-
-    if (h === "/") return p === "/";
-
-    if (!p.startsWith(h)) return false;
-
-    const rest = p.slice(h.length);
-    return rest === "" || rest.startsWith("/");
-  };
-
-  const isActive = isActivePath(pathname, props.href);
+  const isActive = strip(pathname) === strip(props.href);
 
   const OutlineIcon = props.icon
     ? (Outline as Record<string, ElementType>)[props.icon]

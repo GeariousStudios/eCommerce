@@ -60,6 +60,7 @@ const NavbarSubmenu = (props: Props) => {
   // --- Other ---
   const { isLoggedIn, isAdmin, isDev } = useAuthStatus();
   const pathname = usePathname();
+  const strip = (s: string) => s.replace(/\/+$/, "") || "/";
   const isSubmenuItemActive = props.menus
     .flatMap((menu) => menu.items)
     .some((item) => item.href && pathname.startsWith(item.href));
@@ -272,7 +273,8 @@ const NavbarSubmenu = (props: Props) => {
 
                             {menu.items.map((item, index) => {
                               const itemIsActive =
-                                item.href && pathname.startsWith(item.href);
+                                !!item.href &&
+                                strip(pathname) === strip(item.href);
 
                               const handleFavouriteToggle = () => {
                                 item.onToggleFavourite?.(

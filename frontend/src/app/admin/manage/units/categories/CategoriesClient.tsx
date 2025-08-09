@@ -1,6 +1,6 @@
 "use client";
 
-import { useToast } from "../../../components/toast/ToastProvider";
+import { useToast } from "../../../../components/toast/ToastProvider";
 import useManage from "@/app/hooks/useManage";
 import { CategoryFilters, CategoryItem } from "@/app/types/manageTypes"; // <-- Unique.
 import {

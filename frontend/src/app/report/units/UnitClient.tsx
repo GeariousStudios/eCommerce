@@ -353,6 +353,7 @@ const UnitClient = (props: Props) => {
   const updateDate = (newDate: string) => {
     setSelectedDate(newDate);
     setRefetchData(true);
+    setExpandedRows([]);
 
     const current = new URLSearchParams(searchParams.toString());
     current.set("date", newDate);
