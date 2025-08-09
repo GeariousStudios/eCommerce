@@ -157,13 +157,13 @@ const UnitClient = (props: Props) => {
         }
 
         if (!response.ok) {
-          notify("error", result.message);
+          notify("error", result?.message ?? t("Modal/Unknown error"));
         } else {
           fillUnitData(result);
           setIsUnitValid(true);
         }
       } catch (err) {
-        notify("error", String(err));
+        notify("error", t("Modal/Unknown error"));
       } finally {
         setIsLoading(false);
       }
@@ -200,12 +200,12 @@ const UnitClient = (props: Props) => {
         const result = await response.json();
 
         if (!response.ok) {
-          notify("error", result.message);
+          notify("error", result?.message ?? t("Modal/Unknown error"));
         } else {
           fillUnitGroupData(result);
         }
       } catch (err) {
-        notify("error", String(err));
+        notify("error", t("Modal/Unknown error"));
       }
     };
 
@@ -234,12 +234,12 @@ const UnitClient = (props: Props) => {
         const result = await response.json();
 
         if (!response.ok) {
-          notify("error", result.message);
+          notify("error", result?.message ?? t("Modal/Unknown error"));
         } else {
           fillUnitColumnData(result);
         }
       } catch (err) {
-        notify("error", String(err));
+        notify("error", t("Modal/Unknown error"));
       }
     };
 
@@ -271,7 +271,7 @@ const UnitClient = (props: Props) => {
       }
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
         return;
       }
 
@@ -281,7 +281,7 @@ const UnitClient = (props: Props) => {
         t("ReportModal/Disruption report") + t("Manage/deleted"),
       );
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -437,7 +437,7 @@ const UnitClient = (props: Props) => {
         setReports(uniqueReports);
       })
       .catch((err) => {
-        notify("error", String(err));
+        notify("error", t("Modal/Unknown error"));
       })
       .finally(() => {
         setRefetchData(false);

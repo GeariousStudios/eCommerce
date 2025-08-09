@@ -17,12 +17,7 @@ type SubmenuItem = {
   icon?: string;
   overrideLabel?: string;
   isFavourite?: boolean;
-  onToggleFavourite?: (
-    isFavourite: boolean,
-    href: string,
-    label: string,
-    icon: string,
-  ) => void;
+  onToggleFavourite?: (isFavourite: boolean, href: string) => void;
 
   requiresLogin?: boolean;
   requiresAdmin?: boolean;
@@ -283,8 +278,6 @@ const NavbarSubmenu = (props: Props) => {
                                 item.onToggleFavourite?.(
                                   !!item.isFavourite,
                                   item.href ?? "",
-                                  item.overrideLabel ?? item.label,
-                                  item.icon ?? "",
                                 );
                               };
 

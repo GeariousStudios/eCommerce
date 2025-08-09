@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
 import useTheme from "../../hooks/useTheme";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Message from "../common/Message";
 import useAuthStatus from "@/app/hooks/useAuthStatus";
@@ -17,6 +17,7 @@ import useFavourites from "@/app/hooks/useFavourites";
 import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
 import type { ElementType } from "react";
+import DragDrop from "../common/DragDrop";
 
 type Props = {
   hasScrollbar: boolean;
@@ -30,15 +31,11 @@ type SubmenuItem = {
   title?: string;
   label: string;
   href: string;
-
   icon?: string;
-  onToggleFavourite?: (
-    isFavourite: boolean,
-    href: string,
-    label: string,
-    icon: string,
-  ) => void;
+
+  overrideLabel?: string;
   isFavourite?: boolean;
+  onToggleFavourite?: (isFavourite: boolean, href: string) => void;
 };
 
 type SubmenuGroup = {
@@ -56,6 +53,8 @@ const Navbar = (props: Props) => {
   // --- States ---
   const [units, setUnits] = useState<SubmenuGroup[]>([]);
   const [unitItems, setUnitItems] = useState<SubmenuItem[]>([]);
+  const [unitsLoaded, setUnitsLoaded] = useState(false);
+  const [isAnyDragging, setIsAnyDragging] = useState(false);
 
   // --- Other ---
   const { isAuthReady, isDev, isAdmin } = useAuthStatus();
@@ -65,7 +64,12 @@ const Navbar = (props: Props) => {
   const prefix = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const token = localStorage.getItem("token");
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const { favourites, addUserFavourite, removeUserFavourite } = useFavourites();
+  const {
+    favourites,
+    addUserFavourite,
+    removeUserFavourite,
+    reorderFavourites,
+  } = useFavourites();
 
   // --- BACKEND ---
   // --- Fetch units ---
@@ -85,7 +89,7 @@ const Navbar = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
         return;
       }
 
@@ -116,14 +120,16 @@ const Navbar = (props: Props) => {
             ...item,
             title: index === 0 ? groupName : undefined,
             icon: "CubeIcon",
-            onToggleFavourite: onToggleFavourite,
-            isFavourite: favourites.some((f) => f.href === item.href),
+            onToggleFavourite,
           })),
         ],
       );
 
       setUnitItems(itemsWithTitles);
-    } catch (err) {}
+      setUnitsLoaded(true);
+    } catch (err) {
+    } finally {
+    }
   };
 
   // --- INITIALLY FETCH UNITS ---
@@ -190,18 +196,99 @@ const Navbar = (props: Props) => {
   };
 
   // --- ADD/REMOVE FAVOURITE ---
-  const onToggleFavourite = (
-    isFavourite: boolean,
-    href: string,
-    label: string,
-    icon: string,
-  ) => {
+  const onToggleFavourite = (isFavourite: boolean, href: string) => {
     if (isFavourite) {
-      removeUserFavourite(href, label);
+      removeUserFavourite(href);
     } else {
-      addUserFavourite(href, label, icon);
+      addUserFavourite(href);
     }
   };
+
+  // --- LOOK UP LABELS AND ICONS ---
+  const getMenuLookup = () => {
+    const staticEntries: SubmenuItem[] = [
+      { href: "/", label: t("Navbar/Home"), icon: "HomeIcon" },
+      {
+        href: "/developer/manage/users/",
+        label: t("Common/Users"),
+        icon: "UserGroupIcon",
+      },
+      {
+        href: "/report/manage/categories/",
+        label: t("Common/Manage") + " " + t("Common/categories"),
+        // icon: "TagIcon",
+      },
+      {
+        href: "/report/manage/units/",
+        label: t("Common/Manage") + " " + t("Common/units"),
+        // icon: "SquaresPlusIcon",
+      },
+      {
+        href: "/report/manage/unit-groups/",
+        label: t("Common/Manage") + " " + t("Common/groups"),
+        // icon: "Squares2X2Icon",
+      },
+      {
+        href: "/report/manage/unit-columns/",
+        label: t("Common/Manage") + " " + t("Common/columns"),
+        // icon: "ViewColumnsIcon",
+      },
+    ];
+
+    const dynamicUnits = unitItems.map((u) => ({
+      href: u.href,
+      label: u.overrideLabel ?? u.label,
+      icon: u.icon ?? "CubeIcon",
+    }));
+
+    const all = [...staticEntries, ...dynamicUnits];
+
+    const map = new Map<string, { label: string; icon?: string }>();
+    all.forEach((item) =>
+      map.set(item.href, {
+        label: (item as any).overrideLabel ?? item.label,
+        icon: item.icon,
+      }),
+    );
+    return map;
+  };
+
+  const menuLookup = useMemo(() => getMenuLookup(), [unitItems, t]);
+
+  const validFavourites = favourites.filter((f) => menuLookup.has(f.href));
+
+  const resolvedFavourites = validFavourites.map((f) => {
+    const hit = menuLookup.get(f.href)!;
+    return { href: f.href, label: hit.label, icon: hit.icon ?? "" };
+  });
+
+  const unitItemsResolved = useMemo(
+    () =>
+      unitItems.map((it) => ({
+        ...it,
+        isFavourite: favourites.some((f) => f.href === it.href),
+        onToggleFavourite,
+      })),
+    [unitItems, favourites],
+  );
+
+  useEffect(() => {
+    if (!isAuthReady || !unitsLoaded) {
+      return;
+    }
+
+    const isUnitHref = (href: string) => href.startsWith("/report/units/");
+
+    const stale = favourites.filter(
+      (f) => isUnitHref(f.href) && !menuLookup.has(f.href),
+    );
+
+    if (stale.length === 0) {
+      return;
+    }
+
+    stale.forEach((f) => removeUserFavourite(f.href));
+  }, [isAuthReady, unitsLoaded, menuLookup, favourites, removeUserFavourite]);
 
   return (
     <>
@@ -261,7 +348,7 @@ const Navbar = (props: Props) => {
               <div className="pointer-events-none absolute top-0 left-0 h-full w-full border-r-1 border-[var(--border-main)]" />
               {/* Simulated border. */}
 
-              {isAuthReady ? (
+              {isAuthReady && unitsLoaded ? (
                 <>
                   <div
                     ref={innerRef}
@@ -297,22 +384,39 @@ const Navbar = (props: Props) => {
                       <hr className="mt-1 mb-8 rounded-full text-[var(--border-main)]" />
 
                       {/* --- USER FAVOURITES --- */}
-                      {favourites.length > 0 && (
+                      {resolvedFavourites.length > 0 && (
                         <div>
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                             {t("Navbar/Favourites")}
                           </span>
 
-                          {favourites.map((f) => (
-                            <NavbarLink
-                              key={f.href}
-                              href={f.href}
-                              label={f.label}
-                              icon={f.icon}
-                              isFavourite
-                              onToggleFavourite={onToggleFavourite}
-                            />
-                          ))}
+                          <DragDrop
+                            disableClass
+                            items={resolvedFavourites.map((f) => f.href)}
+                            getId={(id) => id}
+                            onReorder={(newOrderHrefs) => {
+                              reorderFavourites(newOrderHrefs);
+                            }}
+                            onDraggingChange={setIsAnyDragging}
+                            renderItem={(href, isDragging) => {
+                              const fav = resolvedFavourites.find(
+                                (f) => f.href === href,
+                              )!;
+                              return (
+                                <NavbarLink
+                                  key={fav.href}
+                                  href={fav.href}
+                                  label={fav.label}
+                                  icon={fav.icon}
+                                  isFavourite
+                                  isDragging={isAnyDragging}
+                                  onToggleFavourite={(isFav, href) =>
+                                    onToggleFavourite(isFav, href)
+                                  }
+                                />
+                              );
+                            }}
+                          />
 
                           <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
                         </div>
@@ -354,8 +458,13 @@ const Navbar = (props: Props) => {
                         iconHover={Solid.ChatBubbleBottomCenterTextIcon}
                         hasScrollbar={props.hasScrollbar}
                         menus={[
-                          ...(unitItems.length > 0
-                            ? [{ label: t("Common/Units"), items: unitItems }]
+                          ...(unitItemsResolved.length > 0
+                            ? [
+                                {
+                                  label: t("Common/Units"),
+                                  items: unitItemsResolved,
+                                },
+                              ]
                             : []),
                           {
                             label: t("Common/Administrate"),
@@ -366,9 +475,11 @@ const Navbar = (props: Props) => {
                                 label: t("Common/Categories"),
 
                                 overrideLabel:
-                                  t("Common/Manage") + " " + t("Common/categories"),
+                                  t("Common/Manage") +
+                                  " " +
+                                  t("Common/categories"),
                                 // icon: "TagIcon",
-                                onToggleFavourite: onToggleFavourite,
+                                onToggleFavourite,
                                 isFavourite: favourites.some(
                                   (f) =>
                                     f.href === "/report/manage/categories/",
@@ -381,7 +492,7 @@ const Navbar = (props: Props) => {
                                 overrideLabel:
                                   t("Common/Manage") + " " + t("Common/units"),
                                 // icon: "SquaresPlusIcon",
-                                onToggleFavourite: onToggleFavourite,
+                                onToggleFavourite,
                                 isFavourite: favourites.some(
                                   (f) => f.href === "/report/manage/units/",
                                 ),
@@ -393,7 +504,7 @@ const Navbar = (props: Props) => {
                                 overrideLabel:
                                   t("Common/Manage") + " " + t("Common/groups"),
                                 // icon: "Squares2X2Icon",
-                                onToggleFavourite: onToggleFavourite,
+                                onToggleFavourite,
                                 isFavourite: favourites.some(
                                   (f) =>
                                     f.href === "/report/manage/unit-groups/",
@@ -408,7 +519,7 @@ const Navbar = (props: Props) => {
                                   " " +
                                   t("Common/columns"),
                                 // icon: "ViewColumnsIcon",
-                                onToggleFavourite: onToggleFavourite,
+                                onToggleFavourite,
                                 isFavourite: favourites.some(
                                   (f) =>
                                     f.href === "/report/manage/unit-columns/",

@@ -125,7 +125,7 @@ const UnitColumnModal = (props: Props) => {
       props.onItemUpdated();
       notify("success", t("Common/Column") + t("Modal/created"), 4000);
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -146,12 +146,12 @@ const UnitColumnModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         fillUnitColumnData(result);
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -228,7 +228,7 @@ const UnitColumnModal = (props: Props) => {
       props.onItemUpdated();
       notify("success", t("Common/Column") + t("Modal/updated"), 4000);
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 

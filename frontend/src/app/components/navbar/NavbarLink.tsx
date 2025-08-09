@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ElementType } from "react";
+import { ElementType, useState } from "react";
 import CustomTooltip from "../common/CustomTooltip";
 import HoverIcon from "../common/HoverIcon";
 import * as Outline from "@heroicons/react/24/outline";
@@ -17,15 +17,14 @@ type Props = {
 
   overrideLabel?: string;
   isFavourite?: boolean;
-  onToggleFavourite?: (
-    isFavourite: boolean,
-    href: string,
-    label: string,
-    icon: string,
-  ) => void;
+  onToggleFavourite?: (isFavourite: boolean, href: string) => void;
+
+  isDragging?: boolean;
 };
 
 const NavbarLink = (props: Props) => {
+  // --- VARIABLES ---
+  // --- Other ---
   const pathname = usePathname();
   const strip = (s: string) => s.replace(/\/+$/, "") || "/";
   const isActivePath = (path: string, href: string) => {
@@ -53,37 +52,38 @@ const NavbarLink = (props: Props) => {
   const hasIcon = !!OutlineIcon || !!SolidIcon;
 
   const handleFavouriteToggle = () => {
-    props.onToggleFavourite?.(
-      !!props.isFavourite,
-      props.href,
-      props.overrideLabel ?? props.label,
-      props.icon ?? "",
-    );
+    props.onToggleFavourite?.(!!props.isFavourite, props.href);
   };
 
   return (
     <>
       <CustomTooltip
-        content={props.tooltip ? props.tooltip : ""}
+        content={props.isDragging ? "" : (props.tooltip ?? "")}
         side="right"
         showOnTouch
       >
         <Link
           href={props.href}
-          className={`${isActive ? "text-[var(--accent-color)]" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : ""} group/link flex min-h-[40px] w-full max-w-full items-center justify-between gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]`}
+          aria-disabled={props.isDragging || props.disabled ? true : undefined}
+          onClick={(e) => {
+            if (props.isDragging) {
+              e.preventDefault();
+            }
+          }}
+          className={`${isActive ? "text-[var(--accent-color)]" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : ""} ${props.isDragging ? "" : "hover:bg-[var(--bg-navbar-link)]"} group/link flex min-h-[40px] w-full max-w-full items-center justify-between gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)]`}
         >
           <div className="flex items-center gap-4 overflow-hidden">
             {hasIcon && (
               <span className="relative flex min-h-6 min-w-6 items-center">
                 {OutlineIcon && (
                   <OutlineIcon
-                    className={`${isActive ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover/link:opacity-0`}
+                    className={`${isActive ? "opacity-0" : "opacity-100"} ${!props.isDragging ? "group-hover/link:opacity-0" : ""} absolute transition-opacity duration-[var(--fast)]`}
                     aria-hidden
                   />
                 )}
                 {SolidIcon && (
                   <SolidIcon
-                    className={`${isActive ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover/link:opacity-100`}
+                    className={`${isActive ? "opacity-100" : "opacity-0"} ${!props.isDragging ? "text-[var(--accent-color)] group-hover/link:opacity-100" : ""} absolute transition-opacity duration-[var(--fast)]`}
                     aria-hidden
                   />
                 )}
@@ -97,7 +97,7 @@ const NavbarLink = (props: Props) => {
 
           {props.onToggleFavourite && (
             <button
-              className="group ml-auto flex opacity-0 group-hover/link:opacity-100"
+              className={`${props.isDragging ? "opacity-0" : "opacity-0 group-hover/link:opacity-100"} group ml-auto flex`}
               onClick={(e) => {
                 e.preventDefault();
                 handleFavouriteToggle();

@@ -82,8 +82,8 @@
   "Navbar/Logo": "Logo",
   "Navbar/Side menu": "Side menu",
   "Navbar/Favourites": "Favourites",
-  "Navbar/added favourite": " added to your favourites!",
-  "Navbar/removed favourite": " removed from your favourites!",
+  "Navbar/Added favourite": "An object was added to your favourites",
+  "Navbar/Deleted favourite": "An object was removed from your favourites",
 
   "Home/Add news": "Add news item",
   "Home/Edit news": "Edit news item",

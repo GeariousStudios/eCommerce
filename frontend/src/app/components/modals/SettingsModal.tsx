@@ -176,7 +176,7 @@ const SettingsModal = (props: Props) => {
         props.onProfileUpdated();
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
       setEditingField(null);
     }
   };

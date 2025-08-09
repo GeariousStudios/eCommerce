@@ -96,7 +96,7 @@ const UnitCellModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
         return;
       }
 
@@ -111,7 +111,7 @@ const UnitCellModal = (props: Props) => {
       setUnitColumnDataTypes(dataTypes);
       setUnitCells(defaultValues);
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -136,7 +136,7 @@ const UnitCellModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
         return;
       }
 
@@ -161,7 +161,7 @@ const UnitCellModal = (props: Props) => {
 
       setUnitCells(newValues);
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -248,9 +248,9 @@ const UnitCellModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("UnitCellModal/Changes saved"), 4000);
+      notify("success", t("Common/Changes saved"), 4000);
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 

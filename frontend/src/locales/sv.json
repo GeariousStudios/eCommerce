@@ -83,8 +83,8 @@
   "Navbar/Logo": "Logga",
   "Navbar/Side menu": "Sidomeny",
   "Navbar/Favourites": "Favoriter",
-  "Navbar/added favourite": " tillagt i dina favoriter!",
-  "Navbar/removed favourite": " borttagen från dina favoriter!",
+  "Navbar/Added favourite": "Objekt tillagt bland dina favoriter",
+  "Navbar/Deleted favourite": "Objekt borttaget från dina favoriter",
 
   "Home/Add news": "Lägg till nyhet",
   "Home/Edit news": "Redigera nyhet",

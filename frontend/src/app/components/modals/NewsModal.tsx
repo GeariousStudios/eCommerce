@@ -111,14 +111,14 @@ const NewsModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         props.onClose();
         props.onNewsUpdated();
         notify("success", t("NewsModal/News item") + t("Modal/created"), 4000);
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -139,12 +139,12 @@ const NewsModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         setNewsTypes(result.items);
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -161,13 +161,13 @@ const NewsModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         fillNewsItemData(result);
         hasSetInitialContent.current = false;
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -232,7 +232,7 @@ const NewsModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
         return;
       }
 
@@ -240,7 +240,7 @@ const NewsModal = (props: Props) => {
       props.onNewsUpdated();
       notify("success", t("NewsModal/News item") + t("Modal/updated"), 4000);
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 

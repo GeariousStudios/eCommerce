@@ -5,8 +5,6 @@ import { useTranslations } from "next-intl";
 
 type FavouriteItem = {
   href: string;
-  label: string;
-  icon: string;
   order: number;
 };
 
@@ -17,7 +15,7 @@ const useFavourites = () => {
   // --- States ---
   const { isLoggedIn } = useAuthStatus();
   const [favourites, setFavourites] = useState<FavouriteItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingFavourites, setIsLoadingFavourites] = useState(false);
 
   // --- Other ---
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -26,9 +24,57 @@ const useFavourites = () => {
   const { notify } = useToast();
 
   /* --- BACKEND --- */
+  const reorderFavourites = async (hrefOrder: string[]) => {
+    setFavourites((prev) => {
+      const map = new Map(prev.map((f) => [f.href, f]));
+      const reordered: FavouriteItem[] = hrefOrder
+        .map((href, index) => {
+          const item = map.get(href);
+          if (!item) return null;
+          return { ...item, order: index };
+        })
+        .filter(Boolean) as FavouriteItem[];
+      return reordered;
+    });
+
+    try {
+      const response = await fetch(`${apiUrl}/user-favourites`, {
+        method: "PUT",
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          items: hrefOrder.map((href, order) => ({ href, order })),
+        }),
+      });
+
+      if (!response.ok) {
+        await fetchUserFavourites();
+
+        let result: any = null;
+
+        if (
+          response.headers.get("content-type")?.includes("application/json")
+        ) {
+          result = await response.json();
+        }
+
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+        return;
+      }
+
+      await fetchUserFavourites();
+      window.dispatchEvent(new Event("favourites-updated"));
+    } catch (err) {
+      await fetchUserFavourites();
+    }
+  };
+
   // --- Fetch user favourites ---
   const fetchUserFavourites = async () => {
-    setIsLoading(true);
+    setIsLoadingFavourites(true);
     try {
       const response = await fetch(`${apiUrl}/user-favourites`, {
         headers: {
@@ -52,15 +98,11 @@ const useFavourites = () => {
     } catch (err) {
       setFavourites([]);
     } finally {
-      setIsLoading(false);
+      setIsLoadingFavourites(false);
     }
   };
 
-  const addUserFavourite = async (
-    href: string,
-    label: string,
-    icon: string,
-  ) => {
+  const addUserFavourite = async (href: string) => {
     try {
       const response = await fetch(`${apiUrl}/user-favourites`, {
         method: "POST",
@@ -69,7 +111,7 @@ const useFavourites = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ href, label, icon }),
+        body: JSON.stringify({ href }),
       });
 
       let result: any = null;
@@ -79,19 +121,19 @@ const useFavourites = () => {
       }
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
         return;
       }
 
       setFavourites((prev) => prev.filter((f) => f.href !== href));
-      notify("success", label + t("Navbar/added favourite"));
+      notify("info", t("Navbar/Added favourite"));
 
       fetchUserFavourites();
       window.dispatchEvent(new Event("favourites-updated"));
     } catch (err) {}
   };
 
-  const removeUserFavourite = async (href: string, label: string) => {
+  const removeUserFavourite = async (href: string) => {
     try {
       const response = await fetch(`${apiUrl}/user-favourites`, {
         method: "DELETE",
@@ -110,12 +152,12 @@ const useFavourites = () => {
       }
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
         return;
       }
 
       setFavourites((prev) => prev.filter((f) => f.href !== href));
-      notify("success", label + t("Navbar/removed favourite"));
+      notify("info", t("Navbar/Deleted favourite"));
 
       fetchUserFavourites();
       window.dispatchEvent(new Event("favourites-updated"));
@@ -136,9 +178,10 @@ const useFavourites = () => {
 
   return {
     favourites,
-    isLoading,
+    isLoadingFavourites,
     addUserFavourite,
     removeUserFavourite,
+    reorderFavourites,
   };
 };
 

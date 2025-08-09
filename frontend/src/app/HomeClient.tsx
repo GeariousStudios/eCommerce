@@ -91,7 +91,7 @@ const HomeClient = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         setNewsItems(result);
       }
@@ -116,14 +116,14 @@ const HomeClient = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         setNewsItems((prev) => prev.filter((item) => item.id !== id));
         selectedItemId == null;
         notify("success", t("NewsModal/News item") + t("Manage/deleted"), 4000);
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -154,7 +154,7 @@ const HomeClient = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
         setIsSubmitting(false);
       } else {
         localStorage.setItem("token", result.token);
@@ -163,7 +163,7 @@ const HomeClient = (props: Props) => {
         window.location.reload();
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
       setIsSubmitting(false);
     }
   };

@@ -171,7 +171,7 @@ const UnitModal = (props: Props) => {
       window.dispatchEvent(new Event("unit-list-updated"));
       notify("success", t("Common/Unit") + t("Modal/created"), 4000);
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -189,12 +189,12 @@ const UnitModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         setUnitColumns(result.items);
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -215,12 +215,12 @@ const UnitModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         setCategories(result.items);
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -238,12 +238,12 @@ const UnitModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         setUnitGroups(result.items);
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -261,12 +261,12 @@ const UnitModal = (props: Props) => {
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         fillUnitData(result);
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -353,7 +353,7 @@ const UnitModal = (props: Props) => {
       window.dispatchEvent(new Event("unit-list-updated"));
       notify("success", t("Common/Unit") + t("Modal/updated"), 4000);
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
