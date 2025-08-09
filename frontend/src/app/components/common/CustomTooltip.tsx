@@ -8,6 +8,9 @@ type TooltipProps = {
   hideOnClick?: boolean;
   lgHidden?: boolean;
   showOnTouch?: boolean;
+  shortDelay?: boolean;
+  mediumDelay?: boolean;
+  longDelay?: boolean;
 };
 
 const CustomTooltip = ({
@@ -17,9 +20,39 @@ const CustomTooltip = ({
   hideOnClick = false,
   lgHidden = false,
   showOnTouch = false,
+  shortDelay = false,
+  mediumDelay = false,
+  longDelay = false,
 }: TooltipProps) => {
-  const closeTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [delay, setDelay] = useState<number>(0);
+  const openTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (shortDelay) {
+      setDelay(250);
+    } else if (mediumDelay) {
+      setDelay(500);
+    } else if (longDelay) {
+      setDelay(750);
+    } else {
+      setDelay(0);
+    }
+  }, [shortDelay, mediumDelay, longDelay]);
+
+  const clearTimers = () => {
+    if (openTimeout.current) {
+      clearTimeout(openTimeout.current);
+    }
+
+    if (closeTimeout.current) {
+      clearTimeout(closeTimeout.current);
+    }
+
+    openTimeout.current = null;
+    closeTimeout.current = null;
+  };
 
   const handlePointerEnter = (e: PointerEvent | any) => {
     if (e.pointerType === "touch" && !showOnTouch) {
@@ -30,12 +63,24 @@ const CustomTooltip = ({
       clearTimeout(closeTimeout.current);
     }
 
-    setIsOpen(true);
+    if (delay > 0) {
+      if (openTimeout.current) {
+        clearTimeout(openTimeout.current);
+      }
+
+      openTimeout.current = setTimeout(() => setIsOpen(true), delay);
+    } else {
+      setIsOpen(true);
+    }
   };
 
   const handlePointerLeave = (e: PointerEvent | any) => {
     if (e.pointerType === "touch" && !showOnTouch) {
       return;
+    }
+
+    if (openTimeout.current) {
+      clearTimeout(openTimeout.current);
     }
 
     closeTimeout.current = setTimeout(() => {
@@ -45,7 +90,19 @@ const CustomTooltip = ({
 
   const handleTouchStart = () => {
     if (showOnTouch) {
-      setIsOpen(true);
+      if (openTimeout.current) {
+        clearTimeout(openTimeout.current);
+      }
+
+      if (closeTimeout.current) {
+        clearTimeout(closeTimeout.current);
+      }
+
+      if (delay > 0) {
+        openTimeout.current = setTimeout(() => setIsOpen(true), delay);
+      } else {
+        setIsOpen(true);
+      }
     }
   };
 
@@ -74,6 +131,10 @@ const CustomTooltip = ({
       document.removeEventListener("touchstart", handleGlobalClick);
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    return () => clearTimers();
+  }, []);
 
   return (
     <Tooltip.Provider delayDuration={0} skipDelayDuration={0}>

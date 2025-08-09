@@ -6,6 +6,8 @@ import { ElementType, useEffect, useRef, useState } from "react";
 import HoverIcon from "../common/HoverIcon";
 import { StarIcon as OutlineStarIcon } from "@heroicons/react/24/outline";
 import { StarIcon as SolidStarIcon } from "@heroicons/react/24/solid";
+import CustomTooltip from "../common/CustomTooltip";
+import { useTranslations } from "next-intl";
 
 // --- PROPS ---
 type SubmenuItem = {
@@ -13,6 +15,8 @@ type SubmenuItem = {
   href?: string;
   onClick?: () => void;
   label: string;
+  disabled?: boolean;
+  tooltip?: string;
 
   icon?: string;
   overrideLabel?: string;
@@ -48,6 +52,8 @@ type Props = {
 };
 
 const NavbarSubmenu = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const innerRef = useRef<HTMLDivElement>(null);
@@ -295,48 +301,79 @@ const NavbarSubmenu = (props: Props) => {
                                           {item.title ?? ""}
                                         </li>
 
-                                        <li className="group/link flex w-34 items-center rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
-                                          {item.href ? (
-                                            <Link
-                                              onClick={() => setIsOpen(false)}
-                                              href={item.href}
-                                              tabIndex={isOpen ? 0 : -1}
-                                              className={`${itemIsActive ? "font-bold text-[var(--accent-color)]" : "text-[var(--text-navbar)]"} flex h-full w-full p-2 text-sm break-all`}
-                                            >
-                                              {item.label}
-                                            </Link>
-                                          ) : (
-                                            <button
-                                              onClick={item.onClick}
-                                              tabIndex={isOpen ? 0 : -1}
-                                              className={
-                                                "flex h-full w-full cursor-pointer p-2 text-sm break-all text-[var(--text-navbar)]"
-                                              }
-                                            >
-                                              {item.label}
-                                            </button>
-                                          )}
+                                        <CustomTooltip
+                                          content={item.tooltip ?? ""}
+                                          showOnTouch
+                                          mediumDelay
+                                        >
+                                          <li className="group/link flex w-34 items-center rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
+                                            {item.href ? (
+                                              <Link
+                                                onClick={(e) => {
+                                                  if (item.disabled) {
+                                                    e.preventDefault();
+                                                    return;
+                                                  }
 
-                                          {item.onToggleFavourite && (
-                                            <button
-                                              className="group mr-2 ml-auto flex opacity-0 group-hover/link:opacity-100"
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                handleFavouriteToggle();
-                                              }}
-                                            >
-                                              {!item.isFavourite ? (
-                                                <HoverIcon
-                                                  outline={OutlineStarIcon}
-                                                  solid={SolidStarIcon}
-                                                  className="h-4 min-h-4 w-4 min-w-4"
-                                                />
-                                              ) : (
-                                                <SolidStarIcon className="h-4 min-h-4 w-4 min-w-4" />
-                                              )}
-                                            </button>
-                                          )}
-                                        </li>
+                                                  setIsOpen(false);
+                                                }}
+                                                href={item.href}
+                                                tabIndex={isOpen ? 0 : -1}
+                                                className={`${itemIsActive ? "font-bold text-[var(--accent-color)]" : "text-[var(--text-navbar)]"} ${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full p-2 text-sm break-all`}
+                                              >
+                                                {item.label}
+                                              </Link>
+                                            ) : (
+                                              <button
+                                                onClick={item.onClick}
+                                                tabIndex={isOpen ? 0 : -1}
+                                                className={`${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full cursor-pointer p-2 text-sm break-all text-[var(--text-navbar)]`}
+                                              >
+                                                {item.label}
+                                              </button>
+                                            )}
+
+                                            {item.onToggleFavourite && (
+                                              <CustomTooltip
+                                                content={
+                                                  item.isFavourite &&
+                                                  !item.disabled
+                                                    ? t(
+                                                        "Navbar/Remove favourite",
+                                                      )
+                                                    : !item.isFavourite &&
+                                                        !item.disabled
+                                                      ? t(
+                                                          "Navbar/Set favourite",
+                                                        )
+                                                      : ""
+                                                }
+                                                longDelay
+                                              >
+                                                <button
+                                                  className={`${item.disabled ? "cursor-not-allowed group-hover/link:opacity-50" : "group-hover/link:opacity-100"} group mr-2 ml-auto flex opacity-0`}
+                                                  onClick={(e) => {
+                                                    e.preventDefault();
+
+                                                    if (!item.disabled) {
+                                                      handleFavouriteToggle();
+                                                    }
+                                                  }}
+                                                >
+                                                  {!item.isFavourite ? (
+                                                    <HoverIcon
+                                                      outline={OutlineStarIcon}
+                                                      solid={SolidStarIcon}
+                                                      className="h-4 min-h-4 w-4 min-w-4"
+                                                    />
+                                                  ) : (
+                                                    <SolidStarIcon className="h-4 min-h-4 w-4 min-w-4" />
+                                                  )}
+                                                </button>
+                                              </CustomTooltip>
+                                            )}
+                                          </li>
+                                        </CustomTooltip>
                                       </div>
                                     )}
                                 </div>

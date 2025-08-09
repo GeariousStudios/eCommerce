@@ -84,7 +84,9 @@
   "Navbar/Side menu": "Sidomeny",
   "Navbar/Favourites": "Favoriter",
   "Navbar/Added favourite": "Objekt tillagt bland dina favoriter",
-  "Navbar/Deleted favourite": "Objekt borttaget från dina favoriter",
+  "Navbar/Removed favourite": "Objekt borttaget från dina favoriter",
+  "Navbar/Set favourite": "Lägg till bland dina favoriter",
+  "Navbar/Remove favourite": "Ta bort från dina favoriter",
   "Navbar/Shifts": "Skift",
 
   "Home/Add news": "Lägg till nyhet",

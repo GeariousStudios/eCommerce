@@ -488,9 +488,11 @@ const Navbar = (props: Props) => {
                       <NavbarLink
                         tooltip={t("Common/Not implemented")}
                         disabled
-                        href={`#`}
+                        href="#"
                         label={t("Navbar/Pulse boards")}
                         icon="PresentationChartLineIcon"
+                        // isFavourite={favourites.some((f) => f.href === "#")}
+                        // onToggleFavourite={onToggleFavourite}
                       />
 
                       {isAdmin && (
@@ -562,10 +564,11 @@ const Navbar = (props: Props) => {
 
                                     onToggleFavourite,
                                     isFavourite: favourites.some(
-                                      (f) =>
-                                        f.href ===
-                                        "/admin/manage/shifts/",
+                                      (f) => f.href === "/admin/manage/shifts/",
                                     ),
+
+                                    disabled: true,
+                                    tooltip: t("Common/Not implemented"),
                                   },
                                 ],
                               },

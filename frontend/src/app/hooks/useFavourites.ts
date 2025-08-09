@@ -157,7 +157,7 @@ const useFavourites = () => {
       }
 
       setFavourites((prev) => prev.filter((f) => f.href !== href));
-      notify("info", t("Navbar/Deleted favourite"));
+      notify("info", t("Navbar/Removed favourite"));
 
       fetchUserFavourites();
       window.dispatchEvent(new Event("favourites-updated"));

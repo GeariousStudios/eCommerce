@@ -83,7 +83,9 @@
   "Navbar/Side menu": "Side menu",
   "Navbar/Favourites": "Favourites",
   "Navbar/Added favourite": "An object was added to your favourites",
-  "Navbar/Deleted favourite": "An object was removed from your favourites",
+  "Navbar/Removed favourite": "An object was removed from your favourites",
+  "Navbar/Set favourite": "Add to your favourites",
+  "Navbar/Remove favourite": "Remove from your favourites",
   "Navbar/Shifts": "Shifts",
 
   "Home/Add news": "Add news item",

@@ -5,6 +5,7 @@ import CustomTooltip from "../common/CustomTooltip";
 import HoverIcon from "../common/HoverIcon";
 import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
+import { useTranslations } from "next-intl";
 
 type IconName = keyof typeof Solid;
 
@@ -23,6 +24,8 @@ type Props = {
 };
 
 const NavbarLink = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Other ---
   const pathname = usePathname();
@@ -49,6 +52,7 @@ const NavbarLink = (props: Props) => {
         content={props.isDragging ? "" : (props.tooltip ?? "")}
         side="right"
         showOnTouch
+        mediumDelay
       >
         <Link
           href={props.href}
@@ -84,23 +88,37 @@ const NavbarLink = (props: Props) => {
           </div>
 
           {props.onToggleFavourite && (
-            <button
-              className={`${props.isDragging ? "opacity-0" : "opacity-0 group-hover/link:opacity-100"} group ml-auto flex`}
-              onClick={(e) => {
-                e.preventDefault();
-                handleFavouriteToggle();
-              }}
+            <CustomTooltip
+              content={
+                props.isFavourite && !props.disabled
+                  ? t("Navbar/Remove favourite")
+                  : !props.isFavourite && !props.disabled
+                    ? t("Navbar/Set favourite")
+                    : ""
+              }
+              longDelay
             >
-              {!props.isFavourite ? (
-                <HoverIcon
-                  outline={Outline.StarIcon}
-                  solid={Solid.StarIcon}
-                  className="h-5 min-h-5 w-5 min-w-5"
-                />
-              ) : (
-                <Solid.StarIcon className="h-5 min-h-5 w-5 min-w-5" />
-              )}
-            </button>
+              <button
+                className={`${props.isDragging ? "opacity-0" : "opacity-0 group-hover/link:opacity-100"} ${props.disabled ? "cursor-not-allowed" : ""} group ml-auto flex`}
+                onClick={(e) => {
+                  e.preventDefault();
+
+                  if (!props.disabled) {
+                    handleFavouriteToggle();
+                  }
+                }}
+              >
+                {!props.isFavourite ? (
+                  <HoverIcon
+                    outline={Outline.StarIcon}
+                    solid={Solid.StarIcon}
+                    className="h-5 min-h-5 w-5 min-w-5"
+                  />
+                ) : (
+                  <Solid.StarIcon className="h-5 min-h-5 w-5 min-w-5" />
+                )}
+              </button>
+            </CustomTooltip>
           )}
         </Link>
       </CustomTooltip>
