@@ -1,21 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import {
-  UserGroupIcon as OutlineUserGroupIcon,
-  HomeIcon as OutlineHomeIcon,
-  PresentationChartLineIcon as OutlinePresentationChartLineIcon,
-  ChatBubbleBottomCenterTextIcon as OutlineChatBubbleBottomCenterTextIcon,
-  NewspaperIcon as OutlineNewspaperIcon,
-  ChevronDoubleLeftIcon,
-} from "@heroicons/react/24/outline";
-import {
-  UserGroupIcon as SolidUserGroupIcon,
-  HomeIcon as SolidHomeIcon,
-  PresentationChartLineIcon as SolidPresentationChartLineIcon,
-  ChatBubbleBottomCenterTextIcon as SolidChatBubbleBottomCenterTextIcon,
-  NewspaperIcon as SolidNewspaperIcon,
-} from "@heroicons/react/24/solid";
 import NavbarLink from "./NavbarLink";
 import NavbarSubmenu from "./NavbarSubmenu";
 import useTheme from "../../hooks/useTheme";
@@ -28,6 +13,10 @@ import { useToast } from "../toast/ToastProvider";
 import { iconButtonPrimaryClass } from "@/app/styles/buttonClasses";
 import { FocusTrap } from "focus-trap-react";
 import useIsDesktop from "@/app/hooks/useIsDesktop";
+import useFavourites from "@/app/hooks/useFavourites";
+import * as Outline from "@heroicons/react/24/outline";
+import * as Solid from "@heroicons/react/24/solid";
+import type { ElementType } from "react";
 
 type Props = {
   hasScrollbar: boolean;
@@ -41,6 +30,15 @@ type SubmenuItem = {
   title?: string;
   label: string;
   href: string;
+
+  icon?: string;
+  onToggleFavourite?: (
+    isFavourite: boolean,
+    href: string,
+    label: string,
+    icon: string,
+  ) => void;
+  isFavourite?: boolean;
 };
 
 type SubmenuGroup = {
@@ -67,6 +65,7 @@ const Navbar = (props: Props) => {
   const prefix = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
   const token = localStorage.getItem("token");
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const { favourites, addUserFavourite, removeUserFavourite } = useFavourites();
 
   // --- BACKEND ---
   // --- Fetch units ---
@@ -116,6 +115,9 @@ const Navbar = (props: Props) => {
           ...items.map((item, index) => ({
             ...item,
             title: index === 0 ? groupName : undefined,
+            icon: "CubeIcon",
+            onToggleFavourite: onToggleFavourite,
+            isFavourite: favourites.some((f) => f.href === item.href),
           })),
         ],
       );
@@ -184,6 +186,20 @@ const Navbar = (props: Props) => {
       props.setNavbarHidden(true);
     } else {
       props.setNavbarHidden(!props.navbarHidden);
+    }
+  };
+
+  // --- ADD/REMOVE FAVOURITE ---
+  const onToggleFavourite = (
+    isFavourite: boolean,
+    href: string,
+    label: string,
+    icon: string,
+  ) => {
+    if (isFavourite) {
+      removeUserFavourite(href, label);
+    } else {
+      addUserFavourite(href, label, icon);
     }
   };
 
@@ -275,21 +291,46 @@ const Navbar = (props: Props) => {
                         onClick={() => toggleNavbar()}
                         className={`${iconButtonPrimaryClass} ${props.navbarHidden ? "invisible" : "visible"} fixed top-0 mt-5 ml-48 h-6 min-h-6 w-6 min-w-6`}
                       >
-                        <ChevronDoubleLeftIcon />
+                        <Outline.ChevronDoubleLeftIcon />
                       </button>
 
                       <hr className="mt-1 mb-8 rounded-full text-[var(--border-main)]" />
 
-                      {isAuthReady && isDev && (
+                      {/* --- USER FAVOURITES --- */}
+                      {favourites.length > 0 && (
+                        <div>
+                          <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
+                            {t("Navbar/Favourites")}
+                          </span>
+
+                          {favourites.map((f) => (
+                            <NavbarLink
+                              key={f.href}
+                              href={f.href}
+                              label={f.label}
+                              icon={f.icon}
+                              isFavourite
+                              onToggleFavourite={onToggleFavourite}
+                            />
+                          ))}
+
+                          <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
+                        </div>
+                      )}
+
+                      {isDev && (
                         <div>
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                             {t("Common/Developer")}
                           </span>
                           <NavbarLink
-                            href={`/developer/manage/users/`}
+                            href="/developer/manage/users/"
                             label={t("Common/Users")}
-                            icon={OutlineUserGroupIcon}
-                            iconHover={SolidUserGroupIcon}
+                            icon="UserGroupIcon"
+                            isFavourite={favourites.some(
+                              (f) => f.href === "/developer/manage/users/",
+                            )}
+                            onToggleFavourite={onToggleFavourite}
                           />
                           <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
                         </div>
@@ -300,46 +341,82 @@ const Navbar = (props: Props) => {
                       </span>
 
                       <NavbarLink
-                        href={`/`}
+                        href="/"
                         label={t("Navbar/Home")}
-                        icon={OutlineHomeIcon}
-                        iconHover={SolidHomeIcon}
+                        icon="HomeIcon"
+                        isFavourite={favourites.some((f) => f.href === "/")}
+                        onToggleFavourite={onToggleFavourite}
                       />
 
                       <NavbarSubmenu
                         label={t("Navbar/Report")}
-                        icon={OutlineChatBubbleBottomCenterTextIcon}
-                        iconHover={SolidChatBubbleBottomCenterTextIcon}
+                        icon={Outline.ChatBubbleBottomCenterTextIcon}
+                        iconHover={Solid.ChatBubbleBottomCenterTextIcon}
+                        hasScrollbar={props.hasScrollbar}
                         menus={[
                           ...(unitItems.length > 0
                             ? [{ label: t("Common/Units"), items: unitItems }]
                             : []),
                           {
                             label: t("Common/Administrate"),
-                            requiresAdmin: true,
                             items: [
                               {
                                 title: t("Common/Manage"),
-                                href: `/report/manage/categories/`,
-
+                                href: "/report/manage/categories/",
                                 label: t("Common/Categories"),
+
+                                overrideLabel:
+                                  t("Common/Manage") + " " + t("Common/categories"),
+                                // icon: "TagIcon",
+                                onToggleFavourite: onToggleFavourite,
+                                isFavourite: favourites.some(
+                                  (f) =>
+                                    f.href === "/report/manage/categories/",
+                                ),
                               },
                               {
-                                href: `/report/manage/units/`,
+                                href: "/report/manage/units/",
                                 label: t("Common/Units"),
+
+                                overrideLabel:
+                                  t("Common/Manage") + " " + t("Common/units"),
+                                // icon: "SquaresPlusIcon",
+                                onToggleFavourite: onToggleFavourite,
+                                isFavourite: favourites.some(
+                                  (f) => f.href === "/report/manage/units/",
+                                ),
                               },
                               {
-                                href: `/report/manage/unit-groups/`,
+                                href: "/report/manage/unit-groups/",
                                 label: t("Common/Groups"),
+
+                                overrideLabel:
+                                  t("Common/Manage") + " " + t("Common/groups"),
+                                // icon: "Squares2X2Icon",
+                                onToggleFavourite: onToggleFavourite,
+                                isFavourite: favourites.some(
+                                  (f) =>
+                                    f.href === "/report/manage/unit-groups/",
+                                ),
                               },
                               {
-                                href: `/report/manage/unit-columns/`,
+                                href: "/report/manage/unit-columns/",
                                 label: t("Common/Columns"),
+
+                                overrideLabel:
+                                  t("Common/Manage") +
+                                  " " +
+                                  t("Common/columns"),
+                                // icon: "ViewColumnsIcon",
+                                onToggleFavourite: onToggleFavourite,
+                                isFavourite: favourites.some(
+                                  (f) =>
+                                    f.href === "/report/manage/unit-columns/",
+                                ),
                               },
                             ],
                           },
                         ]}
-                        hasScrollbar={props.hasScrollbar}
                       />
 
                       <NavbarLink
@@ -347,11 +424,10 @@ const Navbar = (props: Props) => {
                         disabled
                         href={`#`}
                         label={t("Navbar/Pulse boards")}
-                        icon={OutlinePresentationChartLineIcon}
-                        iconHover={SolidPresentationChartLineIcon}
+                        icon="PresentationChartLineIcon"
                       />
 
-                      {isAuthReady && isAdmin && (
+                      {isAdmin && (
                         <div>
                           <hr className="mt-4 mb-8 rounded-full text-[var(--border-main)]" />
 
@@ -360,8 +436,8 @@ const Navbar = (props: Props) => {
                           </span>
                           <NavbarSubmenu
                             label={t("Common/News")}
-                            icon={OutlineNewspaperIcon}
-                            iconHover={SolidNewspaperIcon}
+                            icon={Outline.NewspaperIcon}
+                            iconHover={Solid.NewspaperIcon}
                             menus={[
                               {
                                 label: t("Common/Administrate"),

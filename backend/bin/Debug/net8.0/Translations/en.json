@@ -5,6 +5,7 @@
   "Common/Yes": "Yes",
   "Common/No": "No",
   "Common/ErrorPrefix": "An error occurred: ",
+  "Common/InvalidRequest": "Invalid request",
 
   "UserPrefs/NotFound": "User preferences could not be found",
   "UserPrefs/ThemeInvalid": "Invalid theme",

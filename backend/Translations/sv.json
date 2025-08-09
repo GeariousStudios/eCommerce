@@ -5,6 +5,7 @@
   "Common/Yes": "Ja",
   "Common/No": "Nej",
   "Common/ErrorPrefix": "Ett fel uppstod: ",
+  "Common/InvalidRequest": "Ogiltig begäran",
 
   "UserPrefs/NotFound": "Användarens preferenser kunde inte hittas",
   "UserPrefs/ThemeInvalid": "Ogiltigt tema",

@@ -11,6 +11,7 @@ namespace backend.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<UserPreferences> UserPreferences { get; set; }
+        public DbSet<UserFavourite> UserFavourites { get; set; }
         public DbSet<News> News { get; set; }
         public DbSet<NewsType> NewsTypes { get; set; }
         public DbSet<Unit> Units { get; set; }
@@ -36,6 +37,12 @@ namespace backend.Data
                 .HasOne(u => u.UserPreferences)
                 .WithOne(up => up.User)
                 .HasForeignKey<UserPreferences>(up => up.UserId);
+
+            // Ensure each user can only have one favourite entry per specific key (href).
+            modelBuilder
+                .Entity<UserFavourite>()
+                .HasIndex(x => new { x.UserId, x.Href })
+                .IsUnique();
 
             // Unit <-> UnitColumn many-to-many relationship.
             modelBuilder

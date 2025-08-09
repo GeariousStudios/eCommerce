@@ -62,4 +62,15 @@ namespace backend.Models
         public int UserId { get; set; }
         public User User { get; set; } = null!;
     }
+
+    public class UserFavourite
+    {
+        public int Id { get; set; }
+        public string Href { get; set; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public int Order { get; set; }
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
+    }
 }

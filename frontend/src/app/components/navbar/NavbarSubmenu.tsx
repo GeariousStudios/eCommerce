@@ -3,6 +3,9 @@ import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ElementType, useEffect, useRef, useState } from "react";
+import HoverIcon from "../common/HoverIcon";
+import { StarIcon as OutlineStarIcon } from "@heroicons/react/24/outline";
+import { StarIcon as SolidStarIcon } from "@heroicons/react/24/solid";
 
 // --- PROPS ---
 type SubmenuItem = {
@@ -10,6 +13,16 @@ type SubmenuItem = {
   href?: string;
   onClick?: () => void;
   label: string;
+
+  icon?: string;
+  overrideLabel?: string;
+  isFavourite?: boolean;
+  onToggleFavourite?: (
+    isFavourite: boolean,
+    href: string,
+    label: string,
+    icon: string,
+  ) => void;
 
   requiresLogin?: boolean;
   requiresAdmin?: boolean;
@@ -266,6 +279,15 @@ const NavbarSubmenu = (props: Props) => {
                               const itemIsActive =
                                 item.href && pathname.startsWith(item.href);
 
+                              const handleFavouriteToggle = () => {
+                                item.onToggleFavourite?.(
+                                  !!item.isFavourite,
+                                  item.href ?? "",
+                                  item.overrideLabel ?? item.label,
+                                  item.icon ?? "",
+                                );
+                              };
+
                               return (
                                 <div key={index}>
                                   {(!item.requiresLogin || isLoggedIn) &&
@@ -278,7 +300,7 @@ const NavbarSubmenu = (props: Props) => {
                                           {item.title ?? ""}
                                         </li>
 
-                                        <li className="w-34 rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
+                                        <li className="group/link flex w-34 items-center rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
                                           {item.href ? (
                                             <Link
                                               onClick={() => setIsOpen(false)}
@@ -297,6 +319,26 @@ const NavbarSubmenu = (props: Props) => {
                                               }
                                             >
                                               {item.label}
+                                            </button>
+                                          )}
+
+                                          {item.onToggleFavourite && (
+                                            <button
+                                              className="group mr-2 ml-auto flex opacity-0 group-hover/link:opacity-100"
+                                              onClick={(e) => {
+                                                e.preventDefault();
+                                                handleFavouriteToggle();
+                                              }}
+                                            >
+                                              {!item.isFavourite ? (
+                                                <HoverIcon
+                                                  outline={OutlineStarIcon}
+                                                  solid={SolidStarIcon}
+                                                  className="h-4 min-h-4 w-4 min-w-4"
+                                                />
+                                              ) : (
+                                                <SolidStarIcon className="h-4 min-h-4 w-4 min-w-4" />
+                                              )}
                                             </button>
                                           )}
                                         </li>
