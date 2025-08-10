@@ -112,6 +112,7 @@ const LayoutWrapper = (props: Props) => {
       "news-types": { label: t("Common/Types"), clickable: false },
 
       shifts: { label: t("Common/Shifts"), clickable: false },
+      "shift-teams": { label: t("Common/Shift teams"), clickable: false },
 
       // --- Developer ---
       developer: { label: t("Common/Developer"), clickable: false },

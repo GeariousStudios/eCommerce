@@ -65,6 +65,10 @@
   "Common/shifts": "shifts",
   "Common/Shift": "Shift",
   "Common/shift": "shift",
+  "Common/Shift teams": "Teams",
+  "Common/shift teams": "teams",
+  "Common/Shift team": "Team",
+  "Common/shift team": "team",
   "Common/Types": "Types",
   "Common/types": "types",
   "Common/Type": "Type",
@@ -142,7 +146,7 @@
   "Manage/ascending": " (ascending)",
   "Manage/descending": " (descending)",
   "Manage/unit amount": "unit amount",
-  "Manage/Used by": "Used by units",
+  "Manage/Used by units": "Used by units",
 
   "Users/Locked user": "This user is locked!",
   "Users/Permissions": "Permissions",
@@ -182,6 +186,9 @@
   "Columns/Data1": "by columns with data",
   "Columns/Data2": "by columns without data",
   "Columns/Confirm": "If you delete the selected items, you will also lose any associated data. Do you still want to delete?",
+
+  "ShiftTeams/shift amount": "shift amount",
+  "ShiftTeams/Used by shifts": "Used by shifts",
 
   "Modal/Unsaved": "You have unsaved changes. Do you still want to close?",
   "Modal/Close anyway": "Close anyway",
@@ -259,6 +266,10 @@
   "ReportModal/Choose sub category": "--- Choose sub category ---",
   "ReportModal/Start time": "Start time",
   "ReportModal/Stop time": "Stop time",
+
+  "ShiftModal/Info1": "Details about the shift",
+
+  "ShiftTeamModal/Info1": "Details about the team",
 
   "Api/Failed to delete": "Failed to delete ",
 

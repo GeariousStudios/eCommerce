@@ -153,3 +153,22 @@ export type ShiftItem = {
 export type ShiftFilters = {
   unitIds?: number[];
 };
+
+// --- admin/manage/ShiftTeamsClient.tsx ---
+export type ShiftTeamItem = {
+  id: number;
+  name: string;
+  shifts: {
+    id: number;
+    name: string;
+  }[];
+
+  creationDate: string;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
+};
+
+export type ShiftTeamFilters = {
+  shiftIds?: number[];
+};

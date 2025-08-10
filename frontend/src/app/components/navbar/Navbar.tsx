@@ -249,6 +249,12 @@ const Navbar = (props: Props) => {
         label: t("Common/Shifts"),
         icon: "WrenchIcon",
       },
+      {
+        href: "/admin/manage/shifts/shift-teams/",
+        // label: t("Common/Manage") + " / " + t("Common/Types"),
+        label: t("Common/Shift teams"),
+        icon: "WrenchIcon",
+      },
     ];
 
     const dynamicUnits = unitItems.map((u) => ({
@@ -565,6 +571,20 @@ const Navbar = (props: Props) => {
                                     onToggleFavourite,
                                     isFavourite: favourites.some(
                                       (f) => f.href === "/admin/manage/shifts/",
+                                    ),
+
+                                    // disabled: true,
+                                    // tooltip: t("Common/Not implemented"),
+                                  },
+                                  {
+                                    href: "/admin/manage/shifts/shift-teams/",
+                                    label: t("Common/Shift teams"),
+
+                                    onToggleFavourite,
+                                    isFavourite: favourites.some(
+                                      (f) =>
+                                        f.href ===
+                                        "/admin/manage/shifts/shift-teams/",
                                     ),
 
                                     // disabled: true,

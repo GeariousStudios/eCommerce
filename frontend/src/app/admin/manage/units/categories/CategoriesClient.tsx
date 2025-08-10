@@ -169,7 +169,9 @@ const CategoriesClient = (props: Props) => {
             </>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Manage/Used by")}:</span>
+            <span className="w-full font-semibold">
+              {t("Manage/Used by units")}:
+            </span>
             {item.units.length === 0 ? (
               <span className="-mt-2">-</span>
             ) : (
@@ -250,7 +252,7 @@ const CategoriesClient = (props: Props) => {
     },
     {
       key: "units",
-      label: t("Manage/Used by"),
+      label: t("Manage/Used by units"),
       sortingItem: "unitcount",
       labelAsc: t("Manage/unit amount") + t("Manage/ascending"),
       labelDesc: t("Manage/unit amount") + t("Manage/descending"),
@@ -329,7 +331,7 @@ const CategoriesClient = (props: Props) => {
       ],
     },
     {
-      label: t("Manage/Used by"),
+      label: t("Manage/Used by units"),
       breakpoint: "lg",
       options: units.map((unit) => {
         const isDuplicate = nameCounts[unit.name] > 1;

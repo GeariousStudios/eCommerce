@@ -85,7 +85,7 @@ const ShiftsClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/groups"),
+          err.message || t("Manage/Failed to fetch") + t("Common/shifts"),
         ); // <-- Unique.
         return {
           items: [],
@@ -150,7 +150,9 @@ const ShiftsClient = (props: Props) => {
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="w-full font-semibold">{t("Manage/Used by")}:</span>
+            <span className="w-full font-semibold">
+              {t("Manage/Used by units")}:
+            </span>
             {item.units.length === 0 ? (
               <span className="-mt-2">-</span>
             ) : (
@@ -206,7 +208,7 @@ const ShiftsClient = (props: Props) => {
     },
     {
       key: "units",
-      label: t("Manage/Used by"),
+      label: t("Manage/Used by units"),
       sortingItem: "unitcount",
       labelAsc: t("Manage/unit amount") + t("Manage/ascending"),
       labelDesc: t("Manage/unit amount") + t("Manage/descending"),
@@ -246,7 +248,7 @@ const ShiftsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: t("Manage/Used by"),
+      label: t("Manage/Used by units"),
       breakpoint: "ml",
       options: units.map((unit) => {
         const label = unit.name;

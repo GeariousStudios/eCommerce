@@ -66,6 +66,10 @@
   "Common/shifts": "skift",
   "Common/Shift": "Skift",
   "Common/shift": "skift",
+  "Common/Shift teams": "Lag",
+  "Common/shift teams": "lag",
+  "Common/Shift team": "Lag",
+  "Common/shift team": "lag",
   "Common/Types": "Typer",
   "Common/types": "typer",
   "Common/Type": "Typ",
@@ -142,7 +146,7 @@
   "Manage/ascending": " (stigande)",
   "Manage/descending": " (fallande)",
   "Manage/unit amount": "antal enheter",
-  "Manage/Used by": "Används av enheter",
+  "Manage/Used by units": "Används av enheter",
 
   "Users/Locked user": "Detta konto är låst!",
   "Users/Permissions": "Behörigheter",
@@ -182,6 +186,9 @@
   "Columns/Data1": "på kolumner som har data",
   "Columns/Data2": "på kolumner som inte har någon data",
   "Columns/Confirm": "Om du tar bort valda objekt så förlorar du även den data som finns kopplad. Vill du ta bort ändå?",
+
+  "ShiftTeams/shift amount": "antal skift",
+  "ShiftTeams/Used by shifts": "Används av skift",
 
   "Modal/Unsaved": "Du har osparade ändringar. Vill du stänga ändå?",
   "Modal/Close anyway": "Stäng ändå",
@@ -259,6 +266,10 @@
   "ReportModal/Choose sub category": "--- Välj underkategori ---",
   "ReportModal/Start time": "Starttid",
   "ReportModal/Stop time": "Stopptid",
+
+  "ShiftModal/Info1": "Uppgifter om skiftet",
+
+  "ShiftTeamModal/Info1": "Uppgifter om laget",
 
   "Api/Failed to delete": "Kunde inte ta bort ",
 

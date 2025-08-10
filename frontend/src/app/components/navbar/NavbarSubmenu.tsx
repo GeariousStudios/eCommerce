@@ -349,6 +349,7 @@ const NavbarSubmenu = (props: Props) => {
                                                       : ""
                                                 }
                                                 longDelay
+                                                hideOnClick
                                               >
                                                 <button
                                                   className={`${item.disabled ? "cursor-not-allowed group-hover/link:opacity-50" : "group-hover/link:opacity-100"} group mr-2 ml-auto flex opacity-0`}

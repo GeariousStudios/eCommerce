@@ -25,7 +25,9 @@ namespace backend.Data
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
         public DbSet<UnitToCategory> UnitToCategories { get; set; }
+        public DbSet<UnitToShift> UnitToShifts { get; set; }
         public DbSet<CategoryToSubCategory> CategoryToSubCategories { get; set; }
+        public DbSet<ShiftToShiftTeam> ShiftToShiftTeams { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -76,6 +78,21 @@ namespace backend.Data
                 .WithMany(c => c.UnitToCategories)
                 .HasForeignKey(uc => uc.CategoryId);
 
+            // Unit <-> Shift many-to-many relationship.
+            modelBuilder.Entity<UnitToShift>().HasKey(us => new { us.UnitId, us.ShiftId });
+
+            modelBuilder
+                .Entity<UnitToShift>()
+                .HasOne(us => us.Unit)
+                .WithMany(u => u.UnitToShifts)
+                .HasForeignKey(us => us.UnitId);
+
+            modelBuilder
+                .Entity<UnitToShift>()
+                .HasOne(us => us.Shift)
+                .WithMany(s => s.UnitToShifts)
+                .HasForeignKey(us => us.ShiftId);
+
             // Category <-> SubCategory many-to-many relationship.
             modelBuilder
                 .Entity<CategoryToSubCategory>()
@@ -92,6 +109,23 @@ namespace backend.Data
                 .HasOne(cs => cs.SubCategory)
                 .WithMany(c => c.CategoryToSubCategories)
                 .HasForeignKey(cs => cs.SubCategoryId);
+
+            // Shift <-> ShiftTeam many-to-many relationship.
+            modelBuilder
+                .Entity<ShiftToShiftTeam>()
+                .HasKey(sst => new { sst.ShiftId, sst.ShiftTeamId });
+
+            modelBuilder
+                .Entity<ShiftToShiftTeam>()
+                .HasOne(sst => sst.Shift)
+                .WithMany(s => s.ShiftToShiftTeams)
+                .HasForeignKey(sst => sst.ShiftId);
+
+            modelBuilder
+                .Entity<ShiftToShiftTeam>()
+                .HasOne(sst => sst.ShiftTeam)
+                .WithMany(st => st.ShiftToShiftTeams)
+                .HasForeignKey(sst => sst.ShiftTeamId);
 
             // Unit -> UnitCells 1-to-many relationship.
             modelBuilder

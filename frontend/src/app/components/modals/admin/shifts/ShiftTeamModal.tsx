@@ -10,7 +10,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
-import { shiftConstraints } from "@/app/helpers/inputConstraints";
+import { shiftTeamConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -19,7 +19,7 @@ type Props = {
   onItemUpdated: () => void;
 };
 
-const ShiftModal = (props: Props) => {
+const ShiftTeamModal = (props: Props) => {
   const t = useTranslations();
 
   // --- VARIABLES ---
@@ -44,7 +44,7 @@ const ShiftModal = (props: Props) => {
     }
 
     if (props.itemId !== null && props.itemId !== undefined) {
-      fetchShift();
+      fetchShiftTeam();
     } else {
       setName("");
       setOriginalName("");
@@ -52,12 +52,12 @@ const ShiftModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add shift ---
-  const addShift = async (event: FormEvent) => {
+  // --- Add shift team ---
+  const addShiftTeam = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/shift/create`, {
+      const response = await fetch(`${apiUrl}/shift-team/create`, {
         method: "POST",
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
@@ -111,16 +111,16 @@ const ShiftModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift") + t("Modal/created"), 4000);
+      notify("success", t("Common/Shift team") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  // --- Fetch shift ---
-  const fetchShift = async () => {
+  // --- Fetch shift team ---
+  const fetchShiftTeam = async () => {
     try {
-      const response = await fetch(`${apiUrl}/shift/fetch/${props.itemId}`, {
+      const response = await fetch(`${apiUrl}/shift-team/fetch/${props.itemId}`, {
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
@@ -133,24 +133,24 @@ const ShiftModal = (props: Props) => {
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        fillShiftData(result);
+        fillShiftTeamData(result);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  const fillShiftData = (result: any) => {
+  const fillShiftTeamData = (result: any) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
   };
 
-  // --- Update shift ---
-  const updateShift = async (event: FormEvent) => {
+  // --- Update shift team ---
+  const updateShiftTeam = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/shift/update/${props.itemId}`, {
+      const response = await fetch(`${apiUrl}/shift-team/update/${props.itemId}`, {
         method: "PUT",
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
@@ -204,7 +204,7 @@ const ShiftModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Shift team") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -237,8 +237,8 @@ const ShiftModal = (props: Props) => {
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
           label={
             props.itemId
-              ? t("Common/Edit") + " " + t("Common/shift")
-              : t("Common/Add") + " " + t("Common/shift")
+              ? t("Common/Edit") + " " + t("Common/shift team")
+              : t("Common/Add") + " " + t("Common/shift team")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -246,12 +246,14 @@ const ShiftModal = (props: Props) => {
           <form
             ref={formRef}
             className="relative flex flex-col gap-4"
-            onSubmit={(e) => (props.itemId ? updateShift(e) : addShift(e))}
+            onSubmit={(e) =>
+              props.itemId ? updateShiftTeam(e) : addShiftTeam(e)
+            }
           >
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("ShiftModal/Info1")}
+                {t("ShiftTeamModal/Info1")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
@@ -265,7 +267,7 @@ const ShiftModal = (props: Props) => {
                 }}
                 onModal
                 required
-                {...shiftConstraints.name}
+                {...shiftTeamConstraints.name}
               />
             </div>
 
@@ -292,4 +294,4 @@ const ShiftModal = (props: Props) => {
   );
 };
 
-export default ShiftModal;
+export default ShiftTeamModal;

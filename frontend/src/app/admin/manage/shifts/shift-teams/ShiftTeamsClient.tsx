@@ -2,20 +2,15 @@
 
 import { useToast } from "../../../../components/toast/ToastProvider";
 import useManage from "@/app/hooks/useManage";
-import {
-  getDataTypeOptions,
-  UnitColumnDataType,
-  UnitColumnFilters,
-  UnitColumnItem,
-} from "@/app/types/manageTypes"; // <-- Unique.
+import { ShiftTeamFilters, ShiftTeamItem } from "@/app/types/manageTypes"; // <-- Unique.
 import {
   deleteContent,
   fetchContent,
-  fetchUnits,
-  UnitOption,
-} from "@/app/apis/manage/unitColumnsApi"; // <-- Unique.
+  fetchShifts,
+  ShiftOption,
+} from "@/app/apis/manage/shiftTeamsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import UnitColumnModal from "@/app/components/modals/admin/units/UnitColumnModal"; // <-- Unique.
+import ShiftTeamModal from "@/app/components/modals/admin/shifts/ShiftTeamModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
@@ -26,7 +21,7 @@ type Props = {
   isConnected: boolean | null;
 };
 
-const UnitColumnsClient = (props: Props) => {
+const ShiftTeamsClient = (props: Props) => {
   const t = useTranslations();
 
   // <-- Unique.
@@ -77,7 +72,7 @@ const UnitColumnsClient = (props: Props) => {
 
     // --- Other ---
     fetchItems,
-  } = useManage<UnitColumnItem, UnitColumnFilters>(
+  } = useManage<ShiftTeamItem, ShiftTeamFilters>(
     async (params) => {
       // <-- Unique.
       try {
@@ -90,7 +85,7 @@ const UnitColumnsClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/columns"),
+          err.message || t("Manage/Failed to fetch") + t("Common/shift teams"),
         ); // <-- Unique.
         return {
           items: [],
@@ -106,16 +101,16 @@ const UnitColumnsClient = (props: Props) => {
 
   const { notify } = useToast();
 
-  // --- FETCH UNITS INITIALIZATION (Unique) ---
-  const [units, setUnits] = useState<UnitOption[]>([]);
+  // --- FETCH SHIFTS INITIALIZATION (Unique) ---
+  const [shifts, setShifts] = useState<ShiftOption[]>([]);
   useEffect(() => {
-    fetchUnits()
-      .then(setUnits)
+    fetchShifts()
+      .then(setShifts)
       .catch((err) => notify("error", String(err)));
   }, []);
 
-  const nameCounts = units.reduce<Record<string, number>>((acc, unit) => {
-    acc[unit.name] = (acc[unit.name] ?? 0) + 1;
+  const nameCounts = shifts.reduce<Record<string, number>>((acc, shift) => {
+    acc[shift.name] = (acc[shift.name] ?? 0) + 1;
     return acc;
   }, {});
 
@@ -137,7 +132,7 @@ const UnitColumnsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Column") + t("Manage/deleted"), 4000); // <-- Unique.
+      notify("success", t("Common/Shift team") + t("Manage/deleted"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -146,8 +141,8 @@ const UnitColumnsClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name, units",
-      getValue: (item: UnitColumnItem) => (
+      key: "name",
+      getValue: (item: ShiftTeamItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
@@ -158,16 +153,11 @@ const UnitColumnsClient = (props: Props) => {
             <span className="w-full font-semibold">
               {t("Manage/Used by units")}:
             </span>
-            {item.units.length === 0 ? (
+            {item.shifts.length === 0 ? (
               <span className="-mt-2">-</span>
             ) : (
-              item.units.map((unit, i) => {
-                const isDuplicate = nameCounts[unit] > 1;
-                const matchingUnit = units.find((u) => u.name === unit);
-                const label =
-                  isDuplicate && matchingUnit?.unitGroupName
-                    ? `${unit} (${matchingUnit.unitGroupName})`
-                    : unit;
+              (item.shifts ?? []).map((shift, i) => {
+                const label = shift.name;
 
                 return (
                   <span
@@ -185,7 +175,7 @@ const UnitColumnsClient = (props: Props) => {
     },
     {
       key: "creationDate, createdBy",
-      getValue: (item: UnitColumnItem) => (
+      getValue: (item: ShiftTeamItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">{t("Common/Created")}</span>
           {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
@@ -195,7 +185,7 @@ const UnitColumnsClient = (props: Props) => {
     },
     {
       key: "updateDate, updatedBy",
-      getValue: (item: UnitColumnItem) => (
+      getValue: (item: ShiftTeamItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">{t("Common/Updated")}</span>
           {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
@@ -213,30 +203,19 @@ const UnitColumnsClient = (props: Props) => {
       sortingItem: "name",
       labelAsc: t("Common/name") + " Ö-A",
       labelDesc: t("Common/name") + " A-Ö",
-      getValue: (item: UnitColumnItem) => item.name,
+      getValue: (item: ShiftTeamItem) => item.name,
       responsivePriority: 0,
     },
     {
-      key: "datatyp",
-      label: t("Columns/Data type"),
-      getValue: (item: UnitColumnItem) => item.dataType,
-      responsivePriority: 1,
-    },
-    {
-      key: "units",
-      label: t("Manage/Used by units"),
-      sortingItem: "unitcount",
-      labelAsc: t("Manage/unit amount") + t("Manage/ascending"),
-      labelDesc: t("Manage/unit amount") + t("Manage/descending"),
-      getValue: (item: UnitColumnItem) => (
+      key: "shifts",
+      label: t("ShiftTeams/Used by shifts"),
+      sortingItem: "shiftcount",
+      labelAsc: t("ShiftTeams/shift amount") + t("Manage/ascending"),
+      labelDesc: t("ShiftTeams/shift amount") + t("Manage/descending"),
+      getValue: (item: ShiftTeamItem) => (
         <div className="flex flex-wrap gap-2">
-          {item.units.map((unit, i) => {
-            const isDuplicate = nameCounts[unit] > 1;
-            const matchingUnit = units.find((u) => u.name === unit);
-            const label =
-              isDuplicate && matchingUnit?.unitGroupName
-                ? `${unit} (${matchingUnit.unitGroupName})`
-                : unit;
+          {(item.shifts ?? []).map((shift, i) => {
+            const label = shift.name;
 
             return (
               <span
@@ -249,65 +228,19 @@ const UnitColumnsClient = (props: Props) => {
           })}
         </div>
       ),
-      responsivePriority: 2,
-    },
-    {
-      key: "hasData",
-      label: t("Columns/Has data"),
-      sortingItem: "hasData",
-      labelAsc: t("Columns/Data1"),
-      labelDesc: t("Columns/Data2"),
-      classNameAddition: "w-[120px] min-w-[120px]",
-      childClassNameAddition: "w-[92px] min-w-[92px]",
-      getValue: (item: UnitColumnItem) => (
-        <span
-          className={`${badgeClass} ${item.hasData ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
-        >
-          {item.hasData ? t("Common/Yes") : t("Common/No")}
-        </span>
-      ),
-      responsivePriority: 3,
+      responsivePriority: 1,
     },
   ];
 
   // --- Filter Controls (Unique) ---
   const filterControls = {
-    selectedDataTypes: filters.dataTypes ?? [],
-    toggleDataType: (type: UnitColumnDataType) => {
-      setFilters((prev) => {
-        const types = new Set(prev.dataTypes ?? []);
-        if (types.has(type)) {
-          types.delete(type);
-        } else {
-          types.add(type);
-        }
-        return { ...prev, dataTypes: Array.from(types) };
-      });
-    },
-
-    selectedUnits: filters.unitIds ?? [],
-    setUnitSelected: (unitId: number, val: boolean) => {
+    selectedShifts: filters.shiftIds ?? [],
+    setShiftSelected: (shiftId: number, val: boolean) => {
       setFilters((prev) => ({
         ...prev,
-        unitIds: val
-          ? [...(prev.unitIds ?? []), unitId]
-          : (prev.unitIds ?? []).filter((id) => id !== unitId),
-      }));
-    },
-
-    showHasData: filters.hasData === true,
-    setShowHasData: (val: boolean) => {
-      setFilters((prev) => ({
-        ...prev,
-        hasData: val ? true : undefined,
-      }));
-    },
-
-    showNoData: filters.hasData === false,
-    setShowNoData: (val: boolean) => {
-      setFilters((prev) => ({
-        ...prev,
-        hasData: val ? false : undefined,
+        shiftIds: val
+          ? [...(prev.shiftIds ?? []), shiftId]
+          : (prev.shiftIds ?? []).filter((id) => id !== shiftId),
       }));
     },
   };
@@ -315,78 +248,33 @@ const UnitColumnsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: t("Columns/Data type"),
+      label: t("ShiftTeams/Used by shifts"),
       breakpoint: "ml",
-      options: getDataTypeOptions(t).map(({ label, value }) => ({
-        label,
-        isSelected: filterControls.selectedDataTypes.includes(value),
-        setSelected: (val: boolean) => {
-          const selected = filterControls.selectedDataTypes.includes(value);
-
-          if (val !== selected) {
-            filterControls.toggleDataType(value);
-          }
-        },
-        count: counts?.dataTypeCount?.[value] ?? 0,
-      })),
-    },
-    {
-      label: t("Manage/Used by units"),
-      breakpoint: "lg",
-      options: units.map((unit) => {
-        const isDuplicate = nameCounts[unit.name] > 1;
-        const label =
-          isDuplicate && unit.unitGroupName
-            ? `${unit.name} (${unit.unitGroupName})`
-            : unit.name;
+      options: shifts.map((shift) => {
+        const label = shift.name;
 
         return {
           label,
-          isSelected: filterControls.selectedUnits.includes(unit.id),
+          isSelected: filterControls.selectedShifts.includes(shift.id),
           setSelected: (val: boolean) =>
-            filterControls.setUnitSelected(unit.id, val),
-          count: counts?.unitCount?.[unit.id],
+            filterControls.setShiftSelected(shift.id, val),
+          count: counts?.shiftCount?.[shift.id],
         };
       }),
-    },
-    {
-      label: t("Columns/Has data"),
-      breakpoint: "xl",
-      options: [
-        {
-          label: t("Common/Yes"),
-          isSelected: filterControls.showHasData,
-          setSelected: filterControls.setShowHasData,
-          count: counts?.hasData?.["True"] ?? 0,
-        },
-        {
-          label: t("Common/No"),
-          isSelected: filterControls.showNoData,
-          setSelected: filterControls.setShowNoData,
-          count: counts?.hasData?.["False"] ?? 0,
-        },
-      ],
     },
   ];
 
   // const anySelectedInUse = () => {
   //   // <-- Unique.
   //   return items.some(
-  //     (item) => deletingItemIds.includes(item.id) && item.units.length > 0,
+  //     (item) => deletingItemIds.includes(item.id) && item.hasUnits,
   //   );
   // };
 
-  const anySelectedHasData = () => {
-    // <-- Unique.
-    return items.some(
-      (item) => deletingItemIds.includes(item.id) && item.hasData,
-    );
-  };
-
   return (
     <>
-      <ManageBase<UnitColumnItem> // <-- Unique.
-        itemName={t("Common/column")} // <-- Unique.
+      <ManageBase<ShiftTeamItem> // <-- Unique.
+        itemName={t("Common/shift team")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}
@@ -394,8 +282,8 @@ const UnitColumnsClient = (props: Props) => {
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
         isConnected={props.isConnected === true}
-        selectMessage="Manage/Select1" // <-- Unique.
-        editLimitMessage="Manage/EditLimit1" // <-- Unique.
+        selectMessage="Manage/Select2" // <-- Unique.
+        editLimitMessage="Manage/EditLimit2" // <-- Unique.
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
@@ -419,7 +307,7 @@ const UnitColumnsClient = (props: Props) => {
       />
 
       {/* --- MODALS --- */}
-      <UnitColumnModal // <-- Unique.
+      <ShiftTeamModal // <-- Unique.
         isOpen={isEditModalOpen}
         onClose={toggleEditItemModal}
         itemId={editingItemId}
@@ -443,11 +331,10 @@ const UnitColumnsClient = (props: Props) => {
           setDeletingItemIds([]);
           setSelectedItems([]);
         }}
-        confirmOnDelete={anySelectedHasData()}
-        confirmDeleteMessage={t("Columns/Confirm")}
+        // confirmOnDelete={anySelectedInUse()} // <-- Unique.
       />
     </>
   );
 };
 
-export default UnitColumnsClient; // <-- Unique.
+export default ShiftTeamsClient; // <-- Unique.

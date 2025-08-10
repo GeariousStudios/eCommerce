@@ -35,5 +35,10 @@ export const unitConstraints = {
 
 // --- ShiftModal ---
 export const shiftConstraints = {
-  name: { maxLength: 16 },
+  name: { maxLength: 32 },
+};
+
+// --- ShiftTeamModal ---
+export const shiftTeamConstraints = {
+  name: { maxLength: 32 },
 };
