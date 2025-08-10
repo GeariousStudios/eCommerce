@@ -2,8 +2,8 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../common/Input";
-import { useToast } from "../../toast/ToastProvider";
+import Input from "../../../common/Input";
+import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
@@ -11,11 +11,11 @@ import {
   switchClass,
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
-import ModalBase, { ModalBaseHandle } from "../ModalBase";
-import SingleDropdown from "../../common/SingleDropdown";
-import MultiDropdown from "../../common/MultiDropdown";
+import ModalBase, { ModalBaseHandle } from "../../ModalBase";
+import SingleDropdown from "../../../common/SingleDropdown";
+import MultiDropdown from "../../../common/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import DragDrop from "../../common/DragDrop";
+import DragDrop from "../../../common/DragDrop";
 import { useTranslations } from "next-intl";
 import { unitConstraints } from "@/app/helpers/inputConstraints";
 
@@ -440,7 +440,7 @@ const UnitModal = (props: Props) => {
           label={
             props.itemId
               ? t("Common/Edit") + " " + t("Common/unit")
-              : t("Manage/Add") + " " + t("Common/unit")
+              : t("Common/Add") + " " + t("Common/unit")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -623,7 +623,7 @@ const UnitModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? t("Modal/Save") : t("Modal/Add")}
+                {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"

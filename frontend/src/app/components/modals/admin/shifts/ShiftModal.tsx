@@ -2,15 +2,15 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../common/Input";
-import { useToast } from "../../toast/ToastProvider";
+import Input from "../../../common/Input";
+import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
-import ModalBase, { ModalBaseHandle } from "../ModalBase";
+import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
-import { newsTypeConstraints } from "@/app/helpers/inputConstraints";
+import { shiftConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -19,7 +19,7 @@ type Props = {
   onItemUpdated: () => void;
 };
 
-const NewsTypeModal = (props: Props) => {
+const ShiftModal = (props: Props) => {
   const t = useTranslations();
 
   // --- VARIABLES ---
@@ -44,7 +44,7 @@ const NewsTypeModal = (props: Props) => {
     }
 
     if (props.itemId !== null && props.itemId !== undefined) {
-      fetchNewsType();
+      fetchShift();
     } else {
       setName("");
       setOriginalName("");
@@ -52,12 +52,12 @@ const NewsTypeModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add news type ---
-  const addNewsType = async (event: FormEvent) => {
+  // --- Add shift ---
+  const addShift = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/news-type/create`, {
+      const response = await fetch(`${apiUrl}/shift/create`, {
         method: "POST",
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
@@ -111,62 +111,57 @@ const NewsTypeModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Types/Type") + t("Modal/created"), 4000);
+      window.dispatchEvent(new Event("unit-list-updated"));
+      notify("success", t("Common/Shift") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  // --- Fetch news type ---
-  const fetchNewsType = async () => {
+  // --- Fetch shift ---
+  const fetchShift = async () => {
     try {
-      const response = await fetch(
-        `${apiUrl}/news-type/fetch/${props.itemId}`,
-        {
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${apiUrl}/shift/fetch/${props.itemId}`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const result = await response.json();
 
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        fillNewsTypeData(result);
+        fillShiftData(result);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  const fillNewsTypeData = (result: any) => {
+  const fillShiftData = (result: any) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
   };
 
-  // --- Update news type ---
-  const updateNewsType = async (event: FormEvent) => {
+  // --- Update shift ---
+  const updateShift = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(
-        `${apiUrl}/news-type/update/${props.itemId}`,
-        {
-          method: "PUT",
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name,
-          }),
+      const response = await fetch(`${apiUrl}/shift/update/${props.itemId}`, {
+        method: "PUT",
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          name,
+        }),
+      });
 
       if (response.status === 401) {
         localStorage.removeItem("token");
@@ -210,7 +205,8 @@ const NewsTypeModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Types/Type") + t("Modal/updated"), 4000);
+      window.dispatchEvent(new Event("unit-list-updated"));
+      notify("success", t("Common/Shift") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -243,8 +239,8 @@ const NewsTypeModal = (props: Props) => {
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
           label={
             props.itemId
-              ? t("Common/Edit") + " " + t("Types/type")
-              : t("Manage/Add") + " " + t("Types/type")
+              ? t("Common/Edit") + " " + t("Common/shift")
+              : t("Common/Add") + " " + t("Common/shift")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -252,16 +248,14 @@ const NewsTypeModal = (props: Props) => {
           <form
             ref={formRef}
             className="relative flex flex-col gap-4"
-            onSubmit={(e) =>
-              props.itemId ? updateNewsType(e) : addNewsType(e)
-            }
+            onSubmit={(e) => (props.itemId ? updateShift(e) : addShift(e))}
           >
             <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
+              <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("NewsTypeModal/Info1")}
+                {t("GroupModal/Info1")}
               </h3>
-              <hr className="w-full text-[var(--border-main)]" />
+              <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
             <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
@@ -273,7 +267,7 @@ const NewsTypeModal = (props: Props) => {
                 }}
                 onModal
                 required
-                {...newsTypeConstraints.name}
+                {...shiftConstraints.name}
               />
             </div>
 
@@ -283,7 +277,7 @@ const NewsTypeModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? t("Modal/Update") : t("Modal/Add")}
+                {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"
@@ -300,4 +294,4 @@ const NewsTypeModal = (props: Props) => {
   );
 };
 
-export default NewsTypeModal;
+export default ShiftModal;

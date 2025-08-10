@@ -2,17 +2,17 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../common/Input";
-import { useToast } from "../../toast/ToastProvider";
+import Input from "../../../common/Input";
+import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
   roundedButtonClass,
 } from "@/app/styles/buttonClasses";
-import ModalBase, { ModalBaseHandle } from "../ModalBase";
-import MultiDropdown from "../../common/MultiDropdown";
+import ModalBase, { ModalBaseHandle } from "../../ModalBase";
+import MultiDropdown from "../../../common/MultiDropdown";
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import DragDrop from "../../common/DragDrop";
+import DragDrop from "../../../common/DragDrop";
 import { useTranslations } from "next-intl";
 import { categoryConstraints } from "@/app/helpers/inputConstraints";
 
@@ -433,7 +433,7 @@ const CategoryModal = (props: Props) => {
           label={
             props.itemId
               ? t("Common/Edit") + " " + t("Common/category")
-              : t("Manage/Add") + " " + t("Common/category")
+              : t("Common/Add") + " " + t("Common/category")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -533,7 +533,7 @@ const CategoryModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? t("Modal/Save") : t("Modal/Add")}
+                {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"

@@ -2,20 +2,15 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../common/Input";
-import { useToast } from "../../toast/ToastProvider";
+import Input from "../../../common/Input";
+import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
-import ModalBase, { ModalBaseHandle } from "../ModalBase";
-import {
-  getDataTypeOptions,
-  UnitColumnDataType,
-} from "@/app/types/manageTypes";
-import SingleDropdown from "../../common/SingleDropdown";
+import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
-import { unitColumnConstraints } from "@/app/helpers/inputConstraints";
+import { unitGroupConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -24,7 +19,7 @@ type Props = {
   onItemUpdated: () => void;
 };
 
-const UnitColumnModal = (props: Props) => {
+const UnitGroupModal = (props: Props) => {
   const t = useTranslations();
 
   // --- VARIABLES ---
@@ -34,11 +29,8 @@ const UnitColumnModal = (props: Props) => {
 
   // --- States ---
   const [name, setName] = useState("");
-  const [dataType, setDataType] = useState<UnitColumnDataType>();
 
   const [originalName, setOriginalName] = useState("");
-  const [originalDataType, setOriginalDataType] =
-    useState<UnitColumnDataType>();
   const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
@@ -52,23 +44,20 @@ const UnitColumnModal = (props: Props) => {
     }
 
     if (props.itemId !== null && props.itemId !== undefined) {
-      fetchUnitColumn();
+      fetchUnitGroup();
     } else {
       setName("");
       setOriginalName("");
-
-      setDataType(undefined);
-      setOriginalDataType(undefined);
     }
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add unit column ---
-  const addUnitColumn = async (event: FormEvent) => {
+  // --- Add unit group ---
+  const addUnitGroup = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/unit-column/create`, {
+      const response = await fetch(`${apiUrl}/unit-group/create`, {
         method: "POST",
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
@@ -77,7 +66,6 @@ const UnitColumnModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
-          dataType,
         }),
       });
 
@@ -123,17 +111,18 @@ const UnitColumnModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Column") + t("Modal/created"), 4000);
+      window.dispatchEvent(new Event("unit-list-updated"));
+      notify("success", t("Common/Group") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  // --- Fetch unit column ---
-  const fetchUnitColumn = async () => {
+  // --- Fetch unit group ---
+  const fetchUnitGroup = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/unit-column/fetch/${props.itemId}`,
+        `${apiUrl}/unit-group/fetch/${props.itemId}`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -148,28 +137,25 @@ const UnitColumnModal = (props: Props) => {
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        fillUnitColumnData(result);
+        fillUnitGroupData(result);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  const fillUnitColumnData = (result: any) => {
+  const fillUnitGroupData = (result: any) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
-
-    setDataType(result.dataType ?? undefined);
-    setOriginalDataType(result.dataType ?? undefined);
   };
 
-  // --- Update unit column ---
-  const updateUnitColumn = async (event: FormEvent) => {
+  // --- Update unit group ---
+  const updateUnitGroup = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
       const response = await fetch(
-        `${apiUrl}/unit-column/update/${props.itemId}`,
+        `${apiUrl}/unit-group/update/${props.itemId}`,
         {
           method: "PUT",
           headers: {
@@ -179,7 +165,6 @@ const UnitColumnModal = (props: Props) => {
           },
           body: JSON.stringify({
             name,
-            dataType,
           }),
         },
       );
@@ -226,7 +211,8 @@ const UnitColumnModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Column") + t("Modal/updated"), 4000);
+      window.dispatchEvent(new Event("unit-list-updated"));
+      notify("success", t("Common/Group") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -239,15 +225,15 @@ const UnitColumnModal = (props: Props) => {
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
-      const dirty = name !== "" || dataType !== undefined;
+      const dirty = name !== "";
 
       setIsDirty(dirty);
       return;
     }
 
-    const dirty = name !== originalName || dataType !== originalDataType;
+    const dirty = name !== originalName;
     setIsDirty(dirty);
-  }, [name, dataType, originalName, originalDataType]);
+  }, [name, originalName]);
 
   return (
     <>
@@ -259,8 +245,8 @@ const UnitColumnModal = (props: Props) => {
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
           label={
             props.itemId
-              ? t("Common/Edit") + " " + t("Common/column")
-              : t("Manage/Add") + " " + t("Common/column")
+              ? t("Common/Edit") + " " + t("Common/group")
+              : t("Common/Add") + " " + t("Common/group")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -269,40 +255,28 @@ const UnitColumnModal = (props: Props) => {
             ref={formRef}
             className="relative flex flex-col gap-4"
             onSubmit={(e) =>
-              props.itemId ? updateUnitColumn(e) : addUnitColumn(e)
+              props.itemId ? updateUnitGroup(e) : addUnitGroup(e)
             }
           >
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("ColumnModal/Info1")}
+                {t("GroupModal/Info1")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
-            <div className="mb-8 flex w-full flex-col gap-6 sm:flex-row sm:gap-4">
-              <div className="w-full sm:w-1/2">
-                <Input
-                  label={t("Common/Name")}
-                  value={name}
-                  onChange={(val) => setName(String(val))}
-                  onModal
-                  required
-                  {...unitColumnConstraints.name}
-                />
-              </div>
-
-              <div className="w-full sm:w-1/2">
-                <SingleDropdown
-                  id="dataType"
-                  label={t("Columns/Data type")}
-                  value={dataType ?? ""}
-                  onChange={(val) => setDataType(val as UnitColumnDataType)}
-                  onModal
-                  options={getDataTypeOptions(t)}
-                  required
-                />
-              </div>
+            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
+              <Input
+                label={t("Common/Name")}
+                value={name}
+                onChange={(val) => {
+                  setName(String(val));
+                }}
+                onModal
+                required
+                {...unitGroupConstraints.name}
+              />
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
@@ -311,7 +285,7 @@ const UnitColumnModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? t("Modal/Save") : t("Modal/Add")}
+                {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"
@@ -328,4 +302,4 @@ const UnitColumnModal = (props: Props) => {
   );
 };
 
-export default UnitColumnModal;
+export default UnitGroupModal;

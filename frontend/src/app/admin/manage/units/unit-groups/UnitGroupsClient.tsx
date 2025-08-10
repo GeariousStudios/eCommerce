@@ -10,7 +10,7 @@ import {
   UnitOption,
 } from "@/app/apis/manage/unitGroupsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import UnitGroupModal from "@/app/components/modals/report/UnitGroupModal"; // <-- Unique.
+import UnitGroupModal from "@/app/components/modals/admin/units/UnitGroupModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
@@ -86,7 +86,7 @@ const UnitGroupsClient = (props: Props) => {
         notify(
           "error",
           err.message || t("Manage/Failed to fetch") + t("Common/groups"),
-        ); // <-- Unique
+        ); // <-- Unique.
         return {
           items: [],
           total: 0,
@@ -280,6 +280,8 @@ const UnitGroupsClient = (props: Props) => {
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
         isConnected={props.isConnected === true}
+        selectMessage="Manage/Select1" // <-- Unique.
+        editLimitMessage="Manage/EditLimit1" // <-- Unique.
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}

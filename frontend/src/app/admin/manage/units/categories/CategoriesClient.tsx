@@ -10,7 +10,7 @@ import {
   UnitOption,
 } from "@/app/apis/manage/categoriesApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import CategoryModal from "@/app/components/modals/report/CategoryModal"; // <-- Unique.
+import CategoryModal from "@/app/components/modals/admin/units/CategoryModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
@@ -86,7 +86,7 @@ const CategoriesClient = (props: Props) => {
         notify(
           "error",
           err.message || t("Manage/Failed to fetch") + t("Common/categories"),
-        ); // <-- Unique
+        ); // <-- Unique.
         return {
           items: [],
           total: 0,
@@ -367,6 +367,8 @@ const CategoriesClient = (props: Props) => {
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
         isConnected={props.isConnected === true}
+        selectMessage="Manage/Select1" // <-- Unique.
+        editLimitMessage="Manage/EditLimit1" // <-- Unique.
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}

@@ -81,7 +81,7 @@ const UsersClient = (props: Props) => {
         notify(
           "error",
           err.message || t("Manage/Failed to fetch") + t("Common/users"),
-        ); // <-- Unique
+        ); // <-- Unique.
         return {
           items: [],
           total: 0,
@@ -374,6 +374,8 @@ const UsersClient = (props: Props) => {
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
         isConnected={props.isConnected === true}
+        selectMessage="Manage/Select1" // <-- Unique.
+        editLimitMessage="Manage/EditLimit1" // <-- Unique.
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}

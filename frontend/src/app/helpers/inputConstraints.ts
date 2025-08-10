@@ -32,3 +32,8 @@ export const unitGroupConstraints = {
 export const unitConstraints = {
   name: { maxLength: 16 },
 };
+
+// --- ShiftModal ---
+export const shiftConstraints = {
+  name: { maxLength: 16 },
+};

@@ -348,7 +348,7 @@ const UserModal = (props: Props) => {
           label={
             props.itemId
               ? t("Common/Edit") + " " + t("Common/user")
-              : t("Manage/Add") + " " + t("Common/user")
+              : t("Common/Add") + " " + t("Common/user")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -487,7 +487,7 @@ const UserModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? t("Modal/Save") : t("Modal/Add")}
+                {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"

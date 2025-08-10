@@ -1,12 +1,12 @@
 import { useTranslations } from "next-intl";
-import { NewsTypeFilters, NewsTypeItem } from "../../types/manageTypes";
+import { ShiftFilters, ShiftItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export type SortOrder = "asc" | "desc";
 
-// --- admin/manage/NewsTypesClient.tsx ---
+// --- report/manage/UserGroupsClient.tsx ---
 export const fetchContent = async ({
   page,
   pageSize,
@@ -20,8 +20,8 @@ export const fetchContent = async ({
   sortBy: string;
   sortOrder: SortOrder;
   search: string;
-  filters?: NewsTypeFilters;
-}): Promise<{ items: NewsTypeItem[]; total: number; counts?: any }> => {
+  filters?: ShiftFilters;
+}): Promise<{ items: ShiftItem[]; total: number; counts?: any }> => {
   const params = new URLSearchParams({
     page: String(page),
     pageSize: String(pageSize),
@@ -30,7 +30,13 @@ export const fetchContent = async ({
     search,
   });
 
-  const response = await fetch(`${apiUrl}/news-type?${params}`, {
+  // --- FILTERS START ---
+  filters?.unitIds?.forEach((id) => {
+    params.append("unitIds", id.toString());
+  });
+  // --- FILTERS STOP ---
+
+  const response = await fetch(`${apiUrl}/shift?${params}`, {
     headers: {
       "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
@@ -52,7 +58,7 @@ export const fetchContent = async ({
 };
 
 export const deleteContent = async (id: number): Promise<void> => {
-  const response = await fetch(`${apiUrl}/news-type/delete/${id}`, {
+  const response = await fetch(`${apiUrl}/shift/delete/${id}`, {
     method: "DELETE",
     headers: {
       "X-User-Language": localStorage.getItem("language") || "sv",
@@ -68,7 +74,7 @@ export const deleteContent = async (id: number): Promise<void> => {
 
   if (!response.ok) {
     const t = useTranslations();
-    let errorMessage = t("Api/Failed to delete") + t("Common/type");
+    let errorMessage = t("Api/Failed to delete") + t("Common/shift");
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorMessage;
@@ -77,4 +83,28 @@ export const deleteContent = async (id: number): Promise<void> => {
     }
     throw new Error(errorMessage);
   }
+};
+
+export type UnitOption = {
+  id: number;
+  name: string;
+  unitGroupName?: string;
+};
+
+export const fetchUnits = async (): Promise<UnitOption[]> => {
+  const response = await fetch(`${apiUrl}/unit?sortBy=name&sortOrder=asc`, {
+    headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
 };

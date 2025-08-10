@@ -320,7 +320,7 @@ const NewsModal = (props: Props) => {
           label={
             props.newsId
               ? t("Common/Edit") + " " + t("NewsModal/news item")
-              : t("Manage/Add") + " " + t("NewsModal/news item")
+              : t("Common/Add") + " " + t("NewsModal/news item")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -390,7 +390,7 @@ const NewsModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.newsId ? t("Modal/Update") : t("Modal/Add")}
+                {props.newsId ? t("Modal/Update") : t("Common/Add")}
               </button>
               <button
                 type="button"

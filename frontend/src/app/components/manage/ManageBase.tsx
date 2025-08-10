@@ -71,6 +71,8 @@ export type ManageBaseProps<TItem> = {
   toggleDeleteItemModal: (ids?: number[]) => void;
   isLoading: boolean;
   isConnected: boolean;
+  selectMessage: string;
+  editLimitMessage: string;
 
   isGrid: boolean;
   setIsGrid: React.Dispatch<React.SetStateAction<boolean>>;
@@ -142,6 +144,8 @@ const ManageBase = <TItem extends { id: number }>({
   toggleDeleteItemModal,
   isLoading,
   isConnected,
+  selectMessage,
+  editLimitMessage,
 
   isGrid,
   setIsGrid,
@@ -366,7 +370,7 @@ const ManageBase = <TItem extends { id: number }>({
         <div className="flex flex-wrap gap-4">
           {/* --- Add item --- */}
           <CustomTooltip
-            content={`${t("Manage/Add")} ${" "} ${itemName}`}
+            content={`${t("Common/Add")} ${" "} ${itemName}`}
             lgHidden={true}
           >
             <button
@@ -389,7 +393,7 @@ const ManageBase = <TItem extends { id: number }>({
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
                 <span className="hidden lg:block">
-                  {t("Manage/Add")} {itemName}
+                  {t("Common/Add")} {itemName}
                 </span>
               </div>
             </button>
@@ -399,10 +403,10 @@ const ManageBase = <TItem extends { id: number }>({
           <CustomTooltip
             content={
               selectedItems.length === 0
-                ? `${t("Manage/Select")} ${" "} ${itemName}`
+                ? `${t(selectMessage)} ${" "} ${itemName}`
                 : selectedItems.length === 1
                   ? `${t("Common/Edit")} ${" "} ${itemName}`
-                  : `${t("Manage/Edit limit1")} ${" "} ${itemName} ${" "} ${t("Manage/Edit limit2")}`
+                  : `${t(editLimitMessage)} ${" "} ${itemName} ${" "} ${t("Manage/Edit limit3")}`
             }
             lgHidden={selectedItems.length === 1}
             showOnTouch={selectedItems.length === 0 || selectedItems.length > 1}
@@ -438,7 +442,7 @@ const ManageBase = <TItem extends { id: number }>({
           <CustomTooltip
             content={
               selectedItems.length === 0
-                ? `${t("Manage/Select")} ${" "} ${itemName}`
+                ? `${t(selectMessage)} ${" "} ${itemName}`
                 : `${t("Manage/Delete")} ${" "} ${itemName} ${" "} (${selectedItems.length})`
             }
             lgHidden={selectedItems.length > 0}

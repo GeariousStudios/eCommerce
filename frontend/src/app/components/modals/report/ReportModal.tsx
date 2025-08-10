@@ -1189,7 +1189,7 @@ const ReportModal = (props: Props) => {
                             solid={SolidPlusIcon}
                             className="h-6 min-h-6 w-6 min-w-6"
                           />
-                          {currentReport.id ? t("Modal/Save") : t("Modal/Add")}
+                          {currentReport.id ? t("Modal/Save") : t("Common/Add")}
                         </button>
 
                         <button

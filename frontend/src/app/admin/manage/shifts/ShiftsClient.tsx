@@ -2,15 +2,15 @@
 
 import { useToast } from "../../../components/toast/ToastProvider";
 import useManage from "@/app/hooks/useManage";
-import { UnitGroupFilters, UnitGroupItem } from "@/app/types/manageTypes"; // <-- Unique.
+import { ShiftFilters, ShiftItem } from "@/app/types/manageTypes"; // <-- Unique.
 import {
   deleteContent,
   fetchContent,
   fetchUnits,
   UnitOption,
-} from "@/app/apis/manage/unitGroupsApi"; // <-- Unique.
+} from "@/app/apis/manage/shiftsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import UnitGroupModal from "@/app/components/modals/report/UnitGroupModal"; // <-- Unique.
+import ShiftModal from "@/app/components/modals/admin/shifts/ShiftModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
@@ -72,7 +72,7 @@ const ShiftsClient = (props: Props) => {
 
     // --- Other ---
     fetchItems,
-  } = useManage<UnitGroupItem, UnitGroupFilters>(
+  } = useManage<ShiftItem, ShiftFilters>(
     async (params) => {
       // <-- Unique.
       try {
@@ -86,7 +86,7 @@ const ShiftsClient = (props: Props) => {
         notify(
           "error",
           err.message || t("Manage/Failed to fetch") + t("Common/groups"),
-        ); // <-- Unique
+        ); // <-- Unique.
         return {
           items: [],
           total: 0,
@@ -132,7 +132,7 @@ const ShiftsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Group") + t("Manage/deleted"), 4000); // <-- Unique.
+      notify("success", t("Common/Shift") + t("Manage/deleted"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -142,7 +142,7 @@ const ShiftsClient = (props: Props) => {
   const gridItems = () => [
     {
       key: "name",
-      getValue: (item: UnitGroupItem) => (
+      getValue: (item: ShiftItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
@@ -173,7 +173,7 @@ const ShiftsClient = (props: Props) => {
     },
     {
       key: "creationDate, createdBy",
-      getValue: (item: UnitGroupItem) => (
+      getValue: (item: ShiftItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">{t("Common/Created")}</span>
           {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
@@ -183,7 +183,7 @@ const ShiftsClient = (props: Props) => {
     },
     {
       key: "updateDate, updatedBy",
-      getValue: (item: UnitGroupItem) => (
+      getValue: (item: ShiftItem) => (
         <p className="flex flex-col">
           <span className="font-semibold">{t("Common/Updated")}</span>
           {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
@@ -201,7 +201,7 @@ const ShiftsClient = (props: Props) => {
       sortingItem: "name",
       labelAsc: t("Common/name") + " Ö-A",
       labelDesc: t("Common/name") + " A-Ö",
-      getValue: (item: UnitGroupItem) => item.name,
+      getValue: (item: ShiftItem) => item.name,
       responsivePriority: 0,
     },
     {
@@ -210,7 +210,7 @@ const ShiftsClient = (props: Props) => {
       sortingItem: "unitcount",
       labelAsc: t("Manage/unit amount") + t("Manage/ascending"),
       labelDesc: t("Manage/unit amount") + t("Manage/descending"),
-      getValue: (item: UnitGroupItem) => (
+      getValue: (item: ShiftItem) => (
         <div className="flex flex-wrap gap-2">
           {(item.units ?? []).map((unit, i) => {
             const label = unit.name;
@@ -271,8 +271,8 @@ const ShiftsClient = (props: Props) => {
 
   return (
     <>
-      <ManageBase<UnitGroupItem> // <-- Unique.
-        itemName={t("Common/group")} // <-- Unique.
+      <ManageBase<ShiftItem> // <-- Unique.
+        itemName={t("Common/shift")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}
@@ -280,6 +280,8 @@ const ShiftsClient = (props: Props) => {
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
         isConnected={props.isConnected === true}
+        selectMessage="Manage/Select2" // <-- Unique.
+        editLimitMessage="Manage/EditLimit2" // <-- Unique.
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
@@ -303,7 +305,7 @@ const ShiftsClient = (props: Props) => {
       />
 
       {/* --- MODALS --- */}
-      <UnitGroupModal // <-- Unique.
+      <ShiftModal // <-- Unique.
         isOpen={isEditModalOpen}
         onClose={toggleEditItemModal}
         itemId={editingItemId}

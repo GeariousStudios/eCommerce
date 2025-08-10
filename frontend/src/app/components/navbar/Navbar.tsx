@@ -239,14 +239,14 @@ const Navbar = (props: Props) => {
       },
       {
         href: "/admin/manage/news/news-types/",
-        // label: t("Common/Manage") + " / " + t("Navbar/Types"),
-        label: t("Navbar/Types"),
+        // label: t("Common/Manage") + " / " + t("Common/Types"),
+        label: t("Common/Types"),
         icon: "WrenchIcon",
       },
       {
         href: "/admin/manage/shifts/",
-        // label: t("Common/Manage") + " / " + t("Navbar/Types"),
-        label: t("Navbar/Shifts"),
+        // label: t("Common/Manage") + " / " + t("Common/Types"),
+        label: t("Common/Shifts"),
         icon: "WrenchIcon",
       },
     ];
@@ -556,19 +556,19 @@ const Navbar = (props: Props) => {
                                 ],
                               },
                               {
-                                label: t("Navbar/Shifts"),
+                                label: t("Common/Shifts"),
                                 items: [
                                   {
                                     href: "/admin/manage/shifts/",
-                                    label: t("Navbar/Shifts"),
+                                    label: t("Common/Shifts"),
 
                                     onToggleFavourite,
                                     isFavourite: favourites.some(
                                       (f) => f.href === "/admin/manage/shifts/",
                                     ),
 
-                                    disabled: true,
-                                    tooltip: t("Common/Not implemented"),
+                                    // disabled: true,
+                                    // tooltip: t("Common/Not implemented"),
                                   },
                                 ],
                               },
@@ -577,7 +577,7 @@ const Navbar = (props: Props) => {
                                 items: [
                                   {
                                     href: "/admin/manage/news/news-types/",
-                                    label: t("Navbar/Types"),
+                                    label: t("Common/Types"),
 
                                     onToggleFavourite,
                                     isFavourite: favourites.some(

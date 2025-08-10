@@ -2,15 +2,15 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../../common/Input";
-import { useToast } from "../../toast/ToastProvider";
+import Input from "../../../common/Input";
+import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
-import ModalBase, { ModalBaseHandle } from "../ModalBase";
+import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
-import { unitGroupConstraints } from "@/app/helpers/inputConstraints";
+import { newsTypeConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -19,7 +19,7 @@ type Props = {
   onItemUpdated: () => void;
 };
 
-const UnitGroupModal = (props: Props) => {
+const NewsTypeModal = (props: Props) => {
   const t = useTranslations();
 
   // --- VARIABLES ---
@@ -44,7 +44,7 @@ const UnitGroupModal = (props: Props) => {
     }
 
     if (props.itemId !== null && props.itemId !== undefined) {
-      fetchUnitGroup();
+      fetchNewsType();
     } else {
       setName("");
       setOriginalName("");
@@ -52,12 +52,12 @@ const UnitGroupModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add unit group ---
-  const addUnitGroup = async (event: FormEvent) => {
+  // --- Add news type ---
+  const addNewsType = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/unit-group/create`, {
+      const response = await fetch(`${apiUrl}/news-type/create`, {
         method: "POST",
         headers: {
           "X-User-Language": localStorage.getItem("language") || "sv",
@@ -111,18 +111,17 @@ const UnitGroupModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Group") + t("Modal/created"), 4000);
+      notify("success", t("Common/Type") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  // --- Fetch unit group ---
-  const fetchUnitGroup = async () => {
+  // --- Fetch news type ---
+  const fetchNewsType = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/unit-group/fetch/${props.itemId}`,
+        `${apiUrl}/news-type/fetch/${props.itemId}`,
         {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -137,25 +136,25 @@ const UnitGroupModal = (props: Props) => {
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        fillUnitGroupData(result);
+        fillNewsTypeData(result);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  const fillUnitGroupData = (result: any) => {
+  const fillNewsTypeData = (result: any) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
   };
 
-  // --- Update unit group ---
-  const updateUnitGroup = async (event: FormEvent) => {
+  // --- Update news type ---
+  const updateNewsType = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
       const response = await fetch(
-        `${apiUrl}/unit-group/update/${props.itemId}`,
+        `${apiUrl}/news-type/update/${props.itemId}`,
         {
           method: "PUT",
           headers: {
@@ -211,8 +210,7 @@ const UnitGroupModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Group") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Type") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -245,8 +243,8 @@ const UnitGroupModal = (props: Props) => {
           icon={props.itemId ? PencilSquareIcon : PlusIcon}
           label={
             props.itemId
-              ? t("Common/Edit") + " " + t("Common/group")
-              : t("Manage/Add") + " " + t("Common/group")
+              ? t("Common/Edit") + " " + t("Common/type")
+              : t("Common/Add") + " " + t("Common/type")
           }
           confirmOnClose
           isDirty={isDirty}
@@ -255,15 +253,15 @@ const UnitGroupModal = (props: Props) => {
             ref={formRef}
             className="relative flex flex-col gap-4"
             onSubmit={(e) =>
-              props.itemId ? updateUnitGroup(e) : addUnitGroup(e)
+              props.itemId ? updateNewsType(e) : addNewsType(e)
             }
           >
             <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
+              <hr className="w-12 text-[var(--border-main)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("GroupModal/Info1")}
+                {t("NewsTypeModal/Info1")}
               </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
+              <hr className="w-full text-[var(--border-main)]" />
             </div>
 
             <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
@@ -275,7 +273,7 @@ const UnitGroupModal = (props: Props) => {
                 }}
                 onModal
                 required
-                {...unitGroupConstraints.name}
+                {...newsTypeConstraints.name}
               />
             </div>
 
@@ -285,7 +283,7 @@ const UnitGroupModal = (props: Props) => {
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
               >
-                {props.itemId ? t("Modal/Save") : t("Modal/Add")}
+                {props.itemId ? t("Modal/Update") : t("Common/Add")}
               </button>
               <button
                 type="button"
@@ -302,4 +300,4 @@ const UnitGroupModal = (props: Props) => {
   );
 };
 
-export default UnitGroupModal;
+export default NewsTypeModal;

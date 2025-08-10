@@ -5,7 +5,7 @@ import useManage from "@/app/hooks/useManage";
 import { NewsTypeFilters, NewsTypeItem } from "@/app/types/manageTypes"; // <-- Unique.
 import { deleteContent, fetchContent } from "@/app/apis/manage/newsTypesApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import NewsTypeModal from "@/app/components/modals/admin/NewsTypeModal"; // <-- Unique.
+import NewsTypeModal from "@/app/components/modals/admin/news/NewsTypeModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
@@ -79,7 +79,7 @@ const NewsTypesClient = (props: Props) => {
         notify(
           "error",
           err.message || t("Manage/Failed to fetch") + t("Common/types"),
-        ); // <-- Unique
+        ); // <-- Unique.
         return {
           items: [],
           total: 0,
@@ -112,7 +112,7 @@ const NewsTypesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Types/Type") + t("Manage/deleted"), 4000); // <-- Unique.
+      notify("success", t("Common/Type") + t("Manage/deleted"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || String(err));
     }
@@ -170,7 +170,7 @@ const NewsTypesClient = (props: Props) => {
   return (
     <>
       <ManageBase<NewsTypeItem> // <-- Unique.
-        itemName={t("Types/type")} // <-- Unique.
+        itemName={t("Common/type")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}
@@ -178,6 +178,8 @@ const NewsTypesClient = (props: Props) => {
         toggleDeleteItemModal={toggleDeleteItemModal}
         isLoading={isLoading}
         isConnected={props.isConnected === true}
+        selectMessage="Manage/Select1" // <-- Unique.
+        editLimitMessage="Manage/EditLimit1" // <-- Unique.
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
