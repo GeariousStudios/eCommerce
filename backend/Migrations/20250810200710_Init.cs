@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace eCommerce.Migrations
 {
     /// <inheritdoc />
@@ -17,7 +19,7 @@ namespace eCommerce.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -55,7 +57,7 @@ namespace eCommerce.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -67,12 +69,49 @@ namespace eCommerce.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Shifts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
+                    SystemKey = table.Column<int>(type: "INTEGER", nullable: true),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Shifts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShiftTeams",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShiftTeams", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SubCategories",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -89,7 +128,7 @@ namespace eCommerce.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     DataType = table.Column<int>(type: "INTEGER", nullable: false),
                     HasData = table.Column<bool>(type: "INTEGER", nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
@@ -108,7 +147,7 @@ namespace eCommerce.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 16, nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -125,10 +164,10 @@ namespace eCommerce.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    FirstName = table.Column<string>(type: "TEXT", nullable: false),
-                    LastName = table.Column<string>(type: "TEXT", nullable: false),
-                    Username = table.Column<string>(type: "TEXT", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", nullable: false),
+                    FirstName = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    LastName = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    Username = table.Column<string>(type: "TEXT", maxLength: 16, nullable: false),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 320, nullable: false),
                     Roles = table.Column<int>(type: "INTEGER", nullable: false),
                     PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
                     CurrentSessionId = table.Column<string>(type: "TEXT", nullable: true),
@@ -140,6 +179,34 @@ namespace eCommerce.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShiftToShiftTeams",
+                columns: table => new
+                {
+                    ShiftId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ShiftTeamId = table.Column<int>(type: "INTEGER", nullable: false),
+                    DisplayName = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
+                    StartTime = table.Column<TimeSpan>(type: "TEXT", nullable: true),
+                    EndTime = table.Column<TimeSpan>(type: "TEXT", nullable: true),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShiftToShiftTeams", x => new { x.ShiftId, x.ShiftTeamId });
+                    table.ForeignKey(
+                        name: "FK_ShiftToShiftTeams_ShiftTeams_ShiftTeamId",
+                        column: x => x.ShiftTeamId,
+                        principalTable: "ShiftTeams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ShiftToShiftTeams_Shifts_ShiftId",
+                        column: x => x.ShiftId,
+                        principalTable: "Shifts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -173,7 +240,7 @@ namespace eCommerce.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 16, nullable: false),
                     IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
                     UnitGroupId = table.Column<int>(type: "INTEGER", nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
@@ -188,6 +255,29 @@ namespace eCommerce.Migrations
                         name: "FK_Units_UnitGroups_UnitGroupId",
                         column: x => x.UnitGroupId,
                         principalTable: "UnitGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserFavourites",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Href = table.Column<string>(type: "TEXT", nullable: false),
+                    Label = table.Column<string>(type: "TEXT", nullable: false),
+                    Icon = table.Column<string>(type: "TEXT", nullable: false),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserFavourites", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserFavourites_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -306,6 +396,32 @@ namespace eCommerce.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UnitToShifts",
+                columns: table => new
+                {
+                    UnitId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ShiftId = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UnitToShifts", x => new { x.UnitId, x.ShiftId });
+                    table.ForeignKey(
+                        name: "FK_UnitToShifts_Shifts_ShiftId",
+                        column: x => x.ShiftId,
+                        principalTable: "Shifts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UnitToShifts_Units_UnitId",
+                        column: x => x.UnitId,
+                        principalTable: "Units",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UnitToUnitColumns",
                 columns: table => new
                 {
@@ -330,6 +446,15 @@ namespace eCommerce.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.InsertData(
+                table: "Shifts",
+                columns: new[] { "Id", "CreatedBy", "CreationDate", "IsHidden", "Name", "SystemKey", "UpdateDate", "UpdatedBy" },
+                values: new object[,]
+                {
+                    { 1, "system", new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), false, "None", 0, new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), "system" },
+                    { 2, "system", new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), false, "Unmanned", 1, new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), "system" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_CategoryToSubCategories_SubCategoryId",
                 table: "CategoryToSubCategories",
@@ -339,6 +464,11 @@ namespace eCommerce.Migrations
                 name: "IX_Reports_UnitId",
                 table: "Reports",
                 column: "UnitId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShiftToShiftTeams_ShiftTeamId",
+                table: "ShiftToShiftTeams",
+                column: "ShiftTeamId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UnitCells_ColumnId",
@@ -361,9 +491,20 @@ namespace eCommerce.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UnitToShifts_ShiftId",
+                table: "UnitToShifts",
+                column: "ShiftId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UnitToUnitColumns_UnitColumnId",
                 table: "UnitToUnitColumns",
                 column: "UnitColumnId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserFavourites_UserId_Href",
+                table: "UserFavourites",
+                columns: new[] { "UserId", "Href" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserPreferences_UserId",
@@ -388,13 +529,22 @@ namespace eCommerce.Migrations
                 name: "Reports");
 
             migrationBuilder.DropTable(
+                name: "ShiftToShiftTeams");
+
+            migrationBuilder.DropTable(
                 name: "UnitCells");
 
             migrationBuilder.DropTable(
                 name: "UnitToCategories");
 
             migrationBuilder.DropTable(
+                name: "UnitToShifts");
+
+            migrationBuilder.DropTable(
                 name: "UnitToUnitColumns");
+
+            migrationBuilder.DropTable(
+                name: "UserFavourites");
 
             migrationBuilder.DropTable(
                 name: "UserPreferences");
@@ -403,7 +553,13 @@ namespace eCommerce.Migrations
                 name: "SubCategories");
 
             migrationBuilder.DropTable(
+                name: "ShiftTeams");
+
+            migrationBuilder.DropTable(
                 name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "Shifts");
 
             migrationBuilder.DropTable(
                 name: "UnitColumns");

@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  buttonPrimaryClass,
   buttonSecondaryClass,
   iconButtonPrimaryClass,
+  roundedButtonClass,
 } from "../../styles/buttonClasses";
 import Message from "../../components/common/Message";
 import CustomTooltip from "../../components/common/CustomTooltip";
@@ -46,6 +48,7 @@ import {
 } from "@/app/helpers/timeUtils";
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { useTranslations } from "next-intl";
+import MenuDropdown from "@/app/components/common/MenuDropdown";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -54,12 +57,24 @@ type Props = {
   isReporter: boolean | null;
 };
 
+type Shift = {
+  id: number;
+  name: string;
+  systemKey?: string;
+};
+
 // --- CLASSES ---
 export const thClass =
   "px-4 py-2 h-[40px] text-left border-b-1 border-b-[var(--border-main)] border-r-1 border-r-[var(--border-secondary)] flex-inline items-center justify-center";
 
 export const tdClass =
   "px-4 py-2 h-[40px] text-left break-all border-1 border-[var(--border-secondary)] flex-inline items-center justify-center";
+
+export const shiftsClass =
+  "truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
+
+export const shiftsIconClass =
+  "h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
 
 const UnitClient = (props: Props) => {
   const t = useTranslations();
@@ -83,16 +98,35 @@ const UnitClient = (props: Props) => {
   const token = localStorage.getItem("token");
   const { notify } = useToast();
 
+  // --- Refs ---
+  const shiftsRef = useRef<HTMLButtonElement | null>(null);
+
+  // --- States: Shift ---
+  const [shiftsOpen, setShiftsOpen] = useState(false);
+  const [shiftNames, setShiftNames] = useState<Shift[]>([]);
+  const [shiftVisibility, setShiftVisibility] = useState<
+    Record<number, boolean>
+  >({});
+  const shifts = shiftNames.map((s) => ({
+    id: s.id,
+    label: s.systemKey ? t(`Shift/${s.systemKey}`) : s.name,
+    show: !!shiftVisibility[s.id],
+  }));
+  const selectedShifts = shiftNames.filter((s) => shiftVisibility[s.id]);
+
   // --- States: Unit ---
   const [unitName, setUnitName] = useState("");
   const [unitGroupId, setUnitGroupId] = useState("");
   const [isHidden, setIsHidden] = useState(false);
-  const [unitCategoryIds, setUnitCategoryIds] = useState<number[]>([]);
+  const [categoryIds, setCategoryIds] = useState<number[]>([]);
+  const [activeShiftId, setActiveShiftId] = useState<number | null>(null);
+  const [pendingShiftId, setPendingShiftId] = useState<number | null>(null);
 
   // --- States: UnitGroup ---
   const [unitGroupName, setUnitGroupName] = useState("");
 
   // --- States: UnitColumn ---
+  const [unitColumnIds, setUnitColumnIds] = useState<number[]>([]);
   const [unitColumnNames, setUnitColumnNames] = useState<string[]>([]);
   const [unitColumnDataTypes, setUnitColumnDataTypes] = useState<string[]>([]);
 
@@ -115,7 +149,10 @@ const UnitClient = (props: Props) => {
   const [refetchData, setRefetchData] = useState(true);
 
   // --- States: Other ---
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingUnits, setIsLoadingUnits] = useState(true);
+  const [isLoadingColumns, setIsLoadingColumns] = useState(true);
+  const [isLoadingShifts, setIsLoadingShifts] = useState(true);
+
   const [isManualRefresh, setIsManualRefresh] = useState(true);
 
   const [isInvalid, setIsInvalid] = useState(false);
@@ -128,6 +165,11 @@ const UnitClient = (props: Props) => {
   const [reportDate, setReportDate] = useState<string>("");
   const [reportHour, setReportHour] = useState<string>("");
 
+  const isBootstrapping = isLoadingUnits || isLoadingColumns || isLoadingShifts;
+  const canShowLock = !isBootstrapping && isHidden && !isInvalid;
+  const canShowInvalid = !isBootstrapping && isInvalid && !isHidden;
+  const isReady = !isBootstrapping && !isHidden && !isInvalid;
+
   // --- BACKEND ---
   // --- Fetch unit ---
   useEffect(() => {
@@ -138,7 +180,7 @@ const UnitClient = (props: Props) => {
     const fetchUnit = async () => {
       try {
         setIsUnitValid(false);
-        setIsLoading(true);
+        setIsLoadingUnits(true);
         const response = await fetch(`${apiUrl}/unit/fetch/${unitId}`, {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -165,7 +207,7 @@ const UnitClient = (props: Props) => {
       } catch (err) {
         notify("error", t("Modal/Unknown error"));
       } finally {
-        setIsLoading(false);
+        setIsLoadingUnits(false);
       }
     };
 
@@ -173,7 +215,9 @@ const UnitClient = (props: Props) => {
       setUnitName(result.name ?? "");
       setUnitGroupId(String(result.unitGroupId ?? ""));
       setIsHidden(result.isHidden ?? false);
-      setUnitCategoryIds(result.categoryIds ?? []);
+      setCategoryIds(result.categoryIds ?? []);
+      setActiveShiftId(result.activeShiftId ?? null);
+      setPendingShiftId(result.activeShiftId ?? null);
     };
 
     fetchUnit();
@@ -224,6 +268,7 @@ const UnitClient = (props: Props) => {
 
     const fetchUnitColumns = async () => {
       try {
+        setIsLoadingColumns(true);
         const response = await fetch(`${apiUrl}/unit-column/unit/${unitId}`, {
           headers: {
             "X-User-Language": localStorage.getItem("language") || "sv",
@@ -240,15 +285,68 @@ const UnitClient = (props: Props) => {
         }
       } catch (err) {
         notify("error", t("Modal/Unknown error"));
+      } finally {
+        setIsLoadingColumns(false);
       }
     };
 
     const fillUnitColumnData = (result: any) => {
+      setUnitColumnIds(result.map((c: any) => c.id));
       setUnitColumnNames(result.map((c: any) => c.name));
       setUnitColumnDataTypes(result.map((c: any) => c.dataType));
     };
 
     fetchUnitColumns();
+  }, [unitId, isUnitValid]);
+
+  // --- Fetch shifts ---
+  useEffect(() => {
+    if (!unitId || !isUnitValid) {
+      return;
+    }
+
+    const fetchShifts = async () => {
+      try {
+        setIsLoadingShifts(true);
+        const response = await fetch(`${apiUrl}/shift/unit/${unitId}`, {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+          },
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          notify("error", result?.message ?? t("Modal/Unknown error"));
+        } else {
+          fillShiftData(result);
+        }
+      } catch (err) {
+        notify("error", t("Modal/Unknown error"));
+      } finally {
+        setIsLoadingShifts(false);
+      }
+    };
+
+    const fillShiftData = (result: any) => {
+      const list = Array.isArray(result)
+        ? result
+        : (result?.items ?? result?.data ?? []);
+      const shiftsWithIds = list.map((c: any) => ({
+        id: c.id,
+        name: String(c.name),
+        systemKey: c.systemKey ?? null,
+      }));
+      setShiftNames(shiftsWithIds);
+
+      setShiftNames(shiftsWithIds);
+      if (pendingShiftId == null && shiftsWithIds[0]) {
+        setPendingShiftId(shiftsWithIds[0].id);
+      }
+    };
+
+    fetchShifts();
   }, [unitId, isUnitValid]);
 
   // --- Delete report ---
@@ -366,6 +464,10 @@ const UnitClient = (props: Props) => {
       return;
     }
 
+    if (isBootstrapping) {
+      return;
+    }
+
     const fetchCells = async () => {
       const response = await fetch(
         `${apiUrl}/unit-cell/${unitId}/${selectedDate}`,
@@ -444,13 +546,81 @@ const UnitClient = (props: Props) => {
         setRefetchData(false);
         setIsManualRefresh(false);
       });
-  }, [unitId, selectedDate, refetchData, isInvalid]);
+  }, [unitId, selectedDate, refetchData, isInvalid, isBootstrapping]);
 
-  if (!isLoading && isHidden && !isInvalid) {
-    return <Message icon="lock" content="lock" fullscreen={true} />;
-  } else if (!isLoading && !isHidden && isInvalid) {
-    return <Message content="invalid" fullscreen={true} />;
-  } else if (!isLoading && !isHidden && !isInvalid) {
+  // --- CHANGE SHIFT ---
+  const changeShift = async () => {
+    try {
+      if (pendingShiftId == null) {
+        return;
+      }
+
+      const response = await fetch(`${apiUrl}/unit/${unitId}/active-shift`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          activeShiftId: pendingShiftId,
+        }),
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      if (response.status === 204) {
+        const s = shiftNames.find((x) => x.id === pendingShiftId);
+        const key = s?.systemKey ? `Shift/${String(s.systemKey).trim()}` : null;
+        const label = key
+          ? t(key) !== key
+            ? t(key)
+            : (s?.name ?? "")
+          : (s?.name ?? "");
+        notify("info", `${t("Unit/Shift changed")} ${label}`);
+        setActiveShiftId(pendingShiftId);
+        setShiftsOpen(false);
+        setRefetchData(true);
+        return;
+      }
+
+      let result: any = null;
+      const text = await response.text();
+      if (text) result = JSON.parse(text);
+
+      if (!response.ok) {
+        notify("error", result?.message || t("Modal/Unknown error"));
+        return;
+      }
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  useEffect(() => {
+    if (shiftNames.length && pendingShiftId != null) {
+      setShiftVisibility(
+        shiftNames.reduce(
+          (acc, s) => ({ ...acc, [s.id]: s.id === pendingShiftId }),
+          {},
+        ),
+      );
+    }
+  }, [shiftNames, pendingShiftId]);
+
+  // if (isBootstrapping) {
+  //   return <Message icon="loading" content="content" fullscreen />;
+  // }
+  if (canShowLock) {
+    return <Message icon="lock" content="lock" fullscreen />;
+  }
+  if (canShowInvalid) {
+    return <Message content="invalid" fullscreen />;
+  }
+  if (isReady) {
     return (
       <>
         {/* --- MODALS --- */}
@@ -472,7 +642,7 @@ const UnitClient = (props: Props) => {
             setRefetchData(true);
           }}
           unitId={parsedUnitId}
-          categoryIds={unitCategoryIds}
+          categoryIds={categoryIds}
           reportId={Number(reportId)}
           selectedDate={reportDate}
           selectedHour={reportHour}
@@ -600,6 +770,85 @@ const UnitClient = (props: Props) => {
                 </button>
               </div>
             </div>
+          </div>
+
+          <div className="relative ml-auto flex items-center gap-4">
+            <CustomTooltip
+              content={`${!props.isReporter ? t("Common/No access") : ""}`}
+            >
+              <button
+                ref={shiftsRef}
+                className={`${roundedButtonClass} ${!props.isReporter ? "!cursor-not-allowed opacity-50" : ""} group w-auto gap-2 px-4`}
+                onClick={() => {
+                  setPendingShiftId(activeShiftId);
+                  setShiftsOpen((prev) => !prev);
+                }}
+                aria-haspopup="menu"
+                aria-expanded={shiftsOpen}
+                disabled={!props.isReporter}
+              >
+                <span
+                  className={`${shiftsClass} ${shiftsOpen ? "text-[var(--accent-color)]" : ""}`}
+                >
+                  {activeShiftId != null
+                    ? (() => {
+                        const shift = shiftNames.find(
+                          (s) => s.id === activeShiftId,
+                        );
+                        if (!shift) return "";
+
+                        if (shift.systemKey) {
+                          const key = `Shift/${shift.systemKey}`;
+                          const tr = t(key);
+                          return tr !== key ? tr : shift.name;
+                        }
+
+                        return shift.name;
+                      })()
+                    : ""}
+                </span>
+                <ChevronDownIcon
+                  className={`${shiftsIconClass} ${shiftsOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
+                />
+              </button>
+            </CustomTooltip>
+
+            <MenuDropdown
+              triggerRef={shiftsRef}
+              isOpen={shiftsOpen}
+              onClose={() => setShiftsOpen(false)}
+            >
+              <div className="flex w-full flex-col gap-4">
+                {shifts.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setPendingShiftId(item.id)}
+                    role="menuitemradio"
+                    aria-checked={pendingShiftId === item.id}
+                    className="group flex cursor-pointer items-center justify-between gap-4"
+                  >
+                    <Input
+                      type="radio"
+                      name="shift-selection"
+                      checked={pendingShiftId === item.id}
+                      label={item.label}
+                      readOnly
+                    />
+                  </div>
+                ))}
+                <button
+                  className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
+                  onClick={changeShift}
+                  disabled={
+                    activeShiftId != null &&
+                    pendingShiftId != null &&
+                    pendingShiftId === activeShiftId
+                  }
+                >
+                  {t("Unit/Change to shift")}
+                </button>
+              </div>
+            </MenuDropdown>
           </div>
 
           <div className="w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">

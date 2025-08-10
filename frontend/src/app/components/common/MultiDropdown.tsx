@@ -158,6 +158,7 @@ const MultiDropdown = ({
               clickOutsideDeactivates: true,
               escapeDeactivates: true,
               returnFocusOnDeactivate: true,
+              fallbackFocus: () => document.body,
             }}
           >
             <ul

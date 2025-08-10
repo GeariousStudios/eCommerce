@@ -13,6 +13,7 @@ namespace backend.Dtos.Unit
         public int UnitGroupId { get; set; }
         public List<int> UnitColumnIds { get; set; } = new();
         public List<int> CategoryIds { get; set; } = new();
+        public List<int> ShiftIds { get; set; } = new();
         public bool IsHidden { get; set; }
     }
 }

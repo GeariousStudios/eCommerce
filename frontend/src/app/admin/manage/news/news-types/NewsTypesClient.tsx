@@ -114,7 +114,7 @@ const NewsTypesClient = (props: Props) => {
       await fetchItems();
       notify("success", t("Common/Type") + t("Manage/deleted"), 4000); // <-- Unique.
     } catch (err: any) {
-      notify("error", err?.message || String(err));
+      notify("error", err?.message || t("Modal/Unknown error"));
     }
   };
 

@@ -8,6 +8,7 @@ namespace backend.Models.ManyToMany
         public int ShiftId { get; set; }
         public Shift Shift { get; set; } = null!;
 
+        public bool IsActive { get; set; }
         public int Order { get; set; }
     }
 }

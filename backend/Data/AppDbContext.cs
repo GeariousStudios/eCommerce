@@ -35,6 +35,36 @@ namespace backend.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // Seed data for shifts.
+            var seedDate = new DateTime(2025, 08, 10, 0, 0, 0, DateTimeKind.Utc);
+
+            modelBuilder
+                .Entity<Shift>()
+                .HasData(
+                    new Shift
+                    {
+                        Id = 1,
+                        Name = "None",
+                        IsHidden = false,
+                        SystemKey = ShiftSystemKey.None,
+                        CreatedBy = "system",
+                        UpdatedBy = "system",
+                        CreationDate = seedDate,
+                        UpdateDate = seedDate,
+                    },
+                    new Shift
+                    {
+                        Id = 2,
+                        Name = "Unmanned",
+                        IsHidden = false,
+                        SystemKey = ShiftSystemKey.Unmanned,
+                        CreatedBy = "system",
+                        UpdatedBy = "system",
+                        CreationDate = seedDate,
+                        UpdateDate = seedDate,
+                    }
+                );
+
             // UserPreferences <-> User 1-to-1 relationship.
             modelBuilder
                 .Entity<User>()

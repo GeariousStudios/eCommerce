@@ -77,15 +77,23 @@ export const deleteContent = async (id: number): Promise<void> => {
   }
 
   if (!response.ok) {
-    const t = useTranslations();
-    let errorMessage = t("Api/Failed to delete") + t("Common/column");
+    // const t = useTranslations();
+    // let errorMessage = t("Api/Failed to delete") + t("Common/column");
+    // try {
+    //   const errorData = await response.json();
+    //   errorMessage = errorData.message || errorMessage;
+    // } catch {
+    //   errorMessage = await response.text();
+    // }
+    // throw new Error(errorMessage);
+    let message = "Unknown error";
     try {
-      const errorData = await response.json();
-      errorMessage = errorData.message || errorMessage;
+      const data = await response.json();
+      message = data?.message || message;
     } catch {
-      errorMessage = await response.text();
+      message = (await response.text()) || message;
     }
-    throw new Error(errorMessage);
+    throw new Error(message);
   }
 };
 

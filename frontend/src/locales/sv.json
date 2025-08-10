@@ -6,6 +6,7 @@
   "Common/Category": "Kategori",
   "Common/category": "kategori",
   "Common/Sub category": "Underkategori",
+  "Common/sub category": "underkategori",
   "Common/Units": "Enheter",
   "Common/units": "enheter",
   "Common/Unit": "Enhet",
@@ -120,6 +121,8 @@
   "Unit/Update page": "Uppdatera sida",
   "Unit/Next day": "Nästa dag",
   "Unit/Previous day": "Föregående dag",
+  "Unit/Change to shift": "Byt till valt skift",
+  "Unit/Shift changed": "Enheten bemannas nu av: ",
 
   "Manage/Failed to fetch": "Kunde inte hämta ",
   "Manage/deleted": " borttagen!",
@@ -168,6 +171,7 @@
   "Units/Belongs to": "Tillhör grupp",
   "Units/column amount": "antal kolumner",
   "Units/category amount": "antal kategorier",
+  "Units/shift amount": "antal skift",
   "Units/Hidden units": "Gömda enheter",
   "Units/hidden units": "gömda enheter",
   "Units/Visible units": "Synliga enheter",
@@ -199,6 +203,9 @@
   "Modal/Save": "Spara",
   "Modal/Nothing": "Inga ändringar att spara!",
   "Modal/Unknown error": "Ett okänt fel inträffade",
+  "Modal/Drag and drop1": "Dra och släpp en ",
+  "Modal/Drag and drop2": "Dra och släpp ett ",
+  "Modal/Drag and drop3": " för att ändra ordningen",
 
   "DeleteModal/Label": "Är du säker?",
   "DeleteModal/Message": "Ett borttaget objekt går inte att få tillbaka.",
@@ -242,15 +249,13 @@
   "CategoryModal/Info1": "Uppgifter om kategorin",
   "CategoryModal/Info2": "Underkategorier",
   "CategoryModal/Placeholder text": "Skapa underkategorier här...",
-  "CategoryModal/Drag and drop": "Dra och släpp en underkategori för att ändra ordningen",
   "CategoryModal/Error1": "Ange namnet på underkategorin först",
   "CategoryModal/Error2": "En underkategori med samma namn finns redan",
 
   "UnitModal/Info1": "Uppgifter om enheten",
   "UnitModal/Info2": "Kolumner",
   "UnitModal/Info3": "Kategorier",
-  "UnitModal/Drag and drop1": "Dra och släpp en kolumn för att ändra ordningen",
-  "UnitModal/Drag and drop2": "Dra och släpp en kategori för att ändra ordningen",
+  "UnitModal/Info4": "Skift",
   "UnitModal/Hide unit": "Göm enhet",
 
   "UnitCellModal/Info1": "1. Välj tidpunkt",
@@ -268,8 +273,13 @@
   "ReportModal/Stop time": "Stopptid",
 
   "ShiftModal/Info1": "Uppgifter om skiftet",
+  "ShiftModal/Hide shift": "Göm skift",
 
   "ShiftTeamModal/Info1": "Uppgifter om laget",
+  "ShiftTeamModal/Hide shift team": "Göm lag",
+
+  "Shift/None": "Inget",
+  "Shift/Unmanned": "Obemannad",
 
   "Api/Failed to delete": "Kunde inte ta bort ",
 

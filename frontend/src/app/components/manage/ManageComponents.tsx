@@ -68,6 +68,8 @@ export const Filter = ({
         onClick={() => {
           setFilterOpen((prev) => !prev);
         }}
+        aria-haspopup="menu"
+        aria-expanded={filterOpen}
       >
         <span
           className={`${filterClass} ${filterOpen ? "text-[var(--accent-color)]" : ""}`}

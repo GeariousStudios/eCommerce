@@ -12,6 +12,7 @@ namespace backend.Dtos.Unit
         public List<int> UnitColumnIds { get; set; } = new();
         public List<int> CategoryIds { get; set; } = new();
         public List<int> ShiftIds { get; set; } = new();
+        public int? ActiveShiftId { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }

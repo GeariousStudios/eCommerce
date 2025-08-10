@@ -41,6 +41,11 @@ type CategoryOptions = {
   name: string;
 };
 
+type ShiftOptions = {
+  id: number;
+  name: string;
+};
+
 const UnitModal = (props: Props) => {
   const t = useTranslations();
 
@@ -51,13 +56,15 @@ const UnitModal = (props: Props) => {
 
   // --- States ---
   const [name, setName] = useState("");
+  const [isHidden, setIsHidden] = useState(false);
   const [unitGroup, setUnitGroup] = useState("");
   const [unitColumnIds, setUnitColumnIds] = useState<number[]>([]);
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
-  const [isHidden, setIsHidden] = useState(false);
+  const [shiftIds, setShiftIds] = useState<number[]>([]);
   const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
   const [unitColumns, setUnitColumns] = useState<UnitColumnOptions[]>([]);
   const [categories, setCategories] = useState<CategoryOptions[]>([]);
+  const [shifts, setShifts] = useState<ShiftOptions[]>([]);
 
   const [originalName, setOriginalName] = useState("");
   const [originalUnitGroup, setOriginalUnitGroup] = useState("");
@@ -65,6 +72,7 @@ const UnitModal = (props: Props) => {
     [],
   );
   const [originalCategoryIds, setOriginalCategoryIds] = useState<number[]>([]);
+  const [originalShiftIds, setOriginalShiftIds] = useState<number[]>([]);
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
@@ -83,6 +91,7 @@ const UnitModal = (props: Props) => {
     fetchUnitGroups();
     fetchUnitColumns();
     fetchCategories();
+    fetchShifts();
 
     if (props.itemId !== null && props.itemId !== undefined) {
       fetchUnit();
@@ -90,17 +99,20 @@ const UnitModal = (props: Props) => {
       setName("");
       setOriginalName("");
 
-      setUnitGroup("");
-      setOriginalUnitGroup("");
-
       setIsHidden(false);
       setOriginalIsHidden(false);
+
+      setUnitGroup("");
+      setOriginalUnitGroup("");
 
       setUnitColumnIds([]);
       setOriginalUnitColumnIds([]);
 
       setCategoryIds([]);
       setOriginalCategoryIds([]);
+
+      setShiftIds([]);
+      setOriginalShiftIds([]);
     }
   }, [props.isOpen, props.itemId]);
 
@@ -121,8 +133,8 @@ const UnitModal = (props: Props) => {
           name,
           unitGroupId: parseInt(unitGroup),
           isHidden,
-          unitColumnIds: unitColumnIds,
-          categoryIds: categoryIds,
+          unitColumnIds,
+          categoryIds,
         }),
       });
 
@@ -170,6 +182,29 @@ const UnitModal = (props: Props) => {
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
       notify("success", t("Common/Unit") + t("Modal/created"), 4000);
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  // --- Fetch unit groups ---
+  const fetchUnitGroups = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/unit-group`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      } else {
+        setUnitGroups(result.items);
+      }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -224,23 +259,26 @@ const UnitModal = (props: Props) => {
     }
   };
 
-  // --- Fetch unit groups ---
-  const fetchUnitGroups = async () => {
+  // --- Fetch shifts ---
+  const fetchShifts = async () => {
     try {
-      const response = await fetch(`${apiUrl}/unit-group`, {
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/shift?sortBy=name&sortOrder=asc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       const result = await response.json();
 
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        setUnitGroups(result.items);
+        setShifts(result.items);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -285,6 +323,9 @@ const UnitModal = (props: Props) => {
 
     setCategoryIds(result.categoryIds ?? []);
     setOriginalCategoryIds(result.categoryIds ?? []);
+
+    setShiftIds(result.shiftIds ?? []);
+    setOriginalShiftIds(result.shiftIds ?? []);
   };
 
   // --- Update unit ---
@@ -303,8 +344,9 @@ const UnitModal = (props: Props) => {
           name,
           unitGroupId: parseInt(unitGroup),
           isHidden,
-          unitColumnIds: unitColumnIds,
-          categoryIds: categoryIds,
+          unitColumnIds,
+          categoryIds,
+          shiftIds,
         }),
       });
 
@@ -405,7 +447,8 @@ const UnitModal = (props: Props) => {
         isHidden !== false ||
         JSON.stringify(unitColumnIds) !==
           JSON.stringify(originalUnitColumnIds) ||
-        JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds);
+        JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
+        JSON.stringify(shiftIds) !== JSON.stringify(originalShiftIds);
 
       setIsDirty(dirty);
       return;
@@ -422,11 +465,13 @@ const UnitModal = (props: Props) => {
     isHidden,
     unitColumnIds,
     categoryIds,
+    shiftIds,
     originalName,
     originalUnitGroup,
     originalIsHidden,
     originalUnitColumnIds,
     originalCategoryIds,
+    originalShiftIds,
   ]);
 
   return (
@@ -537,7 +582,9 @@ const UnitModal = (props: Props) => {
                   }}
                 />
                 <span className="text-sm text-[var(--text-secondary)] italic">
-                  {t("UnitModal/Drag and drop1")}
+                  {t("Modal/Drag and drop1") +
+                    t("Common/column") +
+                    t("Modal/Drag and drop3")}
                 </span>
               </>
             )}
@@ -589,7 +636,63 @@ const UnitModal = (props: Props) => {
                   }}
                 />
                 <span className="text-sm text-[var(--text-secondary)] italic">
-                  {t("UnitModal/Drag and drop2")}
+                  {t("Modal/Drag and drop1") +
+                    t("Common/category") +
+                    t("Modal/Drag and drop3")}
+                </span>
+              </>
+            )}
+
+            <div className="mt-8 flex items-center gap-2">
+              <hr className="w-12 text-[var(--border-tertiary)]" />
+              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                {t("UnitModal/Info4")}
+              </h3>
+              <hr className="w-full text-[var(--border-tertiary)]" />
+            </div>
+
+            <div className="flex gap-4">
+              <MultiDropdown
+                label={t("Common/Shifts")}
+                value={shiftIds.map(String)}
+                onChange={(val: string[]) => setShiftIds(val.map(Number))}
+                options={shifts.map((c) => ({
+                  label: c.name,
+                  value: String(c.id),
+                }))}
+                onModal
+              />
+            </div>
+
+            {shiftIds.length > 0 && (
+              <>
+                <DragDrop
+                  items={shiftIds}
+                  getId={(id) => String(id)}
+                  onReorder={(newList) => setShiftIds(newList)}
+                  onDraggingChange={setIsAnyDragging}
+                  renderItem={(id, isDragging) => {
+                    const col = shifts.find((c) => c.id === id);
+                    if (!col) {
+                      return null;
+                    }
+
+                    return (
+                      <DragChip
+                        label={col.name}
+                        isDragging={isDragging}
+                        dragging={isAnyDragging}
+                        onDelete={() =>
+                          setShiftIds((prev) => prev.filter((v) => v !== id))
+                        }
+                      />
+                    );
+                  }}
+                />
+                <span className="text-sm text-[var(--text-secondary)] italic">
+                  {t("Modal/Drag and drop2") +
+                    t("Common/shift") +
+                    t("Modal/Drag and drop3")}
                 </span>
               </>
             )}

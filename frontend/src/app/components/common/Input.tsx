@@ -3,6 +3,7 @@ import React, { ReactNode, useEffect, useRef, useState } from "react";
 
 type InputProps = {
   id?: string;
+  name?: string;
   label?: string;
   placeholder?: string;
   icon?: ReactNode;
@@ -36,6 +37,7 @@ const isDarkTheme = () => {
 
 const Input = ({
   id,
+  name,
   label,
   placeholder,
   icon,
@@ -84,7 +86,7 @@ const Input = ({
           }}
           type={type === "password" && showPassword ? "text" : type}
           id={id}
-          name={id}
+          name={name ?? id}
           placeholder={
             isCheckbox || isRadio
               ? undefined

@@ -52,6 +52,12 @@ export const fetchContent = async ({
       params.append("categoryIds", id.toString());
     }
   }
+
+  if (filters?.shiftIds) {
+    for (const id of filters.shiftIds) {
+      params.append("shiftIds", id.toString());
+    }
+  }
   // --- FILTERS STOP ---
 
   const response = await fetch(`${apiUrl}/unit?${params}`, {
@@ -91,15 +97,23 @@ export const deleteContent = async (id: number): Promise<void> => {
   }
 
   if (!response.ok) {
-    const t = useTranslations();
-    let errorMessage = t("Api/Failed to delete") + t("Common/unit");
+    // const t = useTranslations();
+    // let errorMessage = t("Api/Failed to delete") + t("Common/unit");
+    // try {
+    //   const errorData = await response.json();
+    //   errorMessage = errorData.message || errorMessage;
+    // } catch {
+    //   errorMessage = await response.text();
+    // }
+    // throw new Error(errorMessage);
+    let message = "Unknown error";
     try {
-      const errorData = await response.json();
-      errorMessage = errorData.message || errorMessage;
+      const data = await response.json();
+      message = data?.message || message;
     } catch {
-      errorMessage = await response.text();
+      message = (await response.text()) || message;
     }
-    throw new Error(errorMessage);
+    throw new Error(message);
   }
 };
 
@@ -156,6 +170,29 @@ export type CategoryOption = {
 
 export const fetchCategories = async (): Promise<CategoryOption[]> => {
   const response = await fetch(`${apiUrl}/category`, {
+    headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
+};
+
+export type ShiftOption = {
+  id: number;
+  name: string;
+};
+
+export const fetchShifts = async (): Promise<ShiftOption[]> => {
+  const response = await fetch(`${apiUrl}/shift`, {
     headers: {
       "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",

@@ -106,7 +106,7 @@ const UnitGroupsClient = (props: Props) => {
   useEffect(() => {
     fetchUnits()
       .then(setUnits)
-      .catch((err) => notify("error", String(err)));
+      .catch((err) => notify("error", t("Modal/Unknown error")));
   }, []);
 
   const nameCounts = units.reduce<Record<string, number>>((acc, unit) => {
@@ -134,7 +134,7 @@ const UnitGroupsClient = (props: Props) => {
       await fetchItems();
       notify("success", t("Common/Group") + t("Manage/deleted"), 4000); // <-- Unique.
     } catch (err: any) {
-      notify("error", err?.message || String(err));
+      notify("error", err?.message || t("Modal/Unknown error"));
     }
   };
 

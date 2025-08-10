@@ -11,8 +11,8 @@ using backend.Data;
 namespace eCommerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250809115034_IconHoverRemove")]
-    partial class IconHoverRemove
+    [Migration("20250810200710_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -68,6 +68,34 @@ namespace eCommerce.Migrations
                     b.ToTable("CategoryToSubCategories");
                 });
 
+            modelBuilder.Entity("backend.Models.ManyToMany.ShiftToShiftTeam", b =>
+                {
+                    b.Property<int>("ShiftId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ShiftTeamId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeSpan?>("EndTime")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<TimeSpan?>("StartTime")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ShiftId", "ShiftTeamId");
+
+                    b.HasIndex("ShiftTeamId");
+
+                    b.ToTable("ShiftToShiftTeams");
+                });
+
             modelBuilder.Entity("backend.Models.ManyToMany.UnitToCategory", b =>
                 {
                     b.Property<int>("UnitId")
@@ -84,6 +112,27 @@ namespace eCommerce.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("UnitToCategories");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.UnitToShift", b =>
+                {
+                    b.Property<int>("UnitId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ShiftId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("UnitId", "ShiftId");
+
+                    b.HasIndex("ShiftId");
+
+                    b.ToTable("UnitToShifts");
                 });
 
             modelBuilder.Entity("backend.Models.ManyToMany.UnitToUnitColumn", b =>
@@ -232,6 +281,99 @@ namespace eCommerce.Migrations
                     b.HasIndex("UnitId");
 
                     b.ToTable("Reports");
+                });
+
+            modelBuilder.Entity("backend.Models.Shift", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("SystemKey")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Shifts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedBy = "system",
+                            CreationDate = new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsHidden = false,
+                            Name = "None",
+                            SystemKey = 0,
+                            UpdateDate = new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            UpdatedBy = "system"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedBy = "system",
+                            CreationDate = new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsHidden = false,
+                            Name = "Unmanned",
+                            SystemKey = 1,
+                            UpdateDate = new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            UpdatedBy = "system"
+                        });
+                });
+
+            modelBuilder.Entity("backend.Models.ShiftTeam", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ShiftTeams");
                 });
 
             modelBuilder.Entity("backend.Models.SubCategory", b =>
@@ -547,6 +689,25 @@ namespace eCommerce.Migrations
                     b.Navigation("SubCategory");
                 });
 
+            modelBuilder.Entity("backend.Models.ManyToMany.ShiftToShiftTeam", b =>
+                {
+                    b.HasOne("backend.Models.Shift", "Shift")
+                        .WithMany("ShiftToShiftTeams")
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.ShiftTeam", "ShiftTeam")
+                        .WithMany("ShiftToShiftTeams")
+                        .HasForeignKey("ShiftTeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shift");
+
+                    b.Navigation("ShiftTeam");
+                });
+
             modelBuilder.Entity("backend.Models.ManyToMany.UnitToCategory", b =>
                 {
                     b.HasOne("backend.Models.Category", "Category")
@@ -562,6 +723,25 @@ namespace eCommerce.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
+
+                    b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.UnitToShift", b =>
+                {
+                    b.HasOne("backend.Models.Shift", "Shift")
+                        .WithMany("UnitToShifts")
+                        .HasForeignKey("ShiftId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Unit", "Unit")
+                        .WithMany("UnitToShifts")
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Shift");
 
                     b.Navigation("Unit");
                 });
@@ -655,6 +835,18 @@ namespace eCommerce.Migrations
                     b.Navigation("UnitToCategories");
                 });
 
+            modelBuilder.Entity("backend.Models.Shift", b =>
+                {
+                    b.Navigation("ShiftToShiftTeams");
+
+                    b.Navigation("UnitToShifts");
+                });
+
+            modelBuilder.Entity("backend.Models.ShiftTeam", b =>
+                {
+                    b.Navigation("ShiftToShiftTeams");
+                });
+
             modelBuilder.Entity("backend.Models.SubCategory", b =>
                 {
                     b.Navigation("CategoryToSubCategories");
@@ -667,6 +859,8 @@ namespace eCommerce.Migrations
                     b.Navigation("UnitCells");
 
                     b.Navigation("UnitToCategories");
+
+                    b.Navigation("UnitToShifts");
 
                     b.Navigation("UnitToUnitColumns");
                 });

@@ -42,6 +42,8 @@
   "Unit/NameTakenInGroup": "A unit with this name already exists in the same group!",
   "Unit/VisibilityVisible": "Visible",
   "Unit/VisibilityHidden": "Hidden",
+  "Unit/ShiftNotLinked": "Shift is not linked to the unit",
+  "Unit/CannotRemoveActiveShift": "Cannot remove an active shift from the unit",
 
   "UnitColumn/NotFound": "Column could not be found in the database",
   "UnitColumn/InUse": "Cannot delete a column that is in use",
@@ -77,8 +79,20 @@
   "News/MissingContent": "Enter content",
   "NewsType/Invalid": "Invalid news type",
 
-  "Category/NotFound": "The category could not be found in the database",
+  "Category/NotFound": "Category could not be found in the database",
   "Category/InUse": "Cannot delete a category that is in use",
   "Category/Deleted": "Category deleted!",
-  "Category/NameTaken": "A category with this name already exists!"
+  "Category/NameTaken": "A category with this name already exists!",
+
+  "Shift/NotFound": "Shift could not be found in the database",
+  "Shift/InUse": "Cannot delete a shift that is in use",
+  "Shift/Deleted": "Shift deleted!",
+  "Shift/NameTaken": "A shift with this name already exists!",
+  "Shift/CannotHideActive": "Cannot hide a shift that is active in a unit",
+
+  "ShiftTeam/NotFound": "Team could not be found in the database",
+  "ShiftTeam/InUse": "Cannot delete a team that is in use",
+  "ShiftTeam/Deleted": "Team deleted!",
+  "ShiftTeam/NameTaken": "A team with this name already exists!",
+  "ShiftTeam/CannotHideActive": "Cannot hide a team that is active in a unit"
 }

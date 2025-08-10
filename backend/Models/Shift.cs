@@ -3,6 +3,12 @@ using backend.Models.ManyToMany;
 
 namespace backend.Models
 {
+    public enum ShiftSystemKey
+    {
+        None,
+        Unmanned,
+    }
+
     public class Shift
     {
         public int Id { get; set; }
@@ -10,6 +16,9 @@ namespace backend.Models
         [MaxLength(32)]
         public string Name { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
+
+        public ShiftSystemKey? SystemKey { get; set; }
+        public bool IsSystem => SystemKey != null;
 
         // Meta data.
         public DateTime CreationDate { get; set; }

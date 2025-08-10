@@ -9,9 +9,11 @@ import {
   fetchUnitColumns,
   fetchCategories,
   fetchUnitGroups,
+  fetchShifts,
   UnitColumnOption,
   CategoryOption,
   UnitGroupOption,
+  ShiftOption,
 } from "@/app/apis/manage/unitsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
 import UnitModal from "@/app/components/modals/admin/units/UnitModal"; // <-- Unique.
@@ -109,18 +111,23 @@ const UnitsClient = (props: Props) => {
   const [unitGroups, setUnitGroups] = useState<UnitGroupOption[]>([]);
   const [unitColumns, setUnitColumns] = useState<UnitColumnOption[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [shifts, setShifts] = useState<ShiftOption[]>([]);
   useEffect(() => {
     fetchUnitGroups()
       .then(setUnitGroups)
-      .catch((err) => notify("error", String(err)));
+      .catch((err) => notify("error", t("Modal/Unknown error")));
 
     fetchUnitColumns()
       .then(setUnitColumns)
-      .catch((err) => notify("error", String(err)));
+      .catch((err) => notify("error", t("Modal/Unknown error")));
 
     fetchCategories()
       .then(setCategories)
-      .catch((err) => notify("error", String(err)));
+      .catch((err) => notify("error", t("Modal/Unknown error")));
+
+    fetchShifts()
+      .then(setShifts)
+      .catch((err) => notify("error", t("Modal/Unknown error")));
   }, []);
 
   // --- TOGGLE MODAL(S) ---
@@ -144,7 +151,7 @@ const UnitsClient = (props: Props) => {
       window.dispatchEvent(new Event("unit-list-updated"));
       notify("success", t("Common/Unit") + t("Manage/deleted"), 4000); // <-- Unique.
     } catch (err: any) {
-      notify("error", err?.message || String(err));
+      notify("error", err?.message || t("Modal/Unknown error"));
     }
   };
 
@@ -210,6 +217,31 @@ const UnitsClient = (props: Props) => {
                       className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-two)]`}
                     >
                       {cat.name}
+                    </span>
+                  );
+                })
+              )}
+            </>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">{t("Common/Shifts")}:</span>
+            <>
+              {shifts.filter((shift) => item.shiftIds.includes(shift.id))
+                .length === 0 ? (
+                <span className="-mt-2">-</span>
+              ) : (
+                item.shiftIds.map((id) => {
+                  const shift = shifts.find((s) => s.id === id);
+                  if (!shift) {
+                    return null;
+                  }
+
+                  return (
+                    <span
+                      key={id}
+                      className={`${badgeClass} bg-[var(--badge-three)] text-[var(--text-two)]`}
+                    >
+                      {shift.name}
                     </span>
                   );
                 })
@@ -324,6 +356,33 @@ const UnitsClient = (props: Props) => {
       responsivePriority: 4,
     },
     {
+      key: "shifts",
+      label: t("Common/Shifts"),
+      sortingItem: "shiftcount",
+      labelAsc: t("Units/shift amount") + t("Manage/ascending"),
+      labelDesc: t("Units/shift amount") + t("Manage/descending"),
+      getValue: (item: UnitItem) => (
+        <div className="flex flex-wrap gap-2">
+          {item.shiftIds.map((id) => {
+            const shift = shifts.find((s) => s.id === id);
+            if (!shift) {
+              return null;
+            }
+
+            return (
+              <span
+                key={id}
+                className={`${badgeClass} bg-[var(--badge-three)] text-[var(--text-two)]`}
+              >
+                {shift.name}
+              </span>
+            );
+          })}
+        </div>
+      ),
+      responsivePriority: 5,
+    },
+    {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
@@ -392,6 +451,16 @@ const UnitsClient = (props: Props) => {
           : (prev.categoryIds ?? []).filter((id) => id !== catId),
       }));
     },
+
+    selectedShifts: filters.shiftIds ?? [],
+    setShiftSelected: (shiftId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        shiftIds: val
+          ? [...(prev.shiftIds ?? []), shiftId]
+          : (prev.shiftIds ?? []).filter((id) => id !== shiftId),
+      }));
+    },
   };
 
   // --- Filter List (Unique)
@@ -451,6 +520,17 @@ const UnitsClient = (props: Props) => {
         setSelected: (val: boolean) =>
           filterControls.setCategorySelected(cat.id, val),
         count: counts?.categoryCount?.[cat.id],
+      })),
+    },
+    {
+      label: t("Common/Shifts"),
+      breakpoint: "2xl",
+      options: shifts.map((shift) => ({
+        label: shift.name,
+        isSelected: filterControls.selectedShifts.includes(shift.id),
+        setSelected: (val: boolean) =>
+          filterControls.setShiftSelected(shift.id, val),
+        count: counts?.shiftCount?.[shift.id],
       })),
     },
   ];

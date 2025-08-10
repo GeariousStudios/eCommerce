@@ -42,6 +42,8 @@
   "Unit/NameTakenInGroup": "En enhet med detta namn finns redan i samma grupp!",
   "Unit/VisibilityVisible": "Synlig",
   "Unit/VisibilityHidden": "Dold",
+  "Unit/ShiftNotLinked": "Skiftet är inte kopplat till enheten",
+  "Unit/CannotRemoveActiveShift": "Kan inte ta bort ett aktivt skift från enheten",
 
   "UnitColumn/NotFound": "Kolumnen kunde inte hittas i databasen",
   "UnitColumn/InUse": "Kan inte ta bort en kolumn som används",
@@ -86,9 +88,11 @@
   "Shift/InUse": "Kan inte ta bort ett skift som används",
   "Shift/Deleted": "Skift borttagen!",
   "Shift/NameTaken": "Skift med detta namn finns redan!",
+  "Shift/CannotHideActive": "Kan inte dölja ett skift som är aktivt i en enhet",
 
   "ShiftTeam/NotFound": "Laget kunde inte hittas i databasen",
   "ShiftTeam/InUse": "Kan inte ta bort ett lag som används",
   "ShiftTeam/Deleted": "Lag borttagen!",
-  "ShiftTeam/NameTaken": "Lag med detta namn finns redan!"
+  "ShiftTeam/NameTaken": "Lag med detta namn finns redan!",
+  "ShiftTeam/CannotHideActive": "Kan inte dölja ett lag som är aktivt i en enhet"
 }

@@ -7,6 +7,8 @@ import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
+  switchClass,
+  switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
@@ -29,8 +31,10 @@ const ShiftTeamModal = (props: Props) => {
 
   // --- States ---
   const [name, setName] = useState("");
+  const [isHidden, setIsHidden] = useState(false);
 
   const [originalName, setOriginalName] = useState("");
+  const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
@@ -48,6 +52,9 @@ const ShiftTeamModal = (props: Props) => {
     } else {
       setName("");
       setOriginalName("");
+
+      setIsHidden(false);
+      setOriginalIsHidden(false);
     }
   }, [props.isOpen, props.itemId]);
 
@@ -120,13 +127,16 @@ const ShiftTeamModal = (props: Props) => {
   // --- Fetch shift team ---
   const fetchShiftTeam = async () => {
     try {
-      const response = await fetch(`${apiUrl}/shift-team/fetch/${props.itemId}`, {
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/shift-team/fetch/${props.itemId}`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       const result = await response.json();
 
@@ -143,6 +153,9 @@ const ShiftTeamModal = (props: Props) => {
   const fillShiftTeamData = (result: any) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
+
+    setIsHidden(result.isHidden ?? false);
+    setOriginalIsHidden(result.isHidden ?? false);
   };
 
   // --- Update shift team ---
@@ -150,17 +163,20 @@ const ShiftTeamModal = (props: Props) => {
     event.preventDefault();
 
     try {
-      const response = await fetch(`${apiUrl}/shift-team/update/${props.itemId}`, {
-        method: "PUT",
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${apiUrl}/shift-team/update/${props.itemId}`,
+        {
+          method: "PUT",
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+          }),
         },
-        body: JSON.stringify({
-          name,
-        }),
-      });
+      );
 
       if (response.status === 401) {
         localStorage.removeItem("token");
@@ -217,15 +233,15 @@ const ShiftTeamModal = (props: Props) => {
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
-      const dirty = name !== "";
+      const dirty = name !== "" || isHidden !== false;
 
       setIsDirty(dirty);
       return;
     }
 
-    const dirty = name !== originalName;
+    const dirty = name !== originalName || isHidden !== originalIsHidden;
     setIsDirty(dirty);
-  }, [name, originalName]);
+  }, [name, isHidden, originalName, originalIsHidden]);
 
   return (
     <>
@@ -269,6 +285,31 @@ const ShiftTeamModal = (props: Props) => {
                 required
                 {...shiftTeamConstraints.name}
               />
+            </div>
+
+            <div className="mt-8 flex items-center gap-2">
+              <hr className="w-12 text-[var(--border-tertiary)]" />
+              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                {t("Common/Status")}
+              </h3>
+              <hr className="w-full text-[var(--border-tertiary)]" />
+            </div>
+
+            <div className="mb-8 flex justify-between gap-4">
+              <div className="flex items-center gap-2 truncate">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isHidden}
+                  className={switchClass(isHidden)}
+                  onClick={() => setIsHidden((prev) => !prev)}
+                >
+                  <div className={switchKnobClass(isHidden)} />
+                </button>
+                <span className="mb-0.5">
+                  {t("ShiftTeamModal/Hide shift team")}
+                </span>
+              </div>
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">

@@ -290,6 +290,30 @@ namespace backend.Controllers
         public async Task<IActionResult> UpdateShiftTeam(int id, UpdateShiftTeamDto dto)
         {
             var lang = await GetLangAsync();
+
+            if (dto.IsHidden)
+            {
+                var activeSomewhere = await _context
+                    .UnitToShifts.AsNoTracking()
+                    .Where(uts => uts.IsActive)
+                    .Join(
+                        _context
+                            .ShiftToShiftTeams.AsNoTracking()
+                            .Where(sst => sst.ShiftTeamId == id),
+                        uts => uts.ShiftId,
+                        sst => sst.ShiftId,
+                        (uts, sst) => 1
+                    )
+                    .AnyAsync();
+
+                if (activeSomewhere)
+                {
+                    return BadRequest(
+                        new { message = await _t.GetAsync("ShiftTeam/CannotHideActive", lang) }
+                    );
+                }
+            }
+
             var shiftTeam = await _context.ShiftTeams.FindAsync(id);
 
             if (shiftTeam == null)

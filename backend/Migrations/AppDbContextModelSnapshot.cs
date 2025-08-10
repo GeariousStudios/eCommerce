@@ -119,6 +119,12 @@ namespace eCommerce.Migrations
                     b.Property<int>("ShiftId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("UnitId", "ShiftId");
 
                     b.HasIndex("ShiftId");
@@ -295,6 +301,9 @@ namespace eCommerce.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("SystemKey")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("UpdateDate")
                         .HasColumnType("TEXT");
 
@@ -305,6 +314,30 @@ namespace eCommerce.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Shifts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedBy = "system",
+                            CreationDate = new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsHidden = false,
+                            Name = "None",
+                            SystemKey = 0,
+                            UpdateDate = new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            UpdatedBy = "system"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedBy = "system",
+                            CreationDate = new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsHidden = false,
+                            Name = "Unmanned",
+                            SystemKey = 1,
+                            UpdateDate = new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            UpdatedBy = "system"
+                        });
                 });
 
             modelBuilder.Entity("backend.Models.ShiftTeam", b =>

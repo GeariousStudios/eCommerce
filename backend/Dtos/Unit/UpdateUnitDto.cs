@@ -11,8 +11,10 @@ namespace backend.Dtos.Unit
 
         [Required(ErrorMessage = "[3|Unit/a group] Validation/Please select")]
         public int UnitGroupId { get; set; }
+        public bool IsHidden { get; set; }
+
         public List<int> UnitColumnIds { get; set; } = new();
         public List<int> CategoryIds { get; set; } = new();
-        public bool IsHidden { get; set; }
+        public List<int> ShiftIds { get; set; } = new();
     }
 }

@@ -107,6 +107,7 @@ export type UnitItem = {
   unitGroupName: string;
   unitColumnIds: number[];
   categoryIds: number[];
+  shiftIds: number[];
   isHidden?: boolean;
 
   creationDate: string;
@@ -119,6 +120,7 @@ export type UnitFilters = {
   unitGroupIds?: number[];
   unitColumnIds?: number[];
   categoryIds?: number[];
+  shiftIds?: number[];
   isHidden?: boolean;
 };
 
@@ -143,6 +145,7 @@ export type ShiftItem = {
     id: number;
     name: string;
   }[];
+  isHidden?: boolean;
 
   creationDate: string;
   updateDate: string;
@@ -152,6 +155,7 @@ export type ShiftItem = {
 
 export type ShiftFilters = {
   unitIds?: number[];
+  isHidden?: boolean;
 };
 
 // --- admin/manage/ShiftTeamsClient.tsx ---
@@ -162,6 +166,7 @@ export type ShiftTeamItem = {
     id: number;
     name: string;
   }[];
+  isHidden?: boolean;
 
   creationDate: string;
   updateDate: string;
@@ -171,4 +176,5 @@ export type ShiftTeamItem = {
 
 export type ShiftTeamFilters = {
   shiftIds?: number[];
+  isHidden?: boolean;
 };

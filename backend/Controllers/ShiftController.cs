@@ -2,7 +2,6 @@ using backend.Data;
 using backend.Dtos.Shift;
 using backend.Dtos.ShiftTeam;
 using backend.Dtos.Unit;
-using backend.Dtos.UnitGroup;
 using backend.Models;
 using backend.Models.ManyToMany;
 using backend.Services;
@@ -60,12 +59,16 @@ namespace backend.Controllers
             [FromQuery] int pageSize = 10
         )
         {
+            var lang = await GetLangAsync();
+
             var efQuery = _context
                 .Shifts.Include(s => s.ShiftToShiftTeams)
                 .ThenInclude(sst => sst.ShiftTeam)
                 .Include(s => s.UnitToShifts)
                 .ThenInclude(us => us.Unit)
                 .AsQueryable();
+
+            efQuery = efQuery.Where(s => s.SystemKey == null);
 
             if (isHidden.HasValue)
             {
@@ -136,34 +139,36 @@ namespace backend.Controllers
                 .UnitToShifts.GroupBy(us => us.UnitId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
-            var result = new
+            var shiftDtos = new List<ShiftDto>();
+            foreach (var s in shifts)
             {
-                totalCount,
-                items = shifts.Select(s => new ShiftDto
-                {
-                    Id = s.Id,
-                    Name = s.Name,
-                    IsHidden = s.IsHidden,
-                    ShiftTeams = s
-                        .ShiftToShiftTeams.OrderBy(sst => sst.Order)
-                        .Select(sst => new ShiftTeamDto
-                        {
-                            Id = sst.ShiftTeam.Id,
-                            Name = sst.ShiftTeam.Name,
-                        })
-                        .ToList(),
-                    ShiftTeamDisplayNames = s.ShiftToShiftTeams.ToDictionary(
-                        x => x.ShiftTeamId,
-                        x => x.DisplayName ?? ""
-                    ),
-                    ShiftTeamStartTimes = s
-                        .ShiftToShiftTeams.Where(x => x.StartTime.HasValue)
-                        .ToDictionary(x => x.ShiftTeamId, x => x.StartTime!.Value),
-                    ShiftTeamEndTimes = s
-                        .ShiftToShiftTeams.Where(x => x.EndTime.HasValue)
-                        .ToDictionary(x => x.ShiftTeamId, x => x.EndTime!.Value),
-                    Units =
-                        s.UnitToShifts.Select(us => us.Unit)
+                shiftDtos.Add(
+                    new ShiftDto
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        SystemKey = s.SystemKey,
+                        IsHidden = s.IsHidden,
+                        ShiftTeams = s
+                            .ShiftToShiftTeams.OrderBy(sst => sst.Order)
+                            .Select(sst => new ShiftTeamDto
+                            {
+                                Id = sst.ShiftTeam.Id,
+                                Name = sst.ShiftTeam.Name,
+                            })
+                            .ToList(),
+                        ShiftTeamDisplayNames = s.ShiftToShiftTeams.ToDictionary(
+                            x => x.ShiftTeamId,
+                            x => x.DisplayName ?? ""
+                        ),
+                        ShiftTeamStartTimes = s
+                            .ShiftToShiftTeams.Where(x => x.StartTime.HasValue)
+                            .ToDictionary(x => x.ShiftTeamId, x => x.StartTime!.Value),
+                        ShiftTeamEndTimes = s
+                            .ShiftToShiftTeams.Where(x => x.EndTime.HasValue)
+                            .ToDictionary(x => x.ShiftTeamId, x => x.EndTime!.Value),
+                        Units = s
+                            .UnitToShifts.Select(us => us.Unit)
                             .Select(u => new UnitDto
                             {
                                 Id = u.Id,
@@ -188,14 +193,20 @@ namespace backend.Controllers
                                 UpdateDate = u.UpdateDate,
                                 UpdatedBy = u.UpdatedBy,
                             })
-                            .ToList() ?? new(),
+                            .ToList(),
 
-                    // Meta data.
-                    CreationDate = s.CreationDate,
-                    CreatedBy = s.CreatedBy,
-                    UpdateDate = s.UpdateDate,
-                    UpdatedBy = s.UpdatedBy,
-                }),
+                        CreationDate = s.CreationDate,
+                        CreatedBy = s.CreatedBy,
+                        UpdateDate = s.UpdateDate,
+                        UpdatedBy = s.UpdatedBy,
+                    }
+                );
+            }
+
+            var result = new
+            {
+                totalCount,
+                items = shiftDtos,
                 counts = new
                 {
                     visibilityCount = visibilityCount,
@@ -227,6 +238,7 @@ namespace backend.Controllers
             {
                 Id = shift.Id,
                 Name = shift.Name,
+                SystemKey = shift.SystemKey,
                 IsHidden = shift.IsHidden,
                 ShiftTeams = shift
                     .ShiftToShiftTeams.OrderBy(x => x.Order)
@@ -275,6 +287,43 @@ namespace backend.Controllers
                     })
                     .ToList(),
             };
+
+            return Ok(result);
+        }
+
+        [HttpGet("unit/{unitId}")]
+        public async Task<IActionResult> GetShiftsForUnit(int unitId)
+        {
+            var lang = await GetLangAsync();
+            var unit = await _context
+                .Units.Include(u => u.UnitToShifts.OrderBy(s => s.Order))
+                .ThenInclude(us => us.Shift)
+                .FirstOrDefaultAsync(u => u.Id == unitId);
+
+            if (unit == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("Shift/NotFound", lang) });
+            }
+
+            var result = new List<ShiftDto>();
+
+            foreach (var us in unit.UnitToShifts.OrderBy(us => us.Order))
+            {
+                result.Add(
+                    new ShiftDto
+                    {
+                        Id = us.Shift.Id,
+                        Name = us.Shift.Name,
+                        SystemKey = us.Shift.SystemKey,
+                        IsHidden = us.Shift.IsHidden,
+
+                        CreationDate = us.Shift.CreationDate,
+                        CreatedBy = us.Shift.CreatedBy,
+                        UpdateDate = us.Shift.UpdateDate,
+                        UpdatedBy = us.Shift.UpdatedBy,
+                    }
+                );
+            }
 
             return Ok(result);
         }
@@ -385,6 +434,7 @@ namespace backend.Controllers
             {
                 Id = shift.Id,
                 Name = shift.Name,
+                SystemKey = shift.SystemKey,
                 IsHidden = shift.IsHidden,
 
                 // Meta data.
@@ -402,6 +452,21 @@ namespace backend.Controllers
         public async Task<IActionResult> UpdateShift(int id, UpdateShiftDto dto)
         {
             var lang = await GetLangAsync();
+
+            if (dto.IsHidden)
+            {
+                var isActiveSomewhere = await _context.UnitToShifts.AnyAsync(uts =>
+                    uts.ShiftId == id && uts.IsActive
+                );
+
+                if (isActiveSomewhere)
+                {
+                    return BadRequest(
+                        new { message = await _t.GetAsync("Shift/CannotHideActive", lang) }
+                    );
+                }
+            }
+
             var shift = await _context.Shifts.FindAsync(id);
 
             if (shift == null)
@@ -479,6 +544,7 @@ namespace backend.Controllers
             {
                 Id = shift.Id,
                 Name = shift.Name,
+                SystemKey = shift.SystemKey,
                 IsHidden = shift.IsHidden,
 
                 // Meta data.

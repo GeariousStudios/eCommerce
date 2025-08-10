@@ -52,6 +52,7 @@ namespace backend.Controllers
             [FromQuery] int[]? unitGroupIds = null,
             [FromQuery] int[]? unitColumnIds = null,
             [FromQuery] int[]? categoryIds = null,
+            [FromQuery] int[]? shiftIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
@@ -63,7 +64,9 @@ namespace backend.Controllers
                 .Include(u => u.UnitToUnitColumns)
                 .ThenInclude(uuc => uuc.UnitColumn)
                 .Include(u => u.UnitToCategories)
-                .ThenInclude(uc => uc.Category);
+                .ThenInclude(uc => uc.Category)
+                .Include(u => u.UnitToShifts)
+                .ThenInclude(us => us.Shift);
 
             if (isHidden.HasValue)
             {
@@ -87,6 +90,11 @@ namespace backend.Controllers
                 query = query.Where(u =>
                     u.UnitToCategories.Any(uc => categoryIds.Contains(uc.CategoryId))
                 );
+            }
+
+            if (shiftIds?.Any() == true)
+            {
+                query = query.Where(u => u.UnitToShifts.Any(us => shiftIds.Contains(us.ShiftId)));
             }
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -116,6 +124,11 @@ namespace backend.Controllers
                         .OrderByDescending(u => u.UnitToCategories.Count)
                         .ThenBy(u => u.Name.ToLower())
                     : query.OrderBy(u => u.UnitToCategories.Count).ThenBy(u => u.Name.ToLower()),
+                "shiftcount" => sortOrder == "desc"
+                    ? query
+                        .OrderByDescending(u => u.UnitToShifts.Count)
+                        .ThenBy(u => u.Name.ToLower())
+                    : query.OrderBy(u => u.UnitToShifts.Count).ThenBy(u => u.Name.ToLower()),
                 "ishidden" => sortOrder == "desc"
                     ? query
                         .OrderByDescending(u => u.IsHidden)
@@ -160,6 +173,12 @@ namespace backend.Controllers
                 .GroupBy(uc => uc.CategoryId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
+            var shiftCount = _context
+                .Units.AsEnumerable()
+                .SelectMany(u => u.UnitToShifts)
+                .GroupBy(us => us.ShiftId)
+                .ToDictionary(g => g.Key, g => g.Count());
+
             var result = new
             {
                 totalCount,
@@ -178,6 +197,12 @@ namespace backend.Controllers
                         .UnitToCategories.OrderBy(x => x.Order)
                         .Select(x => x.CategoryId)
                         .ToList(),
+                    ShiftIds = u
+                        .UnitToShifts.OrderBy(x => x.Order)
+                        .Where(us => us.Shift.SystemKey == null)
+                        .Select(x => x.ShiftId)
+                        .ToList(),
+                    ActiveShiftId = u.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
 
                     // Meta data.
                     CreationDate = u.CreationDate,
@@ -191,6 +216,7 @@ namespace backend.Controllers
                     unitGroupCount = unitGroupCount,
                     unitColumnCount = unitColumnCount,
                     categoryCount = categoryCount,
+                    shiftCount = shiftCount,
                 },
             };
 
@@ -207,6 +233,8 @@ namespace backend.Controllers
                 .ThenInclude(uuc => uuc.UnitColumn)
                 .Include(u => u.UnitToCategories)
                 .ThenInclude(uc => uc.Category)
+                .Include(u => u.UnitToShifts)
+                .ThenInclude(us => us.Shift)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unit == null)
@@ -231,6 +259,12 @@ namespace backend.Controllers
                     .UnitToCategories.OrderBy(x => x.Order)
                     .Select(x => x.CategoryId)
                     .ToList(),
+                ShiftIds = unit
+                    .UnitToShifts.OrderBy(x => x.Order)
+                    .Where(us => us.Shift.SystemKey == null)
+                    .Select(x => x.ShiftId)
+                    .ToList(),
+                ActiveShiftId = unit.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
 
                 // Meta data.
                 CreationDate = unit.CreationDate,
@@ -328,6 +362,23 @@ namespace backend.Controllers
                 );
             }
 
+            var systemShiftIds = await _context
+                .Shifts.Where(s => s.SystemKey != null)
+                .Select(s => s.Id)
+                .ToListAsync();
+
+            foreach (var sysId in systemShiftIds)
+            {
+                if (!dto.ShiftIds.Contains(sysId))
+                {
+                    dto.ShiftIds.Insert(0, sysId);
+                }
+            }
+
+            var orderedShiftIds = dto
+                .ShiftIds.OrderBy(id => systemShiftIds.Contains(id) ? 0 : 1)
+                .ToList();
+
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -344,6 +395,11 @@ namespace backend.Controllers
                 UpdatedBy = createdBy,
             };
 
+            var (noneId, unmannedId) = await GetSystemShiftIdsAsync();
+            var finalShiftIds = NormalizeShiftIds(dto.ShiftIds, noneId, unmannedId);
+
+            var activeShiftId = noneId;
+
             unit.UnitToUnitColumns = dto
                 .UnitColumnIds.Select(
                     (colId, index) => new UnitToUnitColumn { UnitColumnId = colId, Order = index }
@@ -353,6 +409,18 @@ namespace backend.Controllers
             unit.UnitToCategories = dto
                 .CategoryIds.Select(
                     (catId, index) => new UnitToCategory { CategoryId = catId, Order = index }
+                )
+                .ToList();
+
+            unit.UnitToShifts = finalShiftIds
+                .Select(
+                    (shiftId, index) =>
+                        new UnitToShift
+                        {
+                            ShiftId = shiftId,
+                            Order = index,
+                            IsActive = shiftId == activeShiftId,
+                        }
                 )
                 .ToList();
 
@@ -372,6 +440,8 @@ namespace backend.Controllers
                     .UnitToCategories.OrderBy(x => x.Order)
                     .Select(x => x.CategoryId)
                     .ToList(),
+                ShiftIds = unit.UnitToShifts.OrderBy(x => x.Order).Select(x => x.ShiftId).ToList(),
+                ActiveShiftId = unit.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
 
                 // Meta data.
                 CreationDate = unit.CreationDate,
@@ -391,6 +461,7 @@ namespace backend.Controllers
             var unit = await _context
                 .Units.Include(u => u.UnitToUnitColumns)
                 .Include(u => u.UnitToCategories)
+                .Include(u => u.UnitToShifts)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unit == null)
@@ -444,6 +515,27 @@ namespace backend.Controllers
                 );
             }
 
+            var activeShiftId = await _context
+                .UnitToShifts.Where(l => l.UnitId == id && l.IsActive)
+                .Select(l => l.ShiftId)
+                .FirstOrDefaultAsync();
+
+            var (noneId, unmannedId) = await GetSystemShiftIdsAsync();
+
+            dto.ShiftIds = dto
+                .ShiftIds.Where(id => id != noneId && id != unmannedId)
+                .Distinct()
+                .ToList();
+
+            var finalShiftIds = NormalizeShiftIds(dto.ShiftIds, noneId, unmannedId);
+
+            if (activeShiftId != 0 && !finalShiftIds.Contains(activeShiftId))
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("Unit/CannotRemoveActiveShift", lang) }
+                );
+            }
+
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -491,6 +583,27 @@ namespace backend.Controllers
 
             _context.UnitToCategories.AddRange(newUnitCategoryLinks);
 
+            var oldShiftLinks = await _context
+                .UnitToShifts.Where(l => l.UnitId == unit.Id)
+                .ToListAsync();
+
+            _context.UnitToShifts.RemoveRange(oldShiftLinks);
+
+            var newShiftLinks = finalShiftIds
+                .Select(
+                    (shiftId, index) =>
+                        new UnitToShift
+                        {
+                            UnitId = unit.Id,
+                            ShiftId = shiftId,
+                            Order = index,
+                            IsActive = shiftId == activeShiftId,
+                        }
+                )
+                .ToList();
+
+            _context.UnitToShifts.AddRange(newShiftLinks);
+
             // Meta data.
             unit.UpdateDate = now;
             unit.UpdatedBy = updatedBy;
@@ -511,6 +624,8 @@ namespace backend.Controllers
                     .UnitToCategories.OrderBy(x => x.Order)
                     .Select(x => x.CategoryId)
                     .ToList(),
+                ShiftIds = unit.UnitToShifts.OrderBy(x => x.Order).Select(x => x.ShiftId).ToList(),
+                ActiveShiftId = unit.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
 
                 // Meta data.
                 UpdateDate = unit.UpdateDate,
@@ -518,6 +633,71 @@ namespace backend.Controllers
             };
 
             return Ok(result);
+        }
+
+        [HttpPatch("{id}/active-shift")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SetActiveShift(int id, SetActiveShiftDto dto)
+        {
+            var lang = await GetLangAsync();
+            var unit = await _context
+                .Units.Include(u => u.UnitToShifts)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (unit == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
+            }
+
+            var links = unit.UnitToShifts;
+            if (!links.Any(l => l.ShiftId == dto.ActiveShiftId))
+                return BadRequest(new { message = await _t.GetAsync("Unit/ShiftNotLinked", lang) });
+
+            foreach (var l in links)
+            {
+                l.IsActive = (l.ShiftId == dto.ActiveShiftId);
+            }
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (updatedBy, userId) = userInfo.Value;
+            var now = DateTime.UtcNow;
+
+            unit.UpdateDate = now;
+            unit.UpdatedBy = updatedBy;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        private async Task<(int noneId, int unmannedId)> GetSystemShiftIdsAsync()
+        {
+            var shifts = await _context
+                .Shifts.Where(s =>
+                    s.SystemKey == ShiftSystemKey.None || s.SystemKey == ShiftSystemKey.Unmanned
+                )
+                .Select(s => new { s.Id, s.SystemKey })
+                .ToListAsync();
+
+            var noneId = shifts.First(s => s.SystemKey == ShiftSystemKey.None).Id;
+            var unmannedId = shifts.First(s => s.SystemKey == ShiftSystemKey.Unmanned).Id;
+            return (noneId, unmannedId);
+        }
+
+        private List<int> NormalizeShiftIds(List<int> incoming, int noneId, int unmannedId)
+        {
+            var rest = incoming.Where(id => id != noneId && id != unmannedId).Distinct().ToList();
+
+            var result = new List<int> { noneId, unmannedId };
+            result.AddRange(rest);
+            return result;
         }
     }
 }

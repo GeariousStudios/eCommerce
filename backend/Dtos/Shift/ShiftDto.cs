@@ -1,5 +1,6 @@
 using backend.Dtos.ShiftTeam;
 using backend.Dtos.Unit;
+using backend.Models;
 
 namespace backend.Dtos.Shift
 {
@@ -7,6 +8,7 @@ namespace backend.Dtos.Shift
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public ShiftSystemKey? SystemKey { get; set; }
         public bool IsHidden { get; set; }
 
         public List<UnitDto> Units { get; set; } = new();

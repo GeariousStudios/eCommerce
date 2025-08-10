@@ -522,7 +522,9 @@ const CategoryModal = (props: Props) => {
                 />
 
                 <span className="text-sm text-[var(--text-secondary)] italic">
-                  {t("CategoryModal/Drag and drop")}
+                  {t("Modal/Drag and drop1") +
+                    t("Common/sub category") +
+                    t("Modal/Drag and drop3")}
                 </span>
               </>
             )}

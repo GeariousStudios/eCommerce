@@ -6,6 +6,7 @@
   "Common/Category": "Category",
   "Common/category": "category",
   "Common/Sub category": "Sub category",
+  "Common/sub category": "sub category",
   "Common/Units": "Units",
   "Common/units": "units",
   "Common/Unit": "Unit",
@@ -119,6 +120,8 @@
   "Unit/Update page": "Update page",
   "Unit/Next day": "Next day",
   "Unit/Previous day": "Previous day",
+  "Unit/Change to shift": "Change to selected shift",
+  "Unit/Shift changed": "The unit is now staffed by: ",
 
   "Manage/Failed to fetch": "Failed to fetch ",
   "Manage/deleted": " deleted!",
@@ -168,6 +171,7 @@
   "Units/Belongs to": "Belongs to group",
   "Units/column amount": "column amount",
   "Units/category amount": "category amount",
+  "Units/shift amount": "shift amount",
   "Units/Hidden units": "Hidden units",
   "Units/hidden units": "hidden units",
   "Units/Visible units": "Visible units",
@@ -199,6 +203,9 @@
   "Modal/Save": "Save",
   "Modal/Nothing": "There's nothing to save!",
   "Modal/Unknown error": "An unknown error occured",
+  "Modal/Drag and drop1": "Drag and drop a ",
+  "Modal/Drag and drop2": "Drag and drop a ",
+  "Modal/Drag and drop3": " to change the order",
 
   "DeleteModal/Label": "Are you sure?",
   "DeleteModal/Message": "A deleted item cannot be recovered.",
@@ -212,7 +219,7 @@
   "NewsModal/News type": "News type",
   "NewsModal/Headline": "Headline",
 
-  "SettingsModal/Logout message": "You are now logged out!",
+  "SettingsModal/Logout message": "You're now logged out!",
   "SettingsModal/Profile": "Profile",
   "SettingsModal/General": "General",
   "SettingsModal/Notifications": "Notifications",
@@ -242,15 +249,13 @@
   "CategoryModal/Info1": "Details about the category",
   "CategoryModal/Info2": "Sub categories",
   "CategoryModal/Placeholder text": "Create sub categories here...",
-  "CategoryModal/Drag and drop": "Drag and drop a sub category to change the order",
   "CategoryModal/Error1": "Enter a name for the sub category first",
   "CategoryModal/Error2": "A sub category with the same name already exists",
 
   "UnitModal/Info1": "Details about the unit",
   "UnitModal/Info2": "Columns",
   "UnitModal/Info3": "Categories",
-  "UnitModal/Drag and drop1": "Drag and drop a column to change the order",
-  "UnitModal/Drag and drop2": "Drag and drop a category to change the order",
+  "UnitModal/Info4": "Shifts",
   "UnitModal/Hide unit": "Hide unit",
 
   "UnitCellModal/Info1": "1. Choose a period",
@@ -268,8 +273,13 @@
   "ReportModal/Stop time": "Stop time",
 
   "ShiftModal/Info1": "Details about the shift",
+  "ShiftModal/Hide shift": "Hide shift",
 
   "ShiftTeamModal/Info1": "Details about the team",
+  "ShiftTeamModal/Hide shift team": "Hide team",
+
+  "Shift/None": "None",
+  "Shift/Unmanned": "Unmanned",
 
   "Api/Failed to delete": "Failed to delete ",
 
