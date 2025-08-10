@@ -236,6 +236,7 @@ export const ThCell = ({
             : t("Manage/Sort") + labelDesc
           : t("Manage/Sort") + labelDesc
       }
+      longDelay
     >
       <th
         className={`${thClass} ${classNameAddition ? classNameAddition : ""}`}

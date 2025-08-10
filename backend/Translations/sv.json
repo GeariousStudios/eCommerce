@@ -80,5 +80,15 @@
   "Category/NotFound": "Kategorin kunde inte hittas i databasen",
   "Category/InUse": "Kan inte ta bort en kategori som används",
   "Category/Deleted": "Kategori borttagen!",
-  "Category/NameTaken": "Kategori med detta namn finns redan!"
+  "Category/NameTaken": "Kategori med detta namn finns redan!",
+
+  "Shift/NotFound": "Skiftet kunde inte hittas i databasen",
+  "Shift/InUse": "Kan inte ta bort ett skift som används",
+  "Shift/Deleted": "Skift borttagen!",
+  "Shift/NameTaken": "Skift med detta namn finns redan!",
+
+  "ShiftTeam/NotFound": "Laget kunde inte hittas i databasen",
+  "ShiftTeam/InUse": "Kan inte ta bort ett lag som används",
+  "ShiftTeam/Deleted": "Lag borttagen!",
+  "ShiftTeam/NameTaken": "Lag med detta namn finns redan!"
 }

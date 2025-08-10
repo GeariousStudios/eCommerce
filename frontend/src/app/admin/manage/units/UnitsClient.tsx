@@ -467,7 +467,7 @@ const UnitsClient = (props: Props) => {
         isLoading={isLoading}
         isConnected={props.isConnected === true}
         selectMessage="Manage/Select1" // <-- Unique.
-        editLimitMessage="Manage/EditLimit1" // <-- Unique.
+        editLimitMessage="Manage/Edit limit1" // <-- Unique.
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}

@@ -80,5 +80,15 @@
   "Category/NotFound": "The category could not be found in the database",
   "Category/InUse": "Cannot delete a category that is in use",
   "Category/Deleted": "Category deleted!",
-  "Category/NameTaken": "A category with this name already exists!"
+  "Category/NameTaken": "A category with this name already exists!",
+
+  "Shift/NotFound": "The shift could not be found in the database",
+  "Shift/InUse": "Cannot delete a shift that is in use",
+  "Shift/Deleted": "Shift deleted!",
+  "Shift/NameTaken": "A shift with this name already exists!",
+
+  "ShiftTeam/NotFound": "The shift team could not be found in the database",
+  "ShiftTeam/InUse": "Cannot delete a shift team that is in use",
+  "ShiftTeam/Deleted": "Shift team deleted!",
+  "ShiftTeam/NameTaken": "A shift team with this name already exists!"
 }

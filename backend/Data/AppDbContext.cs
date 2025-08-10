@@ -21,6 +21,8 @@ namespace backend.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<SubCategory> SubCategories { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<Shift> Shifts { get; set; }
+        public DbSet<ShiftTeam> ShiftTeams { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }

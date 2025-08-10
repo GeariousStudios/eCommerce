@@ -371,7 +371,8 @@ const ManageBase = <TItem extends { id: number }>({
           {/* --- Add item --- */}
           <CustomTooltip
             content={`${t("Common/Add")} ${" "} ${itemName}`}
-            lgHidden={true}
+            lgHidden
+            longDelay
           >
             <button
               className={`${buttonPrimaryClass} group lg:w-max lg:px-4`}
@@ -410,6 +411,7 @@ const ManageBase = <TItem extends { id: number }>({
             }
             lgHidden={selectedItems.length === 1}
             showOnTouch={selectedItems.length === 0 || selectedItems.length > 1}
+            longDelay={selectedItems.length === 1}
           >
             <button
               className={`${buttonSecondaryClass} group lg:w-auto lg:px-4`}
@@ -447,6 +449,7 @@ const ManageBase = <TItem extends { id: number }>({
             }
             lgHidden={selectedItems.length > 0}
             showOnTouch={selectedItems.length === 0}
+            longDelay={selectedItems.length > 0}
           >
             <button
               className={`${buttonSecondaryClass} 3xs:ml-auto group lg:w-auto lg:px-4`}
@@ -500,6 +503,7 @@ const ManageBase = <TItem extends { id: number }>({
             <CustomTooltip
               content={`${isGrid ? t("Manage/Table view") : t("Manage/Grid view")}`}
               showOnTouch
+              longDelay
             >
               <button
                 className={`${roundedButtonClass} group gap-2`}
@@ -554,17 +558,19 @@ const ManageBase = <TItem extends { id: number }>({
         {/* --- Filter: All ---  */}
         {filters && filters.length > 0 && (
           <div className="relative">
-            <button
-              className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
-              onClick={() => {
-                setFilterAllOpen(true);
-              }}
-            >
-              <span className={`${filterClass} xs:flex hidden`}>
-                {t("Manage/All filters")}
-              </span>
-              <AdjustmentsHorizontalIcon className={`${filterIconClass}`} />
-            </button>
+            <CustomTooltip content={t("Manage/All filters")} lgHidden longDelay>
+              <button
+                className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
+                onClick={() => {
+                  setFilterAllOpen(true);
+                }}
+              >
+                <span className={`${filterClass} xs:flex hidden`}>
+                  {t("Manage/All filters")}
+                </span>
+                <AdjustmentsHorizontalIcon className={`${filterIconClass}`} />
+              </button>
+            </CustomTooltip>
 
             <SideMenu
               triggerRef={smallFilterRefs.current[0]}

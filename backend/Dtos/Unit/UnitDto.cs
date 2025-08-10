@@ -11,6 +11,7 @@ namespace backend.Dtos.Unit
         public bool IsHidden { get; set; }
         public List<int> UnitColumnIds { get; set; } = new();
         public List<int> CategoryIds { get; set; } = new();
+        public List<int> ShiftIds { get; set; } = new();
 
         // Meta data.
         public DateTime CreationDate { get; set; }

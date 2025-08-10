@@ -283,7 +283,7 @@ const ShiftTeamsClient = (props: Props) => {
         isLoading={isLoading}
         isConnected={props.isConnected === true}
         selectMessage="Manage/Select2" // <-- Unique.
-        editLimitMessage="Manage/EditLimit2" // <-- Unique.
+        editLimitMessage="Manage/Edit limit2" // <-- Unique.
         isGrid={isGrid}
         setIsGrid={setIsGrid}
         gridItems={gridItems()}

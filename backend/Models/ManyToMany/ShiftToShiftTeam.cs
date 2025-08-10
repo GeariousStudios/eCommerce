@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models.ManyToMany
 {
     public class ShiftToShiftTeam
@@ -7,6 +9,9 @@ namespace backend.Models.ManyToMany
 
         public int ShiftTeamId { get; set; }
         public ShiftTeam ShiftTeam { get; set; } = null!;
+
+        [MaxLength(32)]
+        public string? DisplayName { get; set; }
 
         public TimeSpan? StartTime { get; set; }
         public TimeSpan? EndTime { get; set; }
