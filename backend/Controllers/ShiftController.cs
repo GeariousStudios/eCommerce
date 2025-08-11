@@ -135,9 +135,11 @@ namespace backend.Controllers
                 .ShiftToShiftTeams.GroupBy(sst => sst.ShiftTeamId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
-            var unitCount = _context
-                .UnitToShifts.GroupBy(us => us.UnitId)
-                .ToDictionary(g => g.Key, g => g.Count());
+            var unitCount = await efQuery
+                .SelectMany(s => s.UnitToShifts)
+                .GroupBy(us => us.UnitId)
+                .Select(g => new { g.Key, Count = g.Select(x => x.ShiftId).Distinct().Count() })
+                .ToDictionaryAsync(x => x.Key, x => x.Count);
 
             var shiftDtos = new List<ShiftDto>();
             foreach (var s in shifts)
@@ -149,6 +151,10 @@ namespace backend.Controllers
                         Name = s.Name,
                         SystemKey = s.SystemKey,
                         IsHidden = s.IsHidden,
+                        ShiftTeamIds = s
+                            .ShiftToShiftTeams.OrderBy(sst => sst.Order)
+                            .Select(sst => sst.ShiftTeamId)
+                            .ToList(),
                         ShiftTeams = s
                             .ShiftToShiftTeams.OrderBy(sst => sst.Order)
                             .Select(sst => new ShiftTeamDto
@@ -240,6 +246,11 @@ namespace backend.Controllers
                 Name = shift.Name,
                 SystemKey = shift.SystemKey,
                 IsHidden = shift.IsHidden,
+
+                ShiftTeamIds = shift
+                    .ShiftToShiftTeams.OrderBy(x => x.Order)
+                    .Select(x => x.ShiftTeamId)
+                    .ToList(),
                 ShiftTeams = shift
                     .ShiftToShiftTeams.OrderBy(x => x.Order)
                     .Select(x => new ShiftTeamDto
@@ -343,10 +354,12 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("Shift/NotFound", lang) });
             }
 
-            if (shift.UnitToShifts.Any() || shift.ShiftToShiftTeams.Any())
+            if (shift.UnitToShifts.Any())
             {
                 return BadRequest(new { message = await _t.GetAsync("Shift/InUse", lang) });
             }
+
+            _context.ShiftToShiftTeams.RemoveRange(shift.ShiftToShiftTeams);
 
             _context.Shifts.Remove(shift);
             await _context.SaveChangesAsync();
@@ -370,6 +383,17 @@ namespace backend.Controllers
 
                 return BadRequest(
                     new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
+            }
+
+            var (hasErrCreate, msgCreate) = ValidateNoOverlap(
+                dto.ShiftTeamStartTimes?.ToDictionary(kv => kv.Key, kv => (TimeSpan?)kv.Value),
+                dto.ShiftTeamEndTimes?.ToDictionary(kv => kv.Key, kv => (TimeSpan?)kv.Value)
+            );
+            if (hasErrCreate)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync(msgCreate ?? "Shift/TimesOverlap", lang) }
                 );
             }
 
@@ -506,6 +530,17 @@ namespace backend.Controllers
                 );
             }
 
+            var (hasErrUpdate, msgUpdate) = ValidateNoOverlap(
+                dto.ShiftTeamStartTimes?.ToDictionary(kv => kv.Key, kv => (TimeSpan?)kv.Value),
+                dto.ShiftTeamEndTimes?.ToDictionary(kv => kv.Key, kv => (TimeSpan?)kv.Value)
+            );
+            if (hasErrUpdate)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync(msgUpdate ?? "Shift/TimesOverlap", lang) }
+                );
+            }
+
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -553,6 +588,44 @@ namespace backend.Controllers
             };
 
             return Ok(result);
+        }
+
+        private static (bool hasError, string? message) ValidateNoOverlap(
+            IDictionary<int, TimeSpan?>? starts,
+            IDictionary<int, TimeSpan?>? ends,
+            IDictionary<int, int>? order = null
+        )
+        {
+            if (starts == null || ends == null)
+                return (false, null);
+
+            var intervals = new List<(int teamId, TimeSpan start, TimeSpan end)>();
+            foreach (var kv in starts)
+            {
+                var teamId = kv.Key;
+                var start = kv.Value;
+                if (!ends.TryGetValue(teamId, out var end))
+                    return (true, "Shift/TimesInvalid");
+                if (!start.HasValue || !end.HasValue)
+                    return (true, "Shift/TimesInvalid");
+                if (start.Value >= end.Value)
+                    return (true, "Shift/StartBeforeEnd");
+
+                intervals.Add((teamId, start.Value, end.Value));
+            }
+
+            intervals = intervals.OrderBy(x => x.start).ToList();
+            for (int i = 1; i < intervals.Count; i++)
+            {
+                var prev = intervals[i - 1];
+                var cur = intervals[i];
+                if (cur.start < prev.end)
+                {
+                    return (true, "Shift/TimesOverlap");
+                }
+            }
+
+            return (false, null);
         }
     }
 }

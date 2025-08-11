@@ -89,6 +89,9 @@
   "Shift/Deleted": "Shift deleted!",
   "Shift/NameTaken": "A shift with this name already exists!",
   "Shift/CannotHideActive": "Cannot hide a shift that is active in a unit",
+  "Shift/TimesOverlap": "Team times must not overlap",
+  "Shift/StartBeforeEnd": "Start time must be before end time",
+  "Shift/TimesInvalid": "Invalid times for one or more teams",
 
   "ShiftTeam/NotFound": "Team could not be found in the database",
   "ShiftTeam/InUse": "Cannot delete a team that is in use",

@@ -6,7 +6,9 @@ import { ShiftFilters, ShiftItem } from "@/app/types/manageTypes"; // <-- Unique
 import {
   deleteContent,
   fetchContent,
+  fetchShiftTeams,
   fetchUnits,
+  ShiftTeamOption,
   UnitOption,
 } from "@/app/apis/manage/shiftsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
@@ -109,8 +111,21 @@ const ShiftsClient = (props: Props) => {
       .catch((err) => notify("error", t("Modal/Unknown error")));
   }, []);
 
-  const nameCounts = units.reduce<Record<string, number>>((acc, unit) => {
+  const nameCounts1 = units.reduce<Record<string, number>>((acc, unit) => {
     acc[unit.name] = (acc[unit.name] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  // --- FETCH SHIFT TEAMS INITIALIZATION (Unique) ---
+  const [shiftTeams, setShiftTeams] = useState<ShiftTeamOption[]>([]);
+  useEffect(() => {
+    fetchShiftTeams()
+      .then(setShiftTeams)
+      .catch((err) => notify("error", t("Modal/Unknown error")));
+  }, []);
+
+  const nameCounts2 = shiftTeams.reduce<Record<string, number>>((acc, team) => {
+    acc[team.name] = (acc[team.name] ?? 0) + 1;
     return acc;
   }, {});
 
@@ -141,7 +156,7 @@ const ShiftsClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name",
+      key: "name, units",
       getValue: (item: ShiftItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
           <div className="flex flex-col">
@@ -163,6 +178,27 @@ const ShiftsClient = (props: Props) => {
                   <span
                     key={i}
                     className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                  >
+                    {label}
+                  </span>
+                );
+              })
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("Common/Shift teams")}:
+            </span>
+            {item.shiftTeams.length === 0 ? (
+              <span className="-mt-2">-</span>
+            ) : (
+              (item.shiftTeams ?? []).map((team, i) => {
+                const label = team.name;
+
+                return (
+                  <span
+                    key={i}
+                    className={`${badgeClass} bg-[var(--badge-one)]`}
                   >
                     {label}
                   </span>
@@ -230,6 +266,27 @@ const ShiftsClient = (props: Props) => {
       ),
       responsivePriority: 1,
     },
+    {
+      key: "shiftTeams",
+      label: t("Common/Shift teams"),
+      sortingItem: "shiftteamcount",
+      labelAsc: t("Shift/shift team amount") + t("Manage/ascending"),
+      labelDesc: t("Shift/shift team amount") + t("Manage/descending"),
+      getValue: (item: ShiftItem) => (
+        <div className="flex flex-wrap gap-2">
+          {(item.shiftTeams ?? []).map((shift, i) => {
+            const label = shift.name;
+
+            return (
+              <span key={i} className={`${badgeClass} bg-[var(--badge-one)]`}>
+                {label}
+              </span>
+            );
+          })}
+        </div>
+      ),
+      responsivePriority: 2,
+    },
   ];
 
   // --- Filter Controls (Unique) ---
@@ -241,6 +298,16 @@ const ShiftsClient = (props: Props) => {
         unitIds: val
           ? [...(prev.unitIds ?? []), unitId]
           : (prev.unitIds ?? []).filter((id) => id !== unitId),
+      }));
+    },
+
+    selectedShiftTeams: filters.shiftTeamIds ?? [],
+    setShiftTeamSelected: (teamId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        shiftTeamIds: val
+          ? [...(prev.shiftTeamIds ?? []), teamId]
+          : (prev.shiftTeamIds ?? []).filter((id) => id !== teamId),
       }));
     },
   };
@@ -259,6 +326,21 @@ const ShiftsClient = (props: Props) => {
           setSelected: (val: boolean) =>
             filterControls.setUnitSelected(unit.id, val),
           count: counts?.unitCount?.[unit.id],
+        };
+      }),
+    },
+    {
+      label: t("Common/Shift teams"),
+      breakpoint: "lg",
+      options: shiftTeams.map((shift) => {
+        const label = shift.name;
+
+        return {
+          label,
+          isSelected: filterControls.selectedShiftTeams.includes(shift.id),
+          setSelected: (val: boolean) =>
+            filterControls.setShiftTeamSelected(shift.id, val),
+          count: counts?.shiftTeamCount?.[shift.id],
         };
       }),
     },

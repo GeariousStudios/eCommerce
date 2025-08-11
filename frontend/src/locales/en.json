@@ -75,6 +75,11 @@
   "Common/Type": "Type",
   "Common/type": "type",
   "Common/Add": "Add",
+  "Common/Start": "Start",
+  "Common/Stop": "Stop",
+  "Common/Delete": "Delete",
+  "Common/Edit": "Edit",
+  "Common/Remove": "Remove",
 
   "Message/Loading": "Loading...",
   "Message/Auth": "Authenticating...",
@@ -125,8 +130,6 @@
 
   "Manage/Failed to fetch": "Failed to fetch ",
   "Manage/deleted": " deleted!",
-  "Manage/Delete": "Delete",
-  "Common/Edit": "Edit",
   "Manage/Select1": "Select a",
   "Manage/Select2": "Select a",
   "Manage/Select3": "Select an",
@@ -273,13 +276,17 @@
   "ReportModal/Stop time": "Stop time",
 
   "ShiftModal/Info1": "Details about the shift",
+  "ShiftModal/Info2": "Teams",
   "ShiftModal/Hide shift": "Hide shift",
+  "ShiftModal/Display name": "Display name",
+  "ShiftModal/TimesOverlap": "Team times must not overlap",
 
   "ShiftTeamModal/Info1": "Details about the team",
   "ShiftTeamModal/Hide shift team": "Hide team",
 
   "Shift/None": "None",
   "Shift/Unmanned": "Unmanned",
+  "Shift/shift team amount": "shift team amount",
 
   "Api/Failed to delete": "Failed to delete ",
 

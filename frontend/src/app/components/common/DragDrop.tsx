@@ -7,6 +7,7 @@ type DragDropProps<T> = {
   renderItem: (item: T, isDragging: boolean) => React.ReactNode;
   onDraggingChange?: (isDragging: boolean) => void;
   disableClass?: boolean;
+  containerClassName?: string;
 };
 
 const DragDrop = <T,>({
@@ -16,6 +17,7 @@ const DragDrop = <T,>({
   renderItem,
   onDraggingChange,
   disableClass = false,
+  containerClassName,
 }: DragDropProps<T>) => {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragItemRef = useRef<T | null>(null);
@@ -72,7 +74,7 @@ const DragDrop = <T,>({
 
   return (
     <div
-      className={`${disableClass ? "" : "flex flex-wrap gap-2"}`}
+      className={`${containerClassName ?? (disableClass ? "" : "flex flex-wrap gap-2")}`}
       onDragEnter={(e) => e.preventDefault()}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => e.preventDefault()}

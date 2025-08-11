@@ -62,7 +62,6 @@
   "Common/Number": "Number",
   "Common/Text": "Text",
   "Common/Boolean": "Boolean",
-  "Common/Edit": "Redigera",
   "Common/Shifts": "Skift",
   "Common/shifts": "skift",
   "Common/Shift": "Skift",
@@ -76,6 +75,11 @@
   "Common/Type": "Typ",
   "Common/type": "typ",
   "Common/Add": "Lägg till",
+  "Common/Start": "Start",
+  "Common/Stop": "Stopp",
+  "Common/Delete": "Ta bort",
+  "Common/Edit": "Redigera",
+  "Common/Remove": "Ta bort",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
@@ -126,7 +130,6 @@
 
   "Manage/Failed to fetch": "Kunde inte hämta ",
   "Manage/deleted": " borttagen!",
-  "Manage/Delete": "Ta bort",
   "Manage/Select1": "Välj en",
   "Manage/Select2": "Välj ett",
   "Manage/Select3": "Välj ett",
@@ -273,13 +276,17 @@
   "ReportModal/Stop time": "Stopptid",
 
   "ShiftModal/Info1": "Uppgifter om skiftet",
+  "ShiftModal/Info2": "Lag",
   "ShiftModal/Hide shift": "Göm skift",
+  "ShiftModal/Display name": "Visningsnamn",
+  "ShiftModal/TimesOverlap": "Tiderna för lag får inte överlappa",
 
   "ShiftTeamModal/Info1": "Uppgifter om laget",
   "ShiftTeamModal/Hide shift team": "Göm lag",
 
   "Shift/None": "Inget",
   "Shift/Unmanned": "Obemannad",
+  "Shift/shift team amount": "antal lag",
 
   "Api/Failed to delete": "Kunde inte ta bort ",
 

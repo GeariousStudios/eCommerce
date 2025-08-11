@@ -145,6 +145,10 @@ export type ShiftItem = {
     id: number;
     name: string;
   }[];
+  shiftTeams: {
+    id: number;
+    name: string;
+  }[];
   isHidden?: boolean;
 
   creationDate: string;
@@ -155,6 +159,7 @@ export type ShiftItem = {
 
 export type ShiftFilters = {
   unitIds?: number[];
+  shiftTeamIds?: number[];
   isHidden?: boolean;
 };
 

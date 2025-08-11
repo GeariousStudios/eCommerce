@@ -63,6 +63,13 @@ type Shift = {
   systemKey?: string;
 };
 
+type ShiftTeamSpan = {
+  id: number;
+  label: string;
+  start: string;
+  end: string;
+};
+
 // --- CLASSES ---
 export const thClass =
   "px-4 py-2 h-[40px] text-left border-b-1 border-b-[var(--border-main)] border-r-1 border-r-[var(--border-secondary)] flex-inline items-center justify-center";
@@ -112,7 +119,8 @@ const UnitClient = (props: Props) => {
     label: s.systemKey ? t(`Shift/${s.systemKey}`) : s.name,
     show: !!shiftVisibility[s.id],
   }));
-  const selectedShifts = shiftNames.filter((s) => shiftVisibility[s.id]);
+
+  const [shiftTeamSpans, setShiftTeamSpans] = useState<ShiftTeamSpan[]>([]);
 
   // --- States: Unit ---
   const [unitName, setUnitName] = useState("");
@@ -169,6 +177,12 @@ const UnitClient = (props: Props) => {
   const canShowLock = !isBootstrapping && isHidden && !isInvalid;
   const canShowInvalid = !isBootstrapping && isInvalid && !isHidden;
   const isReady = !isBootstrapping && !isHidden && !isInvalid;
+
+  // --- HELPER SHIFT TEAM SPANS ---
+  const toMinutes = (s: string) => {
+    const [hh, mm] = s.split(":").map(Number);
+    return (hh || 0) * 60 + (mm || 0);
+  };
 
   // --- BACKEND ---
   // --- Fetch unit ---
@@ -348,6 +362,50 @@ const UnitClient = (props: Props) => {
 
     fetchShifts();
   }, [unitId, isUnitValid]);
+
+  useEffect(() => {
+    if (!activeShiftId) {
+      setShiftTeamSpans([]);
+      return;
+    }
+
+    const fetchActiveShift = async () => {
+      try {
+        const response = await fetch(`${apiUrl}/shift/fetch/${activeShiftId}`, {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+          },
+        });
+        const result = await response.json();
+
+        if (!response.ok) {
+          notify("error", result?.message ?? t("Modal/Unknown error"));
+          return;
+        }
+
+        const spans: ShiftTeamSpan[] = (result?.shiftTeams ?? [])
+          .map((st: any) => {
+            const id = st.id as number;
+            const display = (result?.shiftTeamDisplayNames?.[id] ?? "").trim();
+            const label = display || st.name;
+            const start = result?.shiftTeamStartTimes?.[id];
+            const end = result?.shiftTeamEndTimes?.[id];
+            if (!start || !end) {
+              return null;
+            }
+            return { id, label, start, end };
+          })
+          .filter(Boolean);
+
+        setShiftTeamSpans(spans);
+      } catch {
+        notify("error", t("Modal/Unknown error"));
+      }
+    };
+
+    fetchActiveShift();
+  }, [activeShiftId]);
 
   // --- Delete report ---
   const deleteReport = async (id: string) => {
@@ -857,7 +915,7 @@ const UnitClient = (props: Props) => {
                 {refetchData ? (
                   <tr>
                     <th
-                      colSpan={unitColumnNames.length + 3}
+                      colSpan={unitColumnNames.length + 4}
                       className={`${thClass}`}
                     />
                   </tr>
@@ -880,6 +938,11 @@ const UnitClient = (props: Props) => {
                       {t("Unit/Time")}
                     </th>
                     <th
+                      className={`${thClass} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
+                    >
+                      {t("Common/Shift")}
+                    </th>
+                    <th
                       className={`${thClass} ${unitColumnNames.length > 0 ? "w-0" : ""} whitespace-nowrap`}
                     >
                       {t("Unit/Disruptions")}
@@ -898,7 +961,7 @@ const UnitClient = (props: Props) => {
                   <tr>
                     {/* 960px = h-[tdClass] * 24 */}
                     <td
-                      colSpan={unitColumnNames.length + 3}
+                      colSpan={unitColumnNames.length + 4}
                       className={`${tdClass} h-[960px]`}
                     >
                       <Message icon="loading" content="content" />
@@ -932,6 +995,19 @@ const UnitClient = (props: Props) => {
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)] group-hover/row:bg-[var(--bg-grid-header-hover)]" : "bg-[var(--bg-grid-zebra)] group-hover/row:bg-[var(--bg-grid-header-hover)]"} sticky left-[52.5px] w-[72px] whitespace-nowrap transition-[background] duration-[var(--fast)]`}
                             >
                               {hour.toString().padStart(2, "0")}:00
+                            </td>
+                            <td
+                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} whitespace-nowrap`}
+                            >
+                              {(() => {
+                                const minute = hour * 60;
+                                const hit = shiftTeamSpans.find((st) => {
+                                  const startM = toMinutes(st.start);
+                                  const endM = toMinutes(st.end);
+                                  return minute >= startM && minute < endM;
+                                });
+                                return hit ? hit.label : "-";
+                              })()}
                             </td>
                             <td
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${unitColumnNames.length > 0 ? "w-0" : "border-r-0"} whitespace-nowrap`}
@@ -1046,7 +1122,7 @@ const UnitClient = (props: Props) => {
                             <tr
                               className={`${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} border-y-1 border-y-[var(--border-secondary)]`}
                             >
-                              <td colSpan={unitColumnNames.length + 3}>
+                              <td colSpan={unitColumnNames.length + 4}>
                                 <div className="flex flex-col gap-4 p-4">
                                   <CustomTooltip
                                     content={`${!props.isReporter ? t("Common/No access") : t("Unit/Report disruptions")}`}

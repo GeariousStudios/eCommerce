@@ -7,13 +7,17 @@ import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
+  iconButtonPrimaryClass,
   roundedButtonClass,
   switchClass,
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
-import { shiftConstraints } from "@/app/helpers/inputConstraints";
+import {
+  shiftConstraints,
+  shiftTeamConstraints,
+} from "@/app/helpers/inputConstraints";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import MultiDropdown from "@/app/components/common/MultiDropdown";
 import DragDrop from "@/app/components/common/DragDrop";
@@ -46,12 +50,29 @@ const ShiftModal = (props: Props) => {
   const [isHidden, setIsHidden] = useState(false);
   const [shiftTeamIds, setShiftTeamIds] = useState<number[]>([]);
   const [shiftTeams, setShiftTeams] = useState<ShiftTeamOptions[]>([]);
+  const [shiftTeamStartTimes, setShiftTeamStartTimes] = useState<
+    Record<number, string>
+  >({});
+  const [shiftTeamEndTimes, setShiftTeamEndTimes] = useState<
+    Record<number, string>
+  >({});
+  const [shiftTeamDisplayNames, setShiftTeamDisplayNames] = useState<
+    Record<number, string>
+  >({});
 
   const [originalName, setOriginalName] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [originalShiftTeamIds, setOriginalShiftTeamIds] = useState<number[]>(
     [],
   );
+  const [originalShiftTeamStartTimes, setOriginalShiftTeamStartTimes] =
+    useState<Record<number, string>>({});
+  const [originalShiftTeamEndTimes, setOriginalShiftTeamEndTimes] = useState<
+    Record<number, string>
+  >({});
+  const [originalShiftTeamDisplayNames, setOriginalShiftTeamDisplayNames] =
+    useState<Record<number, string>>({});
+
   const [isDirty, setIsDirty] = useState(false);
 
   const [isAnyDragging, setIsAnyDragging] = useState(false);
@@ -79,6 +100,15 @@ const ShiftModal = (props: Props) => {
 
       setShiftTeamIds([]);
       setOriginalShiftTeamIds([]);
+
+      setShiftTeamStartTimes({});
+      setOriginalShiftTeamStartTimes({});
+
+      setShiftTeamEndTimes({});
+      setOriginalShiftTeamEndTimes({});
+
+      setShiftTeamDisplayNames({});
+      setOriginalShiftTeamDisplayNames({});
     }
   }, [props.isOpen, props.itemId]);
 
@@ -86,6 +116,11 @@ const ShiftModal = (props: Props) => {
   // --- Add shift ---
   const addShift = async (event: FormEvent) => {
     event.preventDefault();
+
+    if (hasOverlap()) {
+      notify("error", t("ShiftModal/TimesOverlap"));
+      return;
+    }
 
     try {
       const response = await fetch(`${apiUrl}/shift/create`, {
@@ -99,6 +134,24 @@ const ShiftModal = (props: Props) => {
           name,
           isHidden,
           shiftTeamIds,
+          shiftTeamStartTimes: Object.fromEntries(
+            Object.entries(shiftTeamStartTimes).map(([k, v]) => [
+              Number(k),
+              v ? `${v}:00` : null,
+            ]),
+          ),
+          shiftTeamEndTimes: Object.fromEntries(
+            Object.entries(shiftTeamEndTimes).map(([k, v]) => [
+              Number(k),
+              v ? `${v}:00` : null,
+            ]),
+          ),
+          shiftTeamDisplayNames: Object.fromEntries(
+            Object.entries(shiftTeamDisplayNames).map(([k, v]) => [
+              Number(k),
+              v && v.trim() !== "" ? v : null,
+            ]),
+          ),
         }),
       });
 
@@ -205,11 +258,60 @@ const ShiftModal = (props: Props) => {
 
     setShiftTeamIds(result.shiftTeamIds ?? []);
     setOriginalShiftTeamIds(result.shiftTeamIds ?? []);
+
+    setShiftTeamStartTimes(
+      Object.fromEntries(
+        Object.entries(result.shiftTeamStartTimes ?? {}).map(([k, v]) => [
+          Number(k),
+          String(v).slice(0, 5),
+        ]),
+      ),
+    );
+    setOriginalShiftTeamStartTimes(
+      Object.fromEntries(
+        Object.entries(result.shiftTeamStartTimes ?? {}).map(([k, v]) => [
+          Number(k),
+          String(v).slice(0, 5),
+        ]),
+      ),
+    );
+
+    setShiftTeamEndTimes(
+      Object.fromEntries(
+        Object.entries(result.shiftTeamEndTimes ?? {}).map(([k, v]) => [
+          Number(k),
+          String(v).slice(0, 5),
+        ]),
+      ),
+    );
+    setOriginalShiftTeamEndTimes(
+      Object.fromEntries(
+        Object.entries(result.shiftTeamEndTimes ?? {}).map(([k, v]) => [
+          Number(k),
+          String(v).slice(0, 5),
+        ]),
+      ),
+    );
+
+    const ids: number[] = result.shiftTeamIds ?? [];
+    const displayMap: Record<number, string> = {};
+    ids.forEach((id) => {
+      const fromBackend = result.shiftTeamDisplayNames?.[id];
+      displayMap[id] = fromBackend ?? "";
+    });
+
+    setShiftTeamDisplayNames(displayMap);
+    setOriginalShiftTeamDisplayNames(displayMap);
   };
 
   // --- Update shift ---
   const updateShift = async (event: FormEvent) => {
     event.preventDefault();
+
+    if (hasOverlap()) {
+      notify("error", t("ShiftModal/TimesOverlap"));
+      return;
+    }
 
     try {
       const response = await fetch(`${apiUrl}/shift/update/${props.itemId}`, {
@@ -223,6 +325,24 @@ const ShiftModal = (props: Props) => {
           name,
           isHidden,
           shiftTeamIds,
+          shiftTeamStartTimes: Object.fromEntries(
+            Object.entries(shiftTeamStartTimes).map(([k, v]) => [
+              Number(k),
+              v ? `${v}:00` : null,
+            ]),
+          ),
+          shiftTeamEndTimes: Object.fromEntries(
+            Object.entries(shiftTeamEndTimes).map(([k, v]) => [
+              Number(k),
+              v ? `${v}:00` : null,
+            ]),
+          ),
+          shiftTeamDisplayNames: Object.fromEntries(
+            Object.entries(shiftTeamDisplayNames).map(([k, v]) => [
+              Number(k),
+              v ?? null,
+            ]),
+          ),
         }),
       });
 
@@ -319,22 +439,68 @@ const ShiftModal = (props: Props) => {
       const dirty =
         name !== "" ||
         isHidden !== false ||
-        JSON.stringify(shiftTeamIds) !== JSON.stringify(originalShiftTeamIds);
+        JSON.stringify(shiftTeamIds) !== JSON.stringify([]) ||
+        JSON.stringify(shiftTeamStartTimes) !== JSON.stringify({}) ||
+        JSON.stringify(shiftTeamEndTimes) !== JSON.stringify({}) ||
+        JSON.stringify(shiftTeamDisplayNames) !== JSON.stringify({});
 
       setIsDirty(dirty);
       return;
     }
 
-    const dirty = name !== originalName || isHidden !== originalIsHidden;
+    const dirty =
+      name !== originalName ||
+      isHidden !== originalIsHidden ||
+      JSON.stringify(shiftTeamIds) !== JSON.stringify(originalShiftTeamIds) ||
+      JSON.stringify(shiftTeamStartTimes) !==
+        JSON.stringify(originalShiftTeamStartTimes) ||
+      JSON.stringify(shiftTeamEndTimes) !==
+        JSON.stringify(originalShiftTeamEndTimes) ||
+      JSON.stringify(shiftTeamDisplayNames) !==
+        JSON.stringify(originalShiftTeamDisplayNames);
+
     setIsDirty(dirty);
   }, [
+    props.itemId,
     name,
     isHidden,
     shiftTeamIds,
+    shiftTeamStartTimes,
+    shiftTeamEndTimes,
+    shiftTeamDisplayNames,
     originalName,
     originalIsHidden,
     originalShiftTeamIds,
+    originalShiftTeamStartTimes,
+    originalShiftTeamEndTimes,
+    originalShiftTeamDisplayNames,
   ]);
+
+  const hasOverlap = () => {
+    const toMinutes = (hhmm: string) => {
+      const [h, m] = (hhmm ?? "").split(":").map(Number);
+      return Number.isFinite(h) && Number.isFinite(m) ? h * 60 + m : NaN;
+    };
+
+    const intervals = shiftTeamIds.map((id) => {
+      const s = toMinutes(shiftTeamStartTimes[id]);
+      const e = toMinutes(shiftTeamEndTimes[id]);
+      return { id, s, e };
+    });
+
+    for (const it of intervals) {
+      if (!Number.isFinite(it.s) || !Number.isFinite(it.e)) return true;
+      if (it.s >= it.e) return true;
+    }
+
+    intervals.sort((a, b) => a.s - b.s);
+    for (let i = 1; i < intervals.length; i++) {
+      if (intervals[i].s < intervals[i - 1].e) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   return (
     <>
@@ -381,7 +547,7 @@ const ShiftModal = (props: Props) => {
             <div className="flex items-center gap-2">
               <hr className="w-12 text-[var(--border-tertiary)]" />
               <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("UnitModal/Info2")}
+                {t("ShiftModal/Info2")}
               </h3>
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
@@ -390,7 +556,42 @@ const ShiftModal = (props: Props) => {
               <MultiDropdown
                 label={t("Common/Shift teams")}
                 value={shiftTeamIds.map(String)}
-                onChange={(val: string[]) => setShiftTeamIds(val.map(Number))}
+                onChange={(vals: string[]) => {
+                  const ids = vals.map(Number);
+                  setShiftTeamIds(ids);
+
+                  setShiftTeamStartTimes((prev) => {
+                    const next = { ...prev };
+                    ids.forEach((id) => {
+                      if (!(id in next)) next[id] = "08:00";
+                    });
+                    Object.keys(next).forEach((k) => {
+                      if (!ids.includes(Number(k))) delete next[Number(k)];
+                    });
+                    return next;
+                  });
+                  setShiftTeamEndTimes((prev) => {
+                    const next = { ...prev };
+                    ids.forEach((id) => {
+                      if (!(id in next)) next[id] = "16:00";
+                    });
+                    Object.keys(next).forEach((k) => {
+                      if (!ids.includes(Number(k))) delete next[Number(k)];
+                    });
+                    return next;
+                  });
+
+                  setShiftTeamDisplayNames((prev) => {
+                    const next = { ...prev };
+                    ids.forEach((id) => {
+                      if (!(id in next)) next[id] = "";
+                    });
+                    Object.keys(next).forEach((k) => {
+                      if (!ids.includes(Number(k))) delete next[Number(k)];
+                    });
+                    return next;
+                  });
+                }}
                 options={shiftTeams.map((t) => ({
                   label: t.name,
                   value: String(t.id),
@@ -399,39 +600,115 @@ const ShiftModal = (props: Props) => {
               />
             </div>
 
+            {/* --- Shift Teams --- */}
             {shiftTeamIds.length > 0 && (
-              <>
+              <div className="flex flex-col gap-4">
                 <DragDrop
                   items={shiftTeamIds}
                   getId={(id) => String(id)}
                   onReorder={(newList) => setShiftTeamIds(newList)}
                   onDraggingChange={setIsAnyDragging}
+                  containerClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
                   renderItem={(id, isDragging) => {
-                    const col = shiftTeams.find((c) => c.id === id);
-                    if (!col) {
+                    const team = shiftTeams.find((t) => t.id === id);
+                    if (!team) {
                       return null;
                     }
 
                     return (
-                      <DragChip
-                        label={col.name}
-                        isDragging={isDragging}
-                        dragging={isAnyDragging}
-                        onDelete={() =>
-                          setShiftTeamIds((prev) =>
-                            prev.filter((v) => v !== id),
-                          )
-                        }
-                      />
+                      <div
+                        key={id}
+                        className="flex flex-col gap-8 rounded-2xl bg-[var(--bg-navbar)] p-4"
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          <span className="font-semibold">{team.name}</span>
+                          <button
+                            type="button"
+                            disabled={isDragging}
+                            className={`${iconButtonPrimaryClass}`}
+                            onClick={() => {
+                              setShiftTeamIds((prev) =>
+                                prev.filter((v) => v !== id),
+                              );
+                              setShiftTeamStartTimes((prev) => {
+                                const n = { ...prev };
+                                delete n[id];
+                                return n;
+                              });
+                              setShiftTeamEndTimes((prev) => {
+                                const n = { ...prev };
+                                delete n[id];
+                                return n;
+                              });
+                              setShiftTeamDisplayNames((prev) => {
+                                const n = { ...prev };
+                                delete n[id];
+                                return n;
+                              });
+                            }}
+                            aria-label={t("Common/Remove") + " " + team.name}
+                          >
+                            <XMarkIcon className="h-6 min-h-6 w-6 min-w-6" />
+                          </button>
+                        </div>
+
+                        {/* --- Times --- */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <Input
+                            type="time"
+                            label={t("Common/Start")}
+                            value={shiftTeamStartTimes[id] ?? ""}
+                            onChange={(val) =>
+                              setShiftTeamStartTimes((p) => ({
+                                ...p,
+                                [id]: String(val ?? ""),
+                              }))
+                            }
+                            aria-label={`${team.name} start`}
+                            inChip
+                            required
+                          />
+                          <Input
+                            type="time"
+                            label={t("Common/Stop")}
+                            value={shiftTeamEndTimes[id] ?? ""}
+                            onChange={(val) =>
+                              setShiftTeamEndTimes((p) => ({
+                                ...p,
+                                [id]: String(val ?? ""),
+                              }))
+                            }
+                            aria-label={`${team.name} stop`}
+                            inChip
+                            required
+                          />
+                        </div>
+
+                        <Input
+                          type="text"
+                          label={t("ShiftModal/Display name")}
+                          value={shiftTeamDisplayNames[id] ?? ""}
+                          onChange={(val) =>
+                            setShiftTeamDisplayNames((p) => ({
+                              ...p,
+                              [id]: String(val ?? ""),
+                            }))
+                          }
+                          aria-label={`${team.name} display name`}
+                          inChip
+                          {...shiftTeamConstraints.name}
+                        />
+                      </div>
                     );
                   }}
                 />
+
                 <span className="text-sm text-[var(--text-secondary)] italic">
                   {t("Modal/Drag and drop2") +
                     t("Common/shift team") +
                     t("Modal/Drag and drop3")}
                 </span>
-              </>
+              </div>
             )}
 
             <div className="mt-8 flex items-center gap-2">

@@ -116,3 +116,26 @@ export const fetchUnits = async (): Promise<UnitOption[]> => {
 
   return result.items ?? [];
 };
+
+export type ShiftTeamOption = {
+  id: number;
+  name: string;
+};
+
+export const fetchShiftTeams = async (): Promise<ShiftTeamOption[]> => {
+  const response = await fetch(`${apiUrl}/shift-team?sortBy=name&sortOrder=asc`, {
+    headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
+};

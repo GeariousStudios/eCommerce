@@ -89,6 +89,9 @@
   "Shift/Deleted": "Skift borttagen!",
   "Shift/NameTaken": "Skift med detta namn finns redan!",
   "Shift/CannotHideActive": "Kan inte dölja ett skift som är aktivt i en enhet",
+  "Shift/TimesOverlap": "Tiderna för lag får inte överlappa",
+  "Shift/StartBeforeEnd": "Starttid måste vara före sluttid",
+  "Shift/TimesInvalid": "Ogiltiga tider för ett eller fler lag",
 
   "ShiftTeam/NotFound": "Laget kunde inte hittas i databasen",
   "ShiftTeam/InUse": "Kan inte ta bort ett lag som används",

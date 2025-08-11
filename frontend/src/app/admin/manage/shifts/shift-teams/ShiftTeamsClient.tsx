@@ -141,7 +141,7 @@ const ShiftTeamsClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name",
+      key: "name, shifts",
       getValue: (item: ShiftTeamItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
           <div className="flex flex-col">

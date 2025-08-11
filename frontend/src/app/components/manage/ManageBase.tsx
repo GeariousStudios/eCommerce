@@ -445,7 +445,7 @@ const ManageBase = <TItem extends { id: number }>({
             content={
               selectedItems.length === 0
                 ? `${t(selectMessage)} ${" "} ${itemName}`
-                : `${t("Manage/Delete")} ${" "} ${itemName} ${" "} (${selectedItems.length})`
+                : `${t("Common/Delete")} ${" "} ${itemName} ${" "} (${selectedItems.length})`
             }
             lgHidden={selectedItems.length > 0}
             showOnTouch={selectedItems.length === 0}
@@ -470,7 +470,7 @@ const ManageBase = <TItem extends { id: number }>({
                   className="h-6 min-h-6 w-6 min-w-6"
                 />
                 <span className="hidden lg:block">
-                  {t("Manage/Delete")} {itemName}
+                  {t("Common/Delete")} {itemName}
                   <span>
                     {selectedItems.length > 0
                       ? ` (${selectedItems.length})`
