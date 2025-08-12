@@ -55,6 +55,7 @@ const ShiftModal = (props: Props) => {
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
   const [name, setName] = useState("");
@@ -89,12 +90,12 @@ const ShiftModal = (props: Props) => {
   const [isDirty, setIsDirty] = useState(false);
 
   const [isAnyDragging, setIsAnyDragging] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // --- Other ---
   const token = localStorage.getItem("token");
   const { notify } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
   const dayOptions = useMemo(
     () => [
       { label: t("Common/Monday"), value: 0 },
@@ -148,12 +149,15 @@ const ShiftModal = (props: Props) => {
   const addShift = async (event: FormEvent) => {
     event.preventDefault();
 
-    // if (hasOverlap()) {
-    //   notify("error", t("ShiftModal/TimesOverlap"));
-    //   return;
-    // }
+    const msg = runLocalValidation();
+    if (msg) {
+      setValidationError(msg);
+      notify("error", msg);
+      return;
+    }
 
     try {
+      const weeklyTimesToSend = buildWeeklyTimesToSend();
       const response = await fetch(`${apiUrl}/shift/create`, {
         method: "POST",
         headers: {
@@ -165,7 +169,7 @@ const ShiftModal = (props: Props) => {
           name,
           isHidden,
           shiftTeamIds,
-          weeklyTimes,
+          weeklyTimes: weeklyTimesToSend,
           shiftTeamDisplayNames: Object.fromEntries(
             Object.entries(shiftTeamDisplayNames).map(([k, v]) => [
               Number(k),
@@ -271,6 +275,20 @@ const ShiftModal = (props: Props) => {
     }
   };
 
+  const buildInitialSelection = (
+    ids: number[],
+    weekly: WeeklyTime[],
+  ): Record<number, { weekIndex: number; dayOfWeek: number }> => {
+    const sel: Record<number, { weekIndex: number; dayOfWeek: number }> = {};
+    ids.forEach((id) => {
+      const first = weekly.find((w) => w.teamId === id);
+      sel[id] = first
+        ? { weekIndex: first.weekIndex, dayOfWeek: first.dayOfWeek }
+        : { weekIndex: 0, dayOfWeek: 0 };
+    });
+    return sel;
+  };
+
   const fillShiftData = (result: any) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
@@ -281,8 +299,15 @@ const ShiftModal = (props: Props) => {
     setShiftTeamIds(result.shiftTeamIds ?? []);
     setOriginalShiftTeamIds(result.shiftTeamIds ?? []);
 
-    setWeeklyTimes(result.weeklyTimes ?? []);
-    setOriginalWeeklyTimes(result.weeklyTimes ?? []);
+    const weekly = (result.weeklyTimes ?? []).map((wt: any) => ({
+      teamId: wt.teamId,
+      weekIndex: wt.weekIndex,
+      dayOfWeek: fromDotNetDay(wt.dayOfWeek),
+      start: toHHMM(wt.start),
+      end: toHHMM(wt.end),
+    }));
+    setWeeklyTimes(weekly);
+    setOriginalWeeklyTimes(weekly);
 
     setCycleLengthWeeks(result.cycleLengthWeeks ?? 1);
     setOriginalCycleLengthWeeks(result.cycleLengthWeeks ?? 1);
@@ -300,21 +325,22 @@ const ShiftModal = (props: Props) => {
     setShiftTeamDisplayNames(displayMap);
     setOriginalShiftTeamDisplayNames(displayMap);
 
-    const sel: Record<number, { weekIndex: number; dayOfWeek: number }> = {};
-    ids.forEach((id) => (sel[id] = { weekIndex: 0, dayOfWeek: 0 }));
-    setSelectionByTeam(sel);
+    setSelectionByTeam(buildInitialSelection(ids, weekly));
   };
 
   // --- Update shift ---
   const updateShift = async (event: FormEvent) => {
     event.preventDefault();
 
-    // if (hasOverlap()) {
-    //   notify("error", t("ShiftModal/TimesOverlap"));
-    //   return;
-    // }
+    const msg = runLocalValidation();
+    if (msg) {
+      setValidationError(msg);
+      notify("error", msg);
+      return;
+    }
 
     try {
+      const weeklyTimesToSend = buildWeeklyTimesToSend();
       const response = await fetch(`${apiUrl}/shift/update/${props.itemId}`, {
         method: "PUT",
         headers: {
@@ -326,7 +352,7 @@ const ShiftModal = (props: Props) => {
           name,
           isHidden,
           shiftTeamIds,
-          weeklyTimes,
+          weeklyTimes: weeklyTimesToSend,
           shiftTeamDisplayNames: Object.fromEntries(
             Object.entries(shiftTeamDisplayNames).map(([k, v]) => [
               Number(k),
@@ -467,25 +493,117 @@ const ShiftModal = (props: Props) => {
   ]);
 
   // --- HELPERS ---
+  useEffect(() => {
+    setValidationError(runLocalValidation());
+  }, [
+    name,
+    cycleLengthWeeks,
+    shiftTeamIds,
+    weeklyTimes,
+    shiftTeamDisplayNames,
+  ]);
+
+  const runLocalValidation = (): string | null => {
+    return hasOverlap();
+  };
+
+  const hasOverlap = (): string | null => {
+    if (!weeklyTimes.length) return null;
+
+    const toMinutes = (hhmm: string) => {
+      if (!hhmm || hhmm.length < 4) return NaN;
+      const [h, m] = hhmm.split(":").map(Number);
+      return h * 60 + (m || 0);
+    };
+
+    const groups = new Map<string, WeeklyTime[]>();
+    for (const wt of weeklyTimes) {
+      const key = `${wt.weekIndex}-${wt.dayOfWeek}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(wt);
+    }
+
+    for (const list of groups.values()) {
+      const sorted = [...list].sort((a, b) => (a.start > b.start ? 1 : -1));
+      for (let i = 0; i < sorted.length; i++) {
+        const a = sorted[i];
+        const aStart = toMinutes(a.start);
+        const aEnd = toMinutes(a.end);
+
+        if (isNaN(aStart) || isNaN(aEnd)) {
+          return t("ShiftModal/Times invalid");
+        }
+        if (aEnd <= aStart) {
+          return t("ShiftModal/Start before end");
+        }
+        if (i < sorted.length - 1) {
+          const b = sorted[i + 1];
+          if (toMinutes(b.start) < aEnd) {
+            return t("ShiftModal/TimesOverlap");
+          }
+        }
+      }
+    }
+    return null;
+  };
+
+  const toDotNetDay = (uiDay: number) => (uiDay + 1) % 7;
+  const fromDotNetDay = (dn: number | string) => {
+    if (typeof dn === "number") return (dn + 6) % 7;
+    const map: Record<string, number> = {
+      Sunday: 6,
+      Monday: 0,
+      Tuesday: 1,
+      Wednesday: 2,
+      Thursday: 3,
+      Friday: 4,
+      Saturday: 5,
+    };
+    return map[dn] ?? 0;
+  };
+
+  const toHHMM = (s: string) =>
+    typeof s === "string" && s.length >= 5 ? s.slice(0, 5) : s;
+
+  const buildWeeklyTimesToSend = () =>
+    weeklyTimes
+      .filter(
+        (wt) =>
+          Number.isInteger(wt.teamId) &&
+          Number.isInteger(wt.weekIndex) &&
+          Number.isInteger(wt.dayOfWeek) &&
+          wt.start &&
+          wt.end,
+      )
+      .map((wt) => ({
+        ...wt,
+        dayOfWeek: toDotNetDay(wt.dayOfWeek),
+      }));
+
   const clamp = (v: number, min: number, max: number) =>
     Math.max(min, Math.min(max, v));
 
   useEffect(() => {
     setSelectionByTeam((prev) => {
-      const next = { ...prev };
-      for (const k of Object.keys(next)) {
-        next[Number(k)].weekIndex = clamp(
-          next[Number(k)].weekIndex,
-          0,
-          Math.max(0, cycleLengthWeeks - 1),
-        );
-      }
+      const next: Record<number, { weekIndex: number; dayOfWeek: number }> = {};
+      shiftTeamIds.forEach((id: number) => {
+        const existing = prev[id] ?? { weekIndex: 0, dayOfWeek: 0 };
+        next[id] = {
+          weekIndex: clamp(
+            existing.weekIndex,
+            0,
+            Math.max(0, cycleLengthWeeks - 1),
+          ),
+          dayOfWeek: existing.dayOfWeek,
+        };
+      });
       return next;
     });
+
     setWeeklyTimes((prev) =>
       prev.filter((wt) => wt.weekIndex < cycleLengthWeeks),
     );
-  }, [cycleLengthWeeks]);
+  }, [cycleLengthWeeks, shiftTeamIds]);
 
   const setSelection = (
     teamId: number,
@@ -511,250 +629,242 @@ const ShiftModal = (props: Props) => {
   return (
     <>
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => props.onClose()}
-          icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.itemId
-              ? t("Common/Edit") + " " + t("Common/shift")
-              : t("Common/Add") + " " + t("Common/shift")
-          }
-          confirmOnClose
-          isDirty={isDirty}
+        <form
+          ref={formRef}
+          onSubmit={(e) => (props.itemId ? updateShift(e) : addShift(e))}
         >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-4"
-            onSubmit={(e) => (props.itemId ? updateShift(e) : addShift(e))}
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => props.onClose()}
+            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.itemId
+                ? t("Common/Edit") + " " + t("Common/shift")
+                : t("Common/Add") + " " + t("Common/shift")
+            }
+            confirmOnClose
+            isDirty={isDirty}
           >
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("ShiftModal/Info1")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
+            <ModalBase.Content>
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("ShiftModal/Info1")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
-            <div className="xs:grid-cols-1 xs:gap-4 mb-8 grid grid-cols-1 gap-6">
-              <Input
-                label={t("Common/Name")}
-                value={name}
-                onChange={(val) => {
-                  setName(String(val));
-                }}
-                onModal
-                required
-                {...shiftConstraints.name}
-              />
-            </div>
+              <div className="xs:grid-cols-1 xs:gap-4 mb-8 grid grid-cols-1 gap-6">
+                <Input
+                  label={t("Common/Name")}
+                  value={name}
+                  onChange={(val) => {
+                    setName(String(val));
+                  }}
+                  onModal
+                  required
+                  {...shiftConstraints.name}
+                />
+              </div>
 
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("ShiftModal/Info2")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("ShiftModal/Info2")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
-            <div className="xs:grid-cols-2 xs:gap-4 grid grid-cols-1 gap-6">
-              <Input
-                type="number"
-                label={t("ShiftModal/Cycle length (weeks)")}
-                value={String(cycleLengthWeeks)}
-                onChange={(v) =>
-                  setCycleLengthWeeks(clamp(Number(v || 1), 1, 52))
-                }
-                onModal
-                required
-              />
+              <div className="xs:grid-cols-2 xs:gap-4 grid grid-cols-1 gap-6">
+                <SingleDropdown
+                  addSpacer={shiftTeamIds.length === 0}
+                  scrollContainer={getScrollEl}
+                  label={t("ShiftModal/Cycle length (weeks)")}
+                  value={String(cycleLengthWeeks)}
+                  options={Array.from({ length: 52 }, (_, i) => ({
+                    label: String(i + 1),
+                    value: String(i + 1),
+                  }))}
+                  onChange={(v) =>
+                    setCycleLengthWeeks(clamp(Number(v || 1), 1, 52))
+                  }
+                  onModal
+                  required
+                />
 
-              <MultiDropdown
-                label={t("Common/Shift teams")}
-                value={shiftTeamIds.map(String)}
-                onChange={(vals: string[]) => {
-                  const ids = vals.map(Number);
-                  setShiftTeamIds(ids);
+                <MultiDropdown
+                  addSpacer={shiftTeamIds.length === 0 && shiftTeams.length > 3}
+                  scrollContainer={getScrollEl}
+                  label={t("Common/Shift teams")}
+                  value={shiftTeamIds.map(String)}
+                  onChange={(vals: string[]) => {
+                    const ids = vals.map(Number);
+                    setShiftTeamIds(ids);
 
-                  setWeeklyTimes((prev) =>
-                    prev.filter((wt) => ids.includes(wt.teamId)),
-                  );
+                    setWeeklyTimes((prev) =>
+                      prev.filter((wt) => ids.includes(wt.teamId)),
+                    );
 
-                  setShiftTeamDisplayNames((prev) => {
-                    const next = { ...prev };
-                    ids.forEach((id) => {
-                      if (!(id in next)) next[id] = "";
+                    setShiftTeamDisplayNames((prev) => {
+                      const next = { ...prev };
+                      ids.forEach((id) => {
+                        if (!(id in next)) next[id] = "";
+                      });
+                      Object.keys(next).forEach((k) => {
+                        if (!ids.includes(Number(k))) delete next[Number(k)];
+                      });
+                      return next;
                     });
-                    Object.keys(next).forEach((k) => {
-                      if (!ids.includes(Number(k))) delete next[Number(k)];
+
+                    setSelectionByTeam((prev) => {
+                      const next: Record<
+                        number,
+                        { weekIndex: number; dayOfWeek: number }
+                      > = {};
+                      ids.forEach((id) => {
+                        next[id] = prev[id] ?? { weekIndex: 0, dayOfWeek: 0 };
+                      });
+                      return next;
                     });
-                    return next;
-                  });
+                  }}
+                  options={shiftTeams.map((t) => ({
+                    label: t.name,
+                    value: String(t.id),
+                  }))}
+                  onModal
+                />
+              </div>
 
-                  setSelectionByTeam((prev) => {
-                    const next: Record<
-                      number,
-                      { weekIndex: number; dayOfWeek: number }
-                    > = {};
-                    ids.forEach((id) => {
-                      next[id] = prev[id] ?? { weekIndex: 0, dayOfWeek: 0 };
-                    });
-                    return next;
-                  });
-                }}
-                options={shiftTeams.map((t) => ({
-                  label: t.name,
-                  value: String(t.id),
-                }))}
-                onModal
-              />
-            </div>
+              {shiftTeamIds.length > 0 && (
+                <div className="flex flex-col gap-4">
+                  <DragDrop
+                    items={shiftTeamIds}
+                    getId={(id) => String(id)}
+                    onReorder={(newList) => setShiftTeamIds(newList)}
+                    onDraggingChange={setIsAnyDragging}
+                    containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    renderItem={(id, isDragging) => {
+                      const team = shiftTeams.find((t) => t.id === id);
+                      if (!team) {
+                        return null;
+                      }
+                      const sel = selectionByTeam[id] ?? {
+                        weekIndex: 0,
+                        dayOfWeek: 0,
+                      };
+                      const idx = getIndexFor(id, sel.weekIndex, sel.dayOfWeek);
+                      const wt = idx >= 0 ? weeklyTimes[idx] : null;
 
-            {shiftTeamIds.length > 0 && (
-              <div className="flex flex-col gap-4">
-                <DragDrop
-                  items={shiftTeamIds}
-                  getId={(id) => String(id)}
-                  onReorder={(newList) => setShiftTeamIds(newList)}
-                  onDraggingChange={setIsAnyDragging}
-                  containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                  renderItem={(id, isDragging) => {
-                    const team = shiftTeams.find((t) => t.id === id);
-                    if (!team) {
-                      return null;
-                    }
-                    const sel = selectionByTeam[id] ?? {
-                      weekIndex: 0,
-                      dayOfWeek: 0,
-                    };
-                    const idx = getIndexFor(id, sel.weekIndex, sel.dayOfWeek);
-                    const wt = idx >= 0 ? weeklyTimes[idx] : null;
+                      const intervals: Array<{ wt: WeeklyTime; i: number }> =
+                        weeklyTimes
+                          .map((wt, i) => ({ wt, i }))
+                          .filter(
+                            (x) =>
+                              x.wt.teamId === id &&
+                              x.wt.weekIndex === sel.weekIndex &&
+                              x.wt.dayOfWeek === sel.dayOfWeek,
+                          )
+                          .sort((a, b) => (a.wt.start > b.wt.start ? 1 : -1));
 
-                    const intervals: Array<{ wt: WeeklyTime; i: number }> =
-                      weeklyTimes
-                        .map((wt, i) => ({ wt, i }))
-                        .filter(
-                          (x) =>
-                            x.wt.teamId === id &&
-                            x.wt.weekIndex === sel.weekIndex &&
-                            x.wt.dayOfWeek === sel.dayOfWeek,
-                        )
-                        .sort((a, b) => (a.wt.start > b.wt.start ? 1 : -1));
+                      return (
+                        <div
+                          key={id}
+                          className="flex flex-col gap-8 rounded-2xl bg-[var(--bg-navbar)] p-4"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="font-semibold">{team.name}</span>
+                            <button
+                              type="button"
+                              disabled={isDragging}
+                              className={`${iconButtonPrimaryClass}`}
+                              onClick={() => {
+                                setShiftTeamIds((prev) =>
+                                  prev.filter((v) => v !== id),
+                                );
+                                setWeeklyTimes((prev) =>
+                                  prev.filter((wt) => wt.teamId !== id),
+                                );
+                                setShiftTeamDisplayNames((prev) => {
+                                  const n = { ...prev };
+                                  delete n[id];
+                                  return n;
+                                });
+                                setSelectionByTeam((prev) => {
+                                  const n = { ...prev };
+                                  delete n[id];
+                                  return n;
+                                });
+                              }}
+                              aria-label={t("Common/Remove") + " " + team.name}
+                            >
+                              <XMarkIcon className="h-6 min-h-6 w-6 min-w-6" />
+                            </button>
+                          </div>
 
-                    return (
-                      <div
-                        key={id}
-                        className="flex flex-col gap-8 rounded-2xl bg-[var(--bg-navbar)] p-4"
-                      >
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="font-semibold">{team.name}</span>
-                          <button
-                            type="button"
-                            disabled={isDragging}
-                            className={`${iconButtonPrimaryClass}`}
-                            onClick={() => {
-                              setShiftTeamIds((prev) =>
-                                prev.filter((v) => v !== id),
-                              );
-                              setWeeklyTimes((prev) =>
-                                prev.filter((wt) => wt.teamId !== id),
-                              );
-                              setShiftTeamDisplayNames((prev) => {
-                                const n = { ...prev };
-                                delete n[id];
-                                return n;
-                              });
-                              setSelectionByTeam((prev) => {
-                                const n = { ...prev };
-                                delete n[id];
-                                return n;
-                              });
-                            }}
-                            aria-label={t("Common/Remove") + " " + team.name}
-                          >
-                            <XMarkIcon className="h-6 min-h-6 w-6 min-w-6" />
-                          </button>
-                        </div>
-
-                        <Input
-                          type="text"
-                          label={t("ShiftModal/Display name")}
-                          value={shiftTeamDisplayNames[id] ?? ""}
-                          onChange={(val) =>
-                            setShiftTeamDisplayNames((p) => ({
-                              ...p,
-                              [id]: String(val ?? ""),
-                            }))
-                          }
-                          aria-label={`${team.name} display name`}
-                          inChip
-                          {...shiftTeamConstraints.name}
-                        />
-
-                        <div className="grid grid-cols-2 gap-6">
-                          <SingleDropdown
-                            label={t("Common/Week")}
-                            value={String(sel.weekIndex)}
-                            options={Array.from(
-                              { length: cycleLengthWeeks },
-                              (_, i) => ({
-                                label: String(i + 1),
-                                value: String(i),
-                              }),
-                            )}
-                            onChange={(v) =>
-                              setSelection(id, {
-                                weekIndex: clamp(
-                                  Number(v ?? 0),
-                                  0,
-                                  Math.max(0, cycleLengthWeeks - 1),
-                                ),
-                              })
-                            }
-                            inChip
-                          />
-                          <SingleDropdown
-                            label={t("Common/Day")}
-                            value={String(sel.dayOfWeek)}
-                            options={dayOptions.map((d) => ({
-                              label: d.label,
-                              value: String(d.value),
-                            }))}
+                          <Input
+                            type="text"
+                            label={t("ShiftModal/Display name")}
+                            value={shiftTeamDisplayNames[id] ?? ""}
                             onChange={(val) =>
-                              setSelection(id, { dayOfWeek: Number(val ?? 0) })
+                              setShiftTeamDisplayNames((p) => ({
+                                ...p,
+                                [id]: String(val ?? ""),
+                              }))
                             }
+                            aria-label={`${team.name} display name`}
                             inChip
+                            {...shiftTeamConstraints.name}
                           />
 
-                          {wt ? (
-                            <>
-                              <Input
-                                type="time"
-                                label={t("Common/Start")}
-                                value={wt.start}
-                                onChange={(val) =>
-                                  setWeeklyTimes((prev) =>
-                                    prev.map((p, i) =>
-                                      i === idx
-                                        ? { ...p, start: String(val ?? "") }
-                                        : p,
-                                    ),
-                                  )
-                                }
-                                inChip
-                                required
-                              />
-                              <div className="flex flex-col gap-4">
+                          <div className="grid grid-cols-2 gap-6">
+                            <SingleDropdown
+                              label={t("Common/Week")}
+                              value={String(sel.weekIndex)}
+                              options={Array.from(
+                                { length: cycleLengthWeeks },
+                                (_, i) => ({
+                                  label: String(i + 1),
+                                  value: String(i),
+                                }),
+                              )}
+                              onChange={(v) =>
+                                setSelection(id, {
+                                  weekIndex: clamp(
+                                    Number(v ?? 0),
+                                    0,
+                                    Math.max(0, cycleLengthWeeks - 1),
+                                  ),
+                                })
+                              }
+                              inChip
+                            />
+                            <SingleDropdown
+                              label={t("Common/Day")}
+                              value={String(sel.dayOfWeek)}
+                              options={dayOptions.map((d) => ({
+                                label: d.label,
+                                value: String(d.value),
+                              }))}
+                              onChange={(val) =>
+                                setSelection(id, {
+                                  dayOfWeek: Number(val ?? 0),
+                                })
+                              }
+                              inChip
+                            />
+
+                            {/* {wt ? (
+                              <>
                                 <Input
                                   type="time"
-                                  label={t("Common/Stop")}
-                                  value={wt.end}
+                                  label={t("Common/Start")}
+                                  value={wt.start}
                                   onChange={(val) =>
                                     setWeeklyTimes((prev) =>
                                       prev.map((p, i) =>
                                         i === idx
-                                          ? { ...p, end: String(val ?? "") }
+                                          ? { ...p, start: String(val ?? "") }
                                           : p,
                                       ),
                                     )
@@ -762,96 +872,229 @@ const ShiftModal = (props: Props) => {
                                   inChip
                                   required
                                 />
-                              </div>
+                                <div className="flex flex-col gap-4">
+                                  <Input
+                                    type="time"
+                                    label={t("Common/Stop")}
+                                    value={wt.end}
+                                    onChange={(val) =>
+                                      setWeeklyTimes((prev) =>
+                                        prev.map((p, i) =>
+                                          i === idx
+                                            ? { ...p, end: String(val ?? "") }
+                                            : p,
+                                        ),
+                                      )
+                                    }
+                                    inChip
+                                    required
+                                  />
+                                </div>
 
+                                <button
+                                  type="button"
+                                  className={`${buttonDeletePrimaryClass} col-span-2`}
+                                  onClick={() =>
+                                    setWeeklyTimes((prev) =>
+                                      prev.filter((_, i) => i !== idx),
+                                    )
+                                  }
+                                  aria-label={t("Common/Remove")}
+                                >
+                                  {t("ShiftModal/Deactivate day")}
+                                </button>
+                              </>
+                            ) : (
                               <button
                                 type="button"
-                                className={`${buttonDeletePrimaryClass} col-span-2`}
+                                className={`${buttonAddPrimaryClass} col-span-2`}
                                 onClick={() =>
-                                  setWeeklyTimes((prev) =>
-                                    prev.filter((_, i) => i !== idx),
-                                  )
+                                  setWeeklyTimes((prev) => [
+                                    ...prev,
+                                    {
+                                      teamId: id,
+                                      weekIndex: sel.weekIndex,
+                                      dayOfWeek: sel.dayOfWeek,
+                                      start: "08:00",
+                                      end: "16:00",
+                                    },
+                                  ])
                                 }
-                                aria-label={t("Common/Remove")}
                               >
-                                {t("ShiftModal/Deactivate day")}
+                                {t("ShiftModal/Activate day")}
                               </button>
-                            </>
-                          ) : (
-                            <button
-                              type="button"
-                              className={`${buttonAddPrimaryClass} col-span-2`}
-                              onClick={() =>
-                                setWeeklyTimes((prev) => [
-                                  ...prev,
-                                  {
-                                    teamId: id,
-                                    weekIndex: sel.weekIndex,
-                                    dayOfWeek: sel.dayOfWeek,
-                                    start: "08:00",
-                                    end: "16:00",
-                                  },
-                                ])
-                              }
-                            >
-                              {t("ShiftModal/Activate day")}
-                            </button>
-                          )}
+                            )} */}
+                            {intervals.length > 0 ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className={`${buttonAddPrimaryClass} col-span-2`}
+                                  onClick={() => {
+                                    const last = [...intervals]
+                                      .sort((a, b) =>
+                                        a.wt.end > b.wt.end ? 1 : -1,
+                                      )
+                                      .at(-1)?.wt;
+                                    const start = last ? last.end : "08:00";
+                                    const end =
+                                      start === "23:59" ? "23:59" : "16:00";
+                                    setWeeklyTimes((prev) => [
+                                      ...prev,
+                                      {
+                                        teamId: id,
+                                        weekIndex: sel.weekIndex,
+                                        dayOfWeek: sel.dayOfWeek,
+                                        start,
+                                        end,
+                                      },
+                                    ]);
+                                  }}
+                                >
+                                  {t("ShiftModal/Add interval")}
+                                </button>
+                                
+                                {intervals.map(({ wt, i }) => (
+                                  <div
+                                    key={i}
+                                    className="col-span-2 grid grid-cols-2 gap-6"
+                                  >
+                                    <Input
+                                      type="time"
+                                      label={t("Common/Start")}
+                                      value={wt.start}
+                                      onChange={(val) =>
+                                        setWeeklyTimes((prev) =>
+                                          prev.map((p, idx) =>
+                                            idx === i
+                                              ? {
+                                                  ...p,
+                                                  start: String(val ?? ""),
+                                                }
+                                              : p,
+                                          ),
+                                        )
+                                      }
+                                      inChip
+                                      required
+                                    />
+                                    <div className="flex flex-col gap-4">
+                                      <Input
+                                        type="time"
+                                        label={t("Common/Stop")}
+                                        value={wt.end}
+                                        onChange={(val) =>
+                                          setWeeklyTimes((prev) =>
+                                            prev.map((p, idx) =>
+                                              idx === i
+                                                ? {
+                                                    ...p,
+                                                    end: String(val ?? ""),
+                                                  }
+                                                : p,
+                                            ),
+                                          )
+                                        }
+                                        inChip
+                                        required
+                                      />
+                                    </div>
+                                    <button
+                                      type="button"
+                                      className={`${buttonDeletePrimaryClass} col-span-2`}
+                                      onClick={() =>
+                                        setWeeklyTimes((prev) =>
+                                          prev.filter((_, idx) => idx !== i),
+                                        )
+                                      }
+                                    >
+                                      {t("Common/Remove")}
+                                    </button>
+                                  </div>
+                                ))}
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                className={`${buttonAddPrimaryClass} col-span-2`}
+                                onClick={() =>
+                                  setWeeklyTimes((prev) => [
+                                    ...prev,
+                                    {
+                                      teamId: id,
+                                      weekIndex: sel.weekIndex,
+                                      dayOfWeek: sel.dayOfWeek,
+                                      start: "08:00",
+                                      end: "16:00",
+                                    },
+                                  ])
+                                }
+                              >
+                                {t("ShiftModal/Add interval")}
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  }}
-                />
+                      );
+                    }}
+                  />
+                  <span className="text-sm text-[var(--text-secondary)] italic">
+                    {t("Modal/Drag and drop2") +
+                      t("Common/shift team") +
+                      t("Modal/Drag and drop3")}
+                  </span>
+                </div>
+              )}
+
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("Common/Status")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
-            )}
 
-            <span className="text-sm text-[var(--text-secondary)] italic">
-              {t("Modal/Drag and drop2") +
-                t("Common/shift team") +
-                t("Modal/Drag and drop3")}
-            </span>
-
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("Common/Status")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="mb-8 flex justify-between gap-4">
-              <div className="flex items-center gap-2 truncate">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isHidden}
-                  className={switchClass(isHidden)}
-                  onClick={() => setIsHidden((prev) => !prev)}
-                >
-                  <div className={switchKnobClass(isHidden)} />
-                </button>
-                <span className="mb-0.5">{t("ShiftModal/Hide shift")}</span>
+              <div className="mb-8 flex justify-between gap-4">
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isHidden}
+                    className={switchClass(isHidden)}
+                    onClick={() => setIsHidden((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(isHidden)} />
+                  </button>
+                  <span className="mb-0.5">{t("ShiftModal/Hide shift")}</span>
+                </div>
               </div>
-            </div>
+            </ModalBase.Content>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+            <ModalBase.Footer>
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={!!validationError}
               >
                 {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
               >
                 {t("Modal/Abort")}
               </button>
-            </div>
-          </form>
-        </ModalBase>
+
+              {validationError && (
+                <div
+                  className="-mt-3 text-sm font-semibold text-[var(--note-error)]"
+                  dangerouslySetInnerHTML={{ __html: validationError }}
+                />
+              )}
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

@@ -104,7 +104,7 @@ namespace backend.Controllers
                         .OrderByDescending(s => s.ShiftToShiftTeams.Count)
                         .ThenBy(s => s.Name.ToLower())
                     : query.OrderBy(s => s.ShiftToShiftTeams.Count).ThenBy(s => s.Name.ToLower()),
-                "ishidden" => sortOrder == "desc"
+                "visibilitycount" => sortOrder == "desc"
                     ? query.OrderByDescending(s => s.IsHidden).ThenBy(s => s.Name.ToLower())
                     : query.OrderBy(s => s.IsHidden).ThenBy(s => s.Name.ToLower()),
                 _ => sortOrder == "desc"

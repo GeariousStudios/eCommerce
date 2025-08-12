@@ -35,6 +35,7 @@ const NewsModal = (props: Props) => {
   const editorRef = useRef<RichTextEditorRef>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
   const hasSetInitialContent = useRef(false);
 
   // --- States ---

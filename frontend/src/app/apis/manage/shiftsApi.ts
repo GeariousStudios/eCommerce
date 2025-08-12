@@ -31,6 +31,14 @@ export const fetchContent = async ({
   });
 
   // --- FILTERS START ---
+  if (filters?.isHidden !== undefined) {
+    params.append("isHidden", String(filters.isHidden));
+  }
+
+  filters?.shiftTeamIds?.forEach((id) => {
+    params.append("shiftTeamIds", id.toString());
+  });
+
   filters?.unitIds?.forEach((id) => {
     params.append("unitIds", id.toString());
   });
@@ -123,13 +131,16 @@ export type ShiftTeamOption = {
 };
 
 export const fetchShiftTeams = async (): Promise<ShiftTeamOption[]> => {
-  const response = await fetch(`${apiUrl}/shift-team?sortBy=name&sortOrder=asc`, {
-    headers: {
-      "X-User-Language": localStorage.getItem("language") || "sv",
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
+  const response = await fetch(
+    `${apiUrl}/shift-team?sortBy=name&sortOrder=asc`,
+    {
+      headers: {
+        "X-User-Language": localStorage.getItem("language") || "sv",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
     },
-  });
+  );
 
   if (response.status === 401) {
     localStorage.removeItem("token");

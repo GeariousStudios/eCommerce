@@ -26,6 +26,7 @@ const NewsTypeModal = (props: Props) => {
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
   const [name, setName] = useState("");
@@ -236,65 +237,64 @@ const NewsTypeModal = (props: Props) => {
   return (
     <>
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => props.onClose()}
-          icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.itemId
-              ? t("Common/Edit") + " " + t("Common/type")
-              : t("Common/Add") + " " + t("Common/type")
-          }
-          confirmOnClose
-          isDirty={isDirty}
+        <form
+          ref={formRef}
+          onSubmit={(e) => (props.itemId ? updateNewsType(e) : addNewsType(e))}
         >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-4"
-            onSubmit={(e) =>
-              props.itemId ? updateNewsType(e) : addNewsType(e)
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => props.onClose()}
+            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.itemId
+                ? t("Common/Edit") + " " + t("Common/type")
+                : t("Common/Add") + " " + t("Common/type")
             }
+            confirmOnClose
+            isDirty={isDirty}
           >
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-main)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("NewsTypeModal/Info1")}
-              </h3>
-              <hr className="w-full text-[var(--border-main)]" />
-            </div>
+            <ModalBase.Content>
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("NewsTypeModal/Info1")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
-            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
-              <Input
-                label={t("Common/Name")}
-                value={name}
-                onChange={(val) => {
-                  setName(String(val));
-                }}
-                onModal
-                required
-                {...newsTypeConstraints.name}
-              />
-            </div>
+              <div className="xs:gap-4 xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
+                <Input
+                  label={t("Common/Name")}
+                  value={name}
+                  onChange={(val) => {
+                    setName(String(val));
+                  }}
+                  onModal
+                  required
+                  {...newsTypeConstraints.name}
+                />
+              </div>
+            </ModalBase.Content>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+            <ModalBase.Footer>
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
               >
                 {props.itemId ? t("Modal/Update") : t("Common/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
               >
                 {t("Modal/Abort")}
               </button>
-            </div>
-          </form>
-        </ModalBase>
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

@@ -115,7 +115,7 @@ namespace backend.Controllers
                         .OrderByDescending(s => s.ShiftToShiftTeams.Count)
                         .ThenBy(s => s.Name.ToLower())
                     : query.OrderBy(s => s.ShiftToShiftTeams.Count).ThenBy(s => s.Name.ToLower()),
-                "ishidden" => sortOrder == "desc"
+                "visibilitycount" => sortOrder == "desc"
                     ? query.OrderByDescending(s => s.IsHidden).ThenBy(s => s.Name.ToLower())
                     : query.OrderBy(s => s.IsHidden).ThenBy(s => s.Name.ToLower()),
                 _ => sortOrder == "desc"
@@ -314,12 +314,19 @@ namespace backend.Controllers
         }
 
         [HttpGet("unit/{unitId}")]
-        public async Task<IActionResult> GetShiftsForUnit(int unitId)
+        public async Task<IActionResult> GetShiftsForUnit(
+            int unitId,
+            [FromQuery] string? date = null
+        )
         {
             var lang = await GetLangAsync();
             var unit = await _context
                 .Units.Include(u => u.UnitToShifts.OrderBy(s => s.Order))
                 .ThenInclude(us => us.Shift)
+                .ThenInclude(s => s.ShiftToShiftTeams)
+                .ThenInclude(sst => sst.ShiftTeam)
+                .Include(us => us.UnitToShifts)
+                .ThenInclude(us => us.Shift.ShiftToShiftTeamSchedules)
                 .FirstOrDefaultAsync(u => u.Id == unitId);
 
             if (unit == null)
@@ -327,22 +334,62 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("Shift/NotFound", lang) });
             }
 
+            var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
+            var localToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz).Date;
+            var targetDate = !string.IsNullOrWhiteSpace(date)
+                ? DateOnly.Parse(date)
+                : DateOnly.FromDateTime(localToday);
+
             var result = new List<ShiftDto>();
 
             foreach (var us in unit.UnitToShifts.OrderBy(us => us.Order))
             {
+                var shift = us.Shift;
+
+                var weekIndex = GetWeekIndex(
+                    shift.AnchorWeekStart,
+                    shift.CycleLengthWeeks,
+                    targetDate
+                );
+
+                var todays = shift
+                    .ShiftToShiftTeamSchedules.Where(sch =>
+                        sch.WeekIndex == weekIndex && sch.DayOfWeek == targetDate.DayOfWeek
+                    )
+                    .ToList();
+
+                var displayByTeam = shift.ShiftToShiftTeams.ToDictionary(
+                    x => x.ShiftTeamId,
+                    x =>
+                        string.IsNullOrWhiteSpace(x.DisplayName) ? x.ShiftTeam.Name : x.DisplayName!
+                );
+
+                var teamSpans = todays
+                    .Select(s => new
+                    {
+                        teamId = s.ShiftTeamId,
+                        label = displayByTeam.TryGetValue(s.ShiftTeamId, out var lbl) ? lbl : "",
+                        start = s.StartTime.ToString(@"hh\:mm"),
+                        end = s.EndTime.ToString(@"hh\:mm"),
+                    })
+                    .ToList();
+
                 result.Add(
                     new ShiftDto
                     {
-                        Id = us.Shift.Id,
-                        Name = us.Shift.Name,
-                        SystemKey = us.Shift.SystemKey,
-                        IsHidden = us.Shift.IsHidden,
-
-                        CreationDate = us.Shift.CreationDate,
-                        CreatedBy = us.Shift.CreatedBy,
-                        UpdateDate = us.Shift.UpdateDate,
-                        UpdatedBy = us.Shift.UpdatedBy,
+                        Id = shift.Id,
+                        Name = shift.Name,
+                        SystemKey = shift.SystemKey,
+                        IsHidden = shift.IsHidden,
+                        ShiftTeamSpans = teamSpans
+                            .Select(ts => new ShiftTeamSpanDto
+                            {
+                                TeamId = ts.teamId,
+                                Label = ts.label,
+                                Start = ts.start,
+                                End = ts.end,
+                            })
+                            .ToList(),
                     }
                 );
             }
@@ -597,6 +644,29 @@ namespace backend.Controllers
                 }
             }
 
+            var existingSchedules = _context.ShiftToShiftTeamSchedules.Where(x =>
+                x.ShiftId == shift.Id
+            );
+            _context.ShiftToShiftTeamSchedules.RemoveRange(existingSchedules);
+
+            if (dto.WeeklyTimes?.Any() == true)
+            {
+                foreach (var w in dto.WeeklyTimes)
+                {
+                    _context.ShiftToShiftTeamSchedules.Add(
+                        new ShiftToShiftTeamSchedule
+                        {
+                            ShiftId = shift.Id,
+                            ShiftTeamId = w.TeamId,
+                            WeekIndex = w.WeekIndex,
+                            DayOfWeek = w.DayOfWeek,
+                            StartTime = w.Start,
+                            EndTime = w.End,
+                        }
+                    );
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             var result = new ShiftDto
@@ -621,18 +691,27 @@ namespace backend.Controllers
             if (weeklyTimes == null)
                 return (false, null);
 
-            var grouped = weeklyTimes.GroupBy(w =>
-                (w.TeamId, w.WeekIndex, w.DayOfWeek ?? (DayOfWeek)(-1))
-            );
+            var grouped = weeklyTimes.GroupBy(w => (w.TeamId, w.WeekIndex, w.DayOfWeek));
 
             foreach (var group in grouped)
             {
-                var ordered = group.OrderBy(x => x.Start).ToList();
+                var ordered = group
+                    .Select(w =>
+                    {
+                        var s = (int)w.Start.TotalMinutes;
+                        var e = (int)w.End.TotalMinutes;
+                        var eAdj = e <= s ? e + 1440 : e;
+                        return new { S = s, E = eAdj };
+                    })
+                    .OrderBy(x => x.S)
+                    .ToList();
+
                 for (int i = 0; i < ordered.Count; i++)
                 {
-                    if (ordered[i].Start >= ordered[i].End)
+                    if (ordered[i].E <= ordered[i].S)
                         return (true, "Shift/StartBeforeEnd");
-                    if (i > 0 && ordered[i].Start < ordered[i - 1].End)
+
+                    if (i > 0 && ordered[i].S < ordered[i - 1].E)
                         return (true, "Shift/TimesOverlap");
                 }
             }

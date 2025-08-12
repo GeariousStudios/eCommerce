@@ -24,6 +24,7 @@ type InputProps = {
   minLength?: number;
   pattern?: string;
   inChip?: boolean;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 };
 
 const isDarkTheme = () => {
@@ -59,6 +60,7 @@ const Input = ({
   maxLength,
   pattern,
   inChip = false,
+  inputMode,
 }: InputProps & { icon?: ReactNode }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -77,6 +79,7 @@ const Input = ({
         className={`${isCheckbox || isRadio ? "flex items-center justify-center" : "w-full"} ${isDarkTheme() ? "dark-calendar" : ""} relative`}
       >
         <input
+          inputMode={inputMode}
           maxLength={maxLength}
           minLength={minLength}
           pattern={pattern}

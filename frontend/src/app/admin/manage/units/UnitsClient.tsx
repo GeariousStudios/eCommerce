@@ -149,7 +149,7 @@ const UnitsClient = (props: Props) => {
       await deleteContent(id);
       await fetchItems();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Unit") + t("Manage/deleted"), 4000); // <-- Unique.
+      notify("success", t("Common/Unit") + t("Manage/deleted1"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -552,7 +552,7 @@ const UnitsClient = (props: Props) => {
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
         tableItems={tableItems()}
-        showCheckbox={true}
+        showCheckbox
         showInfoButton={false}
         getIsDisabled={() => false} // <-- Unique.
         pagination={{

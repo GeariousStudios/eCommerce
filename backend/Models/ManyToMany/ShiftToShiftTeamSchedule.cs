@@ -11,7 +11,7 @@ namespace backend.Models.ManyToMany
         public ShiftTeam ShiftTeam { get; set; } = null!;
 
         public int WeekIndex { get; set; }
-        public DayOfWeek? DayOfWeek { get; set; }
+        public DayOfWeek DayOfWeek { get; set; }
 
         [Required]
         public TimeSpan StartTime { get; set; }

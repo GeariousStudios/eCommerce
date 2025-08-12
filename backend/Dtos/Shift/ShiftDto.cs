@@ -13,6 +13,7 @@ namespace backend.Dtos.Shift
 
         public List<UnitDto> Units { get; set; } = new();
         public List<ShiftTeamDto> ShiftTeams { get; set; } = new();
+        public List<ShiftTeamSpanDto> ShiftTeamSpans { get; set; } = new();
         public List<int> ShiftTeamIds { get; set; } = new();
         public Dictionary<int, string>? ShiftTeamDisplayNames { get; set; }
 

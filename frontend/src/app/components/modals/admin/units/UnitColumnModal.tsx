@@ -16,6 +16,8 @@ import {
 import SingleDropdown from "../../../common/SingleDropdown";
 import { useTranslations } from "next-intl";
 import { unitColumnConstraints } from "@/app/helpers/inputConstraints";
+import UnitColumns from "@/app/admin/manage/units/unit-columns/page";
+import { get } from "http";
 
 type Props = {
   isOpen: boolean;
@@ -31,6 +33,7 @@ const UnitColumnModal = (props: Props) => {
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
   const [name, setName] = useState("");
@@ -252,36 +255,35 @@ const UnitColumnModal = (props: Props) => {
   return (
     <>
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => props.onClose()}
-          icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.itemId
-              ? t("Common/Edit") + " " + t("Common/column")
-              : t("Common/Add") + " " + t("Common/column")
+        <form
+          ref={formRef}
+          onSubmit={(e) =>
+            props.itemId ? updateUnitColumn(e) : addUnitColumn(e)
           }
-          confirmOnClose
-          isDirty={isDirty}
         >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-4"
-            onSubmit={(e) =>
-              props.itemId ? updateUnitColumn(e) : addUnitColumn(e)
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => props.onClose()}
+            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.itemId
+                ? t("Common/Edit") + " " + t("Common/column")
+                : t("Common/Add") + " " + t("Common/column")
             }
+            confirmOnClose
+            isDirty={isDirty}
           >
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("ColumnModal/Info1")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
+            <ModalBase.Content>
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("ColumnModal/Info1")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
-            <div className="mb-8 flex w-full flex-col gap-6 sm:flex-row sm:gap-4">
-              <div className="w-full sm:w-1/2">
+              <div className="xs:gap-4 xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
                 <Input
                   label={t("Common/Name")}
                   value={name}
@@ -290,10 +292,10 @@ const UnitColumnModal = (props: Props) => {
                   required
                   {...unitColumnConstraints.name}
                 />
-              </div>
 
-              <div className="w-full sm:w-1/2">
                 <SingleDropdown
+                  addSpacer={getDataTypeOptions(t).length > 0}
+                  scrollContainer={getScrollEl}
                   id="dataType"
                   label={t("Columns/Data type")}
                   value={dataType ?? ""}
@@ -303,26 +305,26 @@ const UnitColumnModal = (props: Props) => {
                   required
                 />
               </div>
-            </div>
+            </ModalBase.Content>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+            <ModalBase.Footer>
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
               >
                 {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
               >
                 {t("Modal/Abort")}
               </button>
-            </div>
-          </form>
-        </ModalBase>
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

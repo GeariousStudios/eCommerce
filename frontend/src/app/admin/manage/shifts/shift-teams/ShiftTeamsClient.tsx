@@ -132,7 +132,7 @@ const ShiftTeamsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Shift team") + t("Manage/deleted"), 4000); // <-- Unique.
+      notify("success", t("Common/Shift team") + t("Manage/deleted2"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -141,7 +141,7 @@ const ShiftTeamsClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name, shifts",
+      key: "name, shifts, isHidden",
       getValue: (item: ShiftTeamItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
           <div className="flex flex-col">
@@ -169,6 +169,15 @@ const ShiftTeamsClient = (props: Props) => {
                 );
               })
             )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">{t("Common/Status")}:</span>
+            <span
+              className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} text-[var(--text-main-reverse)]`}
+            >
+              {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
+            </span>
           </div>
         </div>
       ),
@@ -228,12 +237,45 @@ const ShiftTeamsClient = (props: Props) => {
           })}
         </div>
       ),
+      responsivePriority: 2,
+    },
+    {
+      key: "isHidden",
+      label: t("Common/Status"),
+      sortingItem: "visibilitycount",
+      labelAsc: t("ShiftTeams/hidden shift teams"),
+      labelDesc: t("ShiftTeams/visible shift teams"),
+      classNameAddition: "w-[100px] min-w-[100px]",
+      childClassNameAddition: "w-[72px] min-w-[72px]",
+      getValue: (item: ShiftTeamItem) => (
+        <span
+          className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+        >
+          {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
+        </span>
+      ),
       responsivePriority: 1,
     },
   ];
 
   // --- Filter Controls (Unique) ---
   const filterControls = {
+    showVisible: filters.isHidden === false,
+    setShowVisible: (val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        isHidden: val ? false : undefined,
+      }));
+    },
+
+    showHidden: filters.isHidden === true,
+    setShowHidden: (val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        isHidden: val ? true : undefined,
+      }));
+    },
+
     selectedShifts: filters.shiftIds ?? [],
     setShiftSelected: (shiftId: number, val: boolean) => {
       setFilters((prev) => ({
@@ -248,8 +290,26 @@ const ShiftTeamsClient = (props: Props) => {
   // --- Filter List (Unique)
   const filterList = () => [
     {
-      label: t("ShiftTeams/Used by shifts"),
+      label: t("Common/Status"),
       breakpoint: "ml",
+      options: [
+        {
+          label: t("ShiftTeams/Visible shift teams"),
+          isSelected: filterControls.showVisible,
+          setSelected: filterControls.setShowVisible,
+          count: counts?.visibilityCount?.["Visible"] ?? 0,
+        },
+        {
+          label: t("ShiftTeams/Hidden shift teams"),
+          isSelected: filterControls.showHidden,
+          setSelected: filterControls.setShowHidden,
+          count: counts?.visibilityCount?.["Hidden"] ?? 0,
+        },
+      ],
+    },
+    {
+      label: t("ShiftTeams/Used by shifts"),
+      breakpoint: "lg",
       options: shifts.map((shift) => {
         const label = shift.name;
 
@@ -288,7 +348,7 @@ const ShiftTeamsClient = (props: Props) => {
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
         tableItems={tableItems()}
-        showCheckbox={true}
+        showCheckbox
         showInfoButton={false}
         getIsDisabled={() => false} // <-- Unique.
         pagination={{

@@ -28,6 +28,7 @@ const ShiftTeamModal = (props: Props) => {
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
   const [name, setName] = useState("");
@@ -73,6 +74,7 @@ const ShiftTeamModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
+          isHidden,
         }),
       });
 
@@ -174,6 +176,7 @@ const ShiftTeamModal = (props: Props) => {
           },
           body: JSON.stringify({
             name,
+            isHidden,
           }),
         },
       );
@@ -246,90 +249,92 @@ const ShiftTeamModal = (props: Props) => {
   return (
     <>
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => props.onClose()}
-          icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.itemId
-              ? t("Common/Edit") + " " + t("Common/shift team")
-              : t("Common/Add") + " " + t("Common/shift team")
+        <form
+          ref={formRef}
+          onSubmit={(e) =>
+            props.itemId ? updateShiftTeam(e) : addShiftTeam(e)
           }
-          confirmOnClose
-          isDirty={isDirty}
         >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-4"
-            onSubmit={(e) =>
-              props.itemId ? updateShiftTeam(e) : addShiftTeam(e)
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => props.onClose()}
+            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.itemId
+                ? t("Common/Edit") + " " + t("Common/shift team")
+                : t("Common/Add") + " " + t("Common/shift team")
             }
+            confirmOnClose
+            isDirty={isDirty}
           >
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("ShiftTeamModal/Info1")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4">
-              <Input
-                label={t("Common/Name")}
-                value={name}
-                onChange={(val) => {
-                  setName(String(val));
-                }}
-                onModal
-                required
-                {...shiftTeamConstraints.name}
-              />
-            </div>
-
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("Common/Status")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="mb-8 flex justify-between gap-4">
-              <div className="flex items-center gap-2 truncate">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isHidden}
-                  className={switchClass(isHidden)}
-                  onClick={() => setIsHidden((prev) => !prev)}
-                >
-                  <div className={switchKnobClass(isHidden)} />
-                </button>
-                <span className="mb-0.5">
-                  {t("ShiftTeamModal/Hide shift team")}
-                </span>
+            <ModalBase.Content>
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("ShiftTeamModal/Info1")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
-            </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+              <div className="xs:gap-4 xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
+                <Input
+                  label={t("Common/Name")}
+                  value={name}
+                  onChange={(val) => {
+                    setName(String(val));
+                  }}
+                  onModal
+                  required
+                  {...shiftTeamConstraints.name}
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("Common/Status")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <div className="xs:gap-4 xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isHidden}
+                    className={switchClass(isHidden)}
+                    onClick={() => setIsHidden((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(isHidden)} />
+                  </button>
+
+                  <span className="mb-0.5">
+                    {t("ShiftTeamModal/Hide shift team")}
+                  </span>
+                </div>
+              </div>
+            </ModalBase.Content>
+
+            <ModalBase.Footer>
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
               >
                 {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
               >
                 {t("Modal/Abort")}
               </button>
-            </div>
-          </form>
-        </ModalBase>
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

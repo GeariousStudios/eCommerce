@@ -137,7 +137,7 @@ const UnitColumnsClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Column") + t("Manage/deleted"), 4000); // <-- Unique.
+      notify("success", t("Common/Column") + t("Manage/deleted1"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -400,7 +400,7 @@ const UnitColumnsClient = (props: Props) => {
         setIsGrid={setIsGrid}
         gridItems={gridItems()}
         tableItems={tableItems()}
-        showCheckbox={true}
+        showCheckbox
         showInfoButton={false}
         getIsDisabled={() => false} // <-- Unique.
         pagination={{

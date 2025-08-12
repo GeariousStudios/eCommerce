@@ -89,6 +89,7 @@
   "Common/Friday": "Fredag",
   "Common/Saturday": "Lördag",
   "Common/Sunday": "Söndag",
+  "Common/Time": "Tid",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
@@ -127,7 +128,6 @@
   "Unit/Edit disruption": "Redigera störning",
   "Unit/Delete disruption": "Ta bort störning",
   "Unit/ongoing": "pågående",
-  "Unit/Time": "Tid",
   "Unit/Scroll to top": "Skrolla till toppen av sidan",
   "Unit/Open or collapse": "Öppna/stäng alla",
   "Unit/No columns": "Det finns inga kolumner att rapportera någon data i",
@@ -138,7 +138,8 @@
   "Unit/Shift changed": "Enheten bemannas nu av: ",
 
   "Manage/Failed to fetch": "Kunde inte hämta ",
-  "Manage/deleted": " borttagen!",
+  "Manage/deleted1": " borttagen!",
+  "Manage/deleted2": " borttaget!",
   "Manage/Select1": "Välj en",
   "Manage/Select2": "Välj ett",
   "Manage/Select3": "Välj ett",
@@ -202,9 +203,6 @@
   "Columns/Data1": "på kolumner som har data",
   "Columns/Data2": "på kolumner som inte har någon data",
   "Columns/Confirm": "Om du tar bort valda objekt så förlorar du även den data som finns kopplad. Vill du ta bort ändå?",
-
-  "ShiftTeams/shift amount": "antal skift",
-  "ShiftTeams/Used by shifts": "Används av skift",
 
   "Modal/Unsaved": "Du har osparade ändringar. Vill du stänga ändå?",
   "Modal/Close anyway": "Stäng ändå",
@@ -293,13 +291,27 @@
   "ShiftModal/Anchor week start": "Startvecka för cykeln",
   "ShiftModal/Activate day": "Aktivera dag",
   "ShiftModal/Deactivate day": "Inaktivera dag",
+  "ShiftModal/Start before end": "Starttid måste vara före sluttid",
+  "ShiftModal/Times invalid": "Ogiltiga tider för ett eller fler lag",
+  "ShiftModal/Add interval": "Lägg till intervall",
 
   "ShiftTeamModal/Info1": "Uppgifter om laget",
   "ShiftTeamModal/Hide shift team": "Göm lag",
 
-  "Shift/None": "Inget",
-  "Shift/Unmanned": "Obemannad",
-  "Shift/shift team amount": "antal lag",
+  "Shifts/None": "Inget",
+  "Shifts/Unmanned": "Obemannad",
+  "Shifts/shift team amount": "antal lag",
+  "Shifts/Hidden shifts": "Gömda skift",
+  "Shifts/hidden shifts": "gömda skift",
+  "Shifts/Visible shifts": "Synliga skift",
+  "Shifts/visible shifts": "synliga skift",
+
+  "ShiftTeams/shift amount": "antal skift",
+  "ShiftTeams/Used by shifts": "Används av skift",
+  "ShiftTeams/Hidden shift teams": "Gömda lag",
+  "ShiftTeams/hidden shift teams": "gömda lag",
+  "ShiftTeams/Visible shift teams": "Synliga lag",
+  "ShiftTeams/visible shift teams": "synliga lag",
 
   "Api/Failed to delete": "Kunde inte ta bort ",
 

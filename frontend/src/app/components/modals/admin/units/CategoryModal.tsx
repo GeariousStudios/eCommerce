@@ -35,6 +35,7 @@ const CategoryModal = (props: Props) => {
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
   const updatedSubCategoriesRef = useRef<SubCategoryDto[]>([]);
 
   // --- States ---
@@ -422,131 +423,135 @@ const CategoryModal = (props: Props) => {
   return (
     <>
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => {
-            setSubCategoryIdsToDelete([]);
-            props.onClose();
-          }}
-          icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.itemId
-              ? t("Common/Edit") + " " + t("Common/category")
-              : t("Common/Add") + " " + t("Common/category")
+        <form
+          ref={formRef}
+          onSubmit={(e) =>
+            props.itemId ? updateCategory(e) : createCategory(e)
           }
-          confirmOnClose
-          isDirty={isDirty}
         >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-4"
-            onSubmit={(e) =>
-              props.itemId ? updateCategory(e) : createCategory(e)
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => {
+              setSubCategoryIdsToDelete([]);
+              props.onClose();
+            }}
+            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.itemId
+                ? t("Common/Edit") + " " + t("Common/category")
+                : t("Common/Add") + " " + t("Common/category")
             }
+            confirmOnClose
+            isDirty={isDirty}
           >
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("CategoryModal/Info1")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="mb-8 flex w-full flex-col gap-6 sm:flex-row sm:gap-4">
-              <div className="w-full">
-                <Input
-                  label={t("Common/Name")}
-                  value={name}
-                  onChange={(val) => setName(String(val))}
-                  onModal
-                  required
-                  {...categoryConstraints.name}
-                />
+            <ModalBase.Content>
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("CategoryModal/Info1")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("CategoryModal/Info2")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
+              <div className="xs:gap-4 xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
+                <div className="w-full">
+                  <Input
+                    label={t("Common/Name")}
+                    value={name}
+                    onChange={(val) => setName(String(val))}
+                    onModal
+                    required
+                    {...categoryConstraints.name}
+                  />
+                </div>
+              </div>
 
-            <div className="flex gap-4">
-              <Input
-                value={newSubCategory}
-                onChange={(val) => setNewSubCategory(String(val))}
-                onModal
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    createSubCategory();
-                  }
-                }}
-                placeholder={t("CategoryModal/Placeholder text")}
-                {...categoryConstraints.subCategoryName}
-              />
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("CategoryModal/Info2")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
-              <button
-                type="button"
-                onClick={createSubCategory}
-                className={`${buttonPrimaryClass}`}
-              >
-                <PlusIcon />
-              </button>
-            </div>
-
-            {subCategoryIds.length > 0 && (
-              <>
-                <DragDrop
-                  items={subCategoryIds}
-                  getId={(id) => String(id)}
-                  onReorder={(newIds) => setSubCategoryIds(newIds)}
-                  onDraggingChange={setIsAnyDragging}
-                  renderItem={(id, isDragging) => {
-                    const label =
-                      updatedSubCategoriesRef.current.find((sc) => sc.id === id)
-                        ?.name ?? `#${id}`;
-
-                    return (
-                      <SubCategoryChip
-                        label={label}
-                        isDragging={isDragging}
-                        dragging={isAnyDragging}
-                        onDelete={() => deleteSubCategory(id)}
-                      />
-                    );
+              <div className="flex gap-4">
+                <Input
+                  value={newSubCategory}
+                  onChange={(val) => setNewSubCategory(String(val))}
+                  onModal
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      createSubCategory();
+                    }
                   }}
+                  placeholder={t("CategoryModal/Placeholder text")}
+                  {...categoryConstraints.subCategoryName}
                 />
 
-                <span className="text-sm text-[var(--text-secondary)] italic">
-                  {t("Modal/Drag and drop1") +
-                    t("Common/sub category") +
-                    t("Modal/Drag and drop3")}
-                </span>
-              </>
-            )}
+                <button
+                  type="button"
+                  onClick={createSubCategory}
+                  className={`${buttonPrimaryClass}`}
+                >
+                  <PlusIcon />
+                </button>
+              </div>
 
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-between">
+              {subCategoryIds.length > 0 && (
+                <>
+                  <DragDrop
+                    items={subCategoryIds}
+                    getId={(id) => String(id)}
+                    onReorder={(newIds) => setSubCategoryIds(newIds)}
+                    onDraggingChange={setIsAnyDragging}
+                    renderItem={(id, isDragging) => {
+                      const label =
+                        updatedSubCategoriesRef.current.find(
+                          (sc) => sc.id === id,
+                        )?.name ?? `#${id}`;
+
+                      return (
+                        <SubCategoryChip
+                          label={label}
+                          isDragging={isDragging}
+                          dragging={isAnyDragging}
+                          onDelete={() => deleteSubCategory(id)}
+                        />
+                      );
+                    }}
+                  />
+
+                  <span className="text-sm text-[var(--text-secondary)] italic">
+                    {t("Modal/Drag and drop1") +
+                      t("Common/sub category") +
+                      t("Modal/Drag and drop3")}
+                  </span>
+                </>
+              )}
+
+              <span className="mb-4" />
+            </ModalBase.Content>
+
+            <ModalBase.Footer>
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
               >
                 {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
               >
                 {t("Modal/Abort")}
               </button>
-            </div>
-          </form>
-        </ModalBase>
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

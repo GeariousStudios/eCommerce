@@ -4,6 +4,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FocusTrap } from "focus-trap-react";
+import { get } from "http";
 import { useTranslations } from "next-intl";
 import {
   ElementType,
@@ -15,7 +16,7 @@ import {
   useState,
 } from "react";
 
-type Props = {
+type BaseProps = {
   children: ReactNode;
   isOpen: boolean;
   onClose: () => void;
@@ -31,15 +32,25 @@ type Props = {
   smallModal?: boolean;
 };
 
-export type ModalBaseHandle = {
-  requestClose: () => void;
+type SectionProps = {
+  children: ReactNode;
+  className?: string;
+  compact?: boolean;
 };
 
-const ModalBase = forwardRef((props: Props, ref) => {
+export type ModalBaseHandle = {
+  requestClose: () => void;
+  getScrollEl: () => HTMLElement | null;
+};
+
+const ModalBase = forwardRef((props: BaseProps, ref) => {
   const t = useTranslations();
 
   useImperativeHandle(ref, () => ({
     requestClose,
+    getScrollEl: () =>
+      (innerRef.current?.querySelector(".modal-body") as HTMLElement | null) ??
+      null,
   }));
 
   // --- VARIABLES ---
@@ -74,7 +85,7 @@ const ModalBase = forwardRef((props: Props, ref) => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
     };
-  }, [props.isOpen, props.onClose]);
+  }, [props.isOpen, props.onClose, props.disableClickOutside]);
 
   useEffect(() => {
     if (props.nestedModal) {
@@ -121,19 +132,21 @@ const ModalBase = forwardRef((props: Props, ref) => {
             }}
           >
             <div className="relative top-1/2">
-              <div id="portal-root" />
+              {/* <div id="portal-root" /> */}
               <div
                 ref={innerRef}
                 role="dialog"
                 aria-hidden={!props.isOpen}
-                className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} ${props.smallModal ? "max-w-lg" : "max-w-3xl"} relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+                aria-modal="true"
+                className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} ${props.smallModal ? "max-w-lg" : "max-w-3xl"} relative left-1/2 z-[calc(var(--z-modal))] flex max-h-[90svh] w-[90vw] -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
               >
-                <div
-                  className={`${props.smallGap ? "gap-8" : "gap-12"} flex max-h-[90svh] flex-col overflow-x-hidden overflow-y-auto p-4`}
-                >
-                  {!props.disableCloseButton && (
-                    <div className="relative flex items-center justify-between gap-4">
-                      <div className="flex gap-4">
+                {/* --- Header (not scrollable) --- */}
+                {!props.disableCloseButton && (
+                  <div className="p-4">
+                    <div
+                      className={`${props.smallGap ? "gap-8" : "gap-12"} relative flex items-center justify-between`}
+                    >
+                      <div className="flex items-center gap-4">
                         {Icon && (
                           <Icon className="xs:h-8 xs:min-h-8 xs:w-8 xs:min-w-8 h-6 min-h-6 w-6 min-w-6 text-[var(--accent-color)]" />
                         )}
@@ -149,11 +162,16 @@ const ModalBase = forwardRef((props: Props, ref) => {
                       </button>
                       <hr className="xs:mt-16 absolute mt-12 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
                     </div>
-                  )}
+                  </div>
+                )}
+
+                {/* --- Body (scrollable) --- */}
+                <div className="flex min-h-0 flex-col">
                   {props.children}
                 </div>
               </div>
             </div>
+            {/* </div> */}
           </FocusTrap>
         </div>
       )}
@@ -197,4 +215,37 @@ const ModalBase = forwardRef((props: Props, ref) => {
   );
 });
 
-export default ModalBase;
+const Content = ({ children, className }: SectionProps) => (
+  <div
+    className={`modal-body ${className ?? ""} relative flex flex-col gap-4 overflow-y-auto p-4`}
+  >
+    {children}
+  </div>
+);
+
+const Footer = ({ children, className }: SectionProps) => (
+  <div
+    className={`${className ?? ""} grid grid-cols-3 gap-4 border-t border-[var(--border-tertiary)] p-4`}
+  >
+    {children}
+  </div>
+);
+
+ModalBase.displayName = "ModalBase";
+(
+  ModalBase as typeof ModalBase & {
+    Content: typeof Content;
+    Footer: typeof Footer;
+  }
+).Content = Content;
+(
+  ModalBase as typeof ModalBase & {
+    Content: typeof Content;
+    Footer: typeof Footer;
+  }
+).Footer = Footer;
+
+export default ModalBase as typeof ModalBase & {
+  Content: typeof Content;
+  Footer: typeof Footer;
+};

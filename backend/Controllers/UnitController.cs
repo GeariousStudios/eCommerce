@@ -129,7 +129,7 @@ namespace backend.Controllers
                         .OrderByDescending(u => u.UnitToShifts.Count)
                         .ThenBy(u => u.Name.ToLower())
                     : query.OrderBy(u => u.UnitToShifts.Count).ThenBy(u => u.Name.ToLower()),
-                "ishidden" => sortOrder == "desc"
+                "visibilitycount" => sortOrder == "desc"
                     ? query
                         .OrderByDescending(u => u.IsHidden)
                         .ThenBy(u => u.UnitGroup.Name)

@@ -53,6 +53,7 @@ const UnitModal = (props: Props) => {
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
   const [name, setName] = useState("");
@@ -477,45 +478,44 @@ const UnitModal = (props: Props) => {
   return (
     <>
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => props.onClose()}
-          icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.itemId
-              ? t("Common/Edit") + " " + t("Common/unit")
-              : t("Common/Add") + " " + t("Common/unit")
-          }
-          confirmOnClose
-          isDirty={isDirty}
+        <form
+          ref={formRef}
+          onSubmit={(e) => (props.itemId ? updateUnit(e) : addUnit(e))}
         >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-4"
-            onSubmit={(e) => (props.itemId ? updateUnit(e) : addUnit(e))}
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => props.onClose()}
+            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.itemId
+                ? t("Common/Edit") + " " + t("Common/unit")
+                : t("Common/Add") + " " + t("Common/unit")
+            }
+            confirmOnClose
+            isDirty={isDirty}
           >
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("UnitModal/Info1")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
+            <ModalBase.Content>
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("UnitModal/Info1")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
-              <Input
-                label={t("Common/Name")}
-                value={name}
-                onChange={(val) => {
-                  setName(String(val));
-                }}
-                onModal
-                required
-                {...unitConstraints.name}
-              />
+              <div className="xs:gap-4 xs:grid-cols-2 grid grid-cols-1 gap-6">
+                <Input
+                  label={t("Common/Name")}
+                  value={name}
+                  onChange={(val) => {
+                    setName(String(val));
+                  }}
+                  onModal
+                  required
+                  {...unitConstraints.name}
+                />
 
-              <div className="flex w-full gap-6 sm:gap-4">
                 <SingleDropdown
                   id="unitGroup"
                   label={t("Common/Group")}
@@ -531,17 +531,15 @@ const UnitModal = (props: Props) => {
                   }))}
                 />
               </div>
-            </div>
 
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("UnitModal/Info2")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("UnitModal/Info2")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
-            <div className="flex gap-4">
               <MultiDropdown
                 label={t("Common/Columns")}
                 value={unitColumnIds.map(String)}
@@ -552,192 +550,192 @@ const UnitModal = (props: Props) => {
                 }))}
                 onModal
               />
-            </div>
 
-            {unitColumnIds.length > 0 && (
-              <>
-                <DragDrop
-                  items={unitColumnIds}
-                  getId={(id) => String(id)}
-                  onReorder={(newList) => setUnitColumnIds(newList)}
-                  onDraggingChange={setIsAnyDragging}
-                  renderItem={(id, isDragging) => {
-                    const col = unitColumns.find((c) => c.id === id);
-                    if (!col) {
-                      return null;
-                    }
+              {unitColumnIds.length > 0 && (
+                <>
+                  <DragDrop
+                    items={unitColumnIds}
+                    getId={(id) => String(id)}
+                    onReorder={(newList) => setUnitColumnIds(newList)}
+                    onDraggingChange={setIsAnyDragging}
+                    renderItem={(id, isDragging) => {
+                      const col = unitColumns.find((c) => c.id === id);
+                      if (!col) {
+                        return null;
+                      }
 
-                    return (
-                      <DragChip
-                        label={col.name}
-                        isDragging={isDragging}
-                        dragging={isAnyDragging}
-                        onDelete={() =>
-                          setUnitColumnIds((prev) =>
-                            prev.filter((v) => v !== id),
-                          )
-                        }
-                      />
-                    );
-                  }}
-                />
-                <span className="text-sm text-[var(--text-secondary)] italic">
-                  {t("Modal/Drag and drop1") +
-                    t("Common/column") +
-                    t("Modal/Drag and drop3")}
-                </span>
-              </>
-            )}
+                      return (
+                        <DragChip
+                          label={col.name}
+                          isDragging={isDragging}
+                          dragging={isAnyDragging}
+                          onDelete={() =>
+                            setUnitColumnIds((prev) =>
+                              prev.filter((v) => v !== id),
+                            )
+                          }
+                        />
+                      );
+                    }}
+                  />
+                  <span className="text-sm text-[var(--text-secondary)] italic">
+                    {t("Modal/Drag and drop1") +
+                      t("Common/column") +
+                      t("Modal/Drag and drop3")}
+                  </span>
+                </>
+              )}
 
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("UnitModal/Info3")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="flex gap-4">
-              <MultiDropdown
-                label={t("Common/Categories")}
-                value={categoryIds.map(String)}
-                onChange={(val: string[]) => setCategoryIds(val.map(Number))}
-                options={categories.map((c) => ({
-                  label: c.name,
-                  value: String(c.id),
-                }))}
-                onModal
-              />
-            </div>
-
-            {categoryIds.length > 0 && (
-              <>
-                <DragDrop
-                  items={categoryIds}
-                  getId={(id) => String(id)}
-                  onReorder={(newList) => setCategoryIds(newList)}
-                  onDraggingChange={setIsAnyDragging}
-                  renderItem={(id, isDragging) => {
-                    const col = categories.find((c) => c.id === id);
-                    if (!col) {
-                      return null;
-                    }
-
-                    return (
-                      <DragChip
-                        label={col.name}
-                        isDragging={isDragging}
-                        dragging={isAnyDragging}
-                        onDelete={() =>
-                          setCategoryIds((prev) => prev.filter((v) => v !== id))
-                        }
-                      />
-                    );
-                  }}
-                />
-                <span className="text-sm text-[var(--text-secondary)] italic">
-                  {t("Modal/Drag and drop1") +
-                    t("Common/category") +
-                    t("Modal/Drag and drop3")}
-                </span>
-              </>
-            )}
-
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("UnitModal/Info4")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="flex gap-4">
-              <MultiDropdown
-                label={t("Common/Shifts")}
-                value={shiftIds.map(String)}
-                onChange={(val: string[]) => setShiftIds(val.map(Number))}
-                options={shifts.map((c) => ({
-                  label: c.name,
-                  value: String(c.id),
-                }))}
-                onModal
-              />
-            </div>
-
-            {shiftIds.length > 0 && (
-              <>
-                <DragDrop
-                  items={shiftIds}
-                  getId={(id) => String(id)}
-                  onReorder={(newList) => setShiftIds(newList)}
-                  onDraggingChange={setIsAnyDragging}
-                  renderItem={(id, isDragging) => {
-                    const col = shifts.find((c) => c.id === id);
-                    if (!col) {
-                      return null;
-                    }
-
-                    return (
-                      <DragChip
-                        label={col.name}
-                        isDragging={isDragging}
-                        dragging={isAnyDragging}
-                        onDelete={() =>
-                          setShiftIds((prev) => prev.filter((v) => v !== id))
-                        }
-                      />
-                    );
-                  }}
-                />
-                <span className="text-sm text-[var(--text-secondary)] italic">
-                  {t("Modal/Drag and drop2") +
-                    t("Common/shift") +
-                    t("Modal/Drag and drop3")}
-                </span>
-              </>
-            )}
-
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("Common/Status")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="mb-8 flex justify-between gap-4">
-              <div className="flex items-center gap-2 truncate">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isHidden}
-                  className={switchClass(isHidden)}
-                  onClick={() => setIsHidden((prev) => !prev)}
-                >
-                  <div className={switchKnobClass(isHidden)} />
-                </button>
-                <span className="mb-0.5">{t("UnitModal/Hide unit")}</span>
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("UnitModal/Info3")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
-            </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+                <MultiDropdown
+                  label={t("Common/Categories")}
+                  value={categoryIds.map(String)}
+                  onChange={(val: string[]) => setCategoryIds(val.map(Number))}
+                  options={categories.map((c) => ({
+                    label: c.name,
+                    value: String(c.id),
+                  }))}
+                  onModal
+                />
+
+              {categoryIds.length > 0 && (
+                <>
+                  <DragDrop
+                    items={categoryIds}
+                    getId={(id) => String(id)}
+                    onReorder={(newList) => setCategoryIds(newList)}
+                    onDraggingChange={setIsAnyDragging}
+                    renderItem={(id, isDragging) => {
+                      const col = categories.find((c) => c.id === id);
+                      if (!col) {
+                        return null;
+                      }
+
+                      return (
+                        <DragChip
+                          label={col.name}
+                          isDragging={isDragging}
+                          dragging={isAnyDragging}
+                          onDelete={() =>
+                            setCategoryIds((prev) =>
+                              prev.filter((v) => v !== id),
+                            )
+                          }
+                        />
+                      );
+                    }}
+                  />
+                  <span className="text-sm text-[var(--text-secondary)] italic">
+                    {t("Modal/Drag and drop1") +
+                      t("Common/category") +
+                      t("Modal/Drag and drop3")}
+                  </span>
+                </>
+              )}
+
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("UnitModal/Info4")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+                <MultiDropdown
+                  addSpacer={shiftIds.length === 0 && shifts.length > 3}
+                  scrollContainer={getScrollEl}
+                  label={t("Common/Shifts")}
+                  value={shiftIds.map(String)}
+                  onChange={(val: string[]) => setShiftIds(val.map(Number))}
+                  options={shifts.map((c) => ({
+                    label: c.name,
+                    value: String(c.id),
+                  }))}
+                  onModal
+                />
+
+              {shiftIds.length > 0 && (
+                <>
+                  <DragDrop
+                    items={shiftIds}
+                    getId={(id) => String(id)}
+                    onReorder={(newList) => setShiftIds(newList)}
+                    onDraggingChange={setIsAnyDragging}
+                    renderItem={(id, isDragging) => {
+                      const col = shifts.find((c) => c.id === id);
+                      if (!col) {
+                        return null;
+                      }
+
+                      return (
+                        <DragChip
+                          label={col.name}
+                          isDragging={isDragging}
+                          dragging={isAnyDragging}
+                          onDelete={() =>
+                            setShiftIds((prev) => prev.filter((v) => v !== id))
+                          }
+                        />
+                      );
+                    }}
+                  />
+                  <span className="text-sm text-[var(--text-secondary)] italic">
+                    {t("Modal/Drag and drop2") +
+                      t("Common/shift") +
+                      t("Modal/Drag and drop3")}
+                  </span>
+                </>
+              )}
+
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("Common/Status")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <div className="mb-8">
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isHidden}
+                    className={switchClass(isHidden)}
+                    onClick={() => setIsHidden((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(isHidden)} />
+                  </button>
+                  <span className="mb-0.5">{t("UnitModal/Hide unit")}</span>
+                </div>
+              </div>
+            </ModalBase.Content>
+
+            <ModalBase.Footer>
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
               >
                 {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
               >
                 {t("Modal/Abort")}
               </button>
-            </div>
-          </form>
-        </ModalBase>
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

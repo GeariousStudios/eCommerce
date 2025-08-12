@@ -61,6 +61,7 @@ type Shift = {
   id: number;
   name: string;
   systemKey?: string;
+  teamSpans?: ShiftTeamSpan[];
 };
 
 type ShiftTeamSpan = {
@@ -116,7 +117,7 @@ const UnitClient = (props: Props) => {
   >({});
   const shifts = shiftNames.map((s) => ({
     id: s.id,
-    label: s.systemKey ? t(`Shift/${s.systemKey}`) : s.name,
+    label: s.systemKey ? t(`Shifts/${s.systemKey}`) : s.name,
     show: !!shiftVisibility[s.id],
   }));
 
@@ -179,10 +180,38 @@ const UnitClient = (props: Props) => {
   const isReady = !isBootstrapping && !isHidden && !isInvalid;
 
   // --- HELPER SHIFT TEAM SPANS ---
-  const toMinutes = (s: string) => {
-    const [hh, mm] = s.split(":").map(Number);
-    return (hh || 0) * 60 + (mm || 0);
+  const overlaps = (
+    aStart: number,
+    aEnd: number,
+    bStart: number,
+    bEnd: number,
+  ) => {
+    const overlapLinear = (x1: number, x2: number, y1: number, y2: number) =>
+      Math.max(x1, y1) < Math.min(x2, y2);
+
+    if (bEnd > bStart) {
+      return overlapLinear(aStart, aEnd, bStart, bEnd);
+    }
+    return (
+      overlapLinear(aStart, aEnd, bStart, 1440) ||
+      overlapLinear(aStart, aEnd, 0, bEnd)
+    );
   };
+
+  const toMinutes = (s: string) => {
+    if (!s) return NaN;
+    const clean = s.trim().replace(".", ":");
+    const [hStr, mStr = "0"] = clean.split(":");
+    const hh = Number(hStr);
+    const mm = Number(mStr);
+    if (Number.isNaN(hh) || Number.isNaN(mm)) return NaN;
+    return hh * 60 + mm;
+  };
+
+  useEffect(() => {
+    const active = shiftNames.find((s) => s.id === activeShiftId);
+    setShiftTeamSpans(active?.teamSpans ?? []);
+  }, [activeShiftId, shiftNames]);
 
   // --- BACKEND ---
   // --- Fetch unit ---
@@ -322,12 +351,15 @@ const UnitClient = (props: Props) => {
     const fetchShifts = async () => {
       try {
         setIsLoadingShifts(true);
-        const response = await fetch(`${apiUrl}/shift/unit/${unitId}`, {
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
+        const response = await fetch(
+          `${apiUrl}/shift/unit/${unitId}?date=${selectedDate}`,
+          {
+            headers: {
+              "X-User-Language": localStorage.getItem("language") || "sv",
+              "Content-Type": "application/json",
+            },
           },
-        });
+        );
 
         const result = await response.json();
 
@@ -344,24 +376,24 @@ const UnitClient = (props: Props) => {
     };
 
     const fillShiftData = (result: any) => {
-      const list = Array.isArray(result)
-        ? result
-        : (result?.items ?? result?.data ?? []);
-      const shiftsWithIds = list.map((c: any) => ({
-        id: c.id,
-        name: String(c.name),
-        systemKey: c.systemKey ?? null,
-      }));
-      setShiftNames(shiftsWithIds);
-
-      setShiftNames(shiftsWithIds);
-      if (pendingShiftId == null && shiftsWithIds[0]) {
-        setPendingShiftId(shiftsWithIds[0].id);
-      }
+      const list = Array.isArray(result) ? result : [];
+      setShiftNames(
+        list.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          systemKey: s.systemKey ?? null,
+          teamSpans: (s.shiftTeamSpans ?? []).map((ts: any) => ({
+            id: ts.teamId,
+            label: ts.label,
+            start: ts.start,
+            end: ts.end,
+          })),
+        })),
+      );
     };
 
     fetchShifts();
-  }, [unitId, isUnitValid]);
+  }, [unitId, isUnitValid, selectedDate]);
 
   useEffect(() => {
     if (!activeShiftId) {
@@ -381,6 +413,7 @@ const UnitClient = (props: Props) => {
 
         if (!response.ok) {
           notify("error", result?.message ?? t("Modal/Unknown error"));
+          setShiftTeamSpans([]);
           return;
         }
 
@@ -434,7 +467,7 @@ const UnitClient = (props: Props) => {
       setReports((prev) => prev.filter((r) => r.id !== id));
       notify(
         "success",
-        t("ReportModal/Disruption report") + t("Manage/deleted"),
+        t("ReportModal/Disruption report") + t("Manage/deleted1"),
       );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -632,7 +665,9 @@ const UnitClient = (props: Props) => {
 
       if (response.status === 204) {
         const s = shiftNames.find((x) => x.id === pendingShiftId);
-        const key = s?.systemKey ? `Shift/${String(s.systemKey).trim()}` : null;
+        const key = s?.systemKey
+          ? `Shifts/${String(s.systemKey).trim()}`
+          : null;
         const label = key
           ? t(key) !== key
             ? t(key)
@@ -856,7 +891,7 @@ const UnitClient = (props: Props) => {
                         if (!shift) return "";
 
                         if (shift.systemKey) {
-                          const key = `Shift/${shift.systemKey}`;
+                          const key = `Shifts/${shift.systemKey}`;
                           const tr = t(key);
                           return tr !== key ? tr : shift.name;
                         }
@@ -935,7 +970,7 @@ const UnitClient = (props: Props) => {
                     <th
                       className={`${thClass} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
                     >
-                      {t("Unit/Time")}
+                      {t("Common/Time")}
                     </th>
                     <th
                       className={`${thClass} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
@@ -1000,13 +1035,32 @@ const UnitClient = (props: Props) => {
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} whitespace-nowrap`}
                             >
                               {(() => {
-                                const minute = hour * 60;
+                                const hourStartM = hour * 60;
+                                const hourEndM = (hour + 1) * 60;
                                 const hit = shiftTeamSpans.find((st) => {
-                                  const startM = toMinutes(st.start);
-                                  const endM = toMinutes(st.end);
-                                  return minute >= startM && minute < endM;
+                                  const startM = toMinutes(
+                                    (st as any).start ?? (st as any).Start,
+                                  );
+                                  const endM = toMinutes(
+                                    (st as any).end ?? (st as any).End,
+                                  );
+                                  if (
+                                    Number.isNaN(startM) ||
+                                    Number.isNaN(endM)
+                                  )
+                                    return false;
+                                  return overlaps(
+                                    hourStartM,
+                                    hourEndM,
+                                    startM,
+                                    endM,
+                                  );
                                 });
-                                return hit ? hit.label : "-";
+                                return hit
+                                  ? ((hit as any).label ??
+                                      (hit as any).Label ??
+                                      "")
+                                  : "-";
                               })()}
                             </td>
                             <td

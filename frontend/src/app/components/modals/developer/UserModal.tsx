@@ -29,6 +29,7 @@ const UserModal = (props: Props) => {
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
   const [username, setUsername] = useState("");
@@ -340,120 +341,122 @@ const UserModal = (props: Props) => {
   return (
     <>
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => props.onClose()}
-          icon={props.itemId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.itemId
-              ? t("Common/Edit") + " " + t("Common/user")
-              : t("Common/Add") + " " + t("Common/user")
-          }
-          confirmOnClose
-          isDirty={isDirty}
+        <form
+          ref={formRef}
+          onSubmit={(e) => (props.itemId ? updateUser(e) : addUser(e))}
         >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-4"
-            onSubmit={(e) => (props.itemId ? updateUser(e) : addUser(e))}
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => props.onClose()}
+            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.itemId
+                ? t("Common/Edit") + " " + t("Common/user")
+                : t("Common/Add") + " " + t("Common/user")
+            }
+            confirmOnClose
+            isDirty={isDirty}
           >
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("UserModal/Info1")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="xs:gap-4 xs:grid-cols-2 grid grid-cols-1 gap-6">
-              <Input
-                id="username"
-                label={t("Common/Username")}
-                value={username}
-                onChange={(val) => setUsername(String(val))}
-                onModal
-                required
-                autoComplete="new-username"
-                {...userConstraints.username}
-              />
-
-              {props.itemId !== null ? (
-                <Input
-                  type="password"
-                  id="password"
-                  label={t("Common/Password")}
-                  value={password}
-                  placeholder="•••••••••"
-                  onChange={(val) => setPassword(String(val))}
-                  onModal
-                  {...userConstraints.password}
-                />
-              ) : (
-                <Input
-                  type="password"
-                  id="password"
-                  label={t("Common/Password")}
-                  value={password}
-                  onChange={(val) => setPassword(String(val))}
-                  onModal
-                  required
-                  autoComplete="new-password"
-                  {...userConstraints.password}
-                />
-              )}
-            </div>
-
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("UserModal/Info2")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-4">
-              <Input
-                id="email"
-                label={t("Users/Email")}
-                value={email}
-                onChange={(val) => setEmail(String(val))}
-                onModal
-                {...userConstraints.email}
-              />
+            <ModalBase.Content>
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("UserModal/Info1")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
               <div className="xs:gap-4 xs:grid-cols-2 grid grid-cols-1 gap-6">
                 <Input
-                  id="firstName"
-                  label={t("Users/First name")}
-                  value={firstName}
-                  onChange={(val) => setFirstName(String(val))}
+                  id="username"
+                  label={t("Common/Username")}
+                  value={username}
+                  onChange={(val) => setUsername(String(val))}
                   onModal
-                  {...userConstraints.firstName}
+                  required
+                  autoComplete="new-username"
+                  {...userConstraints.username}
                 />
 
-                <Input
-                  id="lastName"
-                  label={t("Users/Last name")}
-                  value={lastName}
-                  onChange={(val) => setLastName(String(val))}
-                  onModal
-                  {...userConstraints.lastName}
-                />
+                {props.itemId !== null ? (
+                  <Input
+                    type="password"
+                    id="password"
+                    label={t("Common/Password")}
+                    value={password}
+                    placeholder="•••••••••"
+                    onChange={(val) => setPassword(String(val))}
+                    onModal
+                    {...userConstraints.password}
+                  />
+                ) : (
+                  <Input
+                    type="password"
+                    id="password"
+                    label={t("Common/Password")}
+                    value={password}
+                    onChange={(val) => setPassword(String(val))}
+                    onModal
+                    required
+                    autoComplete="new-password"
+                    {...userConstraints.password}
+                  />
+                )}
               </div>
-            </div>
 
-            <div className="mt-8 flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("UserModal/Info3")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("UserModal/Info2")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
 
-            <div className="mb-8 flex justify-between gap-4">
-              <div className="flex w-[calc(50%-0.375rem)] min-w-36">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-4">
+                <Input
+                  id="email"
+                  label={t("Users/Email")}
+                  value={email}
+                  onChange={(val) => setEmail(String(val))}
+                  onModal
+                  {...userConstraints.email}
+                />
+
+                <div className="xs:gap-4 xs:grid-cols-2 grid grid-cols-1 gap-6">
+                  <Input
+                    id="firstName"
+                    label={t("Users/First name")}
+                    value={firstName}
+                    onChange={(val) => setFirstName(String(val))}
+                    onModal
+                    {...userConstraints.firstName}
+                  />
+
+                  <Input
+                    id="lastName"
+                    label={t("Users/Last name")}
+                    value={lastName}
+                    onChange={(val) => setLastName(String(val))}
+                    onModal
+                    {...userConstraints.lastName}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("UserModal/Info3")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-4">
                 <MultiDropdown
+                  addSpacer
+                  scrollContainer={getScrollEl}
+                  customSpace={6.5} // <-- 9 = 4 options, 11 = 5 options.
                   label={t("Users/Permissions")}
                   options={[
                     { label: "Admin", value: "Admin" },
@@ -462,26 +465,28 @@ const UserModal = (props: Props) => {
                   ]}
                   value={newUserRoles}
                   onChange={setNewUserRoles}
-                  onModal={true}
+                  onModal
                   required
                 />
-              </div>
 
-              <div className="flex items-center gap-2 truncate">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={isLocked}
-                  className={switchClass(isLocked)}
-                  onClick={() => setIsLocked((prev) => !prev)}
-                >
-                  <div className={switchKnobClass(isLocked)} />
-                </button>
-                <span className="mb-0.5">{t("UserModal/Lock user")}</span>
-              </div>
-            </div>
+                <div className="hidden sm:col-span-1 sm:flex" />
 
-            <div className="grid grid-cols-3 gap-4">
+                <div className="flex items-center gap-2 truncate sm:justify-end">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isLocked}
+                    className={`${switchClass(isLocked)} `}
+                    onClick={() => setIsLocked((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(isLocked)} />
+                  </button>
+                  {t("UserModal/Lock user")}
+                </div>
+              </div>
+            </ModalBase.Content>
+
+            <ModalBase.Footer>
               <button
                 type="button"
                 onClick={handleSaveClick}
@@ -496,9 +501,9 @@ const UserModal = (props: Props) => {
               >
                 {t("Modal/Abort")}
               </button>
-            </div>
-          </form>
-        </ModalBase>
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

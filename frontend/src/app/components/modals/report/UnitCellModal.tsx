@@ -34,6 +34,7 @@ const UnitCellModal = (props: Props) => {
   // --- Refs ---
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
   const [unitColumns, setUnitColumns] = useState<UnitColumnOptions[]>([]);
@@ -280,153 +281,154 @@ const UnitCellModal = (props: Props) => {
   return (
     <>
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => {
-            props.onClose();
-          }}
-          icon={DocumentTextIcon}
-          label={`${t("Unit/Report data")}: ${selectedDate}`}
-          confirmOnClose
-        >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-4"
-            onSubmit={(e) => updateUnitCells(e)}
+        <form ref={formRef} onSubmit={(e) => updateUnitCells(e)}>
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => {
+              props.onClose();
+            }}
+            icon={DocumentTextIcon}
+            label={`${t("Unit/Report data")}: ${selectedDate}`}
+            confirmOnClose
           >
-            <div className="flex items-center gap-2">
-              <hr className="w-12 text-[var(--border-tertiary)]" />
-              <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                {t("UnitCellModal/Info1")}
-              </h3>
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
-
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
-              <div className="ml-auto flex w-full items-center">
-                <button
-                  type="button"
-                  className={`${buttonSecondaryClass} rounded-r-none`}
-                  onClick={goToPreviousDay}
-                  aria-label={t("Unit/Previous day")}
-                >
-                  <ChevronLeftIcon className="min-h-full min-w-full" />
-                </button>
-                <Input
-                  type="date"
-                  id="selectedDate"
-                  label={t("Common/Date")}
-                  value={selectedDate}
-                  onChange={(val) => setSelectedDate(String(val))}
-                  onModal
-                  required
-                  notRounded
-                />
-                <button
-                  type="button"
-                  className={`${buttonSecondaryClass} rounded-l-none`}
-                  onClick={goToNextDay}
-                  aria-label={t("Unit/Next day")}
-                >
-                  <ChevronRightIcon className="min-h-full min-w-full" />
-                </button>
-              </div>
-
-              <SingleDropdown
-                id="selectedHour"
-                label={t("Common/Hour")}
-                value={selectedHour}
-                onChange={(val) => setSelectedHour(String(val))}
-                onModal
-                required
-                options={hourOptions}
-              />
-            </div>
-
-            <div
-              className={`${selectedHour && selectedDate ? "" : "pointer-events-none opacity-25"} flex flex-col gap-4`}
-            >
-              <div className="mt-8 flex items-center gap-2">
+            <ModalBase.Content>
+              <div className="flex items-center gap-2">
                 <hr className="w-12 text-[var(--border-tertiary)]" />
                 <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
-                  {t("UnitCellModal/Info2")}
+                  {t("UnitCellModal/Info1")}
                 </h3>
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="flex flex-col gap-6">
-                {unitColumns.map((col) => {
-                  const value = unitCells[col.id];
-                  const type = unitColumnDataTypes[col.id];
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-4">
+                <div className="ml-auto flex w-full items-center">
+                  <button
+                    type="button"
+                    className={`${buttonSecondaryClass} rounded-r-none`}
+                    onClick={goToPreviousDay}
+                    aria-label={t("Unit/Previous day")}
+                  >
+                    <ChevronLeftIcon className="min-h-full min-w-full" />
+                  </button>
+                  <Input
+                    type="date"
+                    id="selectedDate"
+                    label={t("Common/Date")}
+                    value={selectedDate}
+                    onChange={(val) => setSelectedDate(String(val))}
+                    onModal
+                    required
+                    notRounded
+                  />
+                  <button
+                    type="button"
+                    className={`${buttonSecondaryClass} rounded-l-none`}
+                    onClick={goToNextDay}
+                    aria-label={t("Unit/Next day")}
+                  >
+                    <ChevronRightIcon className="min-h-full min-w-full" />
+                  </button>
+                </div>
 
-                  if (type === "Boolean") {
+                <SingleDropdown
+                  addSpacer={unitColumns.length < 2}
+                  scrollContainer={getScrollEl}
+                  customSpace={3}
+                  id="selectedHour"
+                  label={t("Common/Hour")}
+                  value={selectedHour}
+                  onChange={(val) => setSelectedHour(String(val))}
+                  onModal
+                  required
+                  options={hourOptions}
+                />
+              </div>
+
+              <div
+                className={`${selectedHour && selectedDate ? "" : "pointer-events-none opacity-25"} flex flex-col gap-4`}
+              >
+                <div className="mt-8 flex items-center gap-2">
+                  <hr className="w-12 text-[var(--border-tertiary)]" />
+                  <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    {t("UnitCellModal/Info2")}
+                  </h3>
+                  <hr className="w-full text-[var(--border-tertiary)]" />
+                </div>
+
+                <div className="flex flex-col gap-6">
+                  {unitColumns.map((col) => {
+                    const value = unitCells[col.id];
+                    const type = unitColumnDataTypes[col.id];
+
+                    if (type === "Boolean") {
+                      return (
+                        <SingleDropdown
+                          key={col.id}
+                          id={`col-${col.id}`}
+                          label={col.name}
+                          value={String(value)}
+                          options={[
+                            { label: t("Common/Yes"), value: "true" },
+                            { label: t("Common/No"), value: "false" },
+                          ]}
+                          onChange={(val) =>
+                            setUnitCells((prev) => ({
+                              ...prev,
+                              [col.id]: val === "true",
+                            }))
+                          }
+                          onModal
+                          tabIndex={selectedHour && selectedDate ? 0 : -1}
+                        />
+                      );
+                    }
+
                     return (
-                      <SingleDropdown
+                      <Input
                         key={col.id}
                         id={`col-${col.id}`}
                         label={col.name}
-                        value={String(value)}
-                        options={[
-                          { label: t("Common/Yes"), value: "true" },
-                          { label: t("Common/No"), value: "false" },
-                        ]}
+                        type={type === "Number" ? "number" : "text"}
+                        value={value === undefined ? "" : String(value)}
                         onChange={(val) =>
                           setUnitCells((prev) => ({
                             ...prev,
-                            [col.id]: val === "true",
+                            [col.id]:
+                              type === "Number"
+                                ? val === "" || Number(val)
+                                : val,
                           }))
                         }
                         onModal
                         tabIndex={selectedHour && selectedDate ? 0 : -1}
                       />
                     );
-                  }
-
-                  return (
-                    <Input
-                      key={col.id}
-                      id={`col-${col.id}`}
-                      label={col.name}
-                      type={type === "Number" ? "number" : "text"}
-                      value={value === undefined ? "" : String(value)}
-                      onChange={(val) =>
-                        setUnitCells((prev) => ({
-                          ...prev,
-                          [col.id]:
-                            type === "Number" ? val === "" || Number(val) : val,
-                        }))
-                      }
-                      onModal
-                      tabIndex={selectedHour && selectedDate ? 0 : -1}
-                    />
-                  );
-                })}
+                  })}
+                </div>
               </div>
-            </div>
 
-            <div className="mt-2 mb-2 flex items-center">
-              <hr className="w-full text-[var(--border-tertiary)]" />
-            </div>
+              <span className="mb-4" />
+            </ModalBase.Content>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+            <ModalBase.Footer>
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
               >
                 {t("Modal/Save")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
               >
                 {t("Modal/Abort")}
               </button>
-            </div>
-          </form>
-        </ModalBase>
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

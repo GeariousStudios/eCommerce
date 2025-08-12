@@ -138,7 +138,7 @@ const CustomTooltip = ({
 
   return (
     <Tooltip.Provider delayDuration={0} skipDelayDuration={0}>
-      <Tooltip.Root open={isOpen} disableHoverableContent={true}>
+      <Tooltip.Root open={isOpen} disableHoverableContent>
         <Tooltip.Trigger
           asChild
           onPointerEnter={handlePointerEnter}

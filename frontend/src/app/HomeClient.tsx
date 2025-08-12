@@ -120,7 +120,11 @@ const HomeClient = (props: Props) => {
       } else {
         setNewsItems((prev) => prev.filter((item) => item.id !== id));
         selectedItemId == null;
-        notify("success", t("NewsModal/News item") + t("Manage/deleted"), 4000);
+        notify(
+          "success",
+          t("NewsModal/News item") + t("Manage/deleted1"),
+          4000,
+        );
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -285,7 +289,7 @@ const HomeClient = (props: Props) => {
             <span className="truncate font-semibold">{t("Common/News")}</span>
 
             {props.isLoggedIn !== false && props.isAdmin && (
-              // <CustomTooltip content={t("Home/Add news")} hideOnClick={true}>
+              // <CustomTooltip content={t("Home/Add news")} hideOnClick>
               <button
                 type="button"
                 className={`${iconButtonPrimaryClass} min-h-6 min-w-6`}
@@ -324,7 +328,7 @@ const HomeClient = (props: Props) => {
                           <div className="mr-2 hidden gap-2 group-hover/newsItem:flex">
                             {/* <CustomTooltip
                               content={t("Home/Edit news")}
-                              hideOnClick={true}
+                              hideOnClick
                             > */}
                             <button
                               type="button"
@@ -341,7 +345,7 @@ const HomeClient = (props: Props) => {
 
                             {/* <CustomTooltip
                               content={t("Home/Delete news")}
-                              hideOnClick={true}
+                              hideOnClick
                             > */}
                             <button
                               type="button"

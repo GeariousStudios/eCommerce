@@ -37,6 +37,7 @@ const DeleteModal = (props: Props) => {
   const handleConfirmClose = () => {
     setShowConfirmModal(false);
     props.onConfirm();
+    props.onClose();
   };
 
   const handleConfirmCancel = () => {
@@ -55,26 +56,26 @@ const DeleteModal = (props: Props) => {
           nestedModal={props.nestedModal}
           smallModal
         >
-          <div className="relative flex flex-col gap-8">
+          <ModalBase.Content>
             <p>{t("DeleteModal/Message")}</p>
+          </ModalBase.Content>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
-              <button
-                type="button"
-                onClick={requestDelete}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
-              >
-                {t("DeleteModal/Delete")}
-              </button>
-              <button
-                type="button"
-                onClick={props.onClose}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
-              >
-                {t("Modal/Abort")}
-              </button>
-            </div>
-          </div>
+          <ModalBase.Footer>
+            <button
+              type="button"
+              onClick={requestDelete}
+              className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+            >
+              {t("DeleteModal/Delete")}
+            </button>
+            <button
+              type="button"
+              onClick={props.onClose}
+              className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
+            >
+              {t("Modal/Abort")}
+            </button>
+          </ModalBase.Footer>
         </ModalBase>
       )}
 
@@ -92,18 +93,18 @@ const DeleteModal = (props: Props) => {
                 <p className="mb-6 text-[var(--text-main)]">
                   {props.confirmDeleteMessage ?? t("DeleteModal/Confirm")}
                 </p>
-                <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+                <div className="grid grid-cols-3 gap-4">
                   <button
                     type="button"
                     onClick={handleConfirmClose}
-                    className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                    className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
                   >
                     {t("DeleteModal/Delete anyway")}
                   </button>
                   <button
                     type="button"
                     onClick={handleConfirmCancel}
-                    className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                    className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
                   >
                     {t("Modal/Abort")}
                   </button>

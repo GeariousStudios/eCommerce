@@ -127,7 +127,7 @@
   "Unit/Edit disruption": "Edit disruption",
   "Unit/Delete disruption": "Delete disruption",
   "Unit/ongoing": "ongoing",
-  "Unit/Time": "Time",
+  "Common/Time": "Time",
   "Unit/Scroll to top": "Scroll to the top of the page",
   "Unit/Open or collapse": "Open/collapse all",
   "Unit/No columns": "There are no columns to report data in",
@@ -138,7 +138,7 @@
   "Unit/Shift changed": "The unit is now staffed by: ",
 
   "Manage/Failed to fetch": "Failed to fetch ",
-  "Manage/deleted": " deleted!",
+  "Manage/deleted1": " deleted!",
   "Manage/Select1": "Select a",
   "Manage/Select2": "Select a",
   "Manage/Select3": "Select an",
@@ -202,9 +202,6 @@
   "Columns/Data1": "by columns with data",
   "Columns/Data2": "by columns without data",
   "Columns/Confirm": "If you delete the selected items, you will also lose any associated data. Do you still want to delete?",
-
-  "ShiftTeams/shift amount": "shift amount",
-  "ShiftTeams/Used by shifts": "Used by shifts",
 
   "Modal/Unsaved": "You have unsaved changes. Do you still want to close?",
   "Modal/Close anyway": "Close anyway",
@@ -293,13 +290,27 @@
   "ShiftModal/Anchor week start": "Start week for cycle",
   "ShiftModal/Activate day": "Activate day",
   "ShiftModal/Deactivate day": "Deactivate day",
+  "ShiftModal/Start before end": "Start time must be before end time",
+  "ShiftModal/Times invalid": "Invalid times for one or more teams",
+  "ShiftModal/Add interval": "Add interval",
 
   "ShiftTeamModal/Info1": "Details about the team",
   "ShiftTeamModal/Hide shift team": "Hide team",
 
-  "Shift/None": "None",
-  "Shift/Unmanned": "Unmanned",
-  "Shift/shift team amount": "shift team amount",
+  "Shifts/None": "None",
+  "Shifts/Unmanned": "Unmanned",
+  "Shifts/shift team amount": "shift team amount",
+  "Shifts/Hidden shifts": "Hidden shifts",
+  "Shifts/hidden shifts": "hidden shifts",
+  "Shifts/Visible shifts": "Visible shifts",
+  "Shifts/visible shifts": "visible shifts",
+
+  "ShiftTeams/shift amount": "shift amount",
+  "ShiftTeams/Used by shifts": "Used by shifts",
+  "ShiftTeams/Hidden shift teams": "Hidden teams",
+  "ShiftTeams/hidden shift teams": "hidden teams",
+  "ShiftTeams/Visible shift teams": "Visible teams",
+  "ShiftTeams/visible shift teams": "visible teams",
 
   "Api/Failed to delete": "Failed to delete ",
 
