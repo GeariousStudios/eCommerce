@@ -8,6 +8,9 @@ export const buttonSecondaryClass =
 export const buttonDeletePrimaryClass =
   "min-h-[40px] min-w-[40px] cursor-pointer rounded bg-[var(--button-delete)] p-2 font-semibold text-[var(--text-main-reverse)] transition-colors hover:bg-[var(--button-delete-hover)] hover:text-[var(--text-main)] active:bg-[var(--button-delete-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-[var(--button-delete)] z-[calc(var(--z-base)+1)]";
 
+export const buttonAddPrimaryClass =
+  "min-h-[40px] min-w-[40px] cursor-pointer rounded bg-[var(--button-add)] p-2 font-semibold text-[var(--text-main-reverse)] transition-colors hover:bg-[var(--button-add-hover)] hover:text-[var(--text-main)] active:bg-[var(--button-add-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:bg-[var(--button-add)] z-[calc(var(--z-base)+1)]";
+
 export const buttonDeleteSecondaryClass =
   "min-h-[40px] min-w-[40px] cursor-pointer rounded border-1 border-[var(--button-secondary)] p-2 font-semibold transition-colors hover:border-[var(--button-delete)] active:border-[var(--button-delete-active)] disabled:cursor-not-allowed disabled:opacity-25 disabled:hover:border-[var(--border-tertiary)] z-[calc(var(--z-base)+1)]";
 

@@ -366,7 +366,7 @@ const UserModal = (props: Props) => {
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+            <div className="xs:gap-4 xs:grid-cols-2 grid grid-cols-1 gap-6">
               <Input
                 id="username"
                 label={t("Common/Username")}
@@ -412,7 +412,7 @@ const UserModal = (props: Props) => {
               <hr className="w-full text-[var(--border-tertiary)]" />
             </div>
 
-            <div className="flex flex-col gap-6 sm:flex-row sm:gap-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-4">
               <Input
                 id="email"
                 label={t("Users/Email")}
@@ -422,7 +422,7 @@ const UserModal = (props: Props) => {
                 {...userConstraints.email}
               />
 
-              <div className="flex w-full gap-6 sm:gap-4">
+              <div className="xs:gap-4 xs:grid-cols-2 grid grid-cols-1 gap-6">
                 <Input
                   id="firstName"
                   label={t("Users/First name")}
@@ -481,18 +481,18 @@ const UserModal = (props: Props) => {
               </div>
             </div>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+            <div className="grid grid-cols-3 gap-4">
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
               >
                 {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
               >
                 {t("Modal/Abort")}
               </button>

@@ -19,6 +19,7 @@ type DropdownProps = {
   showAbove?: boolean;
   tabIndex?: number;
   emptyOption?: boolean;
+  inChip?: boolean;
 };
 
 const MultiDropdown = ({
@@ -32,6 +33,7 @@ const MultiDropdown = ({
   showAbove = false,
   tabIndex,
   emptyOption = false,
+  inChip = false,
 }: DropdownProps) => {
   // --- VARIABLES ---
   // --- Refs ---
@@ -112,7 +114,7 @@ const MultiDropdown = ({
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <div
-        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} z-1 flex h-[40px] w-full cursor-pointer items-center rounded border-1 border-[var(--border-tertiary)] bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
+        className={`${isOpen ? "outline-2 outline-offset-2 outline-[var(--accent-color)]" : ""} ${inChip ? "border-[var(--text-main)]" : "border-[var(--border-tertiary)]"} z-1 flex h-[40px] w-full cursor-pointer items-center rounded border-1 bg-transparent p-2 transition-[max-height] duration-[var(--medium)]`}
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -145,7 +147,7 @@ const MultiDropdown = ({
 
       <label
         htmlFor={id}
-        className={`${value.length > 0 || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
+        className={`${value.length > 0 || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
       >
         {label}
         {required && <span className="ml-1 text-red-700">*</span>}
@@ -167,7 +169,7 @@ const MultiDropdown = ({
                 dropdownRef.current = el;
                 portalContentRef.current = el;
               }}
-              className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : "bg-[var(--bg-main)]"} ${showAbove ? "rounded-t border-b-0" : "rounded-b border-t-0"} fixed z-[var(--z-tooltip)] ml-2 list-none border-1 border-[var(--border-tertiary)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+              className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} ${showAbove ? "rounded-t border-b-0" : "rounded-b border-t-0"} fixed z-[var(--z-tooltip)] ml-2 list-none border-1 border-[var(--border-tertiary)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
               role="listbox"
               inert={!isOpen || undefined}
             >

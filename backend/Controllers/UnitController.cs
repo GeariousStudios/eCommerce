@@ -395,10 +395,25 @@ namespace backend.Controllers
                 UpdatedBy = createdBy,
             };
 
-            var (noneId, unmannedId) = await GetSystemShiftIdsAsync();
-            var finalShiftIds = NormalizeShiftIds(dto.ShiftIds, noneId, unmannedId);
+            var systemShiftIdsDict = await GetAllSystemShiftIdsAsync(); // Dictionary<ShiftSystemKey, int>
 
-            var activeShiftId = noneId;
+            // Lägg till alla systemskift först
+            foreach (var sysId in systemShiftIdsDict.Values)
+            {
+                if (!dto.ShiftIds.Contains(sysId))
+                    dto.ShiftIds.Insert(0, sysId);
+            }
+
+            var finalShiftIds = dto
+                .ShiftIds.OrderBy(id => systemShiftIdsDict.Values.Contains(id) ? 0 : 1)
+                .ToList();
+
+            var activeShiftId = systemShiftIdsDict.TryGetValue(
+                ShiftSystemKey.Unmanned,
+                out var unmannedId
+            )
+                ? unmannedId
+                : systemShiftIdsDict.Values.First();
 
             unit.UnitToUnitColumns = dto
                 .UnitColumnIds.Select(
@@ -520,14 +535,14 @@ namespace backend.Controllers
                 .Select(l => l.ShiftId)
                 .FirstOrDefaultAsync();
 
-            var (noneId, unmannedId) = await GetSystemShiftIdsAsync();
+            var systemShiftIdsDict = await GetAllSystemShiftIdsAsync();
 
             dto.ShiftIds = dto
-                .ShiftIds.Where(id => id != noneId && id != unmannedId)
+                .ShiftIds.Where(id => !systemShiftIdsDict.Values.Contains(id))
                 .Distinct()
                 .ToList();
 
-            var finalShiftIds = NormalizeShiftIds(dto.ShiftIds, noneId, unmannedId);
+            var finalShiftIds = systemShiftIdsDict.Values.Concat(dto.ShiftIds).ToList();
 
             if (activeShiftId != 0 && !finalShiftIds.Contains(activeShiftId))
             {
@@ -677,27 +692,11 @@ namespace backend.Controllers
             return NoContent();
         }
 
-        private async Task<(int noneId, int unmannedId)> GetSystemShiftIdsAsync()
+        private async Task<Dictionary<ShiftSystemKey, int>> GetAllSystemShiftIdsAsync()
         {
-            var shifts = await _context
-                .Shifts.Where(s =>
-                    s.SystemKey == ShiftSystemKey.None || s.SystemKey == ShiftSystemKey.Unmanned
-                )
-                .Select(s => new { s.Id, s.SystemKey })
-                .ToListAsync();
-
-            var noneId = shifts.First(s => s.SystemKey == ShiftSystemKey.None).Id;
-            var unmannedId = shifts.First(s => s.SystemKey == ShiftSystemKey.Unmanned).Id;
-            return (noneId, unmannedId);
-        }
-
-        private List<int> NormalizeShiftIds(List<int> incoming, int noneId, int unmannedId)
-        {
-            var rest = incoming.Where(id => id != noneId && id != unmannedId).Distinct().ToList();
-
-            var result = new List<int> { noneId, unmannedId };
-            result.AddRange(rest);
-            return result;
+            return await _context
+                .Shifts.Where(s => s.SystemKey != null)
+                .ToDictionaryAsync(s => s.SystemKey!.Value, s => s.Id);
         }
     }
 }

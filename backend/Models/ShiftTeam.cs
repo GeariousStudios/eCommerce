@@ -18,5 +18,6 @@ namespace backend.Models
         public string UpdatedBy { get; set; } = string.Empty;
 
         public List<ShiftToShiftTeam> ShiftToShiftTeams { get; set; } = new();
+        public List<ShiftToShiftTeamSchedule> ShiftToShiftTeamSchedules { get; set; } = new();
     }
 }

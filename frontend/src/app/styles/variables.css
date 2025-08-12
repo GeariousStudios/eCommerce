@@ -109,6 +109,10 @@
   --button-delete-hover: #814b4b;
   --button-delete-active: #663939;
 
+  --button-add: #6faa7f;
+  --button-add-hover: #6faa7fbf;
+  --button-add-active: #6faa7f;
+
   /* --- TOASTS --- */
   --note-error: #aa6f6f;
   --note-error-hover: #aa6f6fbf;
@@ -178,6 +182,10 @@
   --button-delete: #814b4b;
   --button-delete-hover: #aa6f6f;
   --button-delete-active: #c28888;
+
+  --button-add: #4b815b;
+  --button-add-hover: #4b815bbf;
+  --button-add-active: #4b815bbf;
 
   /* --- TOASTS --- */
   --note-error: #814b4b;

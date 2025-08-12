@@ -14,10 +14,11 @@ namespace backend.Dtos.Shift
         public List<UnitDto> Units { get; set; } = new();
         public List<ShiftTeamDto> ShiftTeams { get; set; } = new();
         public List<int> ShiftTeamIds { get; set; } = new();
-
         public Dictionary<int, string>? ShiftTeamDisplayNames { get; set; }
-        public Dictionary<int, TimeSpan>? ShiftTeamStartTimes { get; set; }
-        public Dictionary<int, TimeSpan>? ShiftTeamEndTimes { get; set; }
+
+        public int CycleLengthWeeks { get; set; }
+        public DateOnly AnchorWeekStart { get; set; }
+        public List<WeeklyTimeDto> WeeklyTimes { get; set; } = new();
 
         // Meta data.
         public DateTime CreationDate { get; set; }

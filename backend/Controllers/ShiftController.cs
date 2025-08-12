@@ -66,6 +66,7 @@ namespace backend.Controllers
                 .ThenInclude(sst => sst.ShiftTeam)
                 .Include(s => s.UnitToShifts)
                 .ThenInclude(us => us.Unit)
+                .Include(s => s.ShiftToShiftTeamSchedules)
                 .AsQueryable();
 
             efQuery = efQuery.Where(s => s.SystemKey == null);
@@ -167,12 +168,16 @@ namespace backend.Controllers
                             x => x.ShiftTeamId,
                             x => x.DisplayName ?? ""
                         ),
-                        ShiftTeamStartTimes = s
-                            .ShiftToShiftTeams.Where(x => x.StartTime.HasValue)
-                            .ToDictionary(x => x.ShiftTeamId, x => x.StartTime!.Value),
-                        ShiftTeamEndTimes = s
-                            .ShiftToShiftTeams.Where(x => x.EndTime.HasValue)
-                            .ToDictionary(x => x.ShiftTeamId, x => x.EndTime!.Value),
+                        WeeklyTimes = s
+                            .ShiftToShiftTeamSchedules.Select(w => new WeeklyTimeDto
+                            {
+                                TeamId = w.ShiftTeamId,
+                                WeekIndex = w.WeekIndex,
+                                DayOfWeek = w.DayOfWeek,
+                                Start = w.StartTime,
+                                End = w.EndTime,
+                            })
+                            .ToList(),
                         Units = s
                             .UnitToShifts.Select(us => us.Unit)
                             .Select(u => new UnitDto
@@ -233,6 +238,7 @@ namespace backend.Controllers
                 .ThenInclude(us => us.Unit)
                 .Include(s => s.ShiftToShiftTeams)
                 .ThenInclude(st => st.ShiftTeam)
+                .Include(s => s.ShiftToShiftTeamSchedules)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (shift == null)
@@ -264,12 +270,17 @@ namespace backend.Controllers
                     x => x.ShiftTeamId,
                     x => x.DisplayName ?? ""
                 ),
-                ShiftTeamStartTimes = shift
-                    .ShiftToShiftTeams.Where(x => x.StartTime.HasValue)
-                    .ToDictionary(x => x.ShiftTeamId, x => x.StartTime!.Value),
-                ShiftTeamEndTimes = shift
-                    .ShiftToShiftTeams.Where(x => x.EndTime.HasValue)
-                    .ToDictionary(x => x.ShiftTeamId, x => x.EndTime!.Value),
+                CycleLengthWeeks = shift.CycleLengthWeeks,
+                WeeklyTimes = shift
+                    .ShiftToShiftTeamSchedules.Select(sch => new WeeklyTimeDto
+                    {
+                        TeamId = sch.ShiftTeamId,
+                        WeekIndex = sch.WeekIndex,
+                        DayOfWeek = sch.DayOfWeek,
+                        Start = sch.StartTime,
+                        End = sch.EndTime,
+                    })
+                    .ToList(),
                 Units = shift
                     .UnitToShifts.Select(us => us.Unit)
                     .Select(u => new UnitDto
@@ -386,17 +397,6 @@ namespace backend.Controllers
                 );
             }
 
-            var (hasErrCreate, msgCreate) = ValidateNoOverlap(
-                dto.ShiftTeamStartTimes?.ToDictionary(kv => kv.Key, kv => (TimeSpan?)kv.Value),
-                dto.ShiftTeamEndTimes?.ToDictionary(kv => kv.Key, kv => (TimeSpan?)kv.Value)
-            );
-            if (hasErrCreate)
-            {
-                return BadRequest(
-                    new { message = await _t.GetAsync(msgCreate ?? "Shift/TimesOverlap", lang) }
-                );
-            }
-
             var existingShift = await _context.Shifts.FirstOrDefaultAsync(u =>
                 u.Name.ToLower() == dto.Name.ToLower()
             );
@@ -415,6 +415,18 @@ namespace backend.Controllers
                 );
             }
 
+            var (hasError, msg) = ValidateNoOverlapWeekly(dto.WeeklyTimes);
+            if (hasError && msg != null)
+            {
+                return BadRequest(new { message = await _t.GetAsync(msg, lang) });
+            }
+
+            var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
+            var localToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz).Date;
+            var anchor = DateOnly.FromDateTime(localToday);
+            var diff = ((int)anchor.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+            var monday = anchor.AddDays(-diff);
+
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -422,6 +434,8 @@ namespace backend.Controllers
             {
                 Name = dto.Name,
                 IsHidden = dto.IsHidden,
+                CycleLengthWeeks = dto.CycleLengthWeeks,
+                AnchorWeekStart = monday,
 
                 // Meta data.
                 CreationDate = now,
@@ -445,8 +459,24 @@ namespace backend.Controllers
                             ShiftTeamId = teamId,
                             Order = i,
                             DisplayName = dto.ShiftTeamDisplayNames?.GetValueOrDefault(teamId),
-                            StartTime = dto.ShiftTeamStartTimes?.GetValueOrDefault(teamId),
-                            EndTime = dto.ShiftTeamEndTimes?.GetValueOrDefault(teamId),
+                        }
+                    );
+                }
+            }
+
+            if (dto.WeeklyTimes?.Any() == true)
+            {
+                foreach (var w in dto.WeeklyTimes)
+                {
+                    _context.ShiftToShiftTeamSchedules.Add(
+                        new ShiftToShiftTeamSchedule
+                        {
+                            ShiftId = shift.Id,
+                            ShiftTeamId = w.TeamId,
+                            WeekIndex = w.WeekIndex,
+                            DayOfWeek = w.DayOfWeek,
+                            StartTime = w.Start,
+                            EndTime = w.End,
                         }
                     );
                 }
@@ -530,15 +560,10 @@ namespace backend.Controllers
                 );
             }
 
-            var (hasErrUpdate, msgUpdate) = ValidateNoOverlap(
-                dto.ShiftTeamStartTimes?.ToDictionary(kv => kv.Key, kv => (TimeSpan?)kv.Value),
-                dto.ShiftTeamEndTimes?.ToDictionary(kv => kv.Key, kv => (TimeSpan?)kv.Value)
-            );
-            if (hasErrUpdate)
+            var (hasError, msg) = ValidateNoOverlapWeekly(dto.WeeklyTimes);
+            if (hasError && msg != null)
             {
-                return BadRequest(
-                    new { message = await _t.GetAsync(msgUpdate ?? "Shift/TimesOverlap", lang) }
-                );
+                return BadRequest(new { message = await _t.GetAsync(msg, lang) });
             }
 
             var (updatedBy, userId) = userInfo.Value;
@@ -546,6 +571,7 @@ namespace backend.Controllers
 
             shift.Name = dto.Name;
             shift.IsHidden = dto.IsHidden;
+            shift.CycleLengthWeeks = dto.CycleLengthWeeks;
 
             // Meta data.
             shift.UpdateDate = now;
@@ -566,8 +592,6 @@ namespace backend.Controllers
                             ShiftTeamId = teamId,
                             Order = i,
                             DisplayName = dto.ShiftTeamDisplayNames?.GetValueOrDefault(teamId),
-                            StartTime = dto.ShiftTeamStartTimes?.GetValueOrDefault(teamId),
-                            EndTime = dto.ShiftTeamEndTimes?.GetValueOrDefault(teamId),
                         }
                     );
                 }
@@ -590,42 +614,47 @@ namespace backend.Controllers
             return Ok(result);
         }
 
-        private static (bool hasError, string? message) ValidateNoOverlap(
-            IDictionary<int, TimeSpan?>? starts,
-            IDictionary<int, TimeSpan?>? ends,
-            IDictionary<int, int>? order = null
+        private static (bool hasError, string? message) ValidateNoOverlapWeekly(
+            List<WeeklyTimeDto>? weeklyTimes
         )
         {
-            if (starts == null || ends == null)
+            if (weeklyTimes == null)
                 return (false, null);
 
-            var intervals = new List<(int teamId, TimeSpan start, TimeSpan end)>();
-            foreach (var kv in starts)
-            {
-                var teamId = kv.Key;
-                var start = kv.Value;
-                if (!ends.TryGetValue(teamId, out var end))
-                    return (true, "Shift/TimesInvalid");
-                if (!start.HasValue || !end.HasValue)
-                    return (true, "Shift/TimesInvalid");
-                if (start.Value >= end.Value)
-                    return (true, "Shift/StartBeforeEnd");
+            var grouped = weeklyTimes.GroupBy(w =>
+                (w.TeamId, w.WeekIndex, w.DayOfWeek ?? (DayOfWeek)(-1))
+            );
 
-                intervals.Add((teamId, start.Value, end.Value));
-            }
-
-            intervals = intervals.OrderBy(x => x.start).ToList();
-            for (int i = 1; i < intervals.Count; i++)
+            foreach (var group in grouped)
             {
-                var prev = intervals[i - 1];
-                var cur = intervals[i];
-                if (cur.start < prev.end)
+                var ordered = group.OrderBy(x => x.Start).ToList();
+                for (int i = 0; i < ordered.Count; i++)
                 {
-                    return (true, "Shift/TimesOverlap");
+                    if (ordered[i].Start >= ordered[i].End)
+                        return (true, "Shift/StartBeforeEnd");
+                    if (i > 0 && ordered[i].Start < ordered[i - 1].End)
+                        return (true, "Shift/TimesOverlap");
                 }
             }
 
             return (false, null);
+        }
+
+        private static int GetWeekIndex(
+            DateOnly anchorWeekStart,
+            int cycleLengthWeeks,
+            DateOnly date
+        )
+        {
+            var days = date.DayNumber - anchorWeekStart.DayNumber;
+            var weeksSinceAnchor = Math.DivRem(days, 7, out _);
+            if (weeksSinceAnchor < 0)
+            {
+                weeksSinceAnchor = (int)Math.Floor(days / 7.0);
+            }
+
+            var idx = ((weeksSinceAnchor % cycleLengthWeeks) + cycleLengthWeeks) % cycleLengthWeeks;
+            return idx;
         }
     }
 }

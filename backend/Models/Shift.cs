@@ -5,7 +5,6 @@ namespace backend.Models
 {
     public enum ShiftSystemKey
     {
-        None,
         Unmanned,
     }
 
@@ -20,6 +19,9 @@ namespace backend.Models
         public ShiftSystemKey? SystemKey { get; set; }
         public bool IsSystem => SystemKey != null;
 
+        public int CycleLengthWeeks { get; set; } = 1;
+        public DateOnly AnchorWeekStart { get; set; }
+
         // Meta data.
         public DateTime CreationDate { get; set; }
         public DateTime UpdateDate { get; set; }
@@ -28,5 +30,6 @@ namespace backend.Models
 
         public List<UnitToShift> UnitToShifts { get; set; } = new();
         public List<ShiftToShiftTeam> ShiftToShiftTeams { get; set; } = new();
+        public List<ShiftToShiftTeamSchedule> ShiftToShiftTeamSchedules { get; set; } = new();
     }
 }
