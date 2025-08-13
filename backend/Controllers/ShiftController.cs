@@ -691,7 +691,7 @@ namespace backend.Controllers
             if (weeklyTimes == null)
                 return (false, null);
 
-            var grouped = weeklyTimes.GroupBy(w => (w.TeamId, w.WeekIndex, w.DayOfWeek));
+            var grouped = weeklyTimes.GroupBy(w => (w.WeekIndex, w.DayOfWeek));
 
             foreach (var group in grouped)
             {

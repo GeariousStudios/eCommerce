@@ -135,7 +135,8 @@
   "Unit/Next day": "Nästa dag",
   "Unit/Previous day": "Föregående dag",
   "Unit/Change to shift": "Byt till valt skift",
-  "Unit/Shift changed": "Enheten bemannas nu av: ",
+  "Unit/Shift changed": "Bemanningstyp ändrad till: ",
+  "Unit/Shift change": "Ändring av bemanningstyp",
 
   "Manage/Failed to fetch": "Kunde inte hämta ",
   "Manage/deleted1": " borttagen!",

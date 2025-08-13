@@ -71,12 +71,23 @@ type ShiftTeamSpan = {
   end: string;
 };
 
+type ShiftChange = {
+  id: number;
+  hour: number;
+  minute?: number;
+  oldShiftId: number;
+  newShiftId: number;
+};
+
 // --- CLASSES ---
 export const thClass =
   "px-4 py-2 h-[40px] text-left border-b-1 border-b-[var(--border-main)] border-r-1 border-r-[var(--border-secondary)] flex-inline items-center justify-center";
 
 export const tdClass =
   "px-4 py-2 h-[40px] text-left break-all border-1 border-[var(--border-secondary)] flex-inline items-center justify-center";
+
+export const tdClassSpecial =
+  "px-4 py-2 h-[40px] text-left break-all flex-inline items-center justify-center";
 
 export const shiftsClass =
   "truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
@@ -120,8 +131,8 @@ const UnitClient = (props: Props) => {
     label: s.systemKey ? t(`Shifts/${s.systemKey}`) : s.name,
     show: !!shiftVisibility[s.id],
   }));
-
   const [shiftTeamSpans, setShiftTeamSpans] = useState<ShiftTeamSpan[]>([]);
+  const [shiftChanges, setShiftChanges] = useState<ShiftChange[]>([]);
 
   // --- States: Unit ---
   const [unitName, setUnitName] = useState("");
@@ -152,6 +163,9 @@ const UnitClient = (props: Props) => {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [reportId, setReportId] = useState<string | undefined>();
 
+  const [deleteType, setDeleteType] = useState<"report" | "shiftChange" | null>(
+    null,
+  );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | undefined>();
 
@@ -174,12 +188,16 @@ const UnitClient = (props: Props) => {
   const [reportDate, setReportDate] = useState<string>("");
   const [reportHour, setReportHour] = useState<string>("");
 
+  const [pendingShiftDate, setPendingShiftDate] =
+    useState<string>(selectedDate);
+  const [pendingShiftTime, setPendingShiftTime] = useState<string>("");
+
   const isBootstrapping = isLoadingUnits || isLoadingColumns || isLoadingShifts;
   const canShowLock = !isBootstrapping && isHidden && !isInvalid;
   const canShowInvalid = !isBootstrapping && isInvalid && !isHidden;
   const isReady = !isBootstrapping && !isHidden && !isInvalid;
 
-  // --- HELPER SHIFT TEAM SPANS ---
+  // --- HELPERS ---
   const overlaps = (
     aStart: number,
     aEnd: number,
@@ -212,6 +230,56 @@ const UnitClient = (props: Props) => {
     const active = shiftNames.find((s) => s.id === activeShiftId);
     setShiftTeamSpans(active?.teamSpans ?? []);
   }, [activeShiftId, shiftNames]);
+
+  const getShiftLabel = (shiftId: number) => {
+    const s = shiftNames.find((x) => x.id === shiftId);
+    if (!s) {
+      return `#${shiftId}`;
+    }
+
+    if (s.systemKey) {
+      const key = `Shifts/${s.systemKey}`;
+      const tr = t(key);
+      return tr !== key ? tr : s.name;
+    }
+    return s.name;
+  };
+
+  const getTeamLabelForHour = (shiftId: number | null, hour: number) => {
+    if (shiftId == null) {
+      return undefined;
+    }
+
+    const s = shiftNames.find((x) => x.id === shiftId);
+    const spans = s?.teamSpans ?? [];
+    const startM = hour * 60;
+    const endM = (hour + 1) * 60;
+    const hit = spans.find((ts) => {
+      const st = toMinutes(ts.start);
+      const en = toMinutes(ts.end);
+      if (Number.isNaN(st) || Number.isNaN(en)) {
+        return false;
+      }
+
+      return overlaps(startM, endM, st, en);
+    });
+    return hit?.label;
+  };
+
+  const resolveShiftIdForHour = (hour: number): number | null => {
+    let sid = shiftChanges.length
+      ? (shiftChanges[0].oldShiftId ?? activeShiftId)
+      : activeShiftId;
+
+    for (const c of shiftChanges) {
+      const m = c.minute ?? 0;
+
+      if (c.hour < hour || (c.hour === hour && m === 0)) {
+        sid = c.newShiftId;
+      }
+    }
+    return sid ?? null;
+  };
 
   // --- BACKEND ---
   // --- Fetch unit ---
@@ -395,6 +463,7 @@ const UnitClient = (props: Props) => {
     fetchShifts();
   }, [unitId, isUnitValid, selectedDate]);
 
+  // --- Fetch active shift ---
   useEffect(() => {
     if (!activeShiftId) {
       setShiftTeamSpans([]);
@@ -439,6 +508,122 @@ const UnitClient = (props: Props) => {
 
     fetchActiveShift();
   }, [activeShiftId]);
+
+  // --- Fetch shift changes ---
+  useEffect(() => {
+    if (!unitId || !isUnitValid || !selectedDate) {
+      return;
+    }
+
+    fetchShiftChanges(selectedDate);
+  }, [unitId, isUnitValid, selectedDate]);
+
+  const fetchShiftChanges = async (date: string) => {
+    const response = await fetch(
+      `${apiUrl}/unit/${unitId}/shift-changes?date=${date}`,
+      {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    if (response.ok) {
+      setShiftChanges(await response.json());
+    }
+  };
+
+  // --- Update shift change time ---
+  const patchShiftChangeTime = async (
+    changeId: number,
+    date: string,
+    hour: number,
+    minute: number,
+  ) => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/unit/${unitId}/shift-change/${changeId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ date, hour, minute }),
+        },
+      );
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      if (!response.ok) {
+        const txt = await response.text();
+        const err = txt ? JSON.parse(txt) : null;
+        notify("error", err?.message || t("Modal/Unknown error"));
+        return;
+      }
+
+      await fetchShiftChanges(selectedDate);
+      setRefetchData(true);
+    } catch {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  const handleEditShiftChange = async (change: ShiftChange) => {
+    const nt = prompt(
+      "HH:mm",
+      `${String(change.hour).padStart(2, "0")}:${String(change.minute ?? 0).padStart(2, "0")}`,
+    );
+    if (!nt) {
+      return;
+    }
+    const [hh, mm] = nt.split(":").map(Number);
+    if (!Number.isFinite(hh) || !Number.isFinite(mm)) {
+      notify("error", t("Modal/Unknown error"));
+      return;
+    }
+    await patchShiftChangeTime(change.id, selectedDate, hh, mm);
+  };
+
+  // --- Delete shift change ---
+  const deleteShiftChange = async (id: string) => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/unit/${unitId}/shift-change/${Number(id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      if (!response.ok) {
+        const txt = await response.text();
+        const err = txt ? JSON.parse(txt) : null;
+        notify("error", err?.message || t("Modal/Unknown error"));
+        return;
+      }
+
+      setShiftChanges((prev) => prev.filter((c) => c.id !== Number(id)));
+      await fetchShiftChanges(selectedDate);
+      setRefetchData(true);
+      notify("success", t("Unit/Shift change") + t("Manage/deleted1"));
+    } catch {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
 
   // --- Delete report ---
   const deleteReport = async (id: string) => {
@@ -521,11 +706,20 @@ const UnitClient = (props: Props) => {
   };
 
   // --- Delete ---
-  const toggleDeleteItemModal = (id?: string) => {
-    setDeletingItemId(id);
-    setIsDeleteModalOpen((prev) => !prev);
+  const toggleDeleteItemModal = (
+    id?: string,
+    type: "report" | "shiftChange" = "report",
+  ) => {
+    if (id) {
+      setDeletingItemId(id);
+      setDeleteType(type);
+      setIsDeleteModalOpen(true);
+    } else {
+      setIsDeleteModalOpen(false);
+      setDeletingItemId(undefined);
+      setDeleteType(null);
+    }
   };
-
   // --- DATE SELECTOR ---
   const goToPreviousDay = () => {
     const date = new Date(selectedDate);
@@ -646,6 +840,14 @@ const UnitClient = (props: Props) => {
         return;
       }
 
+      const body: any = { activeShiftId: pendingShiftId };
+      if (pendingShiftDate && pendingShiftTime) {
+        const [hh, mm] = String(pendingShiftTime).split(":").map(Number);
+        body.date = pendingShiftDate;
+        body.hour = Number.isFinite(hh) ? hh : 0;
+        body.minute = Number.isFinite(mm) ? mm : 0;
+      }
+
       const response = await fetch(`${apiUrl}/unit/${unitId}/active-shift`, {
         method: "PATCH",
         headers: {
@@ -653,9 +855,7 @@ const UnitClient = (props: Props) => {
           "X-User-Language": localStorage.getItem("language") || "sv",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          activeShiftId: pendingShiftId,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (response.status === 401) {
@@ -676,6 +876,7 @@ const UnitClient = (props: Props) => {
         notify("info", `${t("Unit/Shift changed")} ${label}`);
         setActiveShiftId(pendingShiftId);
         setShiftsOpen(false);
+        await fetchShiftChanges(selectedDate);
         setRefetchData(true);
         return;
       }
@@ -743,13 +944,22 @@ const UnitClient = (props: Props) => {
 
         <DeleteModal
           isOpen={isDeleteModalOpen}
-          onClose={() => {
-            toggleDeleteItemModal();
-            setDeletingItemId("");
-          }}
-          onConfirm={() => {
-            deleteReport(String(deletingItemId));
-            setReports((prev) => prev.filter((r) => r.id !== deletingItemId));
+          onClose={() => toggleDeleteItemModal()}
+          onConfirm={async () => {
+            if (!deletingItemId || !deleteType) return;
+
+            if (deleteType === "report") {
+              await deleteReport(deletingItemId);
+              setReports((prev) =>
+                prev.filter((r) => String(r.id) !== deletingItemId),
+              );
+            } else if (deleteType === "shiftChange") {
+              await deleteShiftChange(deletingItemId);
+              setShiftChanges((prev) =>
+                prev.filter((c) => String(c.id) !== deletingItemId),
+              );
+            }
+
             toggleDeleteItemModal();
           }}
         />
@@ -874,6 +1084,8 @@ const UnitClient = (props: Props) => {
                 className={`${roundedButtonClass} ${!props.isReporter ? "!cursor-not-allowed opacity-50" : ""} group w-auto gap-2 px-4`}
                 onClick={() => {
                   setPendingShiftId(activeShiftId);
+                  setPendingShiftDate(selectedDate);
+                  setPendingShiftTime("");
                   setShiftsOpen((prev) => !prev);
                 }}
                 aria-haspopup="menu"
@@ -929,18 +1141,40 @@ const UnitClient = (props: Props) => {
                     />
                   </div>
                 ))}
-                <button
-                  className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
-                  onClick={changeShift}
-                  disabled={
-                    activeShiftId != null &&
-                    pendingShiftId != null &&
-                    pendingShiftId === activeShiftId
-                  }
-                >
-                  {t("Unit/Change to shift")}
-                </button>
+
+                <div className="mt-4 flex flex-col gap-6">
+                  <Input
+                    type="date"
+                    value={pendingShiftDate}
+                    onChange={(v) => setPendingShiftDate(String(v))}
+                    label={t("Common/Date")}
+                    onModal
+                    required
+                  />
+                  <Input
+                    type="time"
+                    value={pendingShiftTime}
+                    onChange={(v) => setPendingShiftTime(String(v))}
+                    label={t("Common/Time")}
+                    onModal
+                    required
+                  />
+                </div>
               </div>
+
+              <button
+                className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
+                onClick={changeShift}
+                disabled={
+                  (activeShiftId != null &&
+                    pendingShiftId != null &&
+                    pendingShiftId === activeShiftId) ||
+                  !pendingShiftDate ||
+                  !pendingShiftTime
+                }
+              >
+                {t("Unit/Change to shift")}
+              </button>
             </MenuDropdown>
           </div>
 
@@ -1006,6 +1240,10 @@ const UnitClient = (props: Props) => {
                   <>
                     {Array.from({ length: 24 }, (_, hour) => {
                       const isExpanded = expandedRows.includes(hour);
+                      const changesThisHour = shiftChanges.filter(
+                        (c) => c.hour === hour,
+                      );
+
                       return (
                         <React.Fragment key={hour}>
                           <tr
@@ -1035,32 +1273,11 @@ const UnitClient = (props: Props) => {
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} whitespace-nowrap`}
                             >
                               {(() => {
-                                const hourStartM = hour * 60;
-                                const hourEndM = (hour + 1) * 60;
-                                const hit = shiftTeamSpans.find((st) => {
-                                  const startM = toMinutes(
-                                    (st as any).start ?? (st as any).Start,
-                                  );
-                                  const endM = toMinutes(
-                                    (st as any).end ?? (st as any).End,
-                                  );
-                                  if (
-                                    Number.isNaN(startM) ||
-                                    Number.isNaN(endM)
-                                  )
-                                    return false;
-                                  return overlaps(
-                                    hourStartM,
-                                    hourEndM,
-                                    startM,
-                                    endM,
-                                  );
-                                });
-                                return hit
-                                  ? ((hit as any).label ??
-                                      (hit as any).Label ??
-                                      "")
-                                  : "-";
+                                const sid = resolveShiftIdForHour(hour);
+                                if (sid == null) return "-";
+
+                                const teamTxt = getTeamLabelForHour(sid, hour);
+                                return teamTxt?.trim() ? teamTxt : "-";
                               })()}
                             </td>
                             <td
@@ -1171,6 +1388,148 @@ const UnitClient = (props: Props) => {
                               );
                             })}
                           </tr>
+
+                          {changesThisHour.map((change, idx) => (
+                            <tr
+                              key={`change-${hour}-${idx}`}
+                              className="bg-[var(--bg-grid-note)] text-[var(--text-main-light)]"
+                            >
+                              <td />
+                              <td className={`${tdClassSpecial}`}>
+                                {String(change.hour).padStart(2, "0")}:
+                                {String(change.minute ?? 0).padStart(2, "0")}
+                              </td>
+                              <td colSpan={unitColumnNames.length + 4}>
+                                <div className="flex items-center justify-center">
+                                  <div className="flex w-full items-center justify-center">
+                                    {t("Unit/Shift changed")}
+                                    &nbsp;{getShiftLabel(change.newShiftId)}
+                                  </div>
+                                  {/* --- Edit --- */}
+                                  <div className="ml-auto flex items-center gap-2 px-4">
+                                    <button
+                                      type="button"
+                                      className={iconButtonPrimaryClass}
+                                      onClick={() => {
+                                        const nt = prompt(
+                                          "HH:mm",
+                                          `${String(change.hour).padStart(2, "0")}:${String(change.minute ?? 0).padStart(2, "0")}`,
+                                        );
+                                        if (!nt) return;
+                                        const [hh, mm] = nt
+                                          .split(":")
+                                          .map(Number);
+                                        fetch(
+                                          `${apiUrl}/unit/${unitId}/shift-change/${change.id}`,
+                                          {
+                                            method: "PATCH",
+                                            headers: {
+                                              "Content-Type":
+                                                "application/json",
+                                              "X-User-Language":
+                                                localStorage.getItem(
+                                                  "language",
+                                                ) || "sv",
+                                              Authorization: `Bearer ${token}`,
+                                            },
+                                            body: JSON.stringify({
+                                              date: selectedDate,
+                                              hour: hh,
+                                              minute: mm,
+                                            }),
+                                          },
+                                        ).then(() => {
+                                          fetchShiftChanges(selectedDate);
+                                          setRefetchData(true);
+                                        });
+                                      }}
+                                    >
+                                      <HoverIcon
+                                        outline={OutlinePencilSquareIcon}
+                                        solid={SolidPencilSquareIcon}
+                                        className="h-6 w-6"
+                                      />
+                                    </button>
+                                    {/* --- Delete --- */}
+                                    <button
+                                      type="button"
+                                      className={iconButtonPrimaryClass}
+                                      onClick={() => {
+                                        toggleDeleteItemModal(
+                                          String(change.id),
+                                          "shiftChange",
+                                        );
+                                      }}
+                                    >
+                                      <HoverIcon
+                                        outline={OutlineTrashIcon}
+                                        solid={SolidTrashIcon}
+                                        className="h-6 w-6"
+                                      />
+                                    </button>
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                          {/* <div className="relative">
+                                    <button
+                                      type="button"
+                                      className={iconButtonPrimaryClass}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        menuTriggerRef.current =
+                                          e.currentTarget as HTMLButtonElement;
+                                        setOpenChangeMenuId(change.id);
+                                      }}
+                                      disabled={!props.isReporter}
+                                    >
+                                      <HoverIcon
+                                        outline={OutlinePencilSquareIcon}
+                                        solid={SolidPencilSquareIcon}
+                                        className="h-6 w-6"
+                                      />
+                                    </button>
+
+                                    <MenuDropdown
+                                      triggerRef={menuTriggerRef}
+                                      isOpen={openChangeMenuId === change.id}
+                                      onClose={() => setOpenChangeMenuId(null)}
+                                    >
+                                      <div className="flex w-full flex-col gap-2">
+                                        <button
+                                          className={`${buttonSecondaryClass} !min-h-[32px] w-full rounded-full`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenChangeMenuId(null);
+                                            handleEditShiftChange(change);
+                                          }}
+                                          disabled={!props.isReporter}
+                                        >
+                                          {t("Unit/Edit shift change")}
+                                        </button>
+                                        <button
+                                          className={`${buttonSecondaryClass} !min-h-[32px] w-full rounded-full`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenChangeMenuId(null);
+                                            toggleDeleteItemModal(
+                                              String(change.id),
+                                              "shiftChange",
+                                            );
+                                          }}
+                                          disabled={!props.isReporter}
+                                        >
+                                          {t("Unit/Delete shift change")}
+                                        </button>
+                                      </div>
+                                    </MenuDropdown>
+                                  </div>
+
+                                </div>
+                              </td>
+                            </tr>
+                          ))} */}
 
                           {isExpanded && (
                             <tr

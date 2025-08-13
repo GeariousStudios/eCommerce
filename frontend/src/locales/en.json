@@ -135,7 +135,8 @@
   "Unit/Next day": "Next day",
   "Unit/Previous day": "Previous day",
   "Unit/Change to shift": "Change to selected shift",
-  "Unit/Shift changed": "The unit is now staffed by: ",
+  "Unit/Shift changed": "Staffing type changed to: ",
+  "Unit/Shift change": "Staffing type change",
 
   "Manage/Failed to fetch": "Failed to fetch ",
   "Manage/deleted1": " deleted!",

@@ -44,6 +44,7 @@
   "Unit/VisibilityHidden": "Hidden",
   "Unit/ShiftNotLinked": "Shift is not linked to the unit",
   "Unit/CannotRemoveActiveShift": "Cannot remove an active shift from the unit",
+  "Unit/InvalidDate": "Invalid date",
 
   "UnitColumn/NotFound": "Column could not be found in the database",
   "UnitColumn/InUse": "Cannot delete a column that is in use",

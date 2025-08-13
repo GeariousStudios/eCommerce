@@ -668,10 +668,7 @@ namespace backend.Controllers
             if (!links.Any(l => l.ShiftId == dto.ActiveShiftId))
                 return BadRequest(new { message = await _t.GetAsync("Unit/ShiftNotLinked", lang) });
 
-            foreach (var l in links)
-            {
-                l.IsActive = (l.ShiftId == dto.ActiveShiftId);
-            }
+            var oldActiveId = links.FirstOrDefault(l => l.IsActive)?.ShiftId ?? dto.ActiveShiftId;
 
             var userInfo = await _userService.GetUserInfoAsync();
 
@@ -685,11 +682,180 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            DateTime effectiveFromUtc;
+            if (!string.IsNullOrWhiteSpace(dto.Date) && dto.Hour >= 0)
+            {
+                if (!DateOnly.TryParse(dto.Date, out var d))
+                {
+                    return BadRequest(
+                        new { message = await _t.GetAsync("Unit/InvalidDate", lang) }
+                    );
+                }
+
+                var hour = Math.Clamp(dto.Hour, 0, 23);
+                var minute = Math.Clamp(dto.Minute, 0, 59);
+                var local = new DateTime(
+                    d.Year,
+                    d.Month,
+                    d.Day,
+                    hour,
+                    minute,
+                    0,
+                    0,
+                    DateTimeKind.Local
+                );
+                effectiveFromUtc = local.ToUniversalTime();
+            }
+            else
+            {
+                effectiveFromUtc = now;
+            }
+
+            if (oldActiveId == dto.ActiveShiftId)
+            {
+                unit.UpdateDate = now;
+                unit.UpdatedBy = updatedBy;
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+
+            _context.UnitShiftChanges.Add(
+                new UnitShiftChange
+                {
+                    UnitId = id,
+                    OldShiftId = oldActiveId,
+                    NewShiftId = dto.ActiveShiftId,
+                    EffectiveFromUtc = effectiveFromUtc,
+
+                    // Meta data.
+                    CreationDate = now,
+                    CreatedBy = updatedBy,
+                    UpdateDate = now,
+                    UpdatedBy = updatedBy,
+                }
+            );
+
+            foreach (var l in links)
+            {
+                l.IsActive = (l.ShiftId == dto.ActiveShiftId);
+            }
+
             unit.UpdateDate = now;
             unit.UpdatedBy = updatedBy;
 
             await _context.SaveChangesAsync();
             return NoContent();
+        }
+
+        [HttpPatch("{unitId}/shift-change/{changeId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateShiftChange(
+            int unitId,
+            int changeId,
+            UpdateShiftChangeDto dto
+        )
+        {
+            var lang = await GetLangAsync();
+            var change = await _context.UnitShiftChanges.FirstOrDefaultAsync(x =>
+                x.Id == changeId && x.UnitId == unitId
+            );
+
+            if (change == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.Date) && dto.Hour.HasValue)
+            {
+                if (!DateOnly.TryParse(dto.Date, out var d))
+                    return BadRequest(
+                        new { message = await _t.GetAsync("Unit/InvalidDate", lang) }
+                    );
+                var hour = Math.Clamp(dto.Hour.Value, 0, 23);
+                var minute = Math.Clamp(dto.Minute ?? 0, 0, 59);
+                var local = new DateTime(
+                    d.Year,
+                    d.Month,
+                    d.Day,
+                    hour,
+                    minute,
+                    0,
+                    DateTimeKind.Local
+                );
+                change.EffectiveFromUtc = local.ToUniversalTime();
+            }
+            if (dto.NewShiftId.HasValue)
+                change.NewShiftId = dto.NewShiftId.Value;
+
+            var userInfo = await _userService.GetUserInfoAsync();
+            if (userInfo == null)
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+
+            change.UpdateDate = DateTime.UtcNow;
+            change.UpdatedBy = userInfo.Value.Item1;
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpDelete("{unitId}/shift-change/{changeId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteShiftChange(int unitId, int changeId)
+        {
+            var lang = await GetLangAsync();
+            var change = await _context.UnitShiftChanges.FirstOrDefaultAsync(x =>
+                x.Id == changeId && x.UnitId == unitId
+            );
+
+            if (change == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
+            }
+
+            _context.UnitShiftChanges.Remove(change);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpGet("{id}/shift-changes")]
+        public async Task<IActionResult> GetShiftChanges(int id, [FromQuery] string date)
+        {
+            var lang = await GetLangAsync();
+
+            if (!DateOnly.TryParse(date, out var d))
+            {
+                return BadRequest(new { message = await _t.GetAsync("Unit/InvalidDate", lang) });
+            }
+
+            var startLocal = new DateTime(d.Year, d.Month, d.Day, 0, 0, 0, DateTimeKind.Local);
+            var endLocal = startLocal.AddDays(1);
+
+            var data = await _context
+                .UnitShiftChanges.Where(c =>
+                    c.UnitId == id
+                    && c.EffectiveFromUtc >= startLocal.ToUniversalTime()
+                    && c.EffectiveFromUtc < endLocal.ToUniversalTime()
+                )
+                .OrderBy(c => c.EffectiveFromUtc)
+                .ToListAsync();
+
+            var list = data.Select(c =>
+                {
+                    var local = c.EffectiveFromUtc.ToLocalTime();
+                    return new
+                    {
+                        id = c.Id,
+                        hour = local.Hour,
+                        minute = local.Minute,
+                        oldShiftId = c.OldShiftId,
+                        newShiftId = c.NewShiftId,
+                    };
+                })
+                .ToList();
+
+            return Ok(list);
         }
 
         private async Task<Dictionary<ShiftSystemKey, int>> GetAllSystemShiftIdsAsync()

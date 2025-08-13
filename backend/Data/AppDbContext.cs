@@ -23,6 +23,7 @@ namespace backend.Data
         public DbSet<Report> Reports { get; set; }
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<ShiftTeam> ShiftTeams { get; set; }
+        public DbSet<UnitShiftChange> UnitShiftChanges { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
@@ -158,6 +159,8 @@ namespace backend.Data
                     sst.ShiftTeamId,
                     sst.WeekIndex,
                     sst.DayOfWeek,
+                    sst.StartTime,
+                    sst.EndTime,
                 });
 
             modelBuilder

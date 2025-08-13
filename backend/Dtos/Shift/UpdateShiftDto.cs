@@ -11,7 +11,7 @@ namespace backend.Dtos.Shift
 
         public List<int> ShiftTeamIds { get; set; } = new();
         public Dictionary<int, string>? ShiftTeamDisplayNames { get; set; }
-        
+
         public int CycleLengthWeeks { get; set; }
         public DateOnly AnchorWeekStart { get; set; }
 

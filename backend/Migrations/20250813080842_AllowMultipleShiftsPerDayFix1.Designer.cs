@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -10,9 +11,11 @@ using backend.Data;
 namespace eCommerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250813080842_AllowMultipleShiftsPerDayFix1")]
+    partial class AllowMultipleShiftsPerDayFix1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.4");
@@ -573,43 +576,6 @@ namespace eCommerce.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UnitGroups");
-                });
-
-            modelBuilder.Entity("backend.Models.UnitShiftChange", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreationDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("EffectiveFromUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("NewShiftId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("OldShiftId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("UnitId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("UpdateDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("UpdatedBy")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UnitShiftChanges");
                 });
 
             modelBuilder.Entity("backend.Models.User", b =>

@@ -91,6 +91,7 @@
   --bg-grid-zebra: #181818;
   --bg-grid-header: #1a1a1a;
   --bg-grid-header-hover: #3a3a3a;
+    --bg-grid-note: #fef9c2;
 
   /* --- TOOLTIP --- */
   --bg-tooltip: var(--note-info);
@@ -165,6 +166,7 @@
   --bg-grid-zebra: #f2f2f2;
   --bg-grid-header: #f0f0f0;
   --bg-grid-header-hover: #d6d6d6;
+  --bg-grid-note: #fef9c2;
 
   /* --- TOOLTIP --- */
   --bg-tooltip: var(--note-info);

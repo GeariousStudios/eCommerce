@@ -937,7 +937,7 @@ const ShiftModal = (props: Props) => {
                                       .at(-1)?.wt;
                                     const start = last ? last.end : "08:00";
                                     const end =
-                                      start === "23:59" ? "23:59" : "16:00";
+                                      start === "23:59" ? "23:59" : "23:59";
                                     setWeeklyTimes((prev) => [
                                       ...prev,
                                       {
@@ -952,7 +952,7 @@ const ShiftModal = (props: Props) => {
                                 >
                                   {t("ShiftModal/Add interval")}
                                 </button>
-                                
+
                                 {intervals.map(({ wt, i }) => (
                                   <div
                                     key={i}
@@ -1078,6 +1078,12 @@ const ShiftModal = (props: Props) => {
               >
                 {props.itemId ? t("Modal/Save") : t("Common/Add")}
               </button>
+              {validationError && (
+                <div
+                  className="xs:hidden col-span-3 -mt-3 flex text-sm font-semibold text-[var(--note-error)]"
+                  dangerouslySetInnerHTML={{ __html: validationError }}
+                />
+              )}
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
@@ -1088,7 +1094,7 @@ const ShiftModal = (props: Props) => {
 
               {validationError && (
                 <div
-                  className="-mt-3 text-sm font-semibold text-[var(--note-error)]"
+                  className="xs:flex col-span-3 -mt-3 hidden text-sm font-semibold text-[var(--note-error)]"
                   dangerouslySetInnerHTML={{ __html: validationError }}
                 />
               )}

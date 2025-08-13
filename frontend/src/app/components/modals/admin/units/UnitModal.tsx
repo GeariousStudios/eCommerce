@@ -136,6 +136,7 @@ const UnitModal = (props: Props) => {
           isHidden,
           unitColumnIds,
           categoryIds,
+          shiftIds
         }),
       });
 
