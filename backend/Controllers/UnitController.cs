@@ -666,9 +666,9 @@ namespace backend.Controllers
 
             var links = unit.UnitToShifts;
             if (!links.Any(l => l.ShiftId == dto.ActiveShiftId))
+            {
                 return BadRequest(new { message = await _t.GetAsync("Unit/ShiftNotLinked", lang) });
-
-            var oldActiveId = links.FirstOrDefault(l => l.IsActive)?.ShiftId ?? dto.ActiveShiftId;
+            }
 
             var userInfo = await _userService.GetUserInfoAsync();
 
@@ -708,22 +708,56 @@ namespace backend.Controllers
             }
             else
             {
-                effectiveFromUtc = now;
+                var localNow = DateTime.Now;
+                var localRounded = new DateTime(
+                    localNow.Year,
+                    localNow.Month,
+                    localNow.Day,
+                    localNow.Hour,
+                    localNow.Minute,
+                    0,
+                    DateTimeKind.Local
+                );
+                effectiveFromUtc = localRounded.ToUniversalTime();
             }
 
-            if (oldActiveId == dto.ActiveShiftId)
+            var minuteStart = effectiveFromUtc;
+            var minuteEnd = effectiveFromUtc.AddMinutes(1);
+
+            var existsAtSameMinute = await _context.UnitShiftChanges.AnyAsync(c =>
+                c.UnitId == id
+                && c.EffectiveFromUtc >= minuteStart
+                && c.EffectiveFromUtc < minuteEnd
+            );
+            if (existsAtSameMinute)
+                return BadRequest(
+                    new { message = await _t.GetAsync("Unit/ShiftChangeAlreadyExists", lang) }
+                );
+
+            var prevChange = await _context
+                .UnitShiftChanges.Where(c =>
+                    c.UnitId == id && c.EffectiveFromUtc <= effectiveFromUtc
+                )
+                .OrderByDescending(c => c.EffectiveFromUtc)
+                .FirstOrDefaultAsync();
+
+            int? baseActiveId = await _context
+                .UnitToShifts.Where(l => l.UnitId == id && l.IsActive)
+                .Select(l => (int?)l.ShiftId)
+                .FirstOrDefaultAsync();
+
+            var oldActiveIdAtThatTime = prevChange?.NewShiftId ?? baseActiveId ?? 0;
+
+            if (oldActiveIdAtThatTime == dto.ActiveShiftId)
             {
-                unit.UpdateDate = now;
-                unit.UpdatedBy = updatedBy;
-                await _context.SaveChangesAsync();
-                return NoContent();
+                return BadRequest(new { message = await _t.GetAsync("Unit/SameShift", lang) });
             }
 
             _context.UnitShiftChanges.Add(
                 new UnitShiftChange
                 {
                     UnitId = id,
-                    OldShiftId = oldActiveId,
+                    OldShiftId = oldActiveIdAtThatTime,
                     NewShiftId = dto.ActiveShiftId,
                     EffectiveFromUtc = effectiveFromUtc,
 
@@ -735,15 +769,23 @@ namespace backend.Controllers
                 }
             );
 
-            foreach (var l in links)
+            await _context.SaveChangesAsync();
+
+            var latestAtNow = await _context
+                .UnitShiftChanges.Where(c => c.UnitId == id && c.EffectiveFromUtc <= now)
+                .OrderByDescending(c => c.EffectiveFromUtc)
+                .FirstOrDefaultAsync();
+
+            if (latestAtNow != null)
             {
-                l.IsActive = (l.ShiftId == dto.ActiveShiftId);
+                var newActive = latestAtNow.NewShiftId;
+                foreach (var l in links)
+                    l.IsActive = (l.ShiftId == newActive);
+                unit.UpdateDate = now;
+                unit.UpdatedBy = updatedBy;
+                await _context.SaveChangesAsync();
             }
 
-            unit.UpdateDate = now;
-            unit.UpdatedBy = updatedBy;
-
-            await _context.SaveChangesAsync();
             return NoContent();
         }
 
@@ -765,6 +807,7 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
             }
 
+            DateTime? newEffectiveFromUtc = null;
             if (!string.IsNullOrWhiteSpace(dto.Date) && dto.Hour.HasValue)
             {
                 if (!DateOnly.TryParse(dto.Date, out var d))
@@ -782,10 +825,28 @@ namespace backend.Controllers
                     0,
                     DateTimeKind.Local
                 );
-                change.EffectiveFromUtc = local.ToUniversalTime();
+                newEffectiveFromUtc = local.ToUniversalTime();
+
+                var minuteStart = newEffectiveFromUtc.Value;
+                var minuteEnd = minuteStart.AddMinutes(1);
+                var existsAtSameMinute = await _context.UnitShiftChanges.AnyAsync(c =>
+                    c.UnitId == unitId
+                    && c.Id != changeId
+                    && c.EffectiveFromUtc >= minuteStart
+                    && c.EffectiveFromUtc < minuteEnd
+                );
+                if (existsAtSameMinute)
+                    return BadRequest(
+                        new { message = await _t.GetAsync("Unit/ShiftChangeAlreadyExists", lang) }
+                    );
+
+                change.EffectiveFromUtc = newEffectiveFromUtc.Value;
             }
+
             if (dto.NewShiftId.HasValue)
+            {
                 change.NewShiftId = dto.NewShiftId.Value;
+            }
 
             var userInfo = await _userService.GetUserInfoAsync();
             if (userInfo == null)
@@ -793,10 +854,41 @@ namespace backend.Controllers
                     new { message = await _t.GetAsync("Common/Unauthorized", lang) }
                 );
 
+            var (updatedBy, _) = userInfo.Value;
+
             change.UpdateDate = DateTime.UtcNow;
-            change.UpdatedBy = userInfo.Value.Item1;
+            change.UpdatedBy = updatedBy;
 
             await _context.SaveChangesAsync();
+
+            var nowUtc = DateTime.UtcNow;
+
+            var newActiveShiftId = await _context
+                .UnitShiftChanges.Where(c => c.UnitId == unitId && c.EffectiveFromUtc <= nowUtc)
+                .OrderByDescending(c => c.EffectiveFromUtc)
+                .Select(c => (int?)c.NewShiftId)
+                .FirstOrDefaultAsync();
+
+            if (newActiveShiftId.HasValue)
+            {
+                var unit = await _context
+                    .Units.Include(u => u.UnitToShifts)
+                    .FirstOrDefaultAsync(u => u.Id == unitId);
+
+                if (unit == null)
+                    return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
+
+                foreach (var l in unit.UnitToShifts)
+                {
+                    l.IsActive = (l.ShiftId == newActiveShiftId.Value);
+                }
+
+                unit.UpdateDate = DateTime.UtcNow;
+                unit.UpdatedBy = updatedBy;
+
+                await _context.SaveChangesAsync();
+            }
+
             return NoContent();
         }
 
@@ -831,31 +923,40 @@ namespace backend.Controllers
 
             var startLocal = new DateTime(d.Year, d.Month, d.Day, 0, 0, 0, DateTimeKind.Local);
             var endLocal = startLocal.AddDays(1);
+            var startUtc = startLocal.ToUniversalTime();
+            var endUtc = endLocal.ToUniversalTime();
 
-            var data = await _context
+            var changes = await _context
                 .UnitShiftChanges.Where(c =>
-                    c.UnitId == id
-                    && c.EffectiveFromUtc >= startLocal.ToUniversalTime()
-                    && c.EffectiveFromUtc < endLocal.ToUniversalTime()
+                    c.UnitId == id && c.EffectiveFromUtc >= startUtc && c.EffectiveFromUtc < endUtc
                 )
                 .OrderBy(c => c.EffectiveFromUtc)
+                .Select(c => new
+                {
+                    id = c.Id,
+                    hour = c.EffectiveFromUtc.ToLocalTime().Hour,
+                    minute = c.EffectiveFromUtc.ToLocalTime().Minute,
+                    oldShiftId = c.OldShiftId,
+                    newShiftId = c.NewShiftId,
+                })
                 .ToListAsync();
 
-            var list = data.Select(c =>
-                {
-                    var local = c.EffectiveFromUtc.ToLocalTime();
-                    return new
-                    {
-                        id = c.Id,
-                        hour = local.Hour,
-                        minute = local.Minute,
-                        oldShiftId = c.OldShiftId,
-                        newShiftId = c.NewShiftId,
-                    };
-                })
-                .ToList();
+            var lastPrev = await _context
+                .UnitShiftChanges.Where(c => c.UnitId == id && c.EffectiveFromUtc < startUtc)
+                .OrderByDescending(c => c.EffectiveFromUtc)
+                .FirstOrDefaultAsync();
 
-            return Ok(list);
+            var baseShiftId = lastPrev?.NewShiftId;
+
+            if (baseShiftId == null)
+            {
+                baseShiftId = await _context
+                    .UnitToShifts.Where(l => l.UnitId == id && l.IsActive)
+                    .Select(l => (int?)l.ShiftId)
+                    .FirstOrDefaultAsync();
+            }
+
+            return Ok(new { baseShiftId, changes });
         }
 
         private async Task<Dictionary<ShiftSystemKey, int>> GetAllSystemShiftIdsAsync()

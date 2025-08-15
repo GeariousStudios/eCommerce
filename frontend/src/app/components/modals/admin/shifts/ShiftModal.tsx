@@ -655,7 +655,7 @@ const ShiftModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="xs:grid-cols-1 xs:gap-4 mb-8 grid grid-cols-1 gap-6">
+              <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
                 <Input
                   label={t("Common/Name")}
                   value={name}
@@ -676,7 +676,7 @@ const ShiftModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="xs:grid-cols-2 xs:gap-4 grid grid-cols-1 gap-6">
+              <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
                 <SingleDropdown
                   addSpacer={shiftTeamIds.length === 0}
                   scrollContainer={getScrollEl}
@@ -737,13 +737,13 @@ const ShiftModal = (props: Props) => {
               </div>
 
               {shiftTeamIds.length > 0 && (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-6">
                   <DragDrop
                     items={shiftTeamIds}
                     getId={(id) => String(id)}
                     onReorder={(newList) => setShiftTeamIds(newList)}
                     onDraggingChange={setIsAnyDragging}
-                    containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-6"
                     renderItem={(id, isDragging) => {
                       const team = shiftTeams.find((t) => t.id === id);
                       if (!team) {
@@ -772,7 +772,7 @@ const ShiftModal = (props: Props) => {
                           key={id}
                           className="flex flex-col gap-8 rounded-2xl bg-[var(--bg-navbar)] p-4"
                         >
-                          <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center justify-between gap-8">
                             <span className="font-semibold">{team.name}</span>
                             <button
                               type="button"
@@ -854,76 +854,6 @@ const ShiftModal = (props: Props) => {
                               inChip
                             />
 
-                            {/* {wt ? (
-                              <>
-                                <Input
-                                  type="time"
-                                  label={t("Common/Start")}
-                                  value={wt.start}
-                                  onChange={(val) =>
-                                    setWeeklyTimes((prev) =>
-                                      prev.map((p, i) =>
-                                        i === idx
-                                          ? { ...p, start: String(val ?? "") }
-                                          : p,
-                                      ),
-                                    )
-                                  }
-                                  inChip
-                                  required
-                                />
-                                <div className="flex flex-col gap-4">
-                                  <Input
-                                    type="time"
-                                    label={t("Common/Stop")}
-                                    value={wt.end}
-                                    onChange={(val) =>
-                                      setWeeklyTimes((prev) =>
-                                        prev.map((p, i) =>
-                                          i === idx
-                                            ? { ...p, end: String(val ?? "") }
-                                            : p,
-                                        ),
-                                      )
-                                    }
-                                    inChip
-                                    required
-                                  />
-                                </div>
-
-                                <button
-                                  type="button"
-                                  className={`${buttonDeletePrimaryClass} col-span-2`}
-                                  onClick={() =>
-                                    setWeeklyTimes((prev) =>
-                                      prev.filter((_, i) => i !== idx),
-                                    )
-                                  }
-                                  aria-label={t("Common/Remove")}
-                                >
-                                  {t("ShiftModal/Deactivate day")}
-                                </button>
-                              </>
-                            ) : (
-                              <button
-                                type="button"
-                                className={`${buttonAddPrimaryClass} col-span-2`}
-                                onClick={() =>
-                                  setWeeklyTimes((prev) => [
-                                    ...prev,
-                                    {
-                                      teamId: id,
-                                      weekIndex: sel.weekIndex,
-                                      dayOfWeek: sel.dayOfWeek,
-                                      start: "08:00",
-                                      end: "16:00",
-                                    },
-                                  ])
-                                }
-                              >
-                                {t("ShiftModal/Activate day")}
-                              </button>
-                            )} */}
                             {intervals.length > 0 ? (
                               <>
                                 <button
@@ -977,7 +907,7 @@ const ShiftModal = (props: Props) => {
                                       inChip
                                       required
                                     />
-                                    <div className="flex flex-col gap-4">
+                                    <div className="flex flex-col gap-6">
                                       <Input
                                         type="time"
                                         label={t("Common/Stop")}
@@ -1053,7 +983,7 @@ const ShiftModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="mb-8 flex justify-between gap-4">
+              <div className="mb-8 flex justify-between gap-6">
                 <div className="flex items-center gap-2 truncate">
                   <button
                     type="button"

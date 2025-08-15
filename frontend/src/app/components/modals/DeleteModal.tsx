@@ -17,6 +17,7 @@ type Props = {
   confirmOnDelete?: boolean;
   confirmDeleteMessage?: string | ReactNode;
   nestedModal?: boolean;
+  customDeleteMessage?: string | ReactNode;
 };
 
 const DeleteModal = (props: Props) => {
@@ -57,7 +58,11 @@ const DeleteModal = (props: Props) => {
           smallModal
         >
           <ModalBase.Content>
-            <p>{t("DeleteModal/Message")}</p>
+            <p>
+              {props.customDeleteMessage
+                ? props.customDeleteMessage
+                : t("DeleteModal/Message")}
+            </p>
           </ModalBase.Content>
 
           <ModalBase.Footer>

@@ -41,4 +41,5 @@ export const shiftConstraints = {
 // --- ShiftTeamModal ---
 export const shiftTeamConstraints = {
   name: { maxLength: 32 },
+  colorHex: { pattern: /^#([0-9A-Fa-f]{6})$/ },
 };

@@ -22,5 +22,8 @@
 
   "UnitColumn/a data type": "a data type",
 
-  "Report/a start time": "a start time"
+  "Report/a start time": "a start time",
+
+  "ShiftTeam/a color": "a color",
+  "ShiftTeam/Color format": "Color format"
 }

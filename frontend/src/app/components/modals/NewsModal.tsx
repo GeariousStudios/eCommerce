@@ -313,96 +313,101 @@ const NewsModal = (props: Props) => {
       )}
 
       {props.isOpen && (
-        <ModalBase
-          ref={modalRef}
-          isOpen={props.isOpen}
-          onClose={() => props.onClose()}
-          icon={props.newsId ? PencilSquareIcon : PlusIcon}
-          label={
-            props.newsId
-              ? t("Common/Edit") + " " + t("NewsModal/news item")
-              : t("Common/Add") + " " + t("NewsModal/news item")
+        <form
+          ref={formRef}
+          onSubmit={(e) =>
+            props.newsId ? updateNews(e, props.newsId) : addNews(e)
           }
-          confirmOnClose
-          isDirty={isDirty}
         >
-          <form
-            ref={formRef}
-            className="relative flex flex-col gap-8"
-            onSubmit={(e) =>
-              props.newsId ? updateNews(e, props.newsId) : addNews(e)
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => props.onClose()}
+            icon={props.newsId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.newsId
+                ? t("Common/Edit") + " " + t("NewsModal/news item")
+                : t("Common/Add") + " " + t("NewsModal/news item")
             }
+            confirmOnClose
+            isDirty={isDirty}
           >
-            <Input
-              id="date"
-              type="date"
-              label={t("Common/Date")}
-              value={date}
-              onChange={(val) => setDate(String(val))}
-              onModal
-              required
-            />
+            <ModalBase.Content>
+              <div className="grid grid-cols-1 gap-6 mt-2 mb-8">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <Input
+                    id="date"
+                    type="date"
+                    label={t("Common/Date")}
+                    value={date}
+                    onChange={(val) => setDate(String(val))}
+                    onModal
+                    required
+                  />
 
-            <SingleDropdown
-              label={t("NewsModal/News type")}
-              value={typeId}
-              onChange={setTypeId}
-              options={[
-                ...(newsTypes.some((t) => t.id === typeId) || !typeId
-                  ? []
-                  : [
-                      {
-                        value: typeId,
-                        label: typeName || t("NewsModal/Unknown type"),
-                      },
-                    ]),
-                ...newsTypes.map((t) => ({
-                  label: t.name,
-                  value: t.id,
-                })),
-              ]}
-              onModal
-              required
-            />
+                  <SingleDropdown
+                    label={t("NewsModal/News type")}
+                    value={typeId}
+                    onChange={setTypeId}
+                    options={[
+                      ...(newsTypes.some((t) => t.id === typeId) || !typeId
+                        ? []
+                        : [
+                            {
+                              value: typeId,
+                              label: typeName || t("NewsModal/Unknown type"),
+                            },
+                          ]),
+                      ...newsTypes.map((t) => ({
+                        label: t.name,
+                        value: t.id,
+                      })),
+                    ]}
+                    onModal
+                    required
+                  />
+                </div>
 
-            <Input
-              id="headline"
-              label={t("NewsModal/Headline")}
-              value={headline}
-              onChange={(val) => setHeadline(String(val))}
-              onModal
-              required
-            />
+                <Input
+                  id="headline"
+                  label={t("NewsModal/Headline")}
+                  value={headline}
+                  onChange={(val) => setHeadline(String(val))}
+                  onModal
+                  required
+                />
 
-            <RichTextEditor
-              ref={editorRef}
-              value={content}
-              name="content"
-              onReady={() => {
-                setIsEditorReady(true);
-              }}
-              onChange={(val) => setContent(val)}
-              required
-            />
+                <RichTextEditor
+                  ref={editorRef}
+                  value={content}
+                  name="content"
+                  onReady={() => {
+                    setIsEditorReady(true);
+                  }}
+                  onChange={(val) => setContent(val)}
+                  required
+                />
+              </div>
+            </ModalBase.Content>
 
-            <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+            <ModalBase.Footer>
               <button
                 type="button"
                 onClick={handleSaveClick}
-                className={`${buttonPrimaryClass} w-full grow-2 sm:w-auto`}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
               >
                 {props.newsId ? t("Modal/Update") : t("Common/Add")}
               </button>
               <button
                 type="button"
                 onClick={() => modalRef.current?.requestClose()}
-                className={`${buttonSecondaryClass} w-full grow sm:w-auto`}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
               >
                 {t("Modal/Abort")}
               </button>
-            </div>
-          </form>
-        </ModalBase>
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

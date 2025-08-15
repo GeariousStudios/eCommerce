@@ -45,6 +45,8 @@
   "Unit/ShiftNotLinked": "Shift is not linked to the unit",
   "Unit/CannotRemoveActiveShift": "Cannot remove an active shift from the unit",
   "Unit/InvalidDate": "Invalid date",
+  "Unit/ShiftChangeAlreadyExists": "Staffing type already exists at the specified time",
+  "Unit/SameShift": "Staffing type is already active at the specified time",
 
   "UnitColumn/NotFound": "Column could not be found in the database",
   "UnitColumn/InUse": "Cannot delete a column that is in use",

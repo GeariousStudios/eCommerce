@@ -33,9 +33,11 @@ const ShiftTeamModal = (props: Props) => {
   // --- States ---
   const [name, setName] = useState("");
   const [isHidden, setIsHidden] = useState(false);
+  const [colorHex, setColorHex] = useState("#e0e0e0");
 
   const [originalName, setOriginalName] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
+  const [originalColorHex, setOriginalColorHex] = useState("#e0e0e0");
   const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
@@ -56,6 +58,9 @@ const ShiftTeamModal = (props: Props) => {
 
       setIsHidden(false);
       setOriginalIsHidden(false);
+
+      setColorHex("#e0e0e0");
+      setOriginalColorHex("#e0e0e0");
     }
   }, [props.isOpen, props.itemId]);
 
@@ -75,6 +80,7 @@ const ShiftTeamModal = (props: Props) => {
         body: JSON.stringify({
           name,
           isHidden,
+          colorHex,
         }),
       });
 
@@ -158,6 +164,9 @@ const ShiftTeamModal = (props: Props) => {
 
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
+
+    setColorHex(result.colorHex ?? "#e0e0e0");
+    setOriginalColorHex(result.colorHex ?? "#e0e0e0");
   };
 
   // --- Update shift team ---
@@ -177,6 +186,7 @@ const ShiftTeamModal = (props: Props) => {
           body: JSON.stringify({
             name,
             isHidden,
+            colorHex,
           }),
         },
       );
@@ -236,15 +246,25 @@ const ShiftTeamModal = (props: Props) => {
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
-      const dirty = name !== "" || isHidden !== false;
+      const dirty = name !== "" || isHidden !== false || colorHex !== "";
 
       setIsDirty(dirty);
       return;
     }
 
-    const dirty = name !== originalName || isHidden !== originalIsHidden;
+    const dirty =
+      name !== originalName ||
+      isHidden !== originalIsHidden ||
+      colorHex !== originalColorHex;
     setIsDirty(dirty);
-  }, [name, isHidden, originalName, originalIsHidden]);
+  }, [
+    name,
+    isHidden,
+    colorHex,
+    originalName,
+    originalIsHidden,
+    originalColorHex,
+  ]);
 
   return (
     <>
@@ -277,17 +297,31 @@ const ShiftTeamModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="xs:gap-4 xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
-                <Input
-                  label={t("Common/Name")}
-                  value={name}
-                  onChange={(val) => {
-                    setName(String(val));
-                  }}
-                  onModal
-                  required
-                  {...shiftTeamConstraints.name}
-                />
+              <div className="mb-8 grid grid-cols-6 gap-6">
+                <div className="xs:col-span-5 col-span-6">
+                  <Input
+                    label={t("Common/Name")}
+                    value={name}
+                    onChange={(val) => {
+                      setName(String(val));
+                    }}
+                    onModal
+                    required
+                    {...shiftTeamConstraints.name}
+                  />
+                </div>
+
+                <div className="xs:col-span-1 col-span-6">
+                  <Input
+                    label={t("Common/Color")}
+                    type="color"
+                    value={colorHex}
+                    onChange={(val) => setColorHex(String(val))}
+                    required
+                    pattern="^#([0-9A-Fa-f]{6})$"
+                    onModal
+                  />
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -298,7 +332,7 @@ const ShiftTeamModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="xs:gap-4 xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
+              <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
                 <div className="flex items-center gap-2 truncate">
                   <button
                     type="button"

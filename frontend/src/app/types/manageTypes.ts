@@ -172,6 +172,8 @@ export type ShiftTeamItem = {
     name: string;
   }[];
   isHidden?: boolean;
+  colorHex: string;
+  textColorHex: string;
 
   creationDate: string;
   updateDate: string;

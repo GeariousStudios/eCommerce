@@ -505,7 +505,7 @@ const UnitModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="xs:gap-4 xs:grid-cols-2 grid grid-cols-1 gap-6">
+              <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
                 <Input
                   label={t("Common/Name")}
                   value={name}

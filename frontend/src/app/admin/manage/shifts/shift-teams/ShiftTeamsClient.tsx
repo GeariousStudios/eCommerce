@@ -145,9 +145,15 @@ const ShiftTeamsClient = (props: Props) => {
       getValue: (item: ShiftTeamItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
           <div className="flex flex-col">
-            <span className="flex items-center justify-between text-2xl font-bold">
+            <div className="flex items-center gap-4 text-2xl font-bold">
+              <span
+                className="h-8 min-h-8 w-8 min-w-8 rounded-full"
+                style={{
+                  backgroundColor: item.colorHex,
+                }}
+              />
               <span className="flex items-center">{item.name}</span>
-            </span>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
@@ -212,7 +218,17 @@ const ShiftTeamsClient = (props: Props) => {
       sortingItem: "name",
       labelAsc: t("Common/name") + " Ö-A",
       labelDesc: t("Common/name") + " A-Ö",
-      getValue: (item: ShiftTeamItem) => item.name,
+      getValue: (item: ShiftTeamItem) => (
+        <div className="flex gap-4 items-center">
+          <span
+            className="h-4 min-h-4 w-4 min-w-4 rounded-full"
+            style={{
+              backgroundColor: item.colorHex,
+            }}
+          />
+          {item.name}
+        </div>
+      ),
       responsivePriority: 0,
     },
     {

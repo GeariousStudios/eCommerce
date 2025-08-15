@@ -133,6 +133,8 @@ namespace backend.Controllers
                     Id = st.Id,
                     Name = st.Name,
                     IsHidden = st.IsHidden,
+                    ColorHex = st.ColorHex,
+                    TextColorHex = ColorHelper.GetReadableTextColor(st.ColorHex),
                     Shifts = st
                         .ShiftToShiftTeams.OrderBy(sst => sst.Order)
                         .Select(sst => new ShiftDto
@@ -174,6 +176,8 @@ namespace backend.Controllers
                 Id = shiftTeam.Id,
                 Name = shiftTeam.Name,
                 IsHidden = shiftTeam.IsHidden,
+                ColorHex = shiftTeam.ColorHex,
+                TextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.ColorHex),
                 Shifts = shiftTeam
                     .ShiftToShiftTeams.OrderBy(x => x.Order)
                     .Select(x => new ShiftDto
@@ -257,6 +261,7 @@ namespace backend.Controllers
             {
                 Name = dto.Name,
                 IsHidden = dto.IsHidden,
+                ColorHex = dto.ColorHex,
 
                 // Meta data.
                 CreationDate = now,
@@ -274,6 +279,8 @@ namespace backend.Controllers
                 Id = shiftTeam.Id,
                 Name = shiftTeam.Name,
                 IsHidden = shiftTeam.IsHidden,
+                ColorHex = shiftTeam.ColorHex,
+                TextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.ColorHex),
 
                 // Meta data.
                 CreationDate = shiftTeam.CreationDate,
@@ -358,6 +365,7 @@ namespace backend.Controllers
 
             shiftTeam.Name = dto.Name;
             shiftTeam.IsHidden = dto.IsHidden;
+            shiftTeam.ColorHex = dto.ColorHex;
 
             // Meta data.
             shiftTeam.UpdateDate = now;
@@ -370,6 +378,8 @@ namespace backend.Controllers
                 Id = shiftTeam.Id,
                 Name = shiftTeam.Name,
                 IsHidden = shiftTeam.IsHidden,
+                ColorHex = shiftTeam.ColorHex,
+                TextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.ColorHex),
 
                 // Meta data.
                 UpdateDate = shiftTeam.UpdateDate,

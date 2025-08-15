@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  buttonDeletePrimaryClass,
   buttonPrimaryClass,
   buttonSecondaryClass,
   iconButtonPrimaryClass,
@@ -23,21 +24,8 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/20/solid";
 import React from "react";
-import {
-  DocumentTextIcon as OutlineDocumentTextIcon,
-  ExclamationTriangleIcon as OutlineExclamationTriangleIcon,
-  PencilSquareIcon as OutlinePencilSquareIcon,
-  TrashIcon as OutlineTrashIcon,
-  PlusIcon as OutlinePlusIcon,
-  ArrowPathIcon,
-} from "@heroicons/react/24/outline";
-import {
-  DocumentTextIcon as SolidDocumentTextIcon,
-  ExclamationTriangleIcon as SolidExclamationTriangleIcon,
-  PencilSquareIcon as SolidPencilSquareIcon,
-  TrashIcon as SolidTrashIcon,
-  PlusIcon as SolidPlusIcon,
-} from "@heroicons/react/24/solid";
+import * as Outline from "@heroicons/react/24/outline";
+import * as Solid from "@heroicons/react/24/solid";
 import HoverIcon from "@/app/components/common/HoverIcon";
 import Input from "@/app/components/common/Input";
 import ReportModal from "@/app/components/modals/report/ReportModal";
@@ -48,7 +36,9 @@ import {
 } from "@/app/helpers/timeUtils";
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { useTranslations } from "next-intl";
-import MenuDropdown from "@/app/components/common/MenuDropdown";
+import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
+import MenuDropdownAnchor from "@/app/components/common/MenuDropdown/MenuDropdownAnchor";
+import { badgeClass } from "@/app/components/manage/ManageClasses";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -66,9 +56,12 @@ type Shift = {
 
 type ShiftTeamSpan = {
   id: number;
+  name: string;
   label: string;
   start: string;
   end: string;
+  colorHex: string;
+  textColorHex: string;
 };
 
 type ShiftChange = {
@@ -119,20 +112,27 @@ const UnitClient = (props: Props) => {
 
   // --- Refs ---
   const shiftsRef = useRef<HTMLButtonElement | null>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
 
   // --- States: Shift ---
   const [shiftsOpen, setShiftsOpen] = useState(false);
   const [shiftNames, setShiftNames] = useState<Shift[]>([]);
+  const [shiftOptions, setShiftOptions] = useState<Shift[]>([]);
+  const [currentActiveShiftId, setCurrentActiveShiftId] = useState<
+    number | null
+  >(null);
   const [shiftVisibility, setShiftVisibility] = useState<
     Record<number, boolean>
   >({});
-  const shifts = shiftNames.map((s) => ({
+  const dropdownShifts = shiftOptions.map((s) => ({
     id: s.id,
     label: s.systemKey ? t(`Shifts/${s.systemKey}`) : s.name,
-    show: !!shiftVisibility[s.id],
   }));
   const [shiftTeamSpans, setShiftTeamSpans] = useState<ShiftTeamSpan[]>([]);
   const [shiftChanges, setShiftChanges] = useState<ShiftChange[]>([]);
+  const [openChangeMenuId, setOpenChangeMenuId] = useState<number | null>(null);
+  const [editChangeDate, setEditChangeDate] = useState<string>("");
+  const [editChangeTime, setEditChangeTime] = useState<string>("");
 
   // --- States: Unit ---
   const [unitName, setUnitName] = useState("");
@@ -141,6 +141,7 @@ const UnitClient = (props: Props) => {
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
   const [activeShiftId, setActiveShiftId] = useState<number | null>(null);
   const [pendingShiftId, setPendingShiftId] = useState<number | null>(null);
+  const [baseShiftId, setBaseShiftId] = useState<number | null>(null);
 
   // --- States: UnitGroup ---
   const [unitGroupName, setUnitGroupName] = useState("");
@@ -191,11 +192,13 @@ const UnitClient = (props: Props) => {
   const [pendingShiftDate, setPendingShiftDate] =
     useState<string>(selectedDate);
   const [pendingShiftTime, setPendingShiftTime] = useState<string>("");
+  const [nowTs, setNowTs] = useState<number>(() => Date.now());
 
   const isBootstrapping = isLoadingUnits || isLoadingColumns || isLoadingShifts;
   const canShowLock = !isBootstrapping && isHidden && !isInvalid;
   const canShowInvalid = !isBootstrapping && isInvalid && !isHidden;
-  const isReady = !isBootstrapping && !isHidden && !isInvalid;
+  // const isReady = !isBootstrapping && !isHidden && !isInvalid;
+  const isReady = !isHidden && !isInvalid;
 
   // --- HELPERS ---
   const overlaps = (
@@ -245,7 +248,10 @@ const UnitClient = (props: Props) => {
     return s.name;
   };
 
-  const getTeamLabelForHour = (shiftId: number | null, hour: number) => {
+  const getTeamSpanForHour = (
+    shiftId: number | null,
+    hour: number,
+  ): ShiftTeamSpan | undefined => {
     if (shiftId == null) {
       return undefined;
     }
@@ -254,7 +260,8 @@ const UnitClient = (props: Props) => {
     const spans = s?.teamSpans ?? [];
     const startM = hour * 60;
     const endM = (hour + 1) * 60;
-    const hit = spans.find((ts) => {
+
+    return spans.find((ts) => {
       const st = toMinutes(ts.start);
       const en = toMinutes(ts.end);
       if (Number.isNaN(st) || Number.isNaN(en)) {
@@ -263,23 +270,45 @@ const UnitClient = (props: Props) => {
 
       return overlaps(startM, endM, st, en);
     });
-    return hit?.label;
   };
 
-  const resolveShiftIdForHour = (hour: number): number | null => {
-    let sid = shiftChanges.length
-      ? (shiftChanges[0].oldShiftId ?? activeShiftId)
-      : activeShiftId;
+  const getSortedChanges = () =>
+    [...shiftChanges].sort(
+      (a, b) => a.hour - b.hour || (a.minute ?? 0) - (b.minute ?? 0),
+    );
 
-    for (const c of shiftChanges) {
+  const resolveShiftIdForTime = (
+    hour: number,
+    minute: number = 0,
+  ): number | null => {
+    const changes = getSortedChanges();
+    let sid = baseShiftId ?? activeShiftId ?? null;
+
+    for (const c of changes) {
       const m = c.minute ?? 0;
-
-      if (c.hour < hour || (c.hour === hour && m === 0)) {
+      if (c.hour < hour || (c.hour === hour && m <= minute)) {
         sid = c.newShiftId;
       }
     }
-    return sid ?? null;
+    return sid;
   };
+
+  const toHm = (hour: number, minute?: number) =>
+    `${String(hour).padStart(2, "0")}:${String(minute ?? 0).padStart(2, "0")}`;
+
+  const isSameDate = (yyyyMmDd: string, d: Date) => {
+    const a = new Date(yyyyMmDd + "T00:00:00");
+    return (
+      a.getFullYear() === d.getFullYear() &&
+      a.getMonth() === d.getMonth() &&
+      a.getDate() === d.getDate()
+    );
+  };
+
+  const now = new Date(nowTs);
+  const isToday = isSameDate(selectedDate, now);
+  const currentHour = isToday ? now.getHours() : 0;
+  const currentMinute = isToday ? now.getMinutes() : 0;
 
   // --- BACKEND ---
   // --- Fetch unit ---
@@ -328,6 +357,7 @@ const UnitClient = (props: Props) => {
       setIsHidden(result.isHidden ?? false);
       setCategoryIds(result.categoryIds ?? []);
       setActiveShiftId(result.activeShiftId ?? null);
+      setCurrentActiveShiftId(result.activeShiftId ?? null);
       setPendingShiftId(result.activeShiftId ?? null);
     };
 
@@ -445,69 +475,28 @@ const UnitClient = (props: Props) => {
 
     const fillShiftData = (result: any) => {
       const list = Array.isArray(result) ? result : [];
-      setShiftNames(
-        list.map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          systemKey: s.systemKey ?? null,
-          teamSpans: (s.shiftTeamSpans ?? []).map((ts: any) => ({
-            id: ts.teamId,
-            label: ts.label,
-            start: ts.start,
-            end: ts.end,
-          })),
+      const mapped = list.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        systemKey: s.systemKey ?? null,
+        teamSpans: (s.shiftTeamSpans ?? []).map((ts: any) => ({
+          id: ts.teamId,
+          name: ts.name,
+          label: ts.label,
+          start: ts.start,
+          end: ts.end,
+          colorHex: ts.colorHex,
+          textColorHex: ts.textColorHex,
         })),
-      );
+      }));
+      setShiftNames(mapped);
+      if (mapped.length > 0) {
+        setShiftOptions(mapped);
+      }
     };
 
     fetchShifts();
   }, [unitId, isUnitValid, selectedDate]);
-
-  // --- Fetch active shift ---
-  useEffect(() => {
-    if (!activeShiftId) {
-      setShiftTeamSpans([]);
-      return;
-    }
-
-    const fetchActiveShift = async () => {
-      try {
-        const response = await fetch(`${apiUrl}/shift/fetch/${activeShiftId}`, {
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
-          },
-        });
-        const result = await response.json();
-
-        if (!response.ok) {
-          notify("error", result?.message ?? t("Modal/Unknown error"));
-          setShiftTeamSpans([]);
-          return;
-        }
-
-        const spans: ShiftTeamSpan[] = (result?.shiftTeams ?? [])
-          .map((st: any) => {
-            const id = st.id as number;
-            const display = (result?.shiftTeamDisplayNames?.[id] ?? "").trim();
-            const label = display || st.name;
-            const start = result?.shiftTeamStartTimes?.[id];
-            const end = result?.shiftTeamEndTimes?.[id];
-            if (!start || !end) {
-              return null;
-            }
-            return { id, label, start, end };
-          })
-          .filter(Boolean);
-
-        setShiftTeamSpans(spans);
-      } catch {
-        notify("error", t("Modal/Unknown error"));
-      }
-    };
-
-    fetchActiveShift();
-  }, [activeShiftId]);
 
   // --- Fetch shift changes ---
   useEffect(() => {
@@ -528,17 +517,24 @@ const UnitClient = (props: Props) => {
         },
       },
     );
-    if (response.ok) {
-      setShiftChanges(await response.json());
+
+    if (!response.ok) {
+      return [];
     }
+
+    const data = await response.json();
+    setBaseShiftId(data.baseShiftId ?? null);
+    setShiftChanges(Array.isArray(data?.changes) ? data.changes : []);
+    return Array.isArray(data?.changes) ? (data.changes as ShiftChange[]) : [];
   };
 
-  // --- Update shift change time ---
-  const patchShiftChangeTime = async (
+  // --- Update shift change ---
+  const updateShiftChange = async (
     changeId: number,
     date: string,
     hour: number,
     minute: number,
+    newShiftId?: number,
   ) => {
     try {
       const response = await fetch(
@@ -550,7 +546,7 @@ const UnitClient = (props: Props) => {
             "X-User-Language": localStorage.getItem("language") || "sv",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ date, hour, minute }),
+          body: JSON.stringify({ date, hour, minute, newShiftId }),
         },
       );
 
@@ -566,27 +562,44 @@ const UnitClient = (props: Props) => {
         return;
       }
 
-      await fetchShiftChanges(selectedDate);
-      setRefetchData(true);
+      notify("success", t("Unit/Shift change") + t("Modal/updated"));
+      await fetchShiftChanges(date);
+      await refreshUnitActive();
     } catch {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  const handleEditShiftChange = async (change: ShiftChange) => {
-    const nt = prompt(
-      "HH:mm",
-      `${String(change.hour).padStart(2, "0")}:${String(change.minute ?? 0).padStart(2, "0")}`,
-    );
-    if (!nt) {
-      return;
+  const handleEditShiftChange = async (
+    change: ShiftChange,
+    opts?: { date?: string; time?: string; usePendingShift?: boolean },
+  ) => {
+    let date = opts?.date ?? selectedDate;
+    let time = opts?.time;
+
+    if (!time) {
+      const nt = prompt(
+        "HH:mm",
+        `${String(change.hour).padStart(2, "0")}:${String(change.minute ?? 0).padStart(2, "0")}`,
+      );
+      if (!nt) return;
+      time = nt;
     }
-    const [hh, mm] = nt.split(":").map(Number);
+
+    const [hhStr, mmStr = "0"] = time.split(":");
+    const hh = Number(hhStr);
+    const mm = Number(mmStr);
     if (!Number.isFinite(hh) || !Number.isFinite(mm)) {
       notify("error", t("Modal/Unknown error"));
       return;
     }
-    await patchShiftChangeTime(change.id, selectedDate, hh, mm);
+
+    const newShiftId =
+      opts?.usePendingShift && pendingShiftId !== change.newShiftId
+        ? (pendingShiftId ?? undefined)
+        : undefined;
+
+    await updateShiftChange(change.id, date, hh, mm, newShiftId);
   };
 
   // --- Delete shift change ---
@@ -618,12 +631,50 @@ const UnitClient = (props: Props) => {
 
       setShiftChanges((prev) => prev.filter((c) => c.id !== Number(id)));
       await fetchShiftChanges(selectedDate);
-      setRefetchData(true);
       notify("success", t("Unit/Shift change") + t("Manage/deleted1"));
     } catch {
       notify("error", t("Modal/Unknown error"));
     }
   };
+
+  useEffect(() => {
+    const isToday = isSameDate(selectedDate, new Date());
+    if (!isToday) return;
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const tick = () => {
+      setNowTs(Date.now());
+      const msToNextMinute = 60000 - (Date.now() % 60000) + 25;
+      timer = setTimeout(tick, msToNextMinute);
+    };
+
+    tick();
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (!shiftsOpen) {
+      return;
+    }
+    if (pendingShiftTime) {
+      return;
+    }
+    if (!isToday) {
+      return;
+    }
+    setPendingShiftId(resolveShiftIdForTime(currentHour, currentMinute));
+  }, [
+    nowTs,
+    shiftsOpen,
+    pendingShiftTime,
+    isToday,
+    currentHour,
+    currentMinute,
+  ]);
 
   // --- Delete report ---
   const deleteReport = async (id: string) => {
@@ -873,11 +924,29 @@ const UnitClient = (props: Props) => {
             ? t(key)
             : (s?.name ?? "")
           : (s?.name ?? "");
-        notify("info", `${t("Unit/Shift changed")} ${label}`);
-        setActiveShiftId(pendingShiftId);
+
+        const isNowOrPast = (() => {
+          if (!pendingShiftDate || !pendingShiftTime) {
+            return true;
+          }
+
+          const [hh, mm = "0"] = String(pendingShiftTime).split(":");
+          const local = new Date(
+            `${pendingShiftDate}T${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}:00`,
+          );
+          return local <= new Date();
+        })();
+
+        if (isNowOrPast) {
+          setActiveShiftId(pendingShiftId);
+          setCurrentActiveShiftId(pendingShiftId);
+        }
+
         setShiftsOpen(false);
         await fetchShiftChanges(selectedDate);
-        setRefetchData(true);
+        await refreshUnitActive();
+
+        notify("info", `${t("Unit/Shift changed")} ${label}`);
         return;
       }
 
@@ -894,6 +963,19 @@ const UnitClient = (props: Props) => {
     }
   };
 
+  const refreshUnitActive = async () => {
+    const res = await fetch(`${apiUrl}/unit/fetch/${unitId}`, {
+      headers: {
+        "X-User-Language": localStorage.getItem("language") || "sv",
+        "Content-Type": "application/json",
+      },
+    });
+    if (!res.ok) return;
+    const u = await res.json();
+    setActiveShiftId(u.activeShiftId ?? null);
+    setCurrentActiveShiftId(u.activeShiftId ?? null);
+  };
+
   useEffect(() => {
     if (shiftNames.length && pendingShiftId != null) {
       setShiftVisibility(
@@ -904,6 +986,12 @@ const UnitClient = (props: Props) => {
       );
     }
   }, [shiftNames, pendingShiftId]);
+
+  useEffect(() => {
+    if (currentActiveShiftId != null && !shiftsOpen) {
+      setPendingShiftId(currentActiveShiftId);
+    }
+  }, [currentActiveShiftId, shiftsOpen]);
 
   // if (isBootstrapping) {
   //   return <Message icon="loading" content="content" fullscreen />;
@@ -946,7 +1034,9 @@ const UnitClient = (props: Props) => {
           isOpen={isDeleteModalOpen}
           onClose={() => toggleDeleteItemModal()}
           onConfirm={async () => {
-            if (!deletingItemId || !deleteType) return;
+            if (!deletingItemId || !deleteType) {
+              return;
+            }
 
             if (deleteType === "report") {
               await deleteReport(deletingItemId);
@@ -962,6 +1052,11 @@ const UnitClient = (props: Props) => {
 
             toggleDeleteItemModal();
           }}
+          customDeleteMessage={
+            deleteType === "shiftChange"
+              ? t("Unit/Remove post message")
+              : undefined
+          }
         />
 
         {/* --- CONTENT --- */}
@@ -989,8 +1084,8 @@ const UnitClient = (props: Props) => {
                 >
                   <div className="flex items-center justify-center gap-2 truncate">
                     <HoverIcon
-                      outline={OutlineDocumentTextIcon}
-                      solid={SolidDocumentTextIcon}
+                      outline={Outline.DocumentTextIcon}
+                      solid={Solid.DocumentTextIcon}
                       className="h-6 min-h-6 w-6 min-w-6"
                     />
                     <span className="hidden lg:block">
@@ -1018,8 +1113,8 @@ const UnitClient = (props: Props) => {
                 >
                   <div className="flex items-center justify-center gap-2 truncate">
                     <HoverIcon
-                      outline={OutlineExclamationTriangleIcon}
-                      solid={SolidExclamationTriangleIcon}
+                      outline={Outline.ExclamationTriangleIcon}
+                      solid={Solid.ExclamationTriangleIcon}
                       className="h-6 min-h-6 w-6 min-w-6"
                     />
                     <span className="hidden lg:block">
@@ -1043,7 +1138,7 @@ const UnitClient = (props: Props) => {
                   aria-label={t("Unit/Update page")}
                   disabled={isManualRefresh && refetchData}
                 >
-                  <ArrowPathIcon
+                  <Outline.ArrowPathIcon
                     className={`${refetchData && isManualRefresh ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} min-h-full min-w-full`}
                   />
                 </button>
@@ -1075,107 +1170,157 @@ const UnitClient = (props: Props) => {
             </div>
           </div>
 
-          <div className="relative ml-auto flex items-center gap-4">
-            <CustomTooltip
-              content={`${!props.isReporter ? t("Common/No access") : ""}`}
-            >
-              <button
-                ref={shiftsRef}
-                className={`${roundedButtonClass} ${!props.isReporter ? "!cursor-not-allowed opacity-50" : ""} group w-auto gap-2 px-4`}
-                onClick={() => {
-                  setPendingShiftId(activeShiftId);
-                  setPendingShiftDate(selectedDate);
-                  setPendingShiftTime("");
-                  setShiftsOpen((prev) => !prev);
-                }}
-                aria-haspopup="menu"
-                aria-expanded={shiftsOpen}
-                disabled={!props.isReporter}
-              >
-                <span
-                  className={`${shiftsClass} ${shiftsOpen ? "text-[var(--accent-color)]" : ""}`}
-                >
-                  {activeShiftId != null
-                    ? (() => {
-                        const shift = shiftNames.find(
-                          (s) => s.id === activeShiftId,
-                        );
-                        if (!shift) return "";
+          <div className="flex justify-between gap-4">
+            <div className="relative ml-auto flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const sid = resolveShiftIdForTime(currentHour, currentMinute);
+                  const realHour = new Date().getHours();
+                  const span = getTeamSpanForHour(sid, realHour);
 
-                        if (shift.systemKey) {
-                          const key = `Shifts/${shift.systemKey}`;
-                          const tr = t(key);
-                          return tr !== key ? tr : shift.name;
-                        }
+                  if (!span) {
+                    // const shift = shiftNames.find((s) => s.id === sid);
+                    // return (
+                    //   <span className="text-[var(--text-secondary)] italic">
+                    //     {shift
+                    //       ? shift.systemKey
+                    //         ? t(`Shifts/${shift.systemKey}`)
+                    //         : shift.name
+                    //       : "-"}
+                    //   </span>
+                    // );
+                    return null;
+                  }
 
-                        return shift.name;
-                      })()
-                    : ""}
-                </span>
-                <ChevronDownIcon
-                  className={`${shiftsIconClass} ${shiftsOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
-                />
-              </button>
-            </CustomTooltip>
-
-            <MenuDropdown
-              triggerRef={shiftsRef}
-              isOpen={shiftsOpen}
-              onClose={() => setShiftsOpen(false)}
-            >
-              <div className="flex w-full flex-col gap-4">
-                {shifts.map((item) => (
-                  <div
-                    key={item.id}
-                    onClick={() => setPendingShiftId(item.id)}
-                    role="menuitemradio"
-                    aria-checked={pendingShiftId === item.id}
-                    className="group flex cursor-pointer items-center justify-between gap-4"
-                  >
-                    <Input
-                      type="radio"
-                      name="shift-selection"
-                      checked={pendingShiftId === item.id}
-                      label={item.label}
-                      readOnly
-                    />
-                  </div>
-                ))}
-
-                <div className="mt-4 flex flex-col gap-6">
-                  <Input
-                    type="date"
-                    value={pendingShiftDate}
-                    onChange={(v) => setPendingShiftDate(String(v))}
-                    label={t("Common/Date")}
-                    onModal
-                    required
-                  />
-                  <Input
-                    type="time"
-                    value={pendingShiftTime}
-                    onChange={(v) => setPendingShiftTime(String(v))}
-                    label={t("Common/Time")}
-                    onModal
-                    required
-                  />
-                </div>
+                  // return (
+                  //   <span
+                  //     className={`${badgeClass} min-h-[40px] min-w-[40px] !text-base`}
+                  //     style={{
+                  //       backgroundColor: span.colorHex,
+                  //       color: span.textColorHex,
+                  //     }}
+                  //   >
+                  //     {span.name}
+                  //   </span>
+                  // );
+                  return null;
+                })()}
               </div>
 
-              <button
-                className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
-                onClick={changeShift}
-                disabled={
-                  (activeShiftId != null &&
-                    pendingShiftId != null &&
-                    pendingShiftId === activeShiftId) ||
-                  !pendingShiftDate ||
-                  !pendingShiftTime
-                }
+              <CustomTooltip
+                content={`${!props.isReporter ? t("Common/No access") : ""}`}
               >
-                {t("Unit/Change to shift")}
-              </button>
-            </MenuDropdown>
+                <button
+                  ref={shiftsRef}
+                  className={`${roundedButtonClass} ${!props.isReporter ? "!cursor-not-allowed opacity-50" : ""} group w-auto gap-2 px-4`}
+                  onClick={async () => {
+                    setPendingShiftId(null);
+                    setPendingShiftId(currentActiveShiftId ?? null);
+                    setPendingShiftDate(selectedDate);
+                    setPendingShiftTime("");
+                    setShiftsOpen((prev) => !prev);
+                  }}
+                  aria-haspopup="menu"
+                  aria-expanded={shiftsOpen}
+                  disabled={!props.isReporter}
+                >
+                  <span
+                    className={`${shiftsClass} ${shiftsOpen ? "text-[var(--accent-color)]" : ""}`}
+                  >
+                    {(() => {
+                      const sid = currentActiveShiftId;
+
+                      if (sid == null) {
+                        return t("Unit/Change shift");
+                      }
+
+                      const shift = shiftNames.find((s) => s.id === sid);
+                      if (!shift) {
+                        return t("Unit/Change shift");
+                      }
+
+                      if (shift.systemKey) {
+                        const key = `Shifts/${shift.systemKey}`;
+                        const tr = t(key);
+                        // return tr !== key ? tr : shift.name;
+                        return t("Unit/Change shift");
+                      }
+
+                      // return shift.name;
+                      return t("Unit/Change shift");
+                    })()}
+                  </span>
+                  <ChevronDownIcon
+                    className={`${shiftsIconClass} ${shiftsOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
+                  />
+                </button>
+              </CustomTooltip>
+              <MenuDropdown
+                triggerRef={shiftsRef}
+                isOpen={shiftsOpen}
+                onClose={() => {
+                  setShiftsOpen(false);
+                  setPendingShiftId(null);
+                }}
+              >
+                <div className="flex w-full flex-col gap-4">
+                  {dropdownShifts.map((item) => {
+                    const effectivePendingId =
+                      pendingShiftId ?? currentActiveShiftId;
+
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => setPendingShiftId(item.id)}
+                        role="menuitemradio"
+                        aria-checked={pendingShiftId === item.id}
+                        className="group flex cursor-pointer items-center justify-between gap-4"
+                      >
+                        <Input
+                          type="radio"
+                          name={`shift-selection-${item.id}`}
+                          checked={effectivePendingId === item.id}
+                          label={item.label}
+                          readOnly
+                        />
+                      </div>
+                    );
+                  })}
+
+                  <div className="mt-4 flex flex-col gap-6">
+                    <Input
+                      type="date"
+                      value={pendingShiftDate}
+                      onChange={(v) => setPendingShiftDate(String(v))}
+                      label={t("Common/Date")}
+                      onModal
+                      required
+                    />
+                    <Input
+                      type="time"
+                      value={pendingShiftTime}
+                      onChange={(v) => setPendingShiftTime(String(v))}
+                      label={t("Common/Time")}
+                      onModal
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
+                  onClick={changeShift}
+                  disabled={
+                    !pendingShiftId ||
+                    !pendingShiftDate ||
+                    !pendingShiftTime ||
+                    !props.isReporter
+                  }
+                >
+                  {t("Unit/Change to shift")}
+                </button>
+              </MenuDropdown>
+            </div>
           </div>
 
           <div className="w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
@@ -1273,11 +1418,21 @@ const UnitClient = (props: Props) => {
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} whitespace-nowrap`}
                             >
                               {(() => {
-                                const sid = resolveShiftIdForHour(hour);
-                                if (sid == null) return "-";
-
-                                const teamTxt = getTeamLabelForHour(sid, hour);
-                                return teamTxt?.trim() ? teamTxt : "-";
+                                const sid = currentActiveShiftId;
+                                const span = getTeamSpanForHour(sid, hour);
+                                return span ? (
+                                  <span
+                                    className={`${badgeClass}`}
+                                    style={{
+                                      backgroundColor: span.colorHex,
+                                      color: span.textColorHex,
+                                    }}
+                                  >
+                                    {span.label}
+                                  </span>
+                                ) : (
+                                  "-"
+                                );
                               })()}
                             </td>
                             <td
@@ -1377,8 +1532,8 @@ const UnitClient = (props: Props) => {
                                         }
                                       >
                                         <HoverIcon
-                                          outline={OutlinePencilSquareIcon}
-                                          solid={SolidPencilSquareIcon}
+                                          outline={Outline.PencilSquareIcon}
+                                          solid={Solid.PencilSquareIcon}
                                           className="h-6 min-h-6 w-6 min-w-6"
                                         />
                                       </button>
@@ -1389,147 +1544,158 @@ const UnitClient = (props: Props) => {
                             })}
                           </tr>
 
-                          {changesThisHour.map((change, idx) => (
+                          {changesThisHour.map((change) => (
                             <tr
-                              key={`change-${hour}-${idx}`}
-                              className="bg-[var(--bg-grid-note)] text-[var(--text-main-light)]"
+                              key={`change-${hour}-${change.id}`}
+                              className="bg-[var(--bg-grid-note)]"
                             >
-                              <td />
-                              <td className={`${tdClassSpecial}`}>
-                                {String(change.hour).padStart(2, "0")}:
-                                {String(change.minute ?? 0).padStart(2, "0")}
+                              <td
+                                className={`${tdClassSpecial} sticky left-0 w-[52.5px] bg-[var(--bg-grid-note)]`}
+                              />
+                              <td
+                                className={`${tdClassSpecial} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-note)]`}
+                              >
+                                {toHm(change.hour, change.minute)}
                               </td>
                               <td colSpan={unitColumnNames.length + 4}>
-                                <div className="flex items-center justify-center">
+                                <div className="relative flex items-center justify-center">
                                   <div className="flex w-full items-center justify-center">
-                                    {t("Unit/Shift changed")}
-                                    &nbsp;{getShiftLabel(change.newShiftId)}
+                                    {t("Unit/Shift changed")}{" "}
+                                    {getShiftLabel(change.newShiftId)}
                                   </div>
-                                  {/* --- Edit --- */}
-                                  <div className="ml-auto flex items-center gap-2 px-4">
+                                  <CustomTooltip
+                                    content={`${!props.isReporter ? t("Common/No access") : ""}`}
+                                  >
                                     <button
-                                      type="button"
-                                      className={iconButtonPrimaryClass}
-                                      onClick={() => {
-                                        const nt = prompt(
-                                          "HH:mm",
-                                          `${String(change.hour).padStart(2, "0")}:${String(change.minute ?? 0).padStart(2, "0")}`,
-                                        );
-                                        if (!nt) return;
-                                        const [hh, mm] = nt
-                                          .split(":")
-                                          .map(Number);
-                                        fetch(
-                                          `${apiUrl}/unit/${unitId}/shift-change/${change.id}`,
-                                          {
-                                            method: "PATCH",
-                                            headers: {
-                                              "Content-Type":
-                                                "application/json",
-                                              "X-User-Language":
-                                                localStorage.getItem(
-                                                  "language",
-                                                ) || "sv",
-                                              Authorization: `Bearer ${token}`,
-                                            },
-                                            body: JSON.stringify({
-                                              date: selectedDate,
-                                              hour: hh,
-                                              minute: mm,
-                                            }),
-                                          },
-                                        ).then(() => {
-                                          fetchShiftChanges(selectedDate);
-                                          setRefetchData(true);
-                                        });
-                                      }}
-                                    >
-                                      <HoverIcon
-                                        outline={OutlinePencilSquareIcon}
-                                        solid={SolidPencilSquareIcon}
-                                        className="h-6 w-6"
-                                      />
-                                    </button>
-                                    {/* --- Delete --- */}
-                                    <button
-                                      type="button"
-                                      className={iconButtonPrimaryClass}
-                                      onClick={() => {
-                                        toggleDeleteItemModal(
-                                          String(change.id),
-                                          "shiftChange",
-                                        );
-                                      }}
-                                    >
-                                      <HoverIcon
-                                        outline={OutlineTrashIcon}
-                                        solid={SolidTrashIcon}
-                                        className="h-6 w-6"
-                                      />
-                                    </button>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                          {/* <div className="relative">
-                                    <button
-                                      type="button"
-                                      className={iconButtonPrimaryClass}
+                                      ref={menuTriggerRef}
+                                      className={`${iconButtonPrimaryClass} ${!props.isReporter ? "!cursor-not-allowed opacity-50" : ""} group mr-4 w-auto`}
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         menuTriggerRef.current =
                                           e.currentTarget as HTMLButtonElement;
-                                        setOpenChangeMenuId(change.id);
+                                        setEditChangeDate(selectedDate);
+                                        setEditChangeTime(
+                                          toHm(change.hour, change.minute),
+                                        );
+                                        setPendingShiftId(change.newShiftId);
+                                        setOpenChangeMenuId((prev) =>
+                                          prev === change.id ? null : change.id,
+                                        );
                                       }}
+                                      aria-haspopup="menu"
+                                      aria-expanded={shiftsOpen}
                                       disabled={!props.isReporter}
                                     >
                                       <HoverIcon
-                                        outline={OutlinePencilSquareIcon}
-                                        solid={SolidPencilSquareIcon}
-                                        className="h-6 w-6"
+                                        outline={Outline.PencilIcon}
+                                        solid={Solid.PencilIcon}
+                                        className="h-6 min-h-6 w-6 min-w-6 text-[var(--text-main)]"
+                                        active={openChangeMenuId === change.id}
                                       />
                                     </button>
+                                  </CustomTooltip>
 
-                                    <MenuDropdown
-                                      triggerRef={menuTriggerRef}
-                                      isOpen={openChangeMenuId === change.id}
-                                      onClose={() => setOpenChangeMenuId(null)}
-                                    >
-                                      <div className="flex w-full flex-col gap-2">
-                                        <button
-                                          className={`${buttonSecondaryClass} !min-h-[32px] w-full rounded-full`}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setOpenChangeMenuId(null);
-                                            handleEditShiftChange(change);
-                                          }}
-                                          disabled={!props.isReporter}
+                                  <MenuDropdownAnchor
+                                    triggerRef={menuTriggerRef}
+                                    isOpen={openChangeMenuId === change.id}
+                                    onClose={() => {
+                                      setOpenChangeMenuId(null);
+                                      setPendingShiftId(null);
+                                    }}
+                                    addSpacing={8}
+                                  >
+                                    <div className="flex w-full flex-col gap-4">
+                                      {dropdownShifts.map((item) => (
+                                        <div
+                                          key={item.id}
+                                          onClick={() =>
+                                            setPendingShiftId(item.id)
+                                          }
+                                          role="menuitemradio"
+                                          aria-checked={
+                                            pendingShiftId === item.id
+                                          }
+                                          className="group flex cursor-pointer items-center justify-between gap-4"
                                         >
-                                          {t("Unit/Edit shift change")}
-                                        </button>
-                                        <button
-                                          className={`${buttonSecondaryClass} !min-h-[32px] w-full rounded-full`}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setOpenChangeMenuId(null);
-                                            toggleDeleteItemModal(
-                                              String(change.id),
-                                              "shiftChange",
-                                            );
-                                          }}
-                                          disabled={!props.isReporter}
-                                        >
-                                          {t("Unit/Delete shift change")}
-                                        </button>
+                                          <Input
+                                            type="radio"
+                                            name={`shift-selection-${item.id}`}
+                                            checked={
+                                              (pendingShiftId ??
+                                                change.newShiftId) === item.id
+                                            }
+                                            label={item.label}
+                                            readOnly
+                                          />
+                                        </div>
+                                      ))}
+
+                                      <div className="mt-4 flex flex-col gap-6">
+                                        <Input
+                                          type="date"
+                                          value={editChangeDate}
+                                          onChange={(v) =>
+                                            setEditChangeDate(String(v))
+                                          }
+                                          label={t("Common/Date")}
+                                          onModal
+                                          required
+                                        />
+                                        <Input
+                                          type="time"
+                                          value={editChangeTime}
+                                          onChange={(v) =>
+                                            setEditChangeTime(String(v))
+                                          }
+                                          label={t("Common/Time")}
+                                          onModal
+                                          required
+                                        />
                                       </div>
-                                    </MenuDropdown>
-                                  </div>
+                                    </div>
 
+                                    <div className="grid grid-cols-1 gap-4">
+                                      <button
+                                        className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          await handleEditShiftChange(change, {
+                                            date: editChangeDate,
+                                            time: editChangeTime,
+                                            usePendingShift: true,
+                                          });
+                                          // setPendingShiftDate(editChangeDate);
+                                          // setPendingShiftTime(editChangeTime);
+                                          setOpenChangeMenuId(null);
+                                        }}
+                                        disabled={
+                                          !props.isReporter ||
+                                          !editChangeDate ||
+                                          !editChangeTime
+                                        }
+                                      >
+                                        {t("Unit/Update post")}
+                                      </button>
+                                      <button
+                                        className={`${buttonDeletePrimaryClass} !min-h-[32px] w-full rounded-full`}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setOpenChangeMenuId(null);
+                                          toggleDeleteItemModal(
+                                            String(change.id),
+                                            "shiftChange",
+                                          );
+                                        }}
+                                        disabled={!props.isReporter}
+                                      >
+                                        {t("Unit/Remove post")}
+                                      </button>{" "}
+                                    </div>
+                                  </MenuDropdownAnchor>
                                 </div>
                               </td>
                             </tr>
-                          ))} */}
+                          ))}
 
                           {isExpanded && (
                             <tr
@@ -1557,8 +1723,8 @@ const UnitClient = (props: Props) => {
                                       disabled={!props.isReporter}
                                     >
                                       <HoverIcon
-                                        outline={OutlinePlusIcon}
-                                        solid={SolidPlusIcon}
+                                        outline={Outline.PlusIcon}
+                                        solid={Solid.PlusIcon}
                                         className="h-6 min-h-6 w-6 min-w-6"
                                       />
                                     </button>
@@ -1650,10 +1816,10 @@ const UnitClient = (props: Props) => {
                                                   >
                                                     <HoverIcon
                                                       outline={
-                                                        OutlinePencilSquareIcon
+                                                        Outline.PencilSquareIcon
                                                       }
                                                       solid={
-                                                        SolidPencilSquareIcon
+                                                        Solid.PencilSquareIcon
                                                       }
                                                       className="h-6 min-h-6 w-6 min-w-6"
                                                     />
@@ -1677,8 +1843,10 @@ const UnitClient = (props: Props) => {
                                                     disabled={!props.isReporter}
                                                   >
                                                     <HoverIcon
-                                                      outline={OutlineTrashIcon}
-                                                      solid={SolidTrashIcon}
+                                                      outline={
+                                                        Outline.TrashIcon
+                                                      }
+                                                      solid={Solid.TrashIcon}
                                                       className="h-6 min-h-6 w-6 min-w-6"
                                                     />
                                                   </button>
@@ -1790,10 +1958,10 @@ const UnitClient = (props: Props) => {
                                                 >
                                                   <HoverIcon
                                                     outline={
-                                                      OutlinePencilSquareIcon
+                                                      Outline.PencilSquareIcon
                                                     }
                                                     solid={
-                                                      SolidPencilSquareIcon
+                                                      Solid.PencilSquareIcon
                                                     }
                                                     className="h-6 min-h-6 w-6 min-w-6"
                                                   />
@@ -1817,8 +1985,8 @@ const UnitClient = (props: Props) => {
                                                   disabled={!props.isReporter}
                                                 >
                                                   <HoverIcon
-                                                    outline={OutlineTrashIcon}
-                                                    solid={SolidTrashIcon}
+                                                    outline={Outline.TrashIcon}
+                                                    solid={Solid.TrashIcon}
                                                     className="h-6 min-h-6 w-6 min-w-6"
                                                   />
                                                 </button>

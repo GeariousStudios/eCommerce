@@ -131,7 +131,7 @@ const SingleDropdown = ({
 
         <label
           htmlFor={id}
-          className={`${value || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} "font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
+          className={`${value || isOpen ? `-top-4 font-semibold text-[var(--accent-color)] ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"}` : "top-[60%] -translate-y-[65%] bg-transparent"} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
         >
           {label}
           {required && <span className="ml-1 text-red-700">*</span>}

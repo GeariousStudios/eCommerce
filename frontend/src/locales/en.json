@@ -89,6 +89,7 @@
   "Common/Friday": "Friday",
   "Common/Saturday": "Saturday",
   "Common/Sunday": "Sunday",
+  "Common/Color": "Color",
 
   "Message/Loading": "Loading...",
   "Message/Auth": "Authenticating...",
@@ -134,9 +135,14 @@
   "Unit/Update page": "Update page",
   "Unit/Next day": "Next day",
   "Unit/Previous day": "Previous day",
-  "Unit/Change to shift": "Change to selected shift",
+  "Unit/Change shift": "Change staffing type",
+  "Unit/Change to shift": "Set staffing type",
   "Unit/Shift changed": "Staffing type changed to: ",
   "Unit/Shift change": "Staffing type change",
+  "Unit/Update post": "Update post",
+  "Unit/Remove post": "Remove post",
+  "Unit/Remove post message": "Do you want to remove this post?",
+  "Unit/Currently staffed by": "Staffed by: ",
 
   "Manage/Failed to fetch": "Failed to fetch ",
   "Manage/deleted1": " deleted!",

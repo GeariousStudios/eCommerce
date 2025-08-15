@@ -22,5 +22,8 @@
 
   "UnitColumn/a data type": "en datatyp",
 
-  "Report/a start time": "en starttid"
+  "Report/a start time": "en starttid",
+
+  "ShiftTeam/a color": "en färg",
+  "ShiftTeam/Color format": "Färgens format"
 }

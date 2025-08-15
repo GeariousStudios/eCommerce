@@ -1,3 +1,4 @@
+import { FocusTrap } from "focus-trap-react";
 import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 const MenuDropdown = (props: Props) => {
   const innerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<string | undefined>("16rem");
+  const [entered, setEntered] = useState(false);
 
   const updateWidth = () => {
     const element = innerRef.current;
@@ -52,6 +54,20 @@ const MenuDropdown = (props: Props) => {
 
   useEffect(() => {
     if (!props.isOpen) {
+      setEntered(false);
+      return;
+    }
+
+    setEntered(false);
+    const id = requestAnimationFrame(() => {
+      setEntered(true);
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, [props.isOpen]);
+
+  useEffect(() => {
+    if (!props.isOpen) {
       return;
     }
 
@@ -82,15 +98,25 @@ const MenuDropdown = (props: Props) => {
   }, [props.isOpen, props.onClose]);
 
   return (
-    <div
-      ref={innerRef}
-      role="dialog"
-      aria-hidden={!props.isOpen}
-      className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 break-words shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
-      style={{ width }}
+    <FocusTrap
+      active={props.isOpen}
+      focusTrapOptions={{
+        initialFocus: false,
+        allowOutsideClick: true,
+        escapeDeactivates: true,
+        fallbackFocus: () => innerRef.current ?? document.body,
+      }}
     >
-      {props.children}
-    </div>
+      <div
+        ref={innerRef}
+        role="dialog"
+        aria-hidden={!props.isOpen}
+        className={`${props.isOpen ? "visible" : "invisible"} ${props.isOpen && entered ? "opacity-100" : "opacity-0"} absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 break-words shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+        style={{ width }}
+      >
+        {props.children}
+      </div>
+    </FocusTrap>
   );
 };
 

@@ -217,7 +217,7 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
 
 const Content = ({ children, className }: SectionProps) => (
   <div
-    className={`modal-body ${className ?? ""} relative flex flex-col gap-4 overflow-y-auto p-4`}
+    className={`modal-body ${className ?? ""} relative flex flex-col gap-6 overflow-y-auto p-4`}
   >
     {children}
   </div>

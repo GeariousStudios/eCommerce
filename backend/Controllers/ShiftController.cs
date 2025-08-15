@@ -162,6 +162,10 @@ namespace backend.Controllers
                             {
                                 Id = sst.ShiftTeam.Id,
                                 Name = sst.ShiftTeam.Name,
+                                ColorHex = sst.ShiftTeam.ColorHex,
+                                TextColorHex = ColorHelper.GetReadableTextColor(
+                                    sst.ShiftTeam.ColorHex
+                                ),
                             })
                             .ToList(),
                         ShiftTeamDisplayNames = s.ShiftToShiftTeams.ToDictionary(
@@ -264,6 +268,8 @@ namespace backend.Controllers
                         Id = x.ShiftTeam.Id,
                         Name = x.ShiftTeam.Name,
                         IsHidden = x.ShiftTeam.IsHidden,
+                        ColorHex = x.ShiftTeam.ColorHex,
+                        TextColorHex = ColorHelper.GetReadableTextColor(x.ShiftTeam.ColorHex),
                     })
                     .ToList(),
                 ShiftTeamDisplayNames = shift.ShiftToShiftTeams.ToDictionary(
@@ -364,10 +370,16 @@ namespace backend.Controllers
                         string.IsNullOrWhiteSpace(x.DisplayName) ? x.ShiftTeam.Name : x.DisplayName!
                 );
 
+                var nameByTeam = shift.ShiftToShiftTeams.ToDictionary(
+                    x => x.ShiftTeamId,
+                    x => x.ShiftTeam.Name
+                );
+
                 var teamSpans = todays
                     .Select(s => new
                     {
                         teamId = s.ShiftTeamId,
+                        name = nameByTeam.TryGetValue(s.ShiftTeamId, out var nm) ? nm : "",
                         label = displayByTeam.TryGetValue(s.ShiftTeamId, out var lbl) ? lbl : "",
                         start = s.StartTime.ToString(@"hh\:mm"),
                         end = s.EndTime.ToString(@"hh\:mm"),
@@ -385,9 +397,21 @@ namespace backend.Controllers
                             .Select(ts => new ShiftTeamSpanDto
                             {
                                 TeamId = ts.teamId,
+                                Name = ts.name,
                                 Label = ts.label,
                                 Start = ts.start,
                                 End = ts.end,
+                                ColorHex =
+                                    _context
+                                        .ShiftTeams.Where(st => st.Id == ts.teamId)
+                                        .Select(st => st.ColorHex)
+                                        .FirstOrDefault() ?? "#e0e0e0",
+                                TextColorHex = ColorHelper.GetReadableTextColor(
+                                    _context
+                                        .ShiftTeams.Where(st => st.Id == ts.teamId)
+                                        .Select(st => st.ColorHex)
+                                        .FirstOrDefault() ?? "#e0e0e0"
+                                ),
                             })
                             .ToList(),
                     }

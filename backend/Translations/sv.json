@@ -45,6 +45,8 @@
   "Unit/ShiftNotLinked": "Skiftet är inte kopplat till enheten",
   "Unit/CannotRemoveActiveShift": "Kan inte ta bort ett aktivt skift från enheten",
   "Unit/InvalidDate": "Ogiltigt datum",
+  "Unit/ShiftChangeAlreadyExists": "Bemanningstyp finns redan vid angiven tidpunkt",
+  "Unit/SameShift": "Bemanningstypen är redan aktiv vid angiven tidpunkt",
 
   "UnitColumn/NotFound": "Kolumnen kunde inte hittas i databasen",
   "UnitColumn/InUse": "Kan inte ta bort en kolumn som används",

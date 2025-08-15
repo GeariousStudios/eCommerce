@@ -11,6 +11,9 @@ namespace backend.Models
         public string Name { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
 
+        [MaxLength(7)]
+        public string ColorHex { get; set; } = "#e0e0e0";
+
         // Meta data.
         public DateTime CreationDate { get; set; }
         public DateTime UpdateDate { get; set; }

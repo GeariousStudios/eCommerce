@@ -367,7 +367,7 @@ const UserModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="xs:gap-4 xs:grid-cols-2 grid grid-cols-1 gap-6">
+              <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
                 <Input
                   id="username"
                   label={t("Common/Username")}
@@ -413,7 +413,7 @@ const UserModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-4">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <Input
                   id="email"
                   label={t("Users/Email")}
@@ -423,7 +423,7 @@ const UserModal = (props: Props) => {
                   {...userConstraints.email}
                 />
 
-                <div className="xs:gap-4 xs:grid-cols-2 grid grid-cols-1 gap-6">
+                <div className="sm:grid-cols-2 grid grid-cols-1 gap-6">
                   <Input
                     id="firstName"
                     label={t("Users/First name")}
@@ -452,7 +452,7 @@ const UserModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-4">
+              <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
                 <MultiDropdown
                   addSpacer
                   scrollContainer={getScrollEl}

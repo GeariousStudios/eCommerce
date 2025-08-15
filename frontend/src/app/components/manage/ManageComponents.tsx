@@ -12,7 +12,7 @@ import {
   ChevronUpIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
-import MenuDropdown from "../common/MenuDropdown";
+import MenuDropdown from "../common/MenuDropdown/MenuDropdown";
 import Input from "../common/Input";
 import CustomTooltip from "../common/CustomTooltip";
 import { useTranslations } from "next-intl";

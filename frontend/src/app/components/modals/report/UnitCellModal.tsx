@@ -301,7 +301,7 @@ const UnitCellModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-4">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div className="ml-auto flex w-full items-center">
                   <button
                     type="button"
@@ -346,7 +346,7 @@ const UnitCellModal = (props: Props) => {
               </div>
 
               <div
-                className={`${selectedHour && selectedDate ? "" : "pointer-events-none opacity-25"} flex flex-col gap-4`}
+                className={`${selectedHour && selectedDate ? "" : "pointer-events-none opacity-25"} flex flex-col gap-6`}
               >
                 <div className="mt-8 flex items-center gap-2">
                   <hr className="w-12 text-[var(--border-tertiary)]" />
