@@ -362,23 +362,6 @@ namespace backend.Controllers
                 );
             }
 
-            var systemShiftIds = await _context
-                .Shifts.Where(s => s.SystemKey != null)
-                .Select(s => s.Id)
-                .ToListAsync();
-
-            foreach (var sysId in systemShiftIds)
-            {
-                if (!dto.ShiftIds.Contains(sysId))
-                {
-                    dto.ShiftIds.Insert(0, sysId);
-                }
-            }
-
-            var orderedShiftIds = dto
-                .ShiftIds.OrderBy(id => systemShiftIds.Contains(id) ? 0 : 1)
-                .ToList();
-
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -395,9 +378,8 @@ namespace backend.Controllers
                 UpdatedBy = createdBy,
             };
 
-            var systemShiftIdsDict = await GetAllSystemShiftIdsAsync(); // Dictionary<ShiftSystemKey, int>
+            var systemShiftIdsDict = await GetAllSystemShiftIdsAsync();
 
-            // Lägg till alla systemskift först
             foreach (var sysId in systemShiftIdsDict.Values)
             {
                 if (!dto.ShiftIds.Contains(sysId))
@@ -405,7 +387,8 @@ namespace backend.Controllers
             }
 
             var finalShiftIds = dto
-                .ShiftIds.OrderBy(id => systemShiftIdsDict.Values.Contains(id) ? 0 : 1)
+                .ShiftIds.Distinct()
+                .OrderBy(id => systemShiftIdsDict.Values.Contains(id) ? 0 : 1)
                 .ToList();
 
             var activeShiftId = systemShiftIdsDict.TryGetValue(
@@ -962,8 +945,11 @@ namespace backend.Controllers
         private async Task<Dictionary<ShiftSystemKey, int>> GetAllSystemShiftIdsAsync()
         {
             return await _context
-                .Shifts.Where(s => s.SystemKey != null)
-                .ToDictionaryAsync(s => s.SystemKey!.Value, s => s.Id);
+                .Shifts.AsNoTracking()
+                .Where(s => s.SystemKey != null)
+                .GroupBy(s => s.SystemKey!.Value)
+                .Select(g => new { Key = g.Key, Id = g.Min(s => s.Id) })
+                .ToDictionaryAsync(x => x.Key, x => x.Id);
         }
     }
 }

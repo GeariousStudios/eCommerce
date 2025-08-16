@@ -270,32 +270,54 @@ using (var scope = app.Services.CreateScope())
         var today = DateTime.UtcNow.Date;
         var monday = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
 
-        var unmannedShift = new Shift
-        {
-            Name = "Unmanned",
-            SystemKey = ShiftSystemKey.Unmanned,
-            CycleLengthWeeks = 1,
-            AnchorWeekStart = DateOnly.FromDateTime(monday),
-            CreationDate = DateTime.UtcNow,
-            CreatedBy = "System",
-            UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "System",
-        };
-        db.Shifts.Add(unmannedShift);
-        await db.SaveChangesAsync();
+        var unmannedShift = await db.Shifts.FirstOrDefaultAsync(s =>
+            s.SystemKey == ShiftSystemKey.Unmanned
+        );
 
-        var shift = new Shift
+        if (unmannedShift == null)
         {
-            Name = "Dagskift",
-            CycleLengthWeeks = 1,
-            AnchorWeekStart = DateOnly.FromDateTime(monday),
-            CreationDate = DateTime.UtcNow,
-            CreatedBy = "System",
-            UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "System",
-        };
-        db.Shifts.Add(shift);
-        await db.SaveChangesAsync();
+            unmannedShift = new Shift
+            {
+                Name = "Unmanned",
+                SystemKey = ShiftSystemKey.Unmanned,
+                CycleLengthWeeks = 1,
+                AnchorWeekStart = DateOnly.FromDateTime(monday),
+                CreationDate = DateTime.UtcNow,
+                CreatedBy = "System",
+                UpdateDate = DateTime.UtcNow,
+                UpdatedBy = "System",
+            };
+            db.Shifts.Add(unmannedShift);
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            unmannedShift = await db.Shifts.FirstAsync(s => s.Id == unmannedShift.Id);
+        }
+
+        var shift = await db
+            .Shifts.AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Name == "Dagskift" && s.SystemKey == null);
+
+        if (shift == null)
+        {
+            shift = new Shift
+            {
+                Name = "Dagskift",
+                CycleLengthWeeks = 1,
+                AnchorWeekStart = DateOnly.FromDateTime(monday),
+                CreationDate = DateTime.UtcNow,
+                CreatedBy = "System",
+                UpdateDate = DateTime.UtcNow,
+                UpdatedBy = "System",
+            };
+            db.Shifts.Add(shift);
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            shift = await db.Shifts.FirstAsync(s => s.Id == shift.Id);
+        }
 
         db.ShiftToShiftTeams.Add(
             new ShiftToShiftTeam
