@@ -210,6 +210,9 @@ namespace backend.Controllers
                             })
                             .ToList(),
 
+                        AnchorWeekStart = s.AnchorWeekStart,
+
+                        // Meta data.
                         CreationDate = s.CreationDate,
                         CreatedBy = s.CreatedBy,
                         UpdateDate = s.UpdateDate,
@@ -314,6 +317,8 @@ namespace backend.Controllers
                         UpdatedBy = u.UpdatedBy,
                     })
                     .ToList(),
+
+                AnchorWeekStart = shift.AnchorWeekStart,
             };
 
             return Ok(result);
@@ -495,8 +500,7 @@ namespace backend.Controllers
             var tz = TimeZoneInfo.FindSystemTimeZoneById("Europe/Stockholm");
             var localToday = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz).Date;
             var anchor = DateOnly.FromDateTime(localToday);
-            var diff = ((int)anchor.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
-            var monday = anchor.AddDays(-diff);
+            var monday = ToMonday(dto.AnchorWeekStart);
 
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
@@ -643,6 +647,7 @@ namespace backend.Controllers
             shift.Name = dto.Name;
             shift.IsHidden = dto.IsHidden;
             shift.CycleLengthWeeks = dto.CycleLengthWeeks;
+            shift.AnchorWeekStart = ToMonday(dto.AnchorWeekStart);
 
             // Meta data.
             shift.UpdateDate = now;
@@ -758,6 +763,12 @@ namespace backend.Controllers
 
             var idx = ((weeksSinceAnchor % cycleLengthWeeks) + cycleLengthWeeks) % cycleLengthWeeks;
             return idx;
+        }
+
+        private static DateOnly ToMonday(DateOnly d)
+        {
+            var diff = ((int)d.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+            return d.AddDays(-diff);
         }
     }
 }

@@ -91,6 +91,7 @@
   "Common/Sunday": "Söndag",
   "Common/Time": "Tid",
   "Common/Color": "Färg",
+  "Common/Unknown": "Okänt",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
@@ -204,12 +205,17 @@
   "Categories/Has sub categories": "Har underkategorier",
   "Categories/No sub categories": "Inga underkategorier",
   "Categories/sub category amount": "antal underkategorier",
+  "Categories/Confirm1": "Tar du bort en kategori så tar du bort möjligheten att kunna trenda kopplad data.",
+  "Categories/Confirm2": "Om kategorin har mycket kopplad data så är det bättre att gömma den.",
+  "Categories/Confirm3": "Vill du ta bort ändå?",
 
   "Columns/Data type": "Datatyp",
   "Columns/Has data": "Har data",
   "Columns/Data1": "på kolumner som har data",
   "Columns/Data2": "på kolumner som inte har någon data",
-  "Columns/Confirm": "Om du tar bort valda objekt så förlorar du även den data som finns kopplad. Vill du ta bort ändå?",
+  "Columns/Confirm1": "Tar du bort en kolumn så tar du även bort all knuten data.",
+  "Columns/Confirm2": "Om kolumnen innehåller data som är viktig för verksamheten, t.ex. vid trendning, så är det bättre att gömma den.",
+  "Columns/Confirm3": "Vill du ta bort ändå?",
 
   "Modal/Unsaved": "Du har osparade ändringar. Vill du stänga ändå?",
   "Modal/Close anyway": "Stäng ändå",
@@ -295,7 +301,7 @@
   "ShiftModal/Display name": "Visningsnamn",
   "ShiftModal/TimesOverlap": "Tiderna för lag får inte överlappa",
   "ShiftModal/Cycle length (weeks)": "Cykellängd (veckor)",
-  "ShiftModal/Anchor week start": "Startvecka för cykeln",
+  "ShiftModal/Anchor week start": "Referensvecka",
   "ShiftModal/Activate day": "Aktivera dag",
   "ShiftModal/Deactivate day": "Inaktivera dag",
   "ShiftModal/Start before end": "Starttid måste vara före sluttid",
@@ -312,6 +318,9 @@
   "Shifts/hidden shifts": "gömda skift",
   "Shifts/Visible shifts": "Synliga skift",
   "Shifts/visible shifts": "synliga skift",
+  "Shifts/Confirm1": "Tar du bort ett skift så tar du bort möjligheten att kunna trenda kopplad data.",
+  "Shifts/Confirm2": "Om skiftet har mycket kopplad data så är det bättre att gömma det.",
+  "Shifts/Confirm3": "Vill du ta bort ändå?",
 
   "ShiftTeams/shift amount": "antal skift",
   "ShiftTeams/Used by shifts": "Används av skift",
@@ -319,10 +328,15 @@
   "ShiftTeams/hidden shift teams": "gömda lag",
   "ShiftTeams/Visible shift teams": "Synliga lag",
   "ShiftTeams/visible shift teams": "synliga lag",
+  "ShiftTeams/Confirm1": "Tar du bort ett lag så tar du bort möjligheten att kunna trenda kopplad data.",
+  "ShiftTeams/Confirm2": "Om laget har mycket kopplad data så är det bättre att gömma det.",
+  "ShiftTeams/Confirm3": "Vill du ta bort ändå?",
 
   "Api/Failed to delete": "Kunde inte ta bort ",
 
   "toolbar": {
+    "font": "Teckensnitt",
+    "size": "Storlek",
     "bold": "Fetstil (Ctrl+B)",
     "italic": "Kursiv stil (Ctrl+I)",
     "underline": "Understrykning (Ctrl+U)",
@@ -331,6 +345,7 @@
     "background": "Bakgrundsfärg",
     "listOrdered": "Numrerad lista",
     "listBullet": "Punktlista",
-    "clean": "Rensa formatering"
+    "clean": "Rensa formatering",
+    "reset": "Återställ"
   }
 }

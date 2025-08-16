@@ -210,6 +210,7 @@ th:focus-visible {
 }
 
 .ql-toolbar.ql-snow {
+  font-family: "Karla", sans-serif !important;
   border-bottom: 1px solid var(--border-tertiary) !important;
 
   button,
@@ -244,6 +245,7 @@ th:focus-visible {
     fill: var(--accent-color) !important;
   }
 
+  .ql-size,
   .ql-bold,
   .ql-italic,
   .ql-underline,
@@ -264,6 +266,7 @@ th:focus-visible {
 
     &::after {
       content: attr(tooltip-title);
+      font-weight: 600;
       display: flex;
       align-items: center;
       background-color: var(--bg-tooltip);
@@ -307,45 +310,10 @@ th:focus-visible {
       white-space: pre;
     }
   }
-
-  // .ql-bold::after {
-  //   content: "Fetstil\A(Ctrl+B)";
-  // }
-
-  // .ql-italic::after {
-  //   content: "Kursiv stil\A(Ctrl+I)";
-  // }
-
-  // .ql-underline::after {
-  //   content: "Understrykning\A(Ctrl+U)";
-  // }
-
-  // .ql-strike::after {
-  //   content: "Genomstrykning";
-  // }
-
-  // .ql-color::after {
-  //   content: "Textfärg";
-  // }
-
-  // .ql-background::after {
-  //   content: "Bakgrundsfärg";
-  // }
-
-  // .ql-list[value="ordered"]::after {
-  //   content: "Numrerad lista";
-  // }
-
-  // .ql-list[value="bullet"]::after {
-  //   content: "Punktlista";
-  // }
-
-  // .ql-clean::after {
-  //   content: "Rensa formattering";
-  // }
 }
 
 .ql-editor {
+  font-family: "Karla", sans-serif;
   caret-color: var(--accent-color);
   min-height: 10rem !important;
   max-height: 10rem !important;
@@ -362,7 +330,6 @@ th:focus-visible {
 
 .ql-toolbar.ql-snow {
   padding: 0.425rem !important;
-  min-height: 38px;
 }
 
 li[data-list] {
@@ -388,3 +355,90 @@ li.ql-indent-2 {
 li.ql-indent-3 {
   margin-left: 8rem;
 }
+
+.ql-toolbar.ql-snow {
+  .ql-size.ql-picker {
+    width: 5rem;
+    font-size: 0.875rem;
+
+    .ql-picker-label {
+      background-color: var(--bg-modal);
+      color: var(--text-main);
+    }
+
+    .ql-picker-label:hover,
+    .ql-picker-label.ql-active {
+      color: var(--accent-color);
+    }
+
+    &.ql-expanded .ql-picker-label {
+      color: var(--accent-color);
+
+      & .ql-stroke {
+        stroke: var(--accent-color) !important;
+      }
+    }
+
+    .ql-picker-options {
+      box-shadow: unset;
+      font-size: 0.8rem;
+
+      .ql-picker-item {
+        color: var(--text-main-reverse);
+        position: relative;
+
+        &:hover,
+        &.ql-selected {
+          color: var(--accent-color) !important;
+        }
+      }
+    }
+  }
+}
+
+/* --- SIZE-LABELS --- */
+.ql-picker.ql-size {
+  .ql-picker-item[data-value="12px"]::before,
+  .ql-picker-label[data-value="12px"]::before {
+    content: "12 px" !important;
+  }
+  .ql-picker-item[data-value="16px"]::before,
+  .ql-picker-label[data-value="16px"]::before {
+    content: "16 px" !important;
+  }
+  .ql-picker-item[data-value="20px"]::before,
+  .ql-picker-label[data-value="20px"]::before {
+    content: "20 px" !important;
+  }
+  .ql-picker-item[data-value="24px"]::before,
+  .ql-picker-label[data-value="24px"]::before {
+    content: "24 px" !important;
+  }
+
+  .ql-picker-item:not([data-value]) {
+    font-size: 14px !important;
+  }
+  .ql-picker-item[data-value="12px"] {
+    font-size: 12px !important;
+  }
+  .ql-picker-item[data-value="16px"] {
+    font-size: 16px !important;
+  }
+  .ql-picker-item[data-value="20px"] {
+    font-size: 20px !important;
+  }
+  .ql-picker-item[data-value="24px"] {
+    font-size: 24px !important;
+  }
+}
+
+.ql-color .ql-picker-options .ql-picker-item[data-value=""],
+.ql-background .ql-picker-options .ql-picker-item[data-value=""] {
+  background-color: unset !important;
+  position: relative;
+  outline: 1px dashed var(--border-tertiary);
+}
+
+// .ql-snow .ql-picker.ql-size .ql-picker-label:not([data-value])::before {
+//   content: "14 px" !important;
+// }

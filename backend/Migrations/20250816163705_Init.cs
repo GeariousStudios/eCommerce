@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace eCommerce.Migrations
 {
     /// <inheritdoc />
@@ -77,6 +75,8 @@ namespace eCommerce.Migrations
                     Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
                     SystemKey = table.Column<int>(type: "INTEGER", nullable: true),
+                    CycleLengthWeeks = table.Column<int>(type: "INTEGER", nullable: false),
+                    AnchorWeekStart = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -95,6 +95,7 @@ namespace eCommerce.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -159,6 +160,26 @@ namespace eCommerce.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UnitShiftChanges",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UnitId = table.Column<int>(type: "INTEGER", nullable: false),
+                    OldShiftId = table.Column<int>(type: "INTEGER", nullable: false),
+                    NewShiftId = table.Column<int>(type: "INTEGER", nullable: false),
+                    EffectiveFromUtc = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UnitShiftChanges", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -188,8 +209,6 @@ namespace eCommerce.Migrations
                     ShiftId = table.Column<int>(type: "INTEGER", nullable: false),
                     ShiftTeamId = table.Column<int>(type: "INTEGER", nullable: false),
                     DisplayName = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
-                    StartTime = table.Column<TimeSpan>(type: "TEXT", nullable: true),
-                    EndTime = table.Column<TimeSpan>(type: "TEXT", nullable: true),
                     Order = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
@@ -203,6 +222,35 @@ namespace eCommerce.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ShiftToShiftTeams_Shifts_ShiftId",
+                        column: x => x.ShiftId,
+                        principalTable: "Shifts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ShiftToShiftTeamSchedules",
+                columns: table => new
+                {
+                    ShiftId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ShiftTeamId = table.Column<int>(type: "INTEGER", nullable: false),
+                    WeekIndex = table.Column<int>(type: "INTEGER", nullable: false),
+                    DayOfWeek = table.Column<int>(type: "INTEGER", nullable: false),
+                    StartTime = table.Column<TimeSpan>(type: "TEXT", nullable: false),
+                    EndTime = table.Column<TimeSpan>(type: "TEXT", nullable: false),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ShiftToShiftTeamSchedules", x => new { x.ShiftId, x.ShiftTeamId, x.WeekIndex, x.DayOfWeek, x.StartTime, x.EndTime });
+                    table.ForeignKey(
+                        name: "FK_ShiftToShiftTeamSchedules_ShiftTeams_ShiftTeamId",
+                        column: x => x.ShiftTeamId,
+                        principalTable: "ShiftTeams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ShiftToShiftTeamSchedules_Shifts_ShiftId",
                         column: x => x.ShiftId,
                         principalTable: "Shifts",
                         principalColumn: "Id",
@@ -448,12 +496,8 @@ namespace eCommerce.Migrations
 
             migrationBuilder.InsertData(
                 table: "Shifts",
-                columns: new[] { "Id", "CreatedBy", "CreationDate", "IsHidden", "Name", "SystemKey", "UpdateDate", "UpdatedBy" },
-                values: new object[,]
-                {
-                    { 1, "system", new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), false, "None", 0, new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), "system" },
-                    { 2, "system", new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), false, "Unmanned", 1, new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), "system" }
-                });
+                columns: new[] { "Id", "AnchorWeekStart", "CreatedBy", "CreationDate", "CycleLengthWeeks", "IsHidden", "Name", "SystemKey", "UpdateDate", "UpdatedBy" },
+                values: new object[] { 1, new DateOnly(1, 1, 1), "system", new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), 1, false, "Unmanned", 0, new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), "system" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CategoryToSubCategories_SubCategoryId",
@@ -468,6 +512,11 @@ namespace eCommerce.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_ShiftToShiftTeams_ShiftTeamId",
                 table: "ShiftToShiftTeams",
+                column: "ShiftTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ShiftToShiftTeamSchedules_ShiftTeamId",
+                table: "ShiftToShiftTeamSchedules",
                 column: "ShiftTeamId");
 
             migrationBuilder.CreateIndex(
@@ -532,7 +581,13 @@ namespace eCommerce.Migrations
                 name: "ShiftToShiftTeams");
 
             migrationBuilder.DropTable(
+                name: "ShiftToShiftTeamSchedules");
+
+            migrationBuilder.DropTable(
                 name: "UnitCells");
+
+            migrationBuilder.DropTable(
+                name: "UnitShiftChanges");
 
             migrationBuilder.DropTable(
                 name: "UnitToCategories");

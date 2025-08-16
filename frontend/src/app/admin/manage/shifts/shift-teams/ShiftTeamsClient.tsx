@@ -219,7 +219,7 @@ const ShiftTeamsClient = (props: Props) => {
       labelAsc: t("Common/name") + " Ö-A",
       labelDesc: t("Common/name") + " A-Ö",
       getValue: (item: ShiftTeamItem) => (
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-4">
           <span
             className="h-4 min-h-4 w-4 min-w-4 rounded-full"
             style={{
@@ -407,7 +407,18 @@ const ShiftTeamsClient = (props: Props) => {
           setDeletingItemIds([]);
           setSelectedItems([]);
         }}
-        // confirmOnDelete={anySelectedInUse()} // <-- Unique.
+        confirmOnDelete // <-- Unique.
+        confirmDeleteMessage={
+          <>
+            {t("ShiftTeams/Confirm1")}
+            <br />
+            <br />
+            {t("ShiftTeams/Confirm2")}
+            <br />
+            <br />
+            {t("ShiftTeams/Confirm3")}
+          </>
+        }
       />
     </>
   );

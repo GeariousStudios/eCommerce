@@ -418,7 +418,18 @@ const CategoriesClient = (props: Props) => {
           setDeletingItemIds([]);
           setSelectedItems([]);
         }}
-        // confirmOnDelete={anySelectedInUse()} // <-- Unique.
+        confirmOnDelete // <-- Unique.
+        confirmDeleteMessage={
+          <>
+            {t("Categories/Confirm1")}
+            <br />
+            <br />
+            {t("Categories/Confirm2")}
+            <br />
+            <br />
+            {t("Categories/Confirm3")}
+          </>
+        }
       />
     </>
   );

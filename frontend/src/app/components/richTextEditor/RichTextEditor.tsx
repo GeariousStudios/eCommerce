@@ -12,6 +12,7 @@ import {
   useState,
 } from "react";
 import { useTranslations } from "next-intl";
+import { Quill } from "react-quill-new";
 
 const QuillWrapper = dynamic(() => import("../../helpers/QuillWrapper"), {
   ssr: false,
@@ -36,12 +37,18 @@ type Props = {
   shouldAutoFocus?: boolean;
 };
 
+const SIZE_WHITELIST = ["12px", "16px", "20px", "24px"];
+
 const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
   ({ value, name, required, onReady, onChange, shouldAutoFocus }, ref) => {
     const t = useTranslations();
     const quillRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isEditorReady, setIsEditorReady] = useState(false);
+
+    const Size = Quill.import("attributors/style/size") as any;
+    Size.whitelist = SIZE_WHITELIST;
+    Quill.register(Size, true);
 
     useImperativeHandle(ref, () => ({
       getContent: () => {
@@ -79,61 +86,121 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           onReady?.();
           clearInterval(interval);
 
-          editor.clipboard.addMatcher(
-            Node.ELEMENT_NODE,
-            (_node: any, delta: any) => {
-              delta.ops.forEach((op: any) => {
-                if (op.attributes) {
-                  delete op.attributes;
-                }
-              });
-              return delta;
-            },
-          );
+          // editor.clipboard.addMatcher(
+          //   Node.ELEMENT_NODE,
+          //   (_node: any, delta: any) => {
+          //     delta.ops.forEach((op: any) => {
+          //       if (op.attributes) {
+          //         delete op.attributes;
+          //       }
+          //     });
+          //     return delta;
+          //   },
+          // );
+
+          // try {
+          //   editor.format("size", DEFAULT_SIZE);
+          // } catch {}
 
           setTimeout(() => {
             const toolbar = editor.getModule("toolbar");
             const container = toolbar.container;
 
+            const addResetOption = (
+              pickerSelector: string,
+              formatName: "color" | "background",
+            ) => {
+              const picker = container.querySelector(
+                pickerSelector,
+              ) as HTMLElement | null;
+              if (!picker) {
+                return;
+              }
+
+              const options = picker.querySelector(
+                ".ql-picker-options",
+              ) as HTMLElement | null;
+              if (!options) {
+                return;
+              }
+
+              if (options.querySelector('.ql-picker-item[data-value=""]')) {
+                return;
+              }
+
+              const resetItem = document.createElement("span");
+              resetItem.className = "ql-picker-item";
+              resetItem.setAttribute("data-value", "");
+              resetItem.setAttribute(
+                "tooltip-title",
+                t("toolbar.reset") ?? "Reset",
+              );
+
+              options.append(resetItem);
+
+              resetItem.addEventListener("click", () => {
+                editor.format(formatName, false);
+              });
+            };
+
+            addResetOption(".ql-color", "color");
+            addResetOption(".ql-background", "background");
+
+            const sizeBtn = container.querySelector(".ql-size");
+            if (sizeBtn)
+              sizeBtn.setAttribute("tooltip-title", t("toolbar.size"));
+
             const boldBtn = container.querySelector(".ql-bold");
-            if (boldBtn) boldBtn.setAttribute("tooltip-title", t("toolbar.bold"));
+            if (boldBtn)
+              boldBtn.setAttribute("tooltip-title", t("toolbar.bold"));
 
             const italicBtn = container.querySelector(".ql-italic");
-            if (italicBtn) italicBtn.setAttribute("tooltip-title", t("toolbar.italic"));
+            if (italicBtn)
+              italicBtn.setAttribute("tooltip-title", t("toolbar.italic"));
 
             const underlineBtn = container.querySelector(".ql-underline");
             if (underlineBtn)
-              underlineBtn.setAttribute("tooltip-title", t("toolbar.underline"));
+              underlineBtn.setAttribute(
+                "tooltip-title",
+                t("toolbar.underline"),
+              );
 
             const strikeBtn = container.querySelector(".ql-strike");
-            if (strikeBtn) strikeBtn.setAttribute("tooltip-title", t("toolbar.strike"));
+            if (strikeBtn)
+              strikeBtn.setAttribute("tooltip-title", t("toolbar.strike"));
 
             const orderedListBtn = container.querySelector(
               '.ql-list[value="ordered"]',
             );
             if (orderedListBtn)
-              orderedListBtn.setAttribute("tooltip-title", t("toolbar.listOrdered"));
+              orderedListBtn.setAttribute(
+                "tooltip-title",
+                t("toolbar.listOrdered"),
+              );
 
             const bulletListBtn = container.querySelector(
               '.ql-list[value="bullet"]',
             );
             if (bulletListBtn)
-              bulletListBtn.setAttribute("tooltip-title", t("toolbar.listBullet"));
+              bulletListBtn.setAttribute(
+                "tooltip-title",
+                t("toolbar.listBullet"),
+              );
 
             const cleanBtn = container.querySelector(".ql-clean");
-            if (cleanBtn) cleanBtn.setAttribute("tooltip-title", t("toolbar.clean"));
+            if (cleanBtn)
+              cleanBtn.setAttribute("tooltip-title", t("toolbar.clean"));
 
-            const colorPicker = container.querySelector(
-              ".ql-color",
-            );
+            const colorPicker = container.querySelector(".ql-color");
             if (colorPicker)
               colorPicker.setAttribute("tooltip-title", t("toolbar.color"));
 
-            const backgroundPicker = container.querySelector(
-              ".ql-background",
-            );
+            const backgroundPicker = container.querySelector(".ql-background");
             if (backgroundPicker)
-              backgroundPicker.setAttribute("tooltip-title", t("toolbar.background"));
+              backgroundPicker.setAttribute(
+                "tooltip-title",
+                t("toolbar.background"),
+              );
           }, 100);
         }
       }, 50);
@@ -143,6 +210,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
 
     const modules = {
       toolbar: [
+        [{ size: [false, ...Size.whitelist] }],
         ["bold", "italic", "underline", "strike"],
         [{ color: [] }, { background: [] }],
         [{ list: "ordered" }, { list: "bullet" }],

@@ -367,7 +367,7 @@ const HomeClient = (props: Props) => {
 
                       <div dangerouslySetInnerHTML={{ __html: item.content }} />
                       <small className="text-[var(--text-secondary)] italic">
-                        {t("Common/Updated")}:{" "}
+                        {t("Common/Updated")}{" "}
                         {utcIsoToLocalDateTime(item.updateDate)}{" "}
                         {t("Common/by")} {item.updatedBy}
                       </small>

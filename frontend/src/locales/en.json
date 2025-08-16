@@ -90,6 +90,7 @@
   "Common/Saturday": "Saturday",
   "Common/Sunday": "Sunday",
   "Common/Color": "Color",
+  "Common/Unknown": "Unknown",
 
   "Message/Loading": "Loading...",
   "Message/Auth": "Authenticating...",
@@ -203,12 +204,17 @@
   "Categories/Has sub categories": "Has sub categories",
   "Categories/No sub categories": "No sub categories",
   "Categories/sub category amount": "sub category amount",
+  "Categories/Confirm1": "Deleting a category will also remove the ability to trend related data.",
+  "Categories/Confirm2": "If the category has a lot of related data, it's better to hide it instead.",
+  "Categories/Confirm3": "Do you still want to delete?",
 
   "Columns/Data type": "Data type",
   "Columns/Has data": "Has data",
   "Columns/Data1": "by columns with data",
   "Columns/Data2": "by columns without data",
-  "Columns/Confirm": "If you delete the selected items, you will also lose any associated data. Do you still want to delete?",
+  "Columns/Confirm1": "Deleting a column will also remove all associated data.",
+  "Columns/Confirm2": "If the column contains important data for operations, such as for trend analysis, it's better to hide it instead.",
+  "Columns/Confirm3": "Do you still want to delete?",
 
   "Modal/Unsaved": "You have unsaved changes. Do you still want to close?",
   "Modal/Close anyway": "Close anyway",
@@ -294,7 +300,7 @@
   "ShiftModal/Display name": "Display name",
   "ShiftModal/TimesOverlap": "Team times must not overlap",
   "ShiftModal/Cycle length (weeks)": "Cycle length (weeks)",
-  "ShiftModal/Anchor week start": "Start week for cycle",
+  "ShiftModal/Anchor week start": "Reference week",
   "ShiftModal/Activate day": "Activate day",
   "ShiftModal/Deactivate day": "Deactivate day",
   "ShiftModal/Start before end": "Start time must be before end time",
@@ -311,6 +317,9 @@
   "Shifts/hidden shifts": "hidden shifts",
   "Shifts/Visible shifts": "Visible shifts",
   "Shifts/visible shifts": "visible shifts",
+  "Shifts/Confirm1": "Deleting a shift will also remove the ability to trend related data.",
+  "Shifts/Confirm2": "If the shift has a lot of related data, it's better to hide it instead.",
+  "Shifts/Confirm3": "Do you still want to delete?",
 
   "ShiftTeams/shift amount": "shift amount",
   "ShiftTeams/Used by shifts": "Used by shifts",
@@ -318,10 +327,15 @@
   "ShiftTeams/hidden shift teams": "hidden teams",
   "ShiftTeams/Visible shift teams": "Visible teams",
   "ShiftTeams/visible shift teams": "visible teams",
+  "ShiftTeams/Confirm1": "Deleting a team will also remove the ability to trend related data.",
+  "ShiftTeams/Confirm2": "If the team has a lot of related data, it's better to hide it instead.",
+  "ShiftTeams/Confirm3": "Do you still want to delete?",
 
   "Api/Failed to delete": "Failed to delete ",
 
   "toolbar": {
+    "font": "Font",
+    "size": "Size",
     "bold": "Bold (Ctrl+B)",
     "italic": "Italic (Ctrl+I)",
     "underline": "Underline (Ctrl+U)",
@@ -330,6 +344,7 @@
     "background": "Background color",
     "listOrdered": "Ordered list",
     "listBullet": "Bullet list",
-    "clean": "Clear formatting"
+    "clean": "Clear formatting",
+    "reset": "Reset"
   }
 }

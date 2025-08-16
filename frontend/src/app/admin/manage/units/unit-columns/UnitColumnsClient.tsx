@@ -443,8 +443,18 @@ const UnitColumnsClient = (props: Props) => {
           setDeletingItemIds([]);
           setSelectedItems([]);
         }}
-        confirmOnDelete={anySelectedHasData()}
-        confirmDeleteMessage={t("Columns/Confirm")}
+        confirmOnDelete={anySelectedHasData()} // <-- Unique.
+        confirmDeleteMessage={
+          <>
+            {t("Columns/Confirm1")}
+            <br />
+            <br />
+            {t("Columns/Confirm2")}
+            <br />
+            <br />
+            {t("Columns/Confirm3")}
+          </>
+        }
       />
     </>
   );

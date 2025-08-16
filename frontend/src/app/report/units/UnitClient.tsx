@@ -237,7 +237,7 @@ const UnitClient = (props: Props) => {
   const getShiftLabel = (shiftId: number) => {
     const s = shiftNames.find((x) => x.id === shiftId);
     if (!s) {
-      return `#${shiftId}`;
+      return t("Common/Unknown");
     }
 
     if (s.systemKey) {
@@ -245,6 +245,7 @@ const UnitClient = (props: Props) => {
       const tr = t(key);
       return tr !== key ? tr : s.name;
     }
+
     return s.name;
   };
 
@@ -488,10 +489,13 @@ const UnitClient = (props: Props) => {
           colorHex: ts.colorHex,
           textColorHex: ts.textColorHex,
         })),
+        isHidden: s.isHidden ?? false,
       }));
+
+      const visibleShifts = mapped.filter((s) => !s.isHidden);
       setShiftNames(mapped);
-      if (mapped.length > 0) {
-        setShiftOptions(mapped);
+      if (visibleShifts.length > 0) {
+        setShiftOptions(visibleShifts);
       }
     };
 
@@ -1192,17 +1196,20 @@ const UnitClient = (props: Props) => {
                     return null;
                   }
 
-                  // return (
-                  //   <span
-                  //     className={`${badgeClass} min-h-[40px] min-w-[40px] !text-base`}
-                  //     style={{
-                  //       backgroundColor: span.colorHex,
-                  //       color: span.textColorHex,
-                  //     }}
-                  //   >
-                  //     {span.name}
-                  //   </span>
-                  // );
+                  // return {
+                  //   <>
+                  //      <span>Nuvarande skift:</span>
+                  //     <span
+                  //       className={`${badgeClass} min-h-[40px] min-w-[40px] !text-base`}
+                  //       style={{
+                  //         backgroundColor: span.colorHex,
+                  //         color: span.textColorHex,
+                  //       }}
+                  //     >
+                  //       {span.name}
+                  //       </span>
+                  //   </>
+                  // };
                   return null;
                 })()}
               </div>
@@ -1322,7 +1329,6 @@ const UnitClient = (props: Props) => {
               </MenuDropdown>
             </div>
           </div>
-
           <div className="w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
             <table className="w-full max-w-full min-w-fit border-collapse overflow-x-auto">
               <thead className="bg-[var(--bg-grid-header)]">
@@ -1418,9 +1424,25 @@ const UnitClient = (props: Props) => {
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} whitespace-nowrap`}
                             >
                               {(() => {
-                                const sid = currentActiveShiftId;
+                                const sid = resolveShiftIdForTime(hour, 0);
+
+                                if (sid == null) {
+                                  return "?";
+                                }
+
+                                const shift = shiftNames.find(
+                                  (s) => s.id === sid,
+                                );
+                                if (!shift) {
+                                  return "?";
+                                }
+
                                 const span = getTeamSpanForHour(sid, hour);
-                                return span ? (
+                                if (!span) {
+                                  return "-";
+                                }
+
+                                return (
                                   <span
                                     className={`${badgeClass}`}
                                     style={{
@@ -1430,8 +1452,6 @@ const UnitClient = (props: Props) => {
                                   >
                                     {span.label}
                                   </span>
-                                ) : (
-                                  "-"
                                 );
                               })()}
                             </td>
@@ -2044,7 +2064,6 @@ const UnitClient = (props: Props) => {
               </tbody>
             </table>
           </div>
-
           <CustomTooltip content={t("Unit/Scroll to top")}>
             <button
               className={`${buttonSecondaryClass} ml-auto`}

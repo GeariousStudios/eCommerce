@@ -7,7 +7,7 @@ public static class ColorHelper
     {
         if (string.IsNullOrWhiteSpace(bgHex) || bgHex.Length != 7 || bgHex[0] != '#')
         {
-            return "#212121";
+            return "#000000";
         }
 
         byte r = Convert.ToByte(bgHex.Substring(1, 2), 16);
@@ -22,7 +22,7 @@ public static class ColorHelper
         double contrastBlack = (L + 0.05) / 0.05;
         double contrastWhite = 1.05 / (L + 0.05);
 
-        return contrastWhite >= contrastBlack ? "#e0e0e0" : "#212121";
+        return contrastWhite >= contrastBlack ? "#ffffff" : "#000000";
     }
 
     private static double SrgbToLinear(double c)

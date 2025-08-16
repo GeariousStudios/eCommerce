@@ -117,9 +117,23 @@ using (var scope = app.Services.CreateScope())
 
     if (!db.Users.Any())
     {
-        var newsTypeOne = new NewsType { Name = "Information" };
+        var newsTypeOne = new NewsType
+        {
+            Name = "Information",
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "System",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "System",
+        };
 
-        var newsTypeTwo = new NewsType { Name = "Meddelande" };
+        var newsTypeTwo = new NewsType
+        {
+            Name = "Meddelande",
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "System",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "System",
+        };
 
         db.NewsTypes.AddRange(newsTypeOne, newsTypeTwo);
         await db.SaveChangesAsync();
@@ -132,7 +146,10 @@ using (var scope = app.Services.CreateScope())
             Headline = "Maskineri",
             Content =
                 "<div><ol><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Frontend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Bibliotek/ramverk:</strong> React (Next.js)</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> TypeScript, Tailwind, CSS</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Komponentsbibliotek:</strong> Inget, samtliga komponenter är skapade av mig</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ikonbibliotek:</strong> heroicons.com</li><li data-list='bullet'><span class='ql-ui' contenteditable='false'></span>Backend:</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Ramverk:</strong> ASP NET Core</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Språk:</strong> C#</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Databas:</strong> SQLite</li><li data-list='bullet' class='ql-indent-1'><span class='ql-ui' contenteditable='false'></span><strong>Server:</strong> Render</li></ol><p><br></p></div>",
-            CreatedBy = "Liam Fritzson",
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "System",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "System",
         };
 
         var newsItemTwo = new News
@@ -142,8 +159,11 @@ using (var scope = app.Services.CreateScope())
             TypeName = newsTypeOne.Name,
             Headline = "Kontaktuppgifter",
             Content =
-                "<div><p>liam0765@outlook.com</p><p>0765948648</p><p>https://www.linkedin.com/in/liam-fritzson-540206362/</p></div>",
-            CreatedBy = "Liam Fritzson",
+                "<div><p>liam0765@outlook.com</p><p>0765948648</p><p>https://www.linkedin.com/in/liam-fritzson-540206362/</p><p><br></p></div>",
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "System",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "System",
         };
 
         var newsItemThree = new News
@@ -153,8 +173,11 @@ using (var scope = app.Services.CreateScope())
             TypeName = newsTypeTwo.Name,
             Headline = "Välkommen hit!",
             Content =
-                "<div><p>Den här webbapplikationen är ett exempel på mina färdigheter inom frontend- och backendutveckling.</p><p>Klicka runt och upptäck!</p><p><br></p><p><strong>I dagsläget kan du göra följande:</strong></p><p><br></p><p><strong style=color: rgb(102, 163, 224);>ANVÄNDARE</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Logga in</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra enkla inställningar kopplat till ditt konto</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Hantera användare</li></ol><p><br></p><p><strong style=color: rgb(102, 163, 224);>RAPPORTERING</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa grupp (t.ex. Fyllning)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kategori + underkategorier (t.ex. Innerpåstillverkning -&gt; Maskindel 1A)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kolumner (t.ex. Antal producerade)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa enhet (t.ex. Lina I) och knyta samtliga ovan till enheten</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Gå in på din enhet och rapportera</li></ol><p><br></p><p><strong style=color: rgb(102, 163, 224);>ÖVRIGT</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Administrera nyheter här på startsidan</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Mörkt/ljust tema</li></ol><p><br></p><p><strong>Detta är lite av vad som finns i loopen:</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Fortsätta jobba på rapporteringsvyn!</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Klickbara breadcrumbs (fler navigeringsvyer)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>En redigerbar navbar (kunna lägga till favoriter osv)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Påbörja pulsvyn</li></ol></div>",
-            CreatedBy = "Liam Fritzson",
+                "<div><p>Den här webbapplikationen är ett exempel på mina färdigheter inom frontend- och backendutveckling.</p><p>Klicka runt och upptäck!</p><p><br></p><p>I dagsläget kan du göra följande:</p><p><br></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Logga in/ut</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra inställningar kopplat till ditt konto</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra tema</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra språk</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Administrera nyheter här på startsidan</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Markera favoriter i navbaren</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Hantera användare</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa grupper (t.ex. Fyllning)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kategorier + underkategorier (t.ex. Innerpåstillverkning -&gt; Maskindel 1A)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kolumner (t.ex. Antal producerade)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa lag (t.ex. Skift 1)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa skift (t.ex. 3-skift) och knyta lag till skiftet</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa enheter (t.ex. Lina I) och knyta samtliga ovan till enheten</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Gå in på din enhet och rapportera</li></ol><p><br></p><p>Detta är lite av vad som finns i loopen:</p><p><br></p><ol><li data-list=ordered><span class=ql-ui contenteditable=false></span>Fortsätta jobba på rapporteringsvyn!</li><li data-list=ordered><span class=ql-ui contenteditable=false></span>Klickbara breadcrumbs (fler navigeringsvyer)</li><li data-list=ordered><span class=ql-ui contenteditable=false></span>Påbörja pulsvyn</li></ol><p><br></p></div>",
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "System",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "System",
         };
 
         var masterUser = new User
@@ -189,16 +212,27 @@ using (var scope = app.Services.CreateScope())
             CreationDate = DateTime.UtcNow,
         };
 
-        var column = new UnitColumn
+        var columnOne = new UnitColumn
         {
             Name = "Antal producerade",
             DataType = UnitColumnDataType.Number,
             CreationDate = DateTime.UtcNow,
-            CreatedBy = "Liam Fritzson",
+            CreatedBy = "System",
             UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "Liam Fritzson",
+            UpdatedBy = "System",
         };
-        db.UnitColumns.Add(column);
+
+        var columnTwo = new UnitColumn
+        {
+            Name = "Kommentar",
+            DataType = UnitColumnDataType.Text,
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "System",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "System",
+        };
+
+        db.UnitColumns.AddRange(columnOne, columnTwo);
         await db.SaveChangesAsync();
 
         var subCategory1 = new SubCategory { Name = "Maskindel 1A" };
@@ -215,11 +249,123 @@ using (var scope = app.Services.CreateScope())
                 new CategoryToSubCategory { SubCategoryId = subCategory2.Id, Order = 1 },
             },
             CreationDate = DateTime.UtcNow,
-            CreatedBy = "Liam Fritzson",
+            CreatedBy = "System",
             UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "Liam Fritzson",
+            UpdatedBy = "System",
         };
         db.Categories.Add(category);
+        await db.SaveChangesAsync();
+
+        var shiftTeam = new ShiftTeam
+        {
+            Name = "Dag",
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "System",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "System",
+        };
+        db.ShiftTeams.Add(shiftTeam);
+        await db.SaveChangesAsync();
+
+        var today = DateTime.UtcNow.Date;
+        var monday = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
+
+        var unmannedShift = new Shift
+        {
+            Name = "Unmanned",
+            SystemKey = ShiftSystemKey.Unmanned,
+            CycleLengthWeeks = 1,
+            AnchorWeekStart = DateOnly.FromDateTime(monday),
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "System",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "System",
+        };
+        db.Shifts.Add(unmannedShift);
+        await db.SaveChangesAsync();
+
+        var shift = new Shift
+        {
+            Name = "Dagskift",
+            CycleLengthWeeks = 1,
+            AnchorWeekStart = DateOnly.FromDateTime(monday),
+            CreationDate = DateTime.UtcNow,
+            CreatedBy = "System",
+            UpdateDate = DateTime.UtcNow,
+            UpdatedBy = "System",
+        };
+        db.Shifts.Add(shift);
+        await db.SaveChangesAsync();
+
+        db.ShiftToShiftTeams.Add(
+            new ShiftToShiftTeam
+            {
+                ShiftId = shift.Id,
+                ShiftTeamId = shiftTeam.Id,
+                DisplayName = "D",
+                Order = 0,
+            }
+        );
+
+        var start = new TimeSpan(8, 30, 0);
+        var end = new TimeSpan(16, 0, 0);
+
+        db.ShiftToShiftTeamSchedules.AddRange(
+            new[]
+            {
+                new ShiftToShiftTeamSchedule
+                {
+                    ShiftId = shift.Id,
+                    ShiftTeamId = shiftTeam.Id,
+                    WeekIndex = 0,
+                    DayOfWeek = DayOfWeek.Monday,
+                    StartTime = start,
+                    EndTime = end,
+                    Order = 0,
+                },
+                new ShiftToShiftTeamSchedule
+                {
+                    ShiftId = shift.Id,
+                    ShiftTeamId = shiftTeam.Id,
+                    WeekIndex = 0,
+                    DayOfWeek = DayOfWeek.Tuesday,
+                    StartTime = start,
+                    EndTime = end,
+                    Order = 1,
+                },
+                new ShiftToShiftTeamSchedule
+                {
+                    ShiftId = shift.Id,
+                    ShiftTeamId = shiftTeam.Id,
+                    WeekIndex = 0,
+                    DayOfWeek = DayOfWeek.Wednesday,
+                    StartTime = start,
+                    EndTime = end,
+                    Order = 2,
+                },
+                new ShiftToShiftTeamSchedule
+                {
+                    ShiftId = shift.Id,
+                    ShiftTeamId = shiftTeam.Id,
+                    WeekIndex = 0,
+                    DayOfWeek = DayOfWeek.Thursday,
+                    StartTime = start,
+                    EndTime = end,
+                    Order = 3,
+                },
+                new ShiftToShiftTeamSchedule
+                {
+                    ShiftId = shift.Id,
+                    ShiftTeamId = shiftTeam.Id,
+                    WeekIndex = 0,
+                    DayOfWeek = DayOfWeek.Friday,
+                    StartTime = start,
+                    EndTime = end,
+                    Order = 4,
+                },
+            }
+        );
+
         await db.SaveChangesAsync();
 
         var unitGroup = new UnitGroup
@@ -227,9 +373,9 @@ using (var scope = app.Services.CreateScope())
             Name = "Fyllning",
             Units = new List<Unit>(),
             CreationDate = DateTime.UtcNow,
-            CreatedBy = "Liam Fritzson",
+            CreatedBy = "System",
             UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "Liam Fritzson",
+            UpdatedBy = "System",
         };
         db.UnitGroups.Add(unitGroup);
         await db.SaveChangesAsync();
@@ -241,21 +387,58 @@ using (var scope = app.Services.CreateScope())
             UnitGroupId = unitGroup.Id,
             UnitGroup = unitGroup,
             CreationDate = DateTime.UtcNow,
-            CreatedBy = "Liam Fritzson",
+            CreatedBy = "System",
             UpdateDate = DateTime.UtcNow,
-            UpdatedBy = "Liam Fritzson",
+            UpdatedBy = "System",
         };
         db.Units.Add(unit);
         await db.SaveChangesAsync();
 
         db.UnitToCategories.Add(new UnitToCategory { UnitId = unit.Id, CategoryId = category.Id });
 
-        db.UnitToUnitColumns.Add(
+        db.UnitToUnitColumns.AddRange(
             new UnitToUnitColumn
             {
                 UnitId = unit.Id,
-                UnitColumnId = column.Id,
+                UnitColumnId = columnOne.Id,
                 Order = 0,
+            },
+            new UnitToUnitColumn
+            {
+                UnitId = unit.Id,
+                UnitColumnId = columnTwo.Id,
+                Order = 1,
+            }
+        );
+
+        db.UnitToShifts.AddRange(
+            new UnitToShift
+            {
+                UnitId = unit.Id,
+                ShiftId = unmannedShift.Id,
+                IsActive = true,
+                Order = 0,
+            },
+            new UnitToShift
+            {
+                UnitId = unit.Id,
+                ShiftId = shift.Id,
+                IsActive = false,
+                Order = 1,
+            }
+        );
+
+        db.UnitShiftChanges.Add(
+            new UnitShiftChange
+            {
+                UnitId = unit.Id,
+                OldShiftId = 0,
+                NewShiftId = unmannedShift.Id,
+                EffectiveFromUtc = DateTime.UtcNow,
+                CreationDate = DateTime.UtcNow,
+                CreatedBy = "System",
+                UpdateDate = DateTime.UtcNow,
+                UpdatedBy = "System",
             }
         );
 

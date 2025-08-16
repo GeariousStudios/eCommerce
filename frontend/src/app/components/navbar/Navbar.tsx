@@ -57,7 +57,7 @@ const Navbar = (props: Props) => {
   const [isAnyDragging, setIsAnyDragging] = useState(false);
 
   // --- Other ---
-  const { isAuthReady, isDev, isAdmin } = useAuthStatus();
+  const { isAuthReady, isDev, isAdmin, isLoggedIn } = useAuthStatus();
   const { currentTheme } = useTheme();
   const { notify } = useToast();
   const isDesktop = useIsDesktop();
@@ -69,6 +69,7 @@ const Navbar = (props: Props) => {
     addUserFavourite,
     removeUserFavourite,
     reorderFavourites,
+    isLoadingFavourites,
   } = useFavourites();
 
   // --- BACKEND ---
@@ -289,7 +290,7 @@ const Navbar = (props: Props) => {
       unitItems.map((it) => ({
         ...it,
         isFavourite: favourites.some((f) => f.href === it.href),
-        onToggleFavourite,
+        onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
       })),
     [unitItems, favourites],
   );
@@ -432,8 +433,11 @@ const Navbar = (props: Props) => {
                                   icon={fav.icon}
                                   isFavourite
                                   isDragging={isAnyDragging}
-                                  onToggleFavourite={(isFav, href) =>
-                                    onToggleFavourite(isFav, href)
+                                  onToggleFavourite={
+                                    isLoggedIn
+                                      ? (isFav, href) =>
+                                          onToggleFavourite(isFav, href)
+                                      : undefined
                                   }
                                 />
                               );
@@ -456,7 +460,9 @@ const Navbar = (props: Props) => {
                             isFavourite={favourites.some(
                               (f) => f.href === "/developer/manage/users/",
                             )}
-                            onToggleFavourite={onToggleFavourite}
+                            onToggleFavourite={
+                              isLoggedIn ? onToggleFavourite : undefined
+                            }
                           />
                           <hr className="mt-4 mb-7 rounded-full text-[var(--border-main)]" />
                         </div>
@@ -471,7 +477,9 @@ const Navbar = (props: Props) => {
                         label={t("Navbar/Home")}
                         icon="HomeIcon"
                         isFavourite={favourites.some((f) => f.href === "/")}
-                        onToggleFavourite={onToggleFavourite}
+                        onToggleFavourite={
+                          isLoggedIn ? onToggleFavourite : undefined
+                        }
                       />
 
                       <NavbarSubmenu
@@ -512,7 +520,7 @@ const Navbar = (props: Props) => {
                             label={t("Common/Manage")}
                             icon={Outline.WrenchIcon}
                             iconHover={Solid.WrenchIcon}
-                            requiresAdmin
+                            // requiresAdmin
                             menus={[
                               {
                                 label: t("Common/Units"),
@@ -520,7 +528,9 @@ const Navbar = (props: Props) => {
                                   {
                                     href: "/admin/manage/units/unit-groups/",
                                     label: t("Common/Groups"),
-                                    onToggleFavourite,
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
                                     isFavourite: favourites.some(
                                       (f) =>
                                         f.href ===
@@ -531,7 +541,9 @@ const Navbar = (props: Props) => {
                                     href: "/admin/manage/units/",
                                     label: t("Common/Units"),
 
-                                    onToggleFavourite,
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
                                     isFavourite: favourites.some(
                                       (f) => f.href === "/admin/manage/units/",
                                     ),
@@ -541,7 +553,9 @@ const Navbar = (props: Props) => {
                                     href: "/admin/manage/units/categories/",
                                     label: t("Common/Categories"),
 
-                                    onToggleFavourite,
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
                                     isFavourite: favourites.some(
                                       (f) =>
                                         f.href ===
@@ -552,7 +566,9 @@ const Navbar = (props: Props) => {
                                     href: "/admin/manage/units/unit-columns/",
                                     label: t("Common/Columns"),
 
-                                    onToggleFavourite,
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
                                     isFavourite: favourites.some(
                                       (f) =>
                                         f.href ===
@@ -568,7 +584,9 @@ const Navbar = (props: Props) => {
                                     href: "/admin/manage/shifts/",
                                     label: t("Common/Shifts"),
 
-                                    onToggleFavourite,
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
                                     isFavourite: favourites.some(
                                       (f) => f.href === "/admin/manage/shifts/",
                                     ),
@@ -580,7 +598,9 @@ const Navbar = (props: Props) => {
                                     href: "/admin/manage/shifts/shift-teams/",
                                     label: t("Common/Shift teams"),
 
-                                    onToggleFavourite,
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
                                     isFavourite: favourites.some(
                                       (f) =>
                                         f.href ===
@@ -599,7 +619,9 @@ const Navbar = (props: Props) => {
                                     href: "/admin/manage/news/news-types/",
                                     label: t("Common/Types"),
 
-                                    onToggleFavourite,
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
                                     isFavourite: favourites.some(
                                       (f) =>
                                         f.href ===

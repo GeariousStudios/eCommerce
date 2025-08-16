@@ -332,9 +332,9 @@ const UnitCellModal = (props: Props) => {
                 </div>
 
                 <SingleDropdown
-                  addSpacer={unitColumns.length < 2}
+                  addSpacer={unitColumns.length < 1}
                   scrollContainer={getScrollEl}
-                  customSpace={3}
+                  customSpace={0}
                   id="selectedHour"
                   label={t("Common/Hour")}
                   value={selectedHour}

@@ -64,7 +64,7 @@ const ShiftModal = (props: Props) => {
   const [shiftTeams, setShiftTeams] = useState<ShiftTeamOptions[]>([]);
   const [weeklyTimes, setWeeklyTimes] = useState<WeeklyTime[]>([]);
   const [cycleLengthWeeks, setCycleLengthWeeks] = useState(1);
-  // const [anchorWeekStart, setAnchorWeekStart] = useState<string>("");
+  const [anchorWeekStart, setAnchorWeekStart] = useState<string>("");
   const [shiftTeamDisplayNames, setShiftTeamDisplayNames] = useState<
     Record<number, string>
   >({});
@@ -82,8 +82,8 @@ const ShiftModal = (props: Props) => {
     [],
   );
   const [originalCycleLengthWeeks, setOriginalCycleLengthWeeks] = useState(1);
-  // const [originalAnchorWeekStart, setOriginalAnchorWeekStart] =
-  //   useState<string>("");
+  const [originalAnchorWeekStart, setOriginalAnchorWeekStart] =
+    useState<string>("");
   const [originalShiftTeamDisplayNames, setOriginalShiftTeamDisplayNames] =
     useState<Record<number, string>>({});
 
@@ -134,8 +134,8 @@ const ShiftModal = (props: Props) => {
       setCycleLengthWeeks(1);
       setOriginalCycleLengthWeeks(1);
 
-      // setAnchorWeekStart("");
-      // setOriginalAnchorWeekStart("");
+      setAnchorWeekStart("");
+      setOriginalAnchorWeekStart("");
 
       setSelectionByTeam({});
 
@@ -177,7 +177,7 @@ const ShiftModal = (props: Props) => {
             ]),
           ),
           cycleLengthWeeks,
-          // anchorWeekStart: anchorWeekStart || null,
+          anchorWeekStart: anchorWeekStart || null,
         }),
       });
 
@@ -312,8 +312,8 @@ const ShiftModal = (props: Props) => {
     setCycleLengthWeeks(result.cycleLengthWeeks ?? 1);
     setOriginalCycleLengthWeeks(result.cycleLengthWeeks ?? 1);
 
-    // setAnchorWeekStart(result.anchorWeekStart ?? "");
-    // setOriginalAnchorWeekStart(result.anchorWeekStart ?? "");
+    setAnchorWeekStart(result.anchorWeekStart ?? "");
+    setOriginalAnchorWeekStart(result.anchorWeekStart ?? "");
 
     const ids: number[] = result.shiftTeamIds ?? [];
     const displayMap: Record<number, string> = {};
@@ -360,7 +360,7 @@ const ShiftModal = (props: Props) => {
             ]),
           ),
           cycleLengthWeeks,
-          // anchorWeekStart: anchorWeekStart || null,
+          anchorWeekStart: anchorWeekStart || null,
         }),
       });
 
@@ -459,7 +459,8 @@ const ShiftModal = (props: Props) => {
         isHidden !== false ||
         JSON.stringify(shiftTeamIds) !== JSON.stringify([]) ||
         JSON.stringify(weeklyTimes) !== JSON.stringify([]) ||
-        JSON.stringify(shiftTeamDisplayNames) !== JSON.stringify({});
+        JSON.stringify(shiftTeamDisplayNames) !== JSON.stringify({}) ||
+        anchorWeekStart !== "";
 
       setIsDirty(dirty);
       return;
@@ -471,7 +472,7 @@ const ShiftModal = (props: Props) => {
       JSON.stringify(shiftTeamIds) !== JSON.stringify(originalShiftTeamIds) ||
       JSON.stringify(weeklyTimes) !== JSON.stringify(originalWeeklyTimes) ||
       cycleLengthWeeks !== originalCycleLengthWeeks ||
-      // anchorWeekStart !== originalAnchorWeekStart ||
+      anchorWeekStart !== originalAnchorWeekStart ||
       JSON.stringify(shiftTeamDisplayNames) !==
         JSON.stringify(originalShiftTeamDisplayNames);
 
@@ -483,12 +484,14 @@ const ShiftModal = (props: Props) => {
     shiftTeamIds,
     weeklyTimes,
     cycleLengthWeeks,
+    anchorWeekStart,
     shiftTeamDisplayNames,
     originalName,
     originalIsHidden,
     originalShiftTeamIds,
     originalWeeklyTimes,
     originalCycleLengthWeeks,
+    originalAnchorWeekStart,
     originalShiftTeamDisplayNames,
   ]);
 
@@ -626,6 +629,18 @@ const ShiftModal = (props: Props) => {
         wt.dayOfWeek === dayOfWeek,
     );
 
+  const toMonday = (dateStr: string): string => {
+    if (!dateStr) {
+      return "";
+    }
+
+    const d = new Date(dateStr);
+    const day = d.getDay();
+    const diff = (day + 6) % 7;
+    d.setDate(d.getDate() - diff);
+    return d.toISOString().slice(0, 10);
+  };
+
   return (
     <>
       {props.isOpen && (
@@ -693,48 +708,60 @@ const ShiftModal = (props: Props) => {
                   required
                 />
 
-                <MultiDropdown
-                  addSpacer={shiftTeamIds.length === 0 && shiftTeams.length > 3}
-                  scrollContainer={getScrollEl}
-                  label={t("Common/Shift teams")}
-                  value={shiftTeamIds.map(String)}
-                  onChange={(vals: string[]) => {
-                    const ids = vals.map(Number);
-                    setShiftTeamIds(ids);
-
-                    setWeeklyTimes((prev) =>
-                      prev.filter((wt) => ids.includes(wt.teamId)),
-                    );
-
-                    setShiftTeamDisplayNames((prev) => {
-                      const next = { ...prev };
-                      ids.forEach((id) => {
-                        if (!(id in next)) next[id] = "";
-                      });
-                      Object.keys(next).forEach((k) => {
-                        if (!ids.includes(Number(k))) delete next[Number(k)];
-                      });
-                      return next;
-                    });
-
-                    setSelectionByTeam((prev) => {
-                      const next: Record<
-                        number,
-                        { weekIndex: number; dayOfWeek: number }
-                      > = {};
-                      ids.forEach((id) => {
-                        next[id] = prev[id] ?? { weekIndex: 0, dayOfWeek: 0 };
-                      });
-                      return next;
-                    });
-                  }}
-                  options={shiftTeams.map((t) => ({
-                    label: t.name,
-                    value: String(t.id),
-                  }))}
+                <Input
+                  id={props.itemId  ? "disabled" : undefined}
+                  type="date"
+                  label={t("ShiftModal/Anchor week start")}
+                  value={anchorWeekStart}
+                  onChange={(val) =>
+                    setAnchorWeekStart(toMonday(String(val ?? "")))
+                  }
                   onModal
+                  required
                 />
               </div>
+
+              <MultiDropdown
+                addSpacer={shiftTeamIds.length === 0 && shiftTeams.length > 3}
+                scrollContainer={getScrollEl}
+                label={t("Common/Shift teams")}
+                value={shiftTeamIds.map(String)}
+                onChange={(vals: string[]) => {
+                  const ids = vals.map(Number);
+                  setShiftTeamIds(ids);
+
+                  setWeeklyTimes((prev) =>
+                    prev.filter((wt) => ids.includes(wt.teamId)),
+                  );
+
+                  setShiftTeamDisplayNames((prev) => {
+                    const next = { ...prev };
+                    ids.forEach((id) => {
+                      if (!(id in next)) next[id] = "";
+                    });
+                    Object.keys(next).forEach((k) => {
+                      if (!ids.includes(Number(k))) delete next[Number(k)];
+                    });
+                    return next;
+                  });
+
+                  setSelectionByTeam((prev) => {
+                    const next: Record<
+                      number,
+                      { weekIndex: number; dayOfWeek: number }
+                    > = {};
+                    ids.forEach((id) => {
+                      next[id] = prev[id] ?? { weekIndex: 0, dayOfWeek: 0 };
+                    });
+                    return next;
+                  });
+                }}
+                options={shiftTeams.map((t) => ({
+                  label: t.name,
+                  value: String(t.id),
+                }))}
+                onModal
+              />
 
               {shiftTeamIds.length > 0 && (
                 <div className="flex flex-col gap-6">

@@ -684,9 +684,9 @@ const ReportModal = (props: Props) => {
                   </div>
 
                   <SingleDropdown
-                    addSpacer={reports.length === 0}
+                    // addSpacer={reports.length === 0}
                     scrollContainer={getScrollEl}
-                    customSpace={3}
+                    // customSpace={3}
                     id="selectedHour"
                     label={t("Common/Hour")}
                     value={selectedHour}

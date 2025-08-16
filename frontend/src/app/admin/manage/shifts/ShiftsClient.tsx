@@ -408,7 +408,7 @@ const ShiftsClient = (props: Props) => {
   // const anySelectedInUse = () => {
   //   // <-- Unique.
   //   return items.some(
-  //     (item) => deletingItemIds.includes(item.id) && item.hasUnits,
+  //     (item) => deletingItemIds.includes(item.id) && item.units.length > 0,
   //   );
   // };
 
@@ -472,7 +472,18 @@ const ShiftsClient = (props: Props) => {
           setDeletingItemIds([]);
           setSelectedItems([]);
         }}
-        // confirmOnDelete={anySelectedInUse()} // <-- Unique.
+        confirmOnDelete // <-- Unique.
+        confirmDeleteMessage={
+          <>
+            {t("Shifts/Confirm1")}
+            <br />
+            <br />
+            {t("Shifts/Confirm2")}
+            <br />
+            <br />
+            {t("Shifts/Confirm3")}
+          </>
+        }
       />
     </>
   );
