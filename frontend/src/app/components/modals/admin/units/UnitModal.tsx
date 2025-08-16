@@ -136,7 +136,7 @@ const UnitModal = (props: Props) => {
           isHidden,
           unitColumnIds,
           categoryIds,
-          shiftIds
+          shiftIds,
         }),
       });
 
@@ -595,16 +595,16 @@ const UnitModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-                <MultiDropdown
-                  label={t("Common/Categories")}
-                  value={categoryIds.map(String)}
-                  onChange={(val: string[]) => setCategoryIds(val.map(Number))}
-                  options={categories.map((c) => ({
-                    label: c.name,
-                    value: String(c.id),
-                  }))}
-                  onModal
-                />
+              <MultiDropdown
+                label={t("Common/Categories")}
+                value={categoryIds.map(String)}
+                onChange={(val: string[]) => setCategoryIds(val.map(Number))}
+                options={categories.map((c) => ({
+                  label: c.name,
+                  value: String(c.id),
+                }))}
+                onModal
+              />
 
               {categoryIds.length > 0 && (
                 <>
@@ -649,18 +649,18 @@ const UnitModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-                <MultiDropdown
-                  addSpacer={shiftIds.length === 0 && shifts.length > 3}
-                  scrollContainer={getScrollEl}
-                  label={t("Common/Shifts")}
-                  value={shiftIds.map(String)}
-                  onChange={(val: string[]) => setShiftIds(val.map(Number))}
-                  options={shifts.map((c) => ({
-                    label: c.name,
-                    value: String(c.id),
-                  }))}
-                  onModal
-                />
+              <MultiDropdown
+                addSpacer={shiftIds.length === 0 && shifts.length > 3}
+                scrollContainer={getScrollEl}
+                label={t("Common/Shifts")}
+                value={shiftIds.map(String)}
+                onChange={(val: string[]) => setShiftIds(val.map(Number))}
+                options={shifts.map((c) => ({
+                  label: c.name,
+                  value: String(c.id),
+                }))}
+                onModal
+              />
 
               {shiftIds.length > 0 && (
                 <>

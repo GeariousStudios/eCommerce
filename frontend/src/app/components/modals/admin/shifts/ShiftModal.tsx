@@ -709,7 +709,7 @@ const ShiftModal = (props: Props) => {
                 />
 
                 <Input
-                  id={props.itemId  ? "disabled" : undefined}
+                  id={props.itemId ? "disabled" : undefined}
                   type="date"
                   label={t("ShiftModal/Anchor week start")}
                   value={anchorWeekStart}

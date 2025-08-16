@@ -19,65 +19,83 @@ const DragDrop = <T,>({
   disableClass = false,
   containerClassName,
 }: DragDropProps<T>) => {
-  const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragItemRef = useRef<T | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const ghostRef = useRef<HTMLElement | null>(null);
+
+  const makeGhostFrom = (el: HTMLElement) => {
+    const clone = el.cloneNode(true) as HTMLElement;
+    clone.style.position = "fixed";
+    clone.style.top = "-10000px";
+    clone.style.left = "-10000px";
+    clone.style.pointerEvents = "none";
+    clone.style.opacity = "0.9";
+    clone.style.transform = "translateZ(0)";
+    clone.style.width = `${el.getBoundingClientRect().width}px`;
+    document.body.appendChild(clone);
+    ghostRef.current = clone;
+    return clone;
+  };
+
+  const cleanupGhost = () => {
+    if (ghostRef.current?.parentNode) {
+      ghostRef.current.parentNode.removeChild(ghostRef.current);
+    }
+    ghostRef.current = null;
+  };
 
   const handleDragStart = (e: React.DragEvent, item: T) => {
     dragItemRef.current = item;
-    setDraggingId(getId(item));
+    const id = getId(item);
+    setDraggingId(id);
     onDraggingChange?.(true);
+
+    try {
+      e.dataTransfer.clearData();
+      e.dataTransfer.setData("text/plain", "");
+      e.dataTransfer.setData("text/uri-list", "");
+    } catch {}
 
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.dropEffect = "move";
-    e.dataTransfer.setData("text/plain", getId(item));
+
+    const target = e.currentTarget as HTMLElement;
+    const ghost = makeGhostFrom(target);
+    const rect = target.getBoundingClientRect();
+    const offsetX = e.clientX - rect.left;
+    const offsetY = e.clientY - rect.top;
+    e.dataTransfer.setDragImage(ghost, offsetX, offsetY);
   };
 
-  const handleDragOver = (e: React.DragEvent, targetItem: T) => {
-    e.preventDefault();
-
+  const handleDragEnter = (_e: React.DragEvent, targetItem: T) => {
     const draggedItem = dragItemRef.current;
-    if (!draggedItem || getId(draggedItem) === getId(targetItem)) return;
+    if (!draggedItem) return;
 
-    const targetElement = e.currentTarget;
-    const targetRect = targetElement.getBoundingClientRect();
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
-
-    const centerY = targetRect.top + targetRect.height / 2;
-    const centerX = targetRect.left + targetRect.width / 2;
-
-    const isHorizontal = targetRect.width > targetRect.height;
-    const before = isHorizontal ? mouseX < centerX : mouseY < centerY;
+    const draggedId = getId(draggedItem);
+    const targetId = getId(targetItem);
+    if (draggedId === targetId) return;
 
     const newList = [...items];
-    const fromIndex = newList.findIndex((i) => getId(i) === getId(draggedItem));
-    const toIndex = newList.findIndex((i) => getId(i) === getId(targetItem));
-
-    if (fromIndex === -1 || toIndex === -1) return;
+    const fromIndex = newList.findIndex((i) => getId(i) === draggedId);
+    const toIndex = newList.findIndex((i) => getId(i) === targetId);
+    if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return;
 
     newList.splice(fromIndex, 1);
-    const insertAt = toIndex + (before ? 0 : 1);
-
-    newList.splice(
-      insertAt <= fromIndex ? insertAt : insertAt - 1,
-      0,
-      draggedItem,
-    );
+    newList.splice(toIndex, 0, draggedItem);
     onReorder(newList);
   };
 
   const handleDragEnd = () => {
     setDraggingId(null);
     dragItemRef.current = null;
+    cleanupGhost();
     onDraggingChange?.(false);
   };
 
   return (
     <div
       className={`${containerClassName ?? (disableClass ? "" : "flex flex-wrap gap-2")}`}
-      onDragEnter={(e) => e.preventDefault()}
       onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => e.preventDefault()}
     >
       {items.map((item) => {
         const id = getId(item);
@@ -88,8 +106,8 @@ const DragDrop = <T,>({
             key={id}
             draggable
             onDragStart={(e) => handleDragStart(e, item)}
-            onDragEnter={(e) => e.preventDefault()}
-            onDragOver={(e) => handleDragOver(e, item)}
+            onDragEnter={(e) => handleDragEnter(e, item)}
+            onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => e.preventDefault()}
             onDragEnd={handleDragEnd}
             className={`${isDragging ? "cursor-grabbing opacity-50" : "cursor-grab opacity-100"}`}
