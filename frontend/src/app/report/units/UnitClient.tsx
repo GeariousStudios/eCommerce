@@ -128,7 +128,6 @@ const UnitClient = (props: Props) => {
     id: s.id,
     label: s.systemKey ? t(`Shifts/${s.systemKey}`) : s.name,
   }));
-  const [shiftTeamSpans, setShiftTeamSpans] = useState<ShiftTeamSpan[]>([]);
   const [shiftChanges, setShiftChanges] = useState<ShiftChange[]>([]);
   const [openChangeMenuId, setOpenChangeMenuId] = useState<number | null>(null);
   const [editChangeDate, setEditChangeDate] = useState<string>("");
@@ -220,19 +219,21 @@ const UnitClient = (props: Props) => {
   };
 
   const toMinutes = (s: string) => {
-    if (!s) return NaN;
+    if (!s) {
+      return NaN;
+    }
+
     const clean = s.trim().replace(".", ":");
     const [hStr, mStr = "0"] = clean.split(":");
     const hh = Number(hStr);
     const mm = Number(mStr);
-    if (Number.isNaN(hh) || Number.isNaN(mm)) return NaN;
+
+    if (Number.isNaN(hh) || Number.isNaN(mm)) {
+      return NaN;
+    }
+
     return hh * 60 + mm;
   };
-
-  useEffect(() => {
-    const active = shiftNames.find((s) => s.id === activeShiftId);
-    setShiftTeamSpans(active?.teamSpans ?? []);
-  }, [activeShiftId, shiftNames]);
 
   const getShiftLabel = (shiftId: number) => {
     const s = shiftNames.find((x) => x.id === shiftId);
@@ -586,7 +587,11 @@ const UnitClient = (props: Props) => {
         "HH:mm",
         `${String(change.hour).padStart(2, "0")}:${String(change.minute ?? 0).padStart(2, "0")}`,
       );
-      if (!nt) return;
+
+      if (!nt) {
+        return;
+      }
+
       time = nt;
     }
 
@@ -643,7 +648,9 @@ const UnitClient = (props: Props) => {
 
   useEffect(() => {
     const isToday = isSameDate(selectedDate, new Date());
-    if (!isToday) return;
+    if (!isToday) {
+      return;
+    }
 
     let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -1155,14 +1162,16 @@ const UnitClient = (props: Props) => {
                 >
                   <ChevronLeftIcon className="min-h-full min-w-full" />
                 </button>
-                <Input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(val) => {
-                    updateDate(String(val));
-                  }}
-                  notRounded
-                />
+                <div className="flex max-w-40 min-w-40">
+                  <Input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(val) => {
+                      updateDate(String(val));
+                    }}
+                    notRounded
+                  />
+                </div>
                 <button
                   className={`${buttonSecondaryClass} rounded-l-none`}
                   onClick={goToNextDay}
@@ -1176,44 +1185,6 @@ const UnitClient = (props: Props) => {
 
           <div className="flex justify-between gap-4">
             <div className="relative ml-auto flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                {(() => {
-                  const sid = resolveShiftIdForTime(currentHour, currentMinute);
-                  const realHour = new Date().getHours();
-                  const span = getTeamSpanForHour(sid, realHour);
-
-                  if (!span) {
-                    // const shift = shiftNames.find((s) => s.id === sid);
-                    // return (
-                    //   <span className="text-[var(--text-secondary)] italic">
-                    //     {shift
-                    //       ? shift.systemKey
-                    //         ? t(`Shifts/${shift.systemKey}`)
-                    //         : shift.name
-                    //       : "-"}
-                    //   </span>
-                    // );
-                    return null;
-                  }
-
-                  // return {
-                  //   <>
-                  //      <span>Nuvarande skift:</span>
-                  //     <span
-                  //       className={`${badgeClass} min-h-[40px] min-w-[40px] !text-base`}
-                  //       style={{
-                  //         backgroundColor: span.colorHex,
-                  //         color: span.textColorHex,
-                  //       }}
-                  //     >
-                  //       {span.name}
-                  //       </span>
-                  //   </>
-                  // };
-                  return null;
-                })()}
-              </div>
-
               <CustomTooltip
                 content={`${!props.isReporter ? t("Common/No access") : ""}`}
               >
@@ -1404,6 +1375,7 @@ const UnitClient = (props: Props) => {
                             className={`${hour % 2 === 0 ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} group/row cursor-pointer transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
                           >
                             {/* --- Standard <td>s --- */}
+                            {/* --- Expand <td> --- */}
                             <td
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)] group-hover/row:bg-[var(--bg-grid-header-hover)]" : "bg-[var(--bg-grid-zebra)] group-hover/row:bg-[var(--bg-grid-header-hover)]"} sticky left-0 w-[52.5px] border-l-0 whitespace-nowrap transition-[background] duration-[var(--fast)]`}
                             >
@@ -1415,11 +1387,15 @@ const UnitClient = (props: Props) => {
                                 )}
                               </div>
                             </td>
+
+                            {/* --- Time <td> --- */}
                             <td
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)] group-hover/row:bg-[var(--bg-grid-header-hover)]" : "bg-[var(--bg-grid-zebra)] group-hover/row:bg-[var(--bg-grid-header-hover)]"} sticky left-[52.5px] w-[72px] whitespace-nowrap transition-[background] duration-[var(--fast)]`}
                             >
                               {hour.toString().padStart(2, "0")}:00
                             </td>
+
+                            {/* --- Shift <td> --- */}
                             <td
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} whitespace-nowrap`}
                             >
@@ -1455,6 +1431,8 @@ const UnitClient = (props: Props) => {
                                 );
                               })()}
                             </td>
+
+                            {/* --- Disruptions <td> --- */}
                             <td
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${unitColumnNames.length > 0 ? "w-0" : "border-r-0"} whitespace-nowrap`}
                             >
@@ -1505,6 +1483,8 @@ const UnitClient = (props: Props) => {
                                 );
                               })()}
                             </td>
+
+                            {/* --- Unit Columns <td>s --- */}
                             {unitColumnNames.map((_, colIdx) => {
                               const columnName = unitColumnNames[colIdx];
                               const dataType = unitColumnDataTypes[colIdx];
@@ -1564,6 +1544,7 @@ const UnitClient = (props: Props) => {
                             })}
                           </tr>
 
+                          {/* --- Shift changes --- */}
                           {changesThisHour.map((change) => (
                             <tr
                               key={`change-${hour}-${change.id}`}
@@ -1578,7 +1559,7 @@ const UnitClient = (props: Props) => {
                                 {toHm(change.hour, change.minute)}
                               </td>
                               <td colSpan={unitColumnNames.length + 4}>
-                                <div className="relative flex items-center justify-center">
+                                <div className="flex items-center justify-center">
                                   <div className="flex w-full items-center justify-center">
                                     {t("Unit/Shift changed")}{" "}
                                     {getShiftLabel(change.newShiftId)}

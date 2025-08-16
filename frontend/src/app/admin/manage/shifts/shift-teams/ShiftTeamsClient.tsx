@@ -157,7 +157,7 @@ const ShiftTeamsClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Manage/Used by units")}:
+              {t("ShiftTeams/Used by shifts")}:
             </span>
             {item.shifts.length === 0 ? (
               <span className="-mt-2">-</span>
