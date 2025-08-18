@@ -217,182 +217,161 @@ const SettingsModal = (props: Props) => {
       icon={SolidCog6ToothIcon}
       smallGap
     >
-      <div className="flex h-128 flex-col gap-4 sm:flex-row">
-        {/* --- BUTTONS --- */}
-        <ul className="flex flex-wrap gap-2 rounded-lg bg-[var(--bg-navbar)] p-2 sm:flex-1 sm:flex-col sm:gap-0 sm:bg-transparent sm:p-0">
-          {/* --- General --- */}
-          <li>
-            <ModalLink
-              onClick={() => {
-                disableAll();
-                setIsGeneralOpen(true);
-              }}
-              label={t("SettingsModal/General")}
-              icon={OutlineCog6ToothIcon}
-              iconHover={SolidCog6ToothIcon}
-              isActive={isGeneralOpen}
-            />
-          </li>
-
-          {/* --- Profile --- */}
-          <li>
-            <ModalLink
-              onClick={() => {
-                disableAll();
-                setIsProfileOpen(true);
-              }}
-              label={t("SettingsModal/Profile")}
-              icon={OutlineUserCircleIcon}
-              iconHover={SolidUserCircleIcon}
-              isActive={isProfileOpen}
-            />
-          </li>
-
-          {/* --- Notifications --- */}
-          <CustomTooltip content={t("Common/Not implemented")} showOnTouch>
+      <ModalBase.Content>
+        <div className="flex h-128 flex-col gap-4 sm:flex-row">
+          {/* --- BUTTONS --- */}
+          <ul className="flex flex-wrap gap-2 rounded-lg bg-[var(--bg-navbar)] p-2 sm:flex-1 sm:flex-col sm:gap-0 sm:bg-transparent sm:p-0">
+            {/* --- General --- */}
             <li>
               <ModalLink
-                disabled
-                // onClick={() => {
-                //   disableAll();
-                //   setIsNotificationsOpen(true);
-                // }}
-                label={t("SettingsModal/Notifications")}
-                icon={OutlineBellIcon}
-                iconHover={SolidBellIcon}
-                isActive={isNotificationsOpen}
+                onClick={() => {
+                  disableAll();
+                  setIsGeneralOpen(true);
+                }}
+                label={t("SettingsModal/General")}
+                icon={OutlineCog6ToothIcon}
+                iconHover={SolidCog6ToothIcon}
+                isActive={isGeneralOpen}
               />
             </li>
-          </CustomTooltip>
-        </ul>
 
-        {/* --- CONTENT --- */}
-        <div className="flex flex-2">
-          {/* --- Descriptions --- */}
-          <div className="flex flex-grow">
-            {/* --- General --- */}
-            {isGeneralOpen ? (
-              <div className="w-full">
-                <div id="portal-root" />
-                <div className={`${itemRowClass}`}>
-                  <span>Tema</span>
-                  <span className="w-24">
-                    <SingleDropdown
-                      options={[
-                        { label: t("Common/Dark"), value: "dark" },
-                        { label: t("Common/Light"), value: "light" },
-                      ]}
-                      value={currentTheme ?? ""}
-                      onChange={(val) => {
-                        if (
-                          (val === "dark" && currentTheme !== "dark") ||
-                          (val === "light" && currentTheme !== "light")
-                        ) {
-                          toggleTheme();
-                        }
-                      }}
-                      onModal
-                    />
-                  </span>
-                </div>
+            {/* --- Profile --- */}
+            <li>
+              <ModalLink
+                onClick={() => {
+                  disableAll();
+                  setIsProfileOpen(true);
+                }}
+                label={t("SettingsModal/Profile")}
+                icon={OutlineUserCircleIcon}
+                iconHover={SolidUserCircleIcon}
+                isActive={isProfileOpen}
+              />
+            </li>
 
-                <hr className={`${hrClass}`} />
+            {/* --- Notifications --- */}
+            <CustomTooltip content={t("Common/Not implemented")} showOnTouch>
+              <li>
+                <ModalLink
+                  disabled
+                  // onClick={() => {
+                  //   disableAll();
+                  //   setIsNotificationsOpen(true);
+                  // }}
+                  label={t("SettingsModal/Notifications")}
+                  icon={OutlineBellIcon}
+                  iconHover={SolidBellIcon}
+                  isActive={isNotificationsOpen}
+                />
+              </li>
+            </CustomTooltip>
+          </ul>
 
-                <div className={`${itemRowClass}`}>
-                  <span>{t("SettingsModal/Language")}</span>
-                  <span>
-                    <button
-                      onClick={() => {
-                        toggleLanguage();
-                      }}
-                      className={`${roundedButtonClass} relative flex !h-10 min-h-10 !w-10 min-w-10 overflow-hidden`}
-                      aria-label={
-                        currentLanguage === "sv"
-                          ? t("SettingsModal/Switch to English")
-                          : t("SettingsModal/Switch to Swedish")
-                      }
-                    >
-                      <div className="absolute inset-0 origin-center">
-                        <div
-                          className={`absolute inset-0 ${
-                            currentLanguage === "sv"
-                              ? "bg-blue-500"
-                              : "bg-white"
-                          }`}
-                        >
-                          <div
-                            className={`absolute top-0 bottom-0 left-[40%] w-[20%] ${
-                              currentLanguage === "sv"
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
-                            }`}
-                          />
-                          <div
-                            className={`absolute top-[40%] right-0 left-0 h-[20%] ${
-                              currentLanguage === "sv"
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
-                            }`}
-                          />
-                        </div>
-                      </div>
-                    </button>
-                  </span>
-                </div>
+          {/* --- CONTENT --- */}
+          <div className="flex flex-2">
+            {/* --- Descriptions --- */}
+            <div className="flex flex-grow">
+              {/* --- General --- */}
+              {isGeneralOpen ? (
+                <div className="w-full">
+                  <div id="portal-root" />
+                  <div className={`${itemRowClass}`}>
+                    <span>Tema</span>
+                    <span className="w-24">
+                      <SingleDropdown
+                        options={[
+                          { label: t("Common/Dark"), value: "dark" },
+                          { label: t("Common/Light"), value: "light" },
+                        ]}
+                        value={currentTheme ?? ""}
+                        onChange={(val) => {
+                          if (
+                            (val === "dark" && currentTheme !== "dark") ||
+                            (val === "light" && currentTheme !== "light")
+                          ) {
+                            toggleTheme();
+                          }
+                        }}
+                        onModal
+                      />
+                    </span>
+                  </div>
 
-                <hr className={`${hrClass}`} />
+                  <hr className={`${hrClass}`} />
 
-                <div className={`${itemRowClass}`}>
-                  <span> {t("SettingsModal/Logout user")}</span>
-                  <span>
-                    <button
-                      onClick={() => {
-                        handleLogout();
-                        props.onClose();
-                      }}
-                      className={`${buttonSecondaryClass} w-full rounded-full px-4`}
-                    >
-                      {t("Common/Logout")}
-                    </button>
-                  </span>
-                </div>
-              </div>
-            ) : // --- Profile ---
-            isProfileOpen ? (
-              <div className="w-full">
-                <div id="portal-root" />
-                <div className={`${itemRowClass}`}>
-                  <span>{t("Common/Username")}</span>
-                  <div className="flex items-center gap-4">
-                    <CustomTooltip side="left" content={username} showOnTouch>
-                      <span className="w-48 truncate overflow-x-hidden">
-                        {username}
-                      </span>
-                    </CustomTooltip>
-                    <CustomTooltip
-                      content={t("SettingsModal/Uneditable")}
-                      showOnTouch
-                    >
+                  <div className={`${itemRowClass}`}>
+                    <span>{t("SettingsModal/Language")}</span>
+                    <span>
                       <button
-                        className={`${iconButtonPrimaryClass} !h-6 !w-6`}
-                        disabled
+                        onClick={() => {
+                          toggleLanguage();
+                        }}
+                        className={`${roundedButtonClass} relative flex !h-10 min-h-10 !w-10 min-w-10 overflow-hidden`}
+                        aria-label={
+                          currentLanguage === "sv"
+                            ? t("SettingsModal/Switch to English")
+                            : t("SettingsModal/Switch to Swedish")
+                        }
                       >
-                        <PencilIcon />
+                        <div className="absolute inset-0 origin-center">
+                          <div
+                            className={`absolute inset-0 ${
+                              currentLanguage === "sv"
+                                ? "bg-blue-500"
+                                : "bg-white"
+                            }`}
+                          >
+                            <div
+                              className={`absolute top-0 bottom-0 left-[40%] w-[20%] ${
+                                currentLanguage === "sv"
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                              }`}
+                            />
+                            <div
+                              className={`absolute top-[40%] right-0 left-0 h-[20%] ${
+                                currentLanguage === "sv"
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                              }`}
+                            />
+                          </div>
+                        </div>
                       </button>
-                    </CustomTooltip>
+                    </span>
+                  </div>
+
+                  <hr className={`${hrClass}`} />
+
+                  <div className={`${itemRowClass}`}>
+                    <span> {t("SettingsModal/Logout user")}</span>
+                    <span>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          props.onClose();
+                        }}
+                        className={`${buttonSecondaryClass} w-full rounded-full px-4`}
+                      >
+                        {t("Common/Logout")}
+                      </button>
+                    </span>
                   </div>
                 </div>
-
-                <hr className={`${hrClass}`} />
-
-                <div className={`${itemRowClass}`}>
-                  <span>{t("Common/Password")}</span>
-
-                  {username === "master" ? (
+              ) : // --- Profile ---
+              isProfileOpen ? (
+                <div className="w-full">
+                  <div id="portal-root" />
+                  <div className={`${itemRowClass}`}>
+                    <span>{t("Common/Username")}</span>
                     <div className="flex items-center gap-4">
-                      <span className="w-48">•••••••••</span>
+                      <CustomTooltip side="left" content={username} showOnTouch>
+                        <span className="w-48 truncate overflow-x-hidden">
+                          {username}
+                        </span>
+                      </CustomTooltip>
                       <CustomTooltip
-                        content="Kan inte redigera lösenord för master-konto!"
+                        content={t("SettingsModal/Uneditable")}
                         showOnTouch
                       >
                         <button
@@ -403,184 +382,211 @@ const SettingsModal = (props: Props) => {
                         </button>
                       </CustomTooltip>
                     </div>
-                  ) : editingField === "password" ? (
-                    <div className="flex items-center gap-4">
-                      <Input
-                        placeholder="•••••••••"
-                        value={inputValue}
-                        onChange={(val) => {
-                          setInputValue(val as string);
-                        }}
-                        type="password"
-                        autoComplete="new-password"
-                      />
-                      <button
-                        onClick={() => updateProfile()}
-                        className={`${iconButtonPrimaryClass}`}
-                      >
-                        <CheckIcon />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-4">
-                      <span className="w-48">•••••••••</span>
-                      <button
-                        onClick={() => {
-                          setEditingField("password");
-                          setInputValue("");
-                        }}
-                        className={`${iconButtonPrimaryClass} !h-6 !w-6`}
-                      >
-                        <PencilIcon />
-                      </button>
-                    </div>
-                  )}
+                  </div>
+
+                  <hr className={`${hrClass}`} />
+
+                  <div className={`${itemRowClass}`}>
+                    <span>{t("Common/Password")}</span>
+
+                    {username === "master" ? (
+                      <div className="flex items-center gap-4">
+                        <span className="w-48">•••••••••</span>
+                        <CustomTooltip
+                          content="Kan inte redigera lösenord för master-konto!"
+                          showOnTouch
+                        >
+                          <button
+                            className={`${iconButtonPrimaryClass} !h-6 !w-6`}
+                            disabled
+                          >
+                            <PencilIcon />
+                          </button>
+                        </CustomTooltip>
+                      </div>
+                    ) : editingField === "password" ? (
+                      <div className="flex items-center gap-4">
+                        <Input
+                          placeholder="•••••••••"
+                          value={inputValue}
+                          onChange={(val) => {
+                            setInputValue(val as string);
+                          }}
+                          type="password"
+                          autoComplete="new-password"
+                        />
+                        <button
+                          onClick={() => updateProfile()}
+                          className={`${iconButtonPrimaryClass}`}
+                        >
+                          <CheckIcon />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <span className="w-48">•••••••••</span>
+                        <button
+                          onClick={() => {
+                            setEditingField("password");
+                            setInputValue("");
+                          }}
+                          className={`${iconButtonPrimaryClass} !h-6 !w-6`}
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <hr className={`${hrClass}`} />
+
+                  <div className={`${itemRowClass}`}>
+                    <span>{t("Users/First name")}</span>
+
+                    {editingField === "firstName" ? (
+                      <div className="flex items-center gap-4">
+                        <Input
+                          placeholder={firstName}
+                          value={inputValue}
+                          onChange={(val) => {
+                            setInputValue(val as string);
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            updateProfile();
+                            fetchAuthData();
+                          }}
+                          className={`${iconButtonPrimaryClass}`}
+                        >
+                          <CheckIcon />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <CustomTooltip
+                          side="left"
+                          content={firstName}
+                          showOnTouch
+                        >
+                          <span className="w-48 truncate overflow-x-hidden">
+                            {firstName}
+                          </span>
+                        </CustomTooltip>
+                        <button
+                          onClick={() => {
+                            setEditingField("firstName");
+                            setInputValue("");
+                          }}
+                          className={`${iconButtonPrimaryClass} !h-6 !w-6`}
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <hr className={`${hrClass}`} />
+
+                  <div className={`${itemRowClass}`}>
+                    <span>{t("Users/Last name")}</span>
+
+                    {editingField === "lastName" ? (
+                      <div className="flex items-center gap-4">
+                        <Input
+                          placeholder={lastName}
+                          value={inputValue}
+                          onChange={(val) => {
+                            setInputValue(val as string);
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            updateProfile();
+                            fetchAuthData();
+                          }}
+                          className={`${iconButtonPrimaryClass}`}
+                        >
+                          <CheckIcon />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <CustomTooltip
+                          side="left"
+                          content={lastName}
+                          showOnTouch
+                        >
+                          <span className="w-48 truncate overflow-x-hidden">
+                            {lastName}
+                          </span>
+                        </CustomTooltip>
+                        <button
+                          onClick={() => {
+                            setEditingField("lastName");
+                            setInputValue("");
+                          }}
+                          className={`${iconButtonPrimaryClass} !h-6 !w-6`}
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <hr className={`${hrClass}`} />
+
+                  <div className={`${itemRowClass}`}>
+                    <span>{t("Users/Email")}</span>
+
+                    {editingField === "email" ? (
+                      <div className="flex items-center gap-4">
+                        <Input
+                          placeholder={email}
+                          value={inputValue}
+                          onChange={(val) => {
+                            setInputValue(val as string);
+                          }}
+                          type="email"
+                          id="email"
+                        />
+                        <button
+                          onClick={() => {
+                            updateProfile();
+                            fetchAuthData();
+                          }}
+                          className={`${iconButtonPrimaryClass}`}
+                        >
+                          <CheckIcon />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-4">
+                        <CustomTooltip side="left" content={email} showOnTouch>
+                          <span className="w-48 truncate overflow-x-hidden">
+                            {email}
+                          </span>
+                        </CustomTooltip>
+                        <button
+                          onClick={() => {
+                            setEditingField("email");
+                            setInputValue("");
+                          }}
+                          className={`${iconButtonPrimaryClass} !h-6 !w-6`}
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-
-                <hr className={`${hrClass}`} />
-
-                <div className={`${itemRowClass}`}>
-                  <span>{t("Users/First name")}</span>
-
-                  {editingField === "firstName" ? (
-                    <div className="flex items-center gap-4">
-                      <Input
-                        placeholder={firstName}
-                        value={inputValue}
-                        onChange={(val) => {
-                          setInputValue(val as string);
-                        }}
-                      />
-                      <button
-                        onClick={() => {
-                          updateProfile();
-                          fetchAuthData();
-                        }}
-                        className={`${iconButtonPrimaryClass}`}
-                      >
-                        <CheckIcon />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-4">
-                      <CustomTooltip
-                        side="left"
-                        content={firstName}
-                        showOnTouch
-                      >
-                        <span className="w-48 truncate overflow-x-hidden">
-                          {firstName}
-                        </span>
-                      </CustomTooltip>
-                      <button
-                        onClick={() => {
-                          setEditingField("firstName");
-                          setInputValue("");
-                        }}
-                        className={`${iconButtonPrimaryClass} !h-6 !w-6`}
-                      >
-                        <PencilIcon />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <hr className={`${hrClass}`} />
-
-                <div className={`${itemRowClass}`}>
-                  <span>{t("Users/Last name")}</span>
-
-                  {editingField === "lastName" ? (
-                    <div className="flex items-center gap-4">
-                      <Input
-                        placeholder={lastName}
-                        value={inputValue}
-                        onChange={(val) => {
-                          setInputValue(val as string);
-                        }}
-                      />
-                      <button
-                        onClick={() => {
-                          updateProfile();
-                          fetchAuthData();
-                        }}
-                        className={`${iconButtonPrimaryClass}`}
-                      >
-                        <CheckIcon />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-4">
-                      <CustomTooltip side="left" content={lastName} showOnTouch>
-                        <span className="w-48 truncate overflow-x-hidden">
-                          {lastName}
-                        </span>
-                      </CustomTooltip>
-                      <button
-                        onClick={() => {
-                          setEditingField("lastName");
-                          setInputValue("");
-                        }}
-                        className={`${iconButtonPrimaryClass} !h-6 !w-6`}
-                      >
-                        <PencilIcon />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <hr className={`${hrClass}`} />
-
-                <div className={`${itemRowClass}`}>
-                  <span>{t("Users/Email")}</span>
-
-                  {editingField === "email" ? (
-                    <div className="flex items-center gap-4">
-                      <Input
-                        placeholder={email}
-                        value={inputValue}
-                        onChange={(val) => {
-                          setInputValue(val as string);
-                        }}
-                        type="email"
-                        id="email"
-                      />
-                      <button
-                        onClick={() => {
-                          updateProfile();
-                          fetchAuthData();
-                        }}
-                        className={`${iconButtonPrimaryClass}`}
-                      >
-                        <CheckIcon />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-4">
-                      <CustomTooltip side="left" content={email} showOnTouch>
-                        <span className="w-48 truncate overflow-x-hidden">
-                          {email}
-                        </span>
-                      </CustomTooltip>
-                      <button
-                        onClick={() => {
-                          setEditingField("email");
-                          setInputValue("");
-                        }}
-                        className={`${iconButtonPrimaryClass} !h-6 !w-6`}
-                      >
-                        <PencilIcon />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              ""
-            )}
+              ) : (
+                ""
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </ModalBase.Content>
     </ModalBase>
   );
 };

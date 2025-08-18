@@ -1005,6 +1005,8 @@ const ReportModal = (props: Props) => {
                               onChange={(val) =>
                                 setCurrentReport((prev) => ({
                                   ...prev,
+                                  subCategoryId: "",
+                                  subCategoryName: "",
                                   categoryId: String(val),
                                   categoryName:
                                     categories.find((c) => String(c.id) === val)

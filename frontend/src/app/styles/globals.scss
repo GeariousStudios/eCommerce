@@ -219,13 +219,13 @@ th:focus-visible {
     border-radius: 4px;
   }
 
-  button:hover,
-  button:active,
-  button.ql-active,
-  .ql-picker-label:hover,
-  .ql-picker-label:active .ql-picker-label.ql-active {
-    background-color: var(--bg-navbar-link) !important;
-  }
+  // button:hover,
+  // button:active,
+  // button.ql-active,
+  // .ql-picker-label:hover,
+  // .ql-picker-label:active .ql-picker-label.ql-active {
+  //   background-color: var(--bg-navbar-link) !important;
+  // }
 
   button:hover .ql-stroke,
   button:active .ql-stroke,
@@ -358,11 +358,10 @@ li.ql-indent-3 {
 
 .ql-toolbar.ql-snow {
   .ql-size.ql-picker {
-    width: 5rem;
+    width: 6rem;
     font-size: 0.875rem;
 
     .ql-picker-label {
-      background-color: var(--bg-modal);
       color: var(--text-main);
     }
 
@@ -382,10 +381,11 @@ li.ql-indent-3 {
     .ql-picker-options {
       box-shadow: unset;
       font-size: 0.8rem;
-
+      
       .ql-picker-item {
         color: var(--text-main-reverse);
         position: relative;
+        padding: 0.0625rem;
 
         &:hover,
         &.ql-selected {
