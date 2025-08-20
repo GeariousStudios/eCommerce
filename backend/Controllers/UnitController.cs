@@ -787,7 +787,9 @@ namespace backend.Controllers
 
             if (change == null)
             {
-                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
+                return NotFound(
+                    new { message = await _t.GetAsync("Unit/ShiftChangeNotFound", lang) }
+                );
             }
 
             DateTime? newEffectiveFromUtc = null;
@@ -886,11 +888,57 @@ namespace backend.Controllers
 
             if (change == null)
             {
-                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
+                return NotFound(
+                    new { message = await _t.GetAsync("Unit/ShiftChangeNotFound", lang) }
+                );
             }
 
             _context.UnitShiftChanges.Remove(change);
             await _context.SaveChangesAsync();
+
+            var nowUtc = DateTime.UtcNow;
+
+            var latestAtNow = await _context
+                .UnitShiftChanges.Where(c => c.UnitId == unitId && c.EffectiveFromUtc <= nowUtc)
+                .OrderByDescending(c => c.EffectiveFromUtc)
+                .FirstOrDefaultAsync();
+
+            var unit = await _context
+                .Units.Include(u => u.UnitToShifts)
+                .FirstOrDefaultAsync(u => u.Id == unitId);
+
+            if (unit == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
+            }
+
+            int newActiveShiftId;
+            if (latestAtNow != null)
+            {
+                newActiveShiftId = latestAtNow.NewShiftId;
+            }
+            else
+            {
+                var systemShiftIds = await GetAllSystemShiftIdsAsync();
+                if (!systemShiftIds.TryGetValue(ShiftSystemKey.Unmanned, out newActiveShiftId))
+                {
+                    newActiveShiftId = systemShiftIds.Values.First();
+                }
+            }
+
+            foreach (var l in unit.UnitToShifts)
+                l.IsActive = (l.ShiftId == newActiveShiftId);
+
+            var userInfo = await _userService.GetUserInfoAsync();
+            if (userInfo != null)
+            {
+                var (updatedBy, _) = userInfo.Value;
+                unit.UpdateDate = DateTime.UtcNow;
+                unit.UpdatedBy = updatedBy;
+            }
+
+            await _context.SaveChangesAsync();
+
             return NoContent();
         }
 
@@ -933,10 +981,25 @@ namespace backend.Controllers
 
             if (baseShiftId == null)
             {
-                baseShiftId = await _context
-                    .UnitToShifts.Where(l => l.UnitId == id && l.IsActive)
-                    .Select(l => (int?)l.ShiftId)
+                var firstChangeOfDay = await _context
+                    .UnitShiftChanges.Where(c =>
+                        c.UnitId == id
+                        && c.EffectiveFromUtc >= startUtc
+                        && c.EffectiveFromUtc < endUtc
+                    )
+                    .OrderBy(c => c.EffectiveFromUtc)
+                    .Select(c => new { c.OldShiftId })
                     .FirstOrDefaultAsync();
+
+                baseShiftId = firstChangeOfDay?.OldShiftId;
+
+                if (baseShiftId == null)
+                {
+                    baseShiftId = await _context
+                        .UnitToShifts.Where(l => l.UnitId == id && l.IsActive)
+                        .Select(l => (int?)l.ShiftId)
+                        .FirstOrDefaultAsync();
+                }
             }
 
             return Ok(new { baseShiftId, changes });

@@ -37,6 +37,7 @@
   "UnitGroup/Unknown": "Unknown group",
 
   "Unit/NotFound": "Unit could not be found in the database",
+  "Unit/ShiftChangeNotFound": "Staffing type change could not be found in the database",
   "Unit/Deleted": "Unit deleted!",
   "Unit/MaxColumns": "A unit can have a maximum of 4 columns!",
   "Unit/NameTakenInGroup": "A unit with this name already exists in the same group!",

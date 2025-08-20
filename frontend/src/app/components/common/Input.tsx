@@ -25,6 +25,8 @@ type InputProps = {
   pattern?: string;
   inChip?: boolean;
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  min?: string | number;
+  max?: string | number;
 };
 
 const isDarkTheme = () => {
@@ -61,6 +63,8 @@ const Input = ({
   pattern,
   inChip = false,
   inputMode,
+  min,
+  max,
 }: InputProps & { icon?: ReactNode }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -146,8 +150,8 @@ const Input = ({
             }
             onKeyDown?.(e);
           }}
-          min={type === "number" ? 0 : undefined}
-          max={type === "number" ? 999999 : undefined}
+          min={type === "number" ? 0 : min}
+          max={type === "number" ? 999999 : max}
           tabIndex={isDisabled ? -1 : tabIndex ?? 0}
         />
         {icon && (

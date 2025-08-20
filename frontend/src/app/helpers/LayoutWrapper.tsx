@@ -276,7 +276,7 @@ const LayoutWrapper = (props: Props) => {
       />
       <div className="flex">
         <div
-          className={`${hasScrollbar && !navbarHidden ? "md:ml-67" : !hasScrollbar && !navbarHidden ? "md:ml-64" : ""} w-full max-w-[1920px] overflow-hidden p-4 pt-22 duration-[var(--medium)]`}
+          className={`${hasScrollbar && !navbarHidden ? "md:ml-67" : !hasScrollbar && !navbarHidden ? "md:ml-64" : ""} w-full overflow-hidden p-4 pt-22 duration-[var(--medium)]`}
         >
           {props.children}
         </div>

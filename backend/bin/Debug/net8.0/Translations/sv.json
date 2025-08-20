@@ -37,6 +37,7 @@
   "UnitGroup/Unknown": "Okänd grupp",
 
   "Unit/NotFound": "Enheten kunde inte hittas i databasen",
+  "Unit/ShiftChangeNotFound": "Bemanningsändring kunde inte hittas i databasen",
   "Unit/Deleted": "Enhet borttagen!",
   "Unit/MaxColumns": "En enhet kan ha max 4 kolumner!",
   "Unit/NameTakenInGroup": "En enhet med detta namn finns redan i samma grupp!",

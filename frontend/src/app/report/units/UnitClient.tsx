@@ -141,6 +141,7 @@ const UnitClient = (props: Props) => {
   const [activeShiftId, setActiveShiftId] = useState<number | null>(null);
   const [pendingShiftId, setPendingShiftId] = useState<number | null>(null);
   const [baseShiftId, setBaseShiftId] = useState<number | null>(null);
+  const [unitCreationDate, setUnitCreationDate] = useState<string>("");
 
   // --- States: UnitGroup ---
   const [unitGroupName, setUnitGroupName] = useState("");
@@ -312,6 +313,14 @@ const UnitClient = (props: Props) => {
   const currentHour = isToday ? now.getHours() : 0;
   const currentMinute = isToday ? now.getMinutes() : 0;
 
+  const isCreationMidnight = (date?: string, time?: string) => {
+    if (!date || !time || !unitCreationDate) {
+      return false;
+    }
+
+    return date === unitCreationDate && toMinutes(time) === 0;
+  };
+
   // --- BACKEND ---
   // --- Fetch unit ---
   useEffect(() => {
@@ -361,6 +370,22 @@ const UnitClient = (props: Props) => {
       setActiveShiftId(result.activeShiftId ?? null);
       setCurrentActiveShiftId(result.activeShiftId ?? null);
       setPendingShiftId(result.activeShiftId ?? null);
+
+      const createdLocal = result?.creationDate
+        ? toLocalDateString(new Date(result.creationDate))
+        : "";
+      setUnitCreationDate(createdLocal);
+
+      if (createdLocal) {
+        const initial = selectedDate || new Date().toISOString().split("T")[0];
+        const clamped = initial < createdLocal ? createdLocal : initial;
+        if (clamped !== selectedDate) {
+          setSelectedDate(clamped);
+          const current = new URLSearchParams(searchParams.toString());
+          current.set("date", clamped);
+          router.replace(`?${current.toString()}`);
+        }
+      }
     };
 
     fetchUnit();
@@ -796,12 +821,17 @@ const UnitClient = (props: Props) => {
   };
 
   const updateDate = (newDate: string) => {
-    setSelectedDate(newDate);
+    let clamped = newDate;
+    if (unitCreationDate && newDate < unitCreationDate) {
+      clamped = unitCreationDate;
+    }
+
+    setSelectedDate(clamped);
     setRefetchData(true);
     setExpandedRows([]);
 
     const current = new URLSearchParams(searchParams.toString());
-    current.set("date", newDate);
+    current.set("date", clamped);
 
     router.replace(`?${current.toString()}`);
   };
@@ -899,6 +929,11 @@ const UnitClient = (props: Props) => {
   const changeShift = async () => {
     try {
       if (pendingShiftId == null) {
+        return;
+      }
+
+      if (isCreationMidnight(pendingShiftDate, pendingShiftTime)) {
+        notify("error", t("Unit/Shift change already exists"));
         return;
       }
 
@@ -1076,9 +1111,9 @@ const UnitClient = (props: Props) => {
             <div className="flex gap-4">
               {/* --- Report data top --- */}
               <CustomTooltip
-                content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Report data") : t("Unit/No columns")}`}
-                lgHidden={
-                  unitColumnNames.length > 0 && props.isReporter === true
+                content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Tooltip report data") : t("Unit/No columns")}`}
+                veryLongDelay={
+                  props.isReporter == true && unitColumnNames.length > 0
                 }
               >
                 <button
@@ -1107,8 +1142,8 @@ const UnitClient = (props: Props) => {
               </CustomTooltip>
 
               <CustomTooltip
-                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Report disruptions")}`}
-                lgHidden={props.isReporter === true}
+                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report disruptions")}`}
+                veryLongDelay={props.isReporter == true}
               >
                 <button
                   className={`${buttonSecondaryClass} group lg:w-max lg:px-4`}
@@ -1139,6 +1174,7 @@ const UnitClient = (props: Props) => {
             <div className="ml-auto flex max-w-max flex-wrap items-center gap-4">
               <CustomTooltip
                 content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Unit/Update page")}`}
+                veryLongDelay
               >
                 <button
                   className={`${buttonSecondaryClass} group flex items-center justify-center`}
@@ -1159,6 +1195,9 @@ const UnitClient = (props: Props) => {
                   className={`${buttonSecondaryClass} rounded-r-none`}
                   onClick={goToPreviousDay}
                   aria-label={t("Unit/Previous day")}
+                  disabled={
+                    !!unitCreationDate && selectedDate <= unitCreationDate
+                  }
                 >
                   <ChevronLeftIcon className="min-h-full min-w-full" />
                 </button>
@@ -1170,6 +1209,7 @@ const UnitClient = (props: Props) => {
                       updateDate(String(val));
                     }}
                     notRounded
+                    min={unitCreationDate}
                   />
                 </div>
                 <button
@@ -1187,6 +1227,7 @@ const UnitClient = (props: Props) => {
             <div className="relative ml-auto flex items-center gap-4">
               <CustomTooltip
                 content={`${!props.isReporter ? t("Common/No access") : ""}`}
+                veryLongDelay={props.isReporter == true}
               >
                 <button
                   ref={shiftsRef}
@@ -1362,8 +1403,40 @@ const UnitClient = (props: Props) => {
                   <>
                     {Array.from({ length: 24 }, (_, hour) => {
                       const isExpanded = expandedRows.includes(hour);
-                      const changesThisHour = shiftChanges.filter(
-                        (c) => c.hour === hour,
+                      // const changesThisHour = shiftChanges.filter(
+                      //   (c) => c.hour === hour,
+                      // );
+
+                      const hasMidnightChange = shiftChanges.some(
+                        (c) => c.hour === 0 && (c.minute ?? 0) === 0,
+                      );
+
+                      const isCreationDay =
+                        Boolean(unitCreationDate) &&
+                        selectedDate === unitCreationDate;
+
+                      const baseSynthetic =
+                        hour === 0 &&
+                        baseShiftId != null &&
+                        !hasMidnightChange &&
+                        isCreationDay
+                          ? [
+                              {
+                                id: -1,
+                                hour: 0,
+                                minute: 0,
+                                oldShiftId: baseShiftId,
+                                newShiftId: baseShiftId,
+                              } as ShiftChange,
+                            ]
+                          : [];
+
+                      const changesThisHour = [
+                        ...baseSynthetic,
+                        ...shiftChanges.filter((c) => c.hour === hour),
+                      ].sort(
+                        (a, b) =>
+                          a.hour - b.hour || (a.minute ?? 0) - (b.minute ?? 0),
                       );
 
                       return (
@@ -1473,6 +1546,7 @@ const UnitClient = (props: Props) => {
                                     {hasOngoing && (
                                       <CustomTooltip
                                         content={t("Unit/Ongoing disruption")}
+                                        mediumDelay
                                       >
                                         <span className="ml-1 text-[var(--note-error)]">
                                           &#x26A0;
@@ -1513,10 +1587,10 @@ const UnitClient = (props: Props) => {
                                     {displayValue}
 
                                     <CustomTooltip
-                                      content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Report data") : t("Unit/No columns")}`}
-                                      lgHidden={
-                                        unitColumnNames.length > 0 &&
-                                        props.isReporter === true
+                                      content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Tooltip report data") + t("Unit/Tooltip this hour") : t("Unit/No columns")}`}
+                                      veryLongDelay={
+                                        props.isReporter == true &&
+                                        unitColumnNames.length > 0
                                       }
                                     >
                                       <button
@@ -1545,158 +1619,179 @@ const UnitClient = (props: Props) => {
                           </tr>
 
                           {/* --- Shift changes --- */}
-                          {changesThisHour.map((change) => (
-                            <tr
-                              key={`change-${hour}-${change.id}`}
-                              className="bg-[var(--bg-grid-note)]"
-                            >
-                              <td
-                                className={`${tdClassSpecial} sticky left-0 w-[52.5px] bg-[var(--bg-grid-note)]`}
-                              />
-                              <td
-                                className={`${tdClassSpecial} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-note)]`}
+                          {changesThisHour.map((change) => {
+                            const isSynthetic = change.id < 0;
+
+                            return (
+                              <tr
+                                key={`change-${hour}-${change.id}`}
+                                className="bg-[var(--bg-grid-note)]"
                               >
-                                {toHm(change.hour, change.minute)}
-                              </td>
-                              <td colSpan={unitColumnNames.length + 4}>
-                                <div className="flex items-center justify-center">
-                                  <div className="flex w-full items-center justify-center">
-                                    {t("Unit/Shift changed")}{" "}
-                                    {getShiftLabel(change.newShiftId)}
-                                  </div>
-                                  <CustomTooltip
-                                    content={`${!props.isReporter ? t("Common/No access") : ""}`}
-                                  >
-                                    <button
-                                      ref={menuTriggerRef}
-                                      className={`${iconButtonPrimaryClass} ${!props.isReporter ? "!cursor-not-allowed opacity-50" : ""} group mr-4 w-auto`}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        menuTriggerRef.current =
-                                          e.currentTarget as HTMLButtonElement;
-                                        setEditChangeDate(selectedDate);
-                                        setEditChangeTime(
-                                          toHm(change.hour, change.minute),
-                                        );
-                                        setPendingShiftId(change.newShiftId);
-                                        setOpenChangeMenuId((prev) =>
-                                          prev === change.id ? null : change.id,
-                                        );
-                                      }}
-                                      aria-haspopup="menu"
-                                      aria-expanded={shiftsOpen}
-                                      disabled={!props.isReporter}
-                                    >
-                                      <HoverIcon
-                                        outline={Outline.PencilIcon}
-                                        solid={Solid.PencilIcon}
-                                        className="h-6 min-h-6 w-6 min-w-6 text-[var(--text-main)]"
-                                        active={openChangeMenuId === change.id}
-                                      />
-                                    </button>
-                                  </CustomTooltip>
-
-                                  <MenuDropdownAnchor
-                                    triggerRef={menuTriggerRef}
-                                    isOpen={openChangeMenuId === change.id}
-                                    onClose={() => {
-                                      setOpenChangeMenuId(null);
-                                      setPendingShiftId(null);
-                                    }}
-                                    addSpacing={8}
-                                  >
-                                    <div className="flex w-full flex-col gap-4">
-                                      {dropdownShifts.map((item) => (
-                                        <div
-                                          key={item.id}
-                                          onClick={() =>
-                                            setPendingShiftId(item.id)
-                                          }
-                                          role="menuitemradio"
-                                          aria-checked={
-                                            pendingShiftId === item.id
-                                          }
-                                          className="group flex cursor-pointer items-center justify-between gap-4"
-                                        >
-                                          <Input
-                                            type="radio"
-                                            name={`shift-selection-${item.id}`}
-                                            checked={
-                                              (pendingShiftId ??
-                                                change.newShiftId) === item.id
-                                            }
-                                            label={item.label}
-                                            readOnly
-                                          />
-                                        </div>
-                                      ))}
-
-                                      <div className="mt-4 flex flex-col gap-6">
-                                        <Input
-                                          type="date"
-                                          value={editChangeDate}
-                                          onChange={(v) =>
-                                            setEditChangeDate(String(v))
-                                          }
-                                          label={t("Common/Date")}
-                                          onModal
-                                          required
-                                        />
-                                        <Input
-                                          type="time"
-                                          value={editChangeTime}
-                                          onChange={(v) =>
-                                            setEditChangeTime(String(v))
-                                          }
-                                          label={t("Common/Time")}
-                                          onModal
-                                          required
-                                        />
-                                      </div>
+                                <td
+                                  className={`${tdClassSpecial} sticky left-0 w-[52.5px] bg-[var(--bg-grid-note)]`}
+                                />
+                                <td
+                                  className={`${tdClassSpecial} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-note)]`}
+                                >
+                                  {toHm(change.hour, change.minute)}
+                                </td>
+                                <td colSpan={unitColumnNames.length + 4}>
+                                  <div className="flex items-center justify-center">
+                                    <div className="flex w-full items-center justify-center">
+                                      <>
+                                        {!isSynthetic
+                                          ? t("Unit/Shift changed") +
+                                            getShiftLabel(change.newShiftId)
+                                          : t("Unit/New unit shift changed") +
+                                            getShiftLabel(change.newShiftId)}
+                                      </>
                                     </div>
-
-                                    <div className="grid grid-cols-1 gap-4">
+                                    <CustomTooltip
+                                      content={`${!props.isReporter ? t("Common/No access") : isSynthetic ? t("Unit/Cannot be edited") : t("Unit/Update post")}`}
+                                      veryLongDelay={
+                                        props.isReporter == true && !isSynthetic
+                                      }
+                                    >
                                       <button
-                                        className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
-                                        onClick={async (e) => {
-                                          e.stopPropagation();
-                                          await handleEditShiftChange(change, {
-                                            date: editChangeDate,
-                                            time: editChangeTime,
-                                            usePendingShift: true,
-                                          });
-                                          // setPendingShiftDate(editChangeDate);
-                                          // setPendingShiftTime(editChangeTime);
-                                          setOpenChangeMenuId(null);
-                                        }}
-                                        disabled={
-                                          !props.isReporter ||
-                                          !editChangeDate ||
-                                          !editChangeTime
-                                        }
-                                      >
-                                        {t("Unit/Update post")}
-                                      </button>
-                                      <button
-                                        className={`${buttonDeletePrimaryClass} !min-h-[32px] w-full rounded-full`}
+                                        ref={menuTriggerRef}
+                                        className={`${iconButtonPrimaryClass} ${!props.isReporter ? "!cursor-not-allowed opacity-50" : ""} group mr-4 w-auto`}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          setOpenChangeMenuId(null);
-                                          toggleDeleteItemModal(
-                                            String(change.id),
-                                            "shiftChange",
+                                          menuTriggerRef.current =
+                                            e.currentTarget as HTMLButtonElement;
+                                          setEditChangeDate(selectedDate);
+                                          setEditChangeTime(
+                                            toHm(change.hour, change.minute),
+                                          );
+                                          setPendingShiftId(change.newShiftId);
+                                          setOpenChangeMenuId((prev) =>
+                                            prev === change.id
+                                              ? null
+                                              : change.id,
                                           );
                                         }}
-                                        disabled={!props.isReporter}
+                                        aria-haspopup="menu"
+                                        aria-expanded={shiftsOpen}
+                                        disabled={
+                                          !props.isReporter || isSynthetic
+                                        }
                                       >
-                                        {t("Unit/Remove post")}
-                                      </button>{" "}
-                                    </div>
-                                  </MenuDropdownAnchor>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
+                                        <HoverIcon
+                                          outline={Outline.PencilIcon}
+                                          solid={Solid.PencilIcon}
+                                          className="h-6 min-h-6 w-6 min-w-6 text-[var(--text-main)]"
+                                          active={
+                                            openChangeMenuId === change.id
+                                          }
+                                        />
+                                      </button>
+                                    </CustomTooltip>
+
+                                    <MenuDropdownAnchor
+                                      triggerRef={menuTriggerRef}
+                                      isOpen={openChangeMenuId === change.id}
+                                      onClose={() => {
+                                        setOpenChangeMenuId(null);
+                                        setPendingShiftId(null);
+                                      }}
+                                      addSpacing={8}
+                                    >
+                                      <div className="flex w-full flex-col gap-4">
+                                        {dropdownShifts.map((item) => (
+                                          <div
+                                            key={item.id}
+                                            onClick={() =>
+                                              setPendingShiftId(item.id)
+                                            }
+                                            role="menuitemradio"
+                                            aria-checked={
+                                              pendingShiftId === item.id
+                                            }
+                                            className="group flex cursor-pointer items-center justify-between gap-4"
+                                          >
+                                            <Input
+                                              type="radio"
+                                              name={`shift-selection-${item.id}`}
+                                              checked={
+                                                (pendingShiftId ??
+                                                  change.newShiftId) === item.id
+                                              }
+                                              label={item.label}
+                                              readOnly
+                                            />
+                                          </div>
+                                        ))}
+
+                                        <div className="mt-4 flex flex-col gap-6">
+                                          <Input
+                                            type="date"
+                                            value={editChangeDate}
+                                            onChange={(v) =>
+                                              setEditChangeDate(String(v))
+                                            }
+                                            label={t("Common/Date")}
+                                            onModal
+                                            required
+                                          />
+                                          <Input
+                                            type="time"
+                                            value={editChangeTime}
+                                            onChange={(v) =>
+                                              setEditChangeTime(String(v))
+                                            }
+                                            label={t("Common/Time")}
+                                            onModal
+                                            required
+                                          />
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 gap-4">
+                                        <button
+                                          className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
+                                            await handleEditShiftChange(
+                                              change,
+                                              {
+                                                date: editChangeDate,
+                                                time: editChangeTime,
+                                                usePendingShift: true,
+                                              },
+                                            );
+                                            // setPendingShiftDate(editChangeDate);
+                                            // setPendingShiftTime(editChangeTime);
+                                            setOpenChangeMenuId(null);
+                                          }}
+                                          disabled={
+                                            !props.isReporter ||
+                                            !editChangeDate ||
+                                            !editChangeTime
+                                          }
+                                        >
+                                          {t("Unit/Update post")}
+                                        </button>
+                                        <button
+                                          className={`${buttonDeletePrimaryClass} !min-h-[32px] w-full rounded-full`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setOpenChangeMenuId(null);
+                                            toggleDeleteItemModal(
+                                              String(change.id),
+                                              "shiftChange",
+                                            );
+                                          }}
+                                          disabled={!props.isReporter}
+                                        >
+                                          {t("Unit/Remove post")}
+                                        </button>{" "}
+                                      </div>
+                                    </MenuDropdownAnchor>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
 
                           {isExpanded && (
                             <tr
@@ -1705,8 +1800,8 @@ const UnitClient = (props: Props) => {
                               <td colSpan={unitColumnNames.length + 4}>
                                 <div className="flex flex-col gap-4 p-4">
                                   <CustomTooltip
-                                    content={`${!props.isReporter ? t("Common/No access") : t("Unit/Report disruptions")}`}
-                                    lgHidden={props.isReporter === true}
+                                    content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report disruptions") + t("Unit/Tooltip this hour")}`}
+                                    veryLongDelay={props.isReporter == true}
                                   >
                                     <button
                                       className={`${iconButtonPrimaryClass} ml-auto flex items-center justify-center gap-2`}
@@ -1792,8 +1887,8 @@ const UnitClient = (props: Props) => {
                                               <div className="flex gap-2">
                                                 <CustomTooltip
                                                   content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit disruption")}`}
-                                                  lgHidden={
-                                                    props.isReporter === true
+                                                  veryLongDelay={
+                                                    props.isReporter == true
                                                   }
                                                 >
                                                   <button
@@ -1829,8 +1924,8 @@ const UnitClient = (props: Props) => {
 
                                                 <CustomTooltip
                                                   content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete disruption")}`}
-                                                  lgHidden={
-                                                    props.isReporter === true
+                                                  veryLongDelay={
+                                                    props.isReporter == true
                                                   }
                                                 >
                                                   <button
@@ -1935,8 +2030,8 @@ const UnitClient = (props: Props) => {
                                             <div className="flex gap-2">
                                               <CustomTooltip
                                                 content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit disruption")}`}
-                                                lgHidden={
-                                                  props.isReporter === true
+                                                veryLongDelay={
+                                                  props.isReporter == true
                                                 }
                                               >
                                                 <button
@@ -1971,8 +2066,8 @@ const UnitClient = (props: Props) => {
 
                                               <CustomTooltip
                                                 content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete disruption")}`}
-                                                lgHidden={
-                                                  props.isReporter === true
+                                                veryLongDelay={
+                                                  props.isReporter == true
                                                 }
                                               >
                                                 <button
@@ -2045,7 +2140,7 @@ const UnitClient = (props: Props) => {
               </tbody>
             </table>
           </div>
-          <CustomTooltip content={t("Unit/Scroll to top")}>
+          <CustomTooltip content={t("Unit/Scroll to top")} veryLongDelay>
             <button
               className={`${buttonSecondaryClass} ml-auto`}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

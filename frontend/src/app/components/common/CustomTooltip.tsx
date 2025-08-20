@@ -11,6 +11,7 @@ type TooltipProps = {
   shortDelay?: boolean;
   mediumDelay?: boolean;
   longDelay?: boolean;
+  veryLongDelay?: boolean;
 };
 
 const CustomTooltip = ({
@@ -23,6 +24,7 @@ const CustomTooltip = ({
   shortDelay = false,
   mediumDelay = false,
   longDelay = false,
+  veryLongDelay = false,
 }: TooltipProps) => {
   const [delay, setDelay] = useState<number>(0);
   const openTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -36,10 +38,12 @@ const CustomTooltip = ({
       setDelay(500);
     } else if (longDelay) {
       setDelay(750);
+    } else if (veryLongDelay) {
+      setDelay(1250);
     } else {
       setDelay(0);
     }
-  }, [shortDelay, mediumDelay, longDelay]);
+  }, [shortDelay, mediumDelay, longDelay, veryLongDelay]);
 
   const clearTimers = () => {
     if (openTimeout.current) {

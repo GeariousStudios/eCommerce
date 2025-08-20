@@ -82,7 +82,7 @@ const NavbarLink = (props: Props) => {
               </span>
             )}
 
-            <span className={`${isActive ? "font-bold" : ""} flex`}>
+            <span className={`${isActive ? "font-bold" : ""} flex truncate overflow-hidden`}>
               {props.label}
             </span>
           </div>
