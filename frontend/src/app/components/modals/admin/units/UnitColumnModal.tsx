@@ -7,6 +7,8 @@ import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
+  switchClass,
+  switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import {
@@ -38,10 +40,14 @@ const UnitColumnModal = (props: Props) => {
   // --- States ---
   const [name, setName] = useState("");
   const [dataType, setDataType] = useState<UnitColumnDataType>();
+  const [compare, setCompare] = useState(false);
+  const [comparisonText, setComparisonText] = useState("");
 
   const [originalName, setOriginalName] = useState("");
   const [originalDataType, setOriginalDataType] =
     useState<UnitColumnDataType>();
+  const [originalCompare, setOriginalCompare] = useState(false);
+  const [originalComparisonText, setOriginalComparisonText] = useState("");
   const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
@@ -62,6 +68,12 @@ const UnitColumnModal = (props: Props) => {
 
       setDataType(undefined);
       setOriginalDataType(undefined);
+
+      setCompare(false);
+      setOriginalCompare(false);
+
+      setComparisonText("");
+      setOriginalComparisonText("");
     }
   }, [props.isOpen, props.itemId]);
 
@@ -81,6 +93,8 @@ const UnitColumnModal = (props: Props) => {
         body: JSON.stringify({
           name,
           dataType,
+          compare,
+          comparisonText,
         }),
       });
 
@@ -164,6 +178,12 @@ const UnitColumnModal = (props: Props) => {
 
     setDataType(result.dataType ?? undefined);
     setOriginalDataType(result.dataType ?? undefined);
+
+    setCompare(result.compare ?? false);
+    setOriginalCompare(result.compare ?? false);
+
+    setComparisonText(result.comparisonText ?? "");
+    setOriginalComparisonText(result.comparisonText ?? "");
   };
 
   // --- Update unit column ---
@@ -183,6 +203,8 @@ const UnitColumnModal = (props: Props) => {
           body: JSON.stringify({
             name,
             dataType,
+            compare,
+            comparisonText,
           }),
         },
       );
@@ -242,15 +264,29 @@ const UnitColumnModal = (props: Props) => {
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
-      const dirty = name !== "" || dataType !== undefined;
+      const dirty =
+        name !== "" || dataType !== undefined || comparisonText !== "";
 
       setIsDirty(dirty);
       return;
     }
 
-    const dirty = name !== originalName || dataType !== originalDataType;
+    const dirty =
+      name !== originalName ||
+      dataType !== originalDataType ||
+      compare !== originalCompare ||
+      comparisonText !== originalComparisonText;
     setIsDirty(dirty);
-  }, [name, dataType, originalName, originalDataType]);
+  }, [
+    name,
+    dataType,
+    compare,
+    comparisonText,
+    originalName,
+    originalDataType,
+    originalCompare,
+    originalComparisonText,
+  ]);
 
   return (
     <>
@@ -294,7 +330,9 @@ const UnitColumnModal = (props: Props) => {
                 />
 
                 <SingleDropdown
-                  addSpacer={getDataTypeOptions(t).length > 0}
+                  addSpacer={
+                    getDataTypeOptions(t).length > 0 && dataType !== "Number"
+                  }
                   scrollContainer={getScrollEl}
                   id="dataType"
                   label={t("Columns/Data type")}
@@ -305,6 +343,46 @@ const UnitColumnModal = (props: Props) => {
                   required
                 />
               </div>
+
+              {dataType === "Number" && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <hr className="w-12 text-[var(--border-tertiary)]" />
+                    <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                      {t("ColumnModal/Info2")}
+                    </h3>
+                    <hr className="w-full text-[var(--border-tertiary)]" />
+                  </div>
+
+                  <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
+                    <div className="flex items-center gap-2 truncate">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={compare}
+                        className={switchClass(compare)}
+                        onClick={() => setCompare((prev) => !prev)}
+                      >
+                        <div className={switchKnobClass(compare)} />
+                      </button>
+                      <span className="mb-0.5">
+                        {t("ColumnModal/Compare to previous hour")}
+                      </span>
+                    </div>
+
+                    {compare && (
+                      <Input
+                        label={t("ColumnModal/Comparison text")}
+                        value={comparisonText}
+                        onChange={(val) => setComparisonText(String(val))}
+                        onModal
+                        required
+                        {...unitColumnConstraints.comparisonText}
+                      />
+                    )}
+                  </div>
+                </>
+              )}
             </ModalBase.Content>
 
             <ModalBase.Footer>

@@ -11,6 +11,10 @@ namespace backend.Models
         public string Name { get; set; } = string.Empty;
         public UnitColumnDataType DataType { get; set; }
         public bool HasData { get; set; } = false;
+        public bool Compare { get; set; } = false;
+
+        [MaxLength(32)]
+        public string ComparisonText { get; set; } = string.Empty;
 
         // Meta data.
         public DateTime CreationDate { get; set; }

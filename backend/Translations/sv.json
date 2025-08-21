@@ -54,6 +54,7 @@
   "UnitColumn/Deleted": "Kolumn borttagen!",
   "UnitColumn/NameTaken": "En kolumn med detta namn finns redan!",
   "UnitColumn/CannotChangeTypeInUse": "Datatypen kan inte ändras eftersom kolumnen redan används i sparade celler",
+  "UnitColumn/ComparisonText": "Jämförelsetext",
 
   "UnitCell/NotFound": "Cellen kunde inte hittas i databasen",
   "UnitCell/Deleted": "Cell borttagen!",

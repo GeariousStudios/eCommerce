@@ -450,20 +450,6 @@ using (var scope = app.Services.CreateScope())
             }
         );
 
-        db.UnitShiftChanges.Add(
-            new UnitShiftChange
-            {
-                UnitId = unit.Id,
-                OldShiftId = 0,
-                NewShiftId = unmannedShift.Id,
-                EffectiveFromUtc = DateTime.UtcNow,
-                CreationDate = DateTime.UtcNow,
-                CreatedBy = "System",
-                UpdateDate = DateTime.UtcNow,
-                UpdatedBy = "System",
-            }
-        );
-
         db.News.AddRange(newsItemOne, newsItemTwo, newsItemThree);
         db.Users.AddRange(masterUser, testUserOne, testUserTwo);
 

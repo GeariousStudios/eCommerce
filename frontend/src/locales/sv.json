@@ -274,6 +274,9 @@
   "GroupModal/Info1": "Uppgifter om gruppen",
 
   "ColumnModal/Info1": "Uppgifter om kolumnen",
+  "ColumnModal/Info2": "Datatyp: Number",
+  "ColumnModal/Compare to previous hour": "Jämför med föregående timme",
+  "ColumnModal/Comparison text": "Jämförelsetext (t.ex.: Timtakt)",
 
   "CategoryModal/Info1": "Uppgifter om kategorin",
   "CategoryModal/Info2": "Underkategorier",
@@ -316,6 +319,8 @@
 
   "ShiftTeamModal/Info1": "Uppgifter om laget",
   "ShiftTeamModal/Hide shift team": "Göm lag",
+
+  
 
   "Shifts/None": "Inget",
   "Shifts/Unmanned": "Obemannad",

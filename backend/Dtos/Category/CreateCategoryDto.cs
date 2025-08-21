@@ -5,7 +5,7 @@ namespace backend.Dtos.Category
     public class CreateCategoryDto
     {
         [Required(ErrorMessage = "[1|Common/a name] Validation/Please enter")]
-        [MaxLength(32, ErrorMessage = "[2|Common/Name] Validation/cannot exceed")]
+        [MaxLength(32, ErrorMessage = "[2|Common/Name|32] Validation/cannot exceed")]
         public string Name { get; set; } = string.Empty;
         public int[]? Units { get; set; }
         public int[]? SubCategoryIds { get; set; }

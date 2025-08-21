@@ -150,6 +150,12 @@ const UnitClient = (props: Props) => {
   const [unitColumnIds, setUnitColumnIds] = useState<number[]>([]);
   const [unitColumnNames, setUnitColumnNames] = useState<string[]>([]);
   const [unitColumnDataTypes, setUnitColumnDataTypes] = useState<string[]>([]);
+  const [unitColumnCompareFlags, setUnitColumnCompareFlags] = useState<
+    boolean[]
+  >([]);
+  const [unitColumnComparisonTexts, setUnitColumnComparisonTexts] = useState<
+    string[]
+  >([]);
 
   // --- States: UnitCell & Report ---
   const [unitCells, setUnitCells] = useState<any[]>([]);
@@ -321,6 +327,26 @@ const UnitClient = (props: Props) => {
     return date === unitCreationDate && toMinutes(time) === 0;
   };
 
+  const getNumericCellValue = (cell: any) => {
+    if (cell == null) {
+      return undefined;
+    }
+
+    if (typeof cell.intValue === "number") {
+      return cell.intValue;
+    }
+
+    const n = Number(cell.value);
+    return Number.isFinite(n) ? n : undefined;
+  };
+
+  const compareColsCount = unitColumnNames.reduce((acc, _, i) => {
+    return (
+      acc +
+      (unitColumnDataTypes[i] === "Number" && unitColumnCompareFlags[i] ? 1 : 0)
+    );
+  }, 0);
+
   // --- BACKEND ---
   // --- Fetch unit ---
   useEffect(() => {
@@ -462,6 +488,10 @@ const UnitClient = (props: Props) => {
       setUnitColumnIds(result.map((c: any) => c.id));
       setUnitColumnNames(result.map((c: any) => c.name));
       setUnitColumnDataTypes(result.map((c: any) => c.dataType));
+      setUnitColumnCompareFlags(result.map((c: any) => Boolean(c.compare)));
+      setUnitColumnComparisonTexts(
+        result.map((c: any) => c.comparisonText ?? ""),
+      );
     };
 
     fetchUnitColumns();
@@ -1347,7 +1377,7 @@ const UnitClient = (props: Props) => {
                 {refetchData ? (
                   <tr>
                     <th
-                      colSpan={unitColumnNames.length + 4}
+                      colSpan={unitColumnNames.length + compareColsCount + 4}
                       className={`${thClass}`}
                     />
                   </tr>
@@ -1380,10 +1410,23 @@ const UnitClient = (props: Props) => {
                       {t("Unit/Disruptions")}
                     </th>
 
-                    {unitColumnNames.map((col, i) => (
-                      <th key={i} className={`${thClass}`}>
-                        {col}
-                      </th>
+                    {unitColumnNames.map((col, i, arr) => (
+                      <React.Fragment key={`head-${i}`}>
+                        {unitColumnDataTypes[i] === "Number" &&
+                          unitColumnCompareFlags[i] && (
+                            <th
+                              className={`${thClass} w-0 min-w-[10ch] whitespace-nowrap`}
+                            >
+                              {unitColumnComparisonTexts[i]}
+                            </th>
+                          )}
+
+                        <th
+                          className={`${thClass} ${i !== arr.length - 1 && unitColumnCompareFlags[i] && unitColumnDataTypes[i] === "Number" ? "w-0 min-w-[10ch]" : ""} whitespace-nowrap`}
+                        >
+                          {col}
+                        </th>
+                      </React.Fragment>
                     ))}
                   </tr>
                 )}
@@ -1393,7 +1436,7 @@ const UnitClient = (props: Props) => {
                   <tr>
                     {/* 960px = h-[tdClass] * 24 */}
                     <td
-                      colSpan={unitColumnNames.length + 4}
+                      colSpan={unitColumnNames.length + compareColsCount + 4}
                       className={`${tdClass} h-[960px]`}
                     >
                       <Message icon="loading" content="content" />
@@ -1403,9 +1446,6 @@ const UnitClient = (props: Props) => {
                   <>
                     {Array.from({ length: 24 }, (_, hour) => {
                       const isExpanded = expandedRows.includes(hour);
-                      // const changesThisHour = shiftChanges.filter(
-                      //   (c) => c.hour === hour,
-                      // );
 
                       const hasMidnightChange = shiftChanges.some(
                         (c) => c.hour === 0 && (c.minute ?? 0) === 0,
@@ -1548,7 +1588,7 @@ const UnitClient = (props: Props) => {
                                         content={t("Unit/Ongoing disruption")}
                                         mediumDelay
                                       >
-                                        <span className="ml-1 text-[var(--note-error)]">
+                                        <span className="ml-1 cursor-help text-[var(--note-error)]">
                                           &#x26A0;
                                         </span>
                                       </CustomTooltip>
@@ -1562,6 +1602,9 @@ const UnitClient = (props: Props) => {
                             {unitColumnNames.map((_, colIdx) => {
                               const columnName = unitColumnNames[colIdx];
                               const dataType = unitColumnDataTypes[colIdx];
+                              const hasCompare = unitColumnCompareFlags[colIdx];
+                              const compareLabel =
+                                unitColumnComparisonTexts[colIdx];
 
                               const cell = unitCells.find(
                                 (c) =>
@@ -1578,42 +1621,81 @@ const UnitClient = (props: Props) => {
                                       : ""
                                   : (cell?.intValue ?? cell?.value ?? "");
 
-                              return (
-                                <td
-                                  key={`collapsed-${hour}-${colIdx}`}
-                                  className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === unitColumnNames.length - 1 ? "border-r-0" : ""} group/cell min-w-48`}
-                                >
-                                  <div className="flex gap-4">
-                                    {displayValue}
+                              const numericCurrent =
+                                dataType === "Number"
+                                  ? getNumericCellValue(cell)
+                                  : undefined;
 
-                                    <CustomTooltip
-                                      content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Tooltip report data") + t("Unit/Tooltip this hour") : t("Unit/No columns")}`}
-                                      veryLongDelay={
-                                        props.isReporter == true &&
-                                        unitColumnNames.length > 0
-                                      }
+                              const prevCell =
+                                dataType === "Number"
+                                  ? unitCells.find(
+                                      (c) =>
+                                        c.hour === hour - 1 &&
+                                        c.columnName === columnName,
+                                    )
+                                  : undefined;
+
+                              const numericPrev =
+                                dataType === "Number"
+                                  ? getNumericCellValue(prevCell)
+                                  : undefined;
+
+                              const diff =
+                                numericCurrent != null && numericPrev != null
+                                  ? numericCurrent - numericPrev
+                                  : undefined;
+
+                              return (
+                                <React.Fragment key={`col-${hour}-${colIdx}`}>
+                                  {dataType === "Number" && hasCompare && (
+                                    <td
+                                      className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === unitColumnNames.length - 1 ? "border-r-0" : ""} ${dataType === "Number" ? "max-w-max" : "min-w-32"}`}
                                     >
-                                      <button
-                                        type="button"
-                                        className={`${iconButtonPrimaryClass} group invisible ml-auto group-hover/cell:visible`}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          toggleUnitCellModal(hour);
-                                        }}
-                                        disabled={
-                                          !props.isReporter ||
-                                          unitColumnNames.length === 0
+                                      {numericPrev == null
+                                        ? "0"
+                                        : diff! >= 0
+                                          ? `${diff}`
+                                          : `0`}
+                                    </td>
+                                  )}
+
+                                  <td
+                                    className={`${tdClass} ${
+                                      hour === 23 ? "border-b-0" : ""
+                                    } ${hasCompare && dataType === "Number" ? "" : colIdx === unitColumnNames.length - 1 ? "border-r-0" : ""} group/cell`}
+                                  >
+                                    <div className="flex gap-4">
+                                      {displayValue}
+
+                                      <CustomTooltip
+                                        content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Tooltip report data") + t("Unit/Tooltip this hour") : t("Unit/No columns")}`}
+                                        veryLongDelay={
+                                          props.isReporter == true &&
+                                          unitColumnNames.length > 0
                                         }
                                       >
-                                        <HoverIcon
-                                          outline={Outline.PencilSquareIcon}
-                                          solid={Solid.PencilSquareIcon}
-                                          className="h-6 min-h-6 w-6 min-w-6"
-                                        />
-                                      </button>
-                                    </CustomTooltip>
-                                  </div>
-                                </td>
+                                        <button
+                                          type="button"
+                                          className={`${iconButtonPrimaryClass} group invisible ml-auto group-hover/cell:visible`}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            toggleUnitCellModal(hour);
+                                          }}
+                                          disabled={
+                                            !props.isReporter ||
+                                            unitColumnNames.length === 0
+                                          }
+                                        >
+                                          <HoverIcon
+                                            outline={Outline.PencilSquareIcon}
+                                            solid={Solid.PencilSquareIcon}
+                                            className="h-6 min-h-6 w-6 min-w-6"
+                                          />
+                                        </button>
+                                      </CustomTooltip>
+                                    </div>
+                                  </td>
+                                </React.Fragment>
                               );
                             })}
                           </tr>
@@ -1635,7 +1717,13 @@ const UnitClient = (props: Props) => {
                                 >
                                   {toHm(change.hour, change.minute)}
                                 </td>
-                                <td colSpan={unitColumnNames.length + 4}>
+                                <td
+                                  colSpan={
+                                    unitColumnNames.length +
+                                    compareColsCount +
+                                    4
+                                  }
+                                >
                                   <div className="flex items-center justify-center">
                                     <div className="flex w-full items-center justify-center">
                                       <>
@@ -1797,7 +1885,11 @@ const UnitClient = (props: Props) => {
                             <tr
                               className={`${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} border-y-1 border-y-[var(--border-secondary)]`}
                             >
-                              <td colSpan={unitColumnNames.length + 4}>
+                              <td
+                                colSpan={
+                                  unitColumnNames.length + compareColsCount + 4
+                                }
+                              >
                                 <div className="flex flex-col gap-4 p-4">
                                   <CustomTooltip
                                     content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report disruptions") + t("Unit/Tooltip this hour")}`}

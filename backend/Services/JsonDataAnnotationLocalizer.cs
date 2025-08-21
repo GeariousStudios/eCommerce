@@ -8,9 +8,8 @@ namespace backend.Services
     {
         private readonly ITranslationService _ts;
         private readonly IHttpContextAccessor _http;
-
         private static readonly Regex ExtendedPrefixRx = new(
-            @"^\[(\d+)(?:\|([^\]]+))?\]\s*(.+)$",
+            @"^\[(?<id>\d+)(?<pipes>(?:\|[^\]]+)*)\]\s*(?<key>.+)$",
             RegexOptions.Compiled
         );
 
@@ -33,40 +32,43 @@ namespace backend.Services
             get
             {
                 var lang = ResolveLang();
-
                 var m = ExtendedPrefixRx.Match(name);
                 string messageKey = name;
-
                 if (m.Success)
-                    messageKey = m.Groups[3].Value;
-
+                    messageKey = m.Groups["key"].Value;
                 var value = _ts.GetAsync(messageKey, lang).GetAwaiter().GetResult();
                 return new LocalizedString(name, value, value == messageKey);
             }
         }
-
         public LocalizedString this[string name, params object[] arguments]
         {
             get
             {
                 var lang = ResolveLang();
-
                 var m = ExtendedPrefixRx.Match(name);
                 string prefix = "";
-                string displayKey = "";
                 string messageKey = name;
-
+                string? displayKey = null;
+                var extraArgs = new List<object>();
                 if (m.Success)
                 {
-                    prefix = $"[{m.Groups[1].Value}]";
-                    displayKey = m.Groups[2].Value;
-                    messageKey = m.Groups[3].Value;
+                    var id = m.Groups["id"].Value;
+                    prefix = $"[{id}]";
+                    messageKey = m.Groups["key"].Value;
+                    var pipes = m.Groups["pipes"].Value;
+                    if (!string.IsNullOrEmpty(pipes))
+                    {
+                        var parts = pipes.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length > 0)
+                        {
+                            displayKey = parts[0];
+                            for (int i = 1; i < parts.Length; i++)
+                                extraArgs.Add(parts[i]);
+                        }
+                    }
                 }
-
                 var format = _ts.GetAsync(messageKey, lang).GetAwaiter().GetResult();
-
-                object[] finalArgs;
-                Func<object, object> translateArg = a =>
+                object TranslateArg(object a)
                 {
                     if (a is string s)
                     {
@@ -74,34 +76,31 @@ namespace backend.Services
                         return string.IsNullOrEmpty(ts) ? s : ts;
                     }
                     return a;
-                };
-
+                }
+                var finalArgsList = new List<object>();
                 if (!string.IsNullOrEmpty(displayKey))
                 {
-                    var translatedDisplay = _ts.GetAsync(displayKey, lang).GetAwaiter().GetResult();
-                    var rest = (arguments ?? Array.Empty<object>()).Select(translateArg);
-                    finalArgs = new object[] { translatedDisplay }
-                        .Concat(rest)
-                        .ToArray();
+                    var translatedDisplay = _ts.GetAsync(displayKey!, lang)
+                        .GetAwaiter()
+                        .GetResult();
+                    finalArgsList.Add(translatedDisplay);
                 }
-                else
+                foreach (var ea in extraArgs)
+                    finalArgsList.Add(TranslateArg(ea));
+                if (arguments != null && arguments.Length > 0)
                 {
-                    finalArgs = (arguments ?? Array.Empty<object>()).Select(translateArg).ToArray();
+                    foreach (var a in arguments)
+                        finalArgsList.Add(TranslateArg(a));
                 }
-
                 var placeholders =
                     Regex
                         .Matches(format, @"\{\d+\}")
-                        .Select(m => int.Parse(m.Value.Trim('{', '}')))
+                        .Select(mm => int.Parse(mm.Value.Trim('{', '}')))
                         .DefaultIfEmpty(-1)
                         .Max() + 1;
-
-                if (finalArgs.Length < placeholders)
-                {
-                    Array.Resize(ref finalArgs, placeholders);
-                }
-
-                var value = string.Format(format, finalArgs);
+                while (finalArgsList.Count < placeholders)
+                    finalArgsList.Add(string.Empty);
+                var value = string.Format(format, finalArgsList.ToArray());
                 return new LocalizedString(name, $"{prefix} {value}".Trim(), format == messageKey);
             }
         }

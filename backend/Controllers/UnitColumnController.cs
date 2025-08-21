@@ -145,6 +145,8 @@ namespace backend.Controllers
                     Id = c.Id,
                     Name = c.Name,
                     DataType = c.DataType,
+                    Compare = c.Compare,
+                    ComparisonText = c.ComparisonText,
                     Units = c.UnitToUnitColumns.Select(uuc => uuc.Unit.Name).Distinct().ToList(),
                     HasData = c.HasData,
 
@@ -186,6 +188,8 @@ namespace backend.Controllers
                 Id = column.Id,
                 Name = column.Name,
                 DataType = column.DataType,
+                Compare = column.Compare,
+                ComparisonText = column.ComparisonText,
                 Units = column.UnitToUnitColumns.Select(uuc => uuc.Unit.Name).Distinct().ToList(),
                 HasData = column.HasData,
             };
@@ -216,6 +220,8 @@ namespace backend.Controllers
                     Id = uuc.UnitColumn.Id,
                     Name = uuc.UnitColumn.Name,
                     DataType = uuc.UnitColumn.DataType,
+                    Compare = uuc.UnitColumn.Compare,
+                    ComparisonText = uuc.UnitColumn.ComparisonText,
                     HasData = uuc.UnitColumn.HasData,
 
                     // Meta data.
@@ -243,19 +249,11 @@ namespace backend.Controllers
             }
 
             var isInUse = column.UnitToUnitColumns != null && column.UnitToUnitColumns.Any();
-            // var hasStoredData = await _context.UnitCells.AnyAsync(uc => uc.ColumnId == id);
 
             if (isInUse)
             {
                 return BadRequest(new { message = await _t.GetAsync("UnitColumn/InUse", lang) });
             }
-
-            // if (hasStoredData)
-            // {
-            //     return BadRequest(
-            //         new { message = "Kolumnen kan inte tas bort då den innehåller sparad data!" }
-            //     );
-            // }
 
             _context.UnitColumns.Remove(column);
             await _context.SaveChangesAsync();
@@ -309,6 +307,8 @@ namespace backend.Controllers
             {
                 Name = dto.Name,
                 DataType = dto.DataType,
+                Compare = dto.Compare,
+                ComparisonText = dto.ComparisonText,
 
                 // Meta data.
                 CreationDate = now,
@@ -325,6 +325,8 @@ namespace backend.Controllers
                 Name = column.Name,
                 DataType = column.DataType,
                 HasData = column.HasData,
+                Compare = column.Compare,
+                ComparisonText = column.ComparisonText,
 
                 // Meta data.
                 CreationDate = column.CreationDate,
@@ -377,9 +379,7 @@ namespace backend.Controllers
 
             if (column.DataType != dto.DataType)
             {
-                var isInUse = await _context.UnitCells.AnyAsync(uc => uc.ColumnId == column.Id);
-
-                if (isInUse)
+                if (column.HasData)
                 {
                     return BadRequest(
                         new
@@ -405,6 +405,8 @@ namespace backend.Controllers
             var now = DateTime.UtcNow;
 
             column.Name = dto.Name;
+            column.Compare = dto.Compare;
+            column.ComparisonText = dto.ComparisonText;
 
             // Meta data.
             column.UpdateDate = now;
@@ -418,6 +420,8 @@ namespace backend.Controllers
                 Name = column.Name,
                 DataType = column.DataType,
                 HasData = column.HasData,
+                Compare = column.Compare,
+                ComparisonText = column.ComparisonText,
 
                 // Meta data.
                 UpdateDate = column.UpdateDate,

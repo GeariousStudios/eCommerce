@@ -122,6 +122,9 @@
   "Home/No news": "There are no news at the moment!",
   "Home/Welcome": "Welcome, ",
 
+  "Unit/Tooltip this hour": " this hour",
+  "Unit/Tooltip report data": "Report data in one or more columns",
+  "Unit/Tooltip report disruptions": "Add new or edit existing disruption",
   "Unit/Report data": "Report data",
   "Unit/Report disruptions": "Report disruptions",
   "Unit/Disruptions": "Disruptions",
@@ -270,6 +273,9 @@
   "GroupModal/Info1": "Details about the group",
 
   "ColumnModal/Info1": "Details about the column",
+  "ColumnModal/Info2": "Data type: Number",
+  "ColumnModal/Compare to previous hour": "Compare to previous hour",
+  "ColumnModal/Comparison text": "Comparison text (e.g. Hourly rate)",
 
   "CategoryModal/Info1": "Details about the category",
   "CategoryModal/Info2": "Sub categories",

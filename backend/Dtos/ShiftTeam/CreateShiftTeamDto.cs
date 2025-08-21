@@ -5,11 +5,11 @@ namespace backend.Dtos.ShiftTeam
     public class CreateShiftTeamDto
     {
         [Required(ErrorMessage = "[1|Common/a name] Validation/Please enter")]
-        [MaxLength(32, ErrorMessage = "[2|Common/Name] Validation/cannot exceed")]
+        [MaxLength(32, ErrorMessage = "[2|Common/Name|32] Validation/cannot exceed")]
         public string Name { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
 
-        [MaxLength(7, ErrorMessage = "[3|ShiftTeam/a color] Validation/cannot exceed")]
+        [MaxLength(7, ErrorMessage = "[3|ShiftTeam/a color|7] Validation/cannot exceed")]
         [RegularExpression(
             "^#([0-9A-Fa-f]{6})$",
             ErrorMessage = "[4|ShiftTeam/Color format] Validation/Invalid format"

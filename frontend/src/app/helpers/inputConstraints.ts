@@ -21,6 +21,7 @@ export const categoryConstraints = {
 // --- UnitColumnModal ---
 export const unitColumnConstraints = {
   name: { maxLength: 32 },
+  comparisonText: { maxLength: 32 },
 };
 
 // --- UnitGroupModal ---

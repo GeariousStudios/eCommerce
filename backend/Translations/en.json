@@ -54,6 +54,7 @@
   "UnitColumn/Deleted": "Column deleted!",
   "UnitColumn/NameTaken": "A column with this name already exists!",
   "UnitColumn/CannotChangeTypeInUse": "The data type cannot be changed because the column is already used in stored cells",
+  "UnitColumn/ComparisonText": "Comparison text",
 
   "UnitCell/NotFound": "The cell could not be found in the database",
   "UnitCell/Deleted": "Cell deleted!",

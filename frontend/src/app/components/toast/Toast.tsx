@@ -53,7 +53,7 @@ const Toast = (props: Props) => {
       style={{ transitionDuration: "500ms, 200ms" }}
       onClick={handleClose}
     >
-      <Icon className="h-8 w-8" />
+      <Icon className="h-8 w-8 min-h-8 min-w-8" />
       <div className="">
         {typeof props.content === "string" ? (
           <div dangerouslySetInnerHTML={{ __html: props.content }} />

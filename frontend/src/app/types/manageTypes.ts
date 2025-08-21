@@ -66,6 +66,8 @@ export type UnitColumnItem = {
   name: string;
   dataType: UnitColumnDataType;
   hasData: boolean;
+  perHour: boolean;
+  perHourName?: string;
   units: string[];
 
   creationDate: string;

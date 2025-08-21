@@ -9,6 +9,8 @@ namespace backend.Dtos.UnitColumn
         public UnitColumnDataType DataType { get; set; }
         public List<string> Units { get; set; } = new();
         public bool HasData { get; set; }
+        public bool Compare { get; set; }
+        public string ComparisonText { get; set; } = string.Empty;
 
         // Meta data.
         public DateTime CreationDate { get; set; }
