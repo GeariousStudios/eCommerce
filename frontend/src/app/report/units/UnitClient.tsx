@@ -1412,6 +1412,12 @@ const UnitClient = (props: Props) => {
 
                     {unitColumnNames.map((col, i, arr) => (
                       <React.Fragment key={`head-${i}`}>
+                        <th
+                          className={`${thClass} ${i !== arr.length - 1 && unitColumnCompareFlags[i] && unitColumnDataTypes[i] === "Number" ? "w-0 min-w-[10ch]" : ""} whitespace-nowrap`}
+                        >
+                          {col}
+                        </th>
+
                         {unitColumnDataTypes[i] === "Number" &&
                           unitColumnCompareFlags[i] && (
                             <th
@@ -1437,12 +1443,6 @@ const UnitClient = (props: Props) => {
                               </div>
                             </th>
                           )}
-
-                        <th
-                          className={`${thClass} ${i !== arr.length - 1 && unitColumnCompareFlags[i] && unitColumnDataTypes[i] === "Number" ? "w-0 min-w-[10ch]" : ""} whitespace-nowrap`}
-                        >
-                          {col}
-                        </th>
                       </React.Fragment>
                     ))}
                   </tr>
@@ -1672,18 +1672,6 @@ const UnitClient = (props: Props) => {
 
                               return (
                                 <React.Fragment key={`col-${hour}-${colIdx}`}>
-                                  {dataType === "Number" && hasCompare && (
-                                    <td
-                                      className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === unitColumnNames.length - 1 ? "border-r-0" : ""} ${dataType === "Number" ? "max-w-max" : "min-w-32"}`}
-                                    >
-                                      {numericPrev == null
-                                        ? "0"
-                                        : diff! >= 0
-                                          ? `${diff}`
-                                          : `0`}
-                                    </td>
-                                  )}
-
                                   <td
                                     className={`${tdClass} ${
                                       hour === 23 ? "border-b-0" : ""
@@ -1720,6 +1708,18 @@ const UnitClient = (props: Props) => {
                                       </CustomTooltip>
                                     </div>
                                   </td>
+
+                                  {dataType === "Number" && hasCompare && (
+                                    <td
+                                      className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === unitColumnNames.length - 1 ? "border-r-0" : ""} ${dataType === "Number" ? "max-w-max" : "min-w-32"}`}
+                                    >
+                                      {numericPrev == null
+                                        ? "0"
+                                        : diff! >= 0
+                                          ? `${diff}`
+                                          : `0`}
+                                    </td>
+                                  )}
                                 </React.Fragment>
                               );
                             })}
