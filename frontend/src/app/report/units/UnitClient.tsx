@@ -1395,12 +1395,12 @@ const UnitClient = (props: Props) => {
                       </div>
                     </th>
                     <th
-                      className={`${thClass} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
+                      className={`${thClass} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
                     >
                       {t("Common/Time")}
                     </th>
                     <th
-                      className={`${thClass} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
+                      className={`${thClass} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
                     >
                       {t("Common/Shift")}
                     </th>
@@ -1417,7 +1417,24 @@ const UnitClient = (props: Props) => {
                             <th
                               className={`${thClass} w-0 min-w-[10ch] whitespace-nowrap`}
                             >
-                              {unitColumnComparisonTexts[i]}
+                              <div className="flex items-center justify-between gap-2">
+                                <span>{unitColumnComparisonTexts[i]}</span>
+                                <CustomTooltip
+                                  content={
+                                    t("Unit/Tooltip comparison text") +
+                                    unitColumnNames[i]
+                                  }
+                                  mediumDelay
+                                >
+                                  <span className="group min-h-4 min-w-4 cursor-help">
+                                    <HoverIcon
+                                      outline={Outline.InformationCircleIcon}
+                                      solid={Solid.InformationCircleIcon}
+                                      className="flex"
+                                    />
+                                  </span>
+                                </CustomTooltip>
+                              </div>
                             </th>
                           )}
 
@@ -1490,7 +1507,7 @@ const UnitClient = (props: Props) => {
                             {/* --- Standard <td>s --- */}
                             {/* --- Expand <td> --- */}
                             <td
-                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)] group-hover/row:bg-[var(--bg-grid-header-hover)]" : "bg-[var(--bg-grid-zebra)] group-hover/row:bg-[var(--bg-grid-header-hover)]"} sticky left-0 w-[52.5px] border-l-0 whitespace-nowrap transition-[background] duration-[var(--fast)]`}
+                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)] group-hover/row:bg-[var(--bg-grid-header-hover)]" : "bg-[var(--bg-grid-zebra)] group-hover/row:bg-[var(--bg-grid-header-hover)]"} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] border-l-0 whitespace-nowrap transition-[background] duration-[var(--fast)]`}
                             >
                               <div className={iconButtonPrimaryClass}>
                                 {isExpanded ? (
@@ -1503,7 +1520,7 @@ const UnitClient = (props: Props) => {
 
                             {/* --- Time <td> --- */}
                             <td
-                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)] group-hover/row:bg-[var(--bg-grid-header-hover)]" : "bg-[var(--bg-grid-zebra)] group-hover/row:bg-[var(--bg-grid-header-hover)]"} sticky left-[52.5px] w-[72px] whitespace-nowrap transition-[background] duration-[var(--fast)]`}
+                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)] group-hover/row:bg-[var(--bg-grid-header-hover)]" : "bg-[var(--bg-grid-zebra)] group-hover/row:bg-[var(--bg-grid-header-hover)]"} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] whitespace-nowrap transition-[background] duration-[var(--fast)]`}
                             >
                               {hour.toString().padStart(2, "0")}:00
                             </td>
@@ -1581,19 +1598,27 @@ const UnitClient = (props: Props) => {
                                 );
 
                                 return (
-                                  <>
+                                  <div className="flex items-center gap-2">
                                     {filteredReports.length}{" "}
                                     {hasOngoing && (
                                       <CustomTooltip
                                         content={t("Unit/Ongoing disruption")}
                                         mediumDelay
                                       >
-                                        <span className="ml-1 cursor-help text-[var(--note-error)]">
-                                          &#x26A0;
+                                        <span className="group ml-1 min-h-4 min-w-4 cursor-help text-[var(--note-error)]">
+                                          <HoverIcon
+                                            outline={
+                                              Outline.ExclamationTriangleIcon
+                                            }
+                                            solid={
+                                              Solid.ExclamationTriangleIcon
+                                            }
+                                            className="flex"
+                                          />
                                         </span>
                                       </CustomTooltip>
                                     )}
-                                  </>
+                                  </div>
                                 );
                               })()}
                             </td>
@@ -1710,10 +1735,10 @@ const UnitClient = (props: Props) => {
                                 className="bg-[var(--bg-grid-note)]"
                               >
                                 <td
-                                  className={`${tdClassSpecial} sticky left-0 w-[52.5px] bg-[var(--bg-grid-note)]`}
+                                  className={`${tdClassSpecial} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] bg-[var(--bg-grid-note)]`}
                                 />
                                 <td
-                                  className={`${tdClassSpecial} sticky left-[52.5px] w-[72px] bg-[var(--bg-grid-note)]`}
+                                  className={`${tdClassSpecial} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-[var(--bg-grid-note)]`}
                                 >
                                   {toHm(change.hour, change.minute)}
                                 </td>

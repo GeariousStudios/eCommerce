@@ -126,10 +126,11 @@
   "Unit/Tooltip this hour": " denna timme",
   "Unit/Tooltip report data": "Rapportera data i en eller flera kolumner",
   "Unit/Tooltip report disruptions": "Infoga ny eller redigera befintlig störning",
+  "Unit/Tooltip comparison text": "Skillnad från föregående timme i kolumn: ",
   "Unit/Report data": "Rapportera data",
   "Unit/Report disruptions": "Rapportera störningar",
   "Unit/Disruptions": "Störningar",
-  "Unit/Ongoing disruption": "Pågående störning",
+  "Unit/Ongoing disruption": "Det finns en pågående störning!",
   "Unit/Edit disruption": "Redigera störning",
   "Unit/Delete disruption": "Ta bort störning",
   "Unit/ongoing": "pågående",
@@ -319,8 +320,6 @@
 
   "ShiftTeamModal/Info1": "Uppgifter om laget",
   "ShiftTeamModal/Hide shift team": "Göm lag",
-
-  
 
   "Shifts/None": "Inget",
   "Shifts/Unmanned": "Obemannad",
