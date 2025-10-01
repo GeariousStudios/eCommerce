@@ -24,6 +24,7 @@ namespace backend.Data
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<ShiftTeam> ShiftTeams { get; set; }
         public DbSet<UnitShiftChange> UnitShiftChanges { get; set; }
+        public DbSet<TrendingPanel> TrendingPanels { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
@@ -32,6 +33,7 @@ namespace backend.Data
         public DbSet<CategoryToSubCategory> CategoryToSubCategories { get; set; }
         public DbSet<ShiftToShiftTeam> ShiftToShiftTeams { get; set; }
         public DbSet<ShiftToShiftTeamSchedule> ShiftToShiftTeamSchedules { get; set; }
+        public DbSet<TrendingPanelToUnit> TrendingPanelToUnits { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -116,6 +118,22 @@ namespace backend.Data
                 .WithMany(s => s.UnitToShifts)
                 .HasForeignKey(us => us.ShiftId);
 
+            // User -> TrendingPanel 1-to-many relationship.
+            modelBuilder
+                .Entity<User>()
+                .HasMany(u => u.TrendingPanels)
+                .WithOne(tp => tp.User)
+                .HasForeignKey(tp => tp.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // TrendingPanel <-> UnitColumn many-to-one relationship.
+            modelBuilder
+                .Entity<TrendingPanel>()
+                .HasOne(tp => tp.UnitColumn)
+                .WithMany()
+                .HasForeignKey(tp => tp.UnitColumnId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // Category <-> SubCategory many-to-many relationship.
             modelBuilder
                 .Entity<CategoryToSubCategory>()
@@ -194,6 +212,23 @@ namespace backend.Data
             // UserRoles stored as string (None, User, Manager, Admin) in DB instead of bit (0, 1, 2, 4).
             // This is to allow refactoring of enum values.
             modelBuilder.Entity<User>().Property(u => u.Roles).HasConversion<int>();
+
+            // TrendingPanel <-> Unit many-to-many relationship.
+            modelBuilder
+                .Entity<TrendingPanelToUnit>()
+                .HasKey(tpu => new { tpu.TrendingPanelId, tpu.UnitId });
+
+            modelBuilder
+                .Entity<TrendingPanelToUnit>()
+                .HasOne(tpu => tpu.TrendingPanel)
+                .WithMany(tp => tp.TrendingPanelToUnits)
+                .HasForeignKey(tpu => tpu.TrendingPanelId);
+
+            modelBuilder
+                .Entity<TrendingPanelToUnit>()
+                .HasOne(tpu => tpu.Unit)
+                .WithMany(u => u.TrendingPanelToUnits)
+                .HasForeignKey(tpu => tpu.UnitId);
         }
 
         public override int SaveChanges()

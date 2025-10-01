@@ -41,6 +41,8 @@ namespace backend.Models
         public bool IsLocked { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime? LastLogin { get; set; }
+
+        public ICollection<TrendingPanel> TrendingPanels { get; set; } = new List<TrendingPanel>();
     }
 
     [Flags]

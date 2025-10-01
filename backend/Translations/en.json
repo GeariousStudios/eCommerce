@@ -70,7 +70,7 @@
   "Report/NotFound": "Report could not be found in the database",
   "Report/Deleted": "Report deleted!",
   "Report/EndAfterStart": "End time must be later than start time",
-  "Report/Overlap": "The disruption must not overlap another disruption:<br>{0} - {1}",
+  "Report/Overlap": "The event must not overlap another event:<br>{0} - {1}",
   "Report/Ongoing": "ongoing",
 
   "NewsType/NotFound": "Type could not be found in the database",
@@ -102,5 +102,9 @@
   "ShiftTeam/InUse": "Cannot delete a team that is in use",
   "ShiftTeam/Deleted": "Team deleted!",
   "ShiftTeam/NameTaken": "A team with this name already exists!",
-  "ShiftTeam/CannotHideActive": "Cannot hide a team that is active in a unit"
+  "ShiftTeam/CannotHideActive": "Cannot hide a team that is active in a unit",
+
+  "TrendingPanel/NotFound": "Panel could not be found in the database",
+  "TrendingPanel/Updated": "Panel updated!",
+  "TrendingPanel/Deleted": "Panel deleted!"
 }

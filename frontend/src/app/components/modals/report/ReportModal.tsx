@@ -357,7 +357,7 @@ const ReportModal = (props: Props) => {
       props.onItemUpdated();
       notify(
         "success",
-        t("ReportModal/Disruption report") + t("Modal/created"),
+        t("ReportModal/Event") + t("Modal/created"),
       );
       return true;
     } catch (err) {
@@ -406,7 +406,7 @@ const ReportModal = (props: Props) => {
       props.onItemUpdated();
       notify(
         "success",
-        t("ReportModal/Disruption report") + t("Modal/updated"),
+        t("ReportModal/Event") + t("Modal/updated"),
       );
       return true;
     } catch (err) {
@@ -442,7 +442,7 @@ const ReportModal = (props: Props) => {
       props.onItemUpdated();
       notify(
         "success",
-        t("ReportModal/Disruption report") + t("Manage/deleted1"),
+        t("ReportModal/Event") + t("Manage/deleted1"),
       );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -639,7 +639,7 @@ const ReportModal = (props: Props) => {
                 props.onClose();
               }}
               icon={ExclamationTriangleIcon}
-              label={`${t("Unit/Report disruptions")}: ${selectedDate}`}
+              label={`${t("Unit/Report events")}: ${selectedDate}`}
               confirmOnClose
               isDirty={isDirty}
               disableClickOutside={isDeleteModalOpen}
@@ -713,7 +713,7 @@ const ReportModal = (props: Props) => {
                     conflictReport?.startTime.slice(0, 13) !==
                       `${selectedDate}T${selectedHour.padStart(2, "0")}` ? (
                       <div className="text-sm text-[var(--note-error)]">
-                        {t("ReportModal/Blocking stop")}
+                        {t("ReportModal/Blocking event")}
                         <br />
                         <button
                           type="button"
@@ -760,7 +760,7 @@ const ReportModal = (props: Props) => {
                             solid={SolidPlusIcon}
                             className="h-6 min-h-6 w-6 min-w-6"
                           />
-                          {t("ReportModal/Report new disruption")}
+                          {t("ReportModal/Report new event")}
                         </button>
                       )
                     )}

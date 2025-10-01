@@ -94,7 +94,8 @@
   --bg-grid-note: var(--accent-color-light);
 
   /* --- TOOLTIP --- */
-  --bg-tooltip: var(--note-info);
+  --bg-tooltip: #f0f0f0;
+  --bg-tooltip-reverse: #1a1a1a;
   --text-tooltip: var(--text-main-reverse);
 
   /* --- BUTTONS --- */
@@ -124,6 +125,12 @@
   --note-success: #6faa7f;
   --note-success-hover: #6faa7fbf;
   --note-success-active: #6faa7f;
+
+  /* --- GRAPH COLORS --- */
+  --graph-one: #fbbc04;
+  --graph-two: #8ab4f8;
+  --graph-three: #34a853;
+  --graph-four: #f28b82;
 
   /* --- OTHER --- */
   --locked: var(--note-error);
@@ -169,7 +176,8 @@
   --bg-grid-note: var(--accent-color-dark);
 
   /* --- TOOLTIP --- */
-  --bg-tooltip: var(--note-info);
+  --bg-tooltip: #1a1a1a;
+  --bg-tooltip-reverse: #f0f0f0;
   --text-tooltip: var(--text-main-reverse);
 
   /* --- BUTTONS --- */
@@ -199,6 +207,12 @@
   --note-success: #4b815b;
   --note-success-hover: #4b815bbf;
   --note-success-active: #4b815bbf;
+
+  /* --- GRAPH COLORS --- */
+  --graph-one: #bd4200;
+  --graph-two: #01579b;
+  --graph-three: #33691e;
+  --graph-four: #880e4f;
 
   /* --- OTHER --- */
   --locked: var(--note-error);

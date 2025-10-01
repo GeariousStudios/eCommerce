@@ -540,11 +540,6 @@ namespace backend.Controllers
 
                 bool overlaps = newStart < existingStop && newStop > existingStart;
 
-                // if (overlaps)
-                // {
-                //     return $"Stoppet får inte överlappa ett annat stopp:<br>{existingStart:yyyy-MM-dd HH:mm} - {(existing.StopTime != null ? existing.StopTime.Value.ToString("yyyy-MM-dd HH:mm") : "pågående")}";
-                // }
-
                 if (overlaps)
                 {
                     var ongoing = await _t.GetAsync("Report/Ongoing", lang);

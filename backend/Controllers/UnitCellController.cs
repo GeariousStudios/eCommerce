@@ -83,11 +83,43 @@ namespace backend.Controllers
         [HttpGet("range/{unitId}")]
         public async Task<IActionResult> GetCellsForUnitInRange(
             int unitId,
-            [FromQuery] DateOnly start,
-            [FromQuery] DateOnly end
+            [FromQuery] DateOnly? start,
+            [FromQuery] DateOnly? end
         )
         {
             var lang = await GetLangAsync();
+
+            if (end == null)
+            {
+                end = DateOnly.FromDateTime(DateTime.UtcNow.Date);
+            }
+
+            if (start == null)
+            {
+                var unitCreated = await _context
+                    .Units.Where(u => u.Id == unitId)
+                    .Select(u => (DateOnly?)DateOnly.FromDateTime(u.CreationDate.Date))
+                    .FirstOrDefaultAsync();
+
+                if (unitCreated != null)
+                {
+                    start = unitCreated;
+                }
+                else
+                {
+                    start = await _context
+                        .UnitCells.Where(c => c.UnitId == unitId)
+                        .OrderBy(c => c.Date)
+                        .Select(c => (DateOnly?)c.Date)
+                        .FirstOrDefaultAsync();
+
+                    if (start == null)
+                    {
+                        return Ok(new List<UnitCellDto>());
+                    }
+                }
+            }
+
             if (end < start)
             {
                 return BadRequest(

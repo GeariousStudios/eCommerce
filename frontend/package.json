@@ -26,6 +26,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-quill-new": "^3.4.6",
+    "recharts": "^3.2.1",
     "sass": "^1.89.0",
     "uuid": "^11.1.0"
   },

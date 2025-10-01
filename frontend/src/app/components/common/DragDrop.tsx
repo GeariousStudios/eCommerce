@@ -1,10 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+
+type DragDropRenderResult =
+  | React.ReactNode
+  | { element: React.ReactNode; className?: string };
 
 type DragDropProps<T> = {
   items: T[];
   getId: (item: T) => string;
   onReorder: (newItems: T[]) => void;
-  renderItem: (item: T, isDragging: boolean) => React.ReactNode;
+  renderItem: (item: T, isDragging: boolean) => DragDropRenderResult;
   onDraggingChange?: (isDragging: boolean) => void;
   disableClass?: boolean;
   containerClassName?: string;
@@ -22,6 +26,17 @@ const DragDrop = <T,>({
   const dragItemRef = useRef<T | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const ghostRef = useRef<HTMLElement | null>(null);
+
+  const originalItemsRef = useRef<T[] | null>(null);
+  const [tempItems, setTempItems] = useState<T[] | null>(null);
+  const cancelRef = useRef(false);
+
+  useEffect(() => {
+    if (!draggingId) {
+      setTempItems(null);
+      originalItemsRef.current = null;
+    }
+  }, [items, draggingId]);
 
   const makeGhostFrom = (el: HTMLElement) => {
     const clone = el.cloneNode(true) as HTMLElement;
@@ -44,11 +59,15 @@ const DragDrop = <T,>({
     ghostRef.current = null;
   };
 
-  const handleDragStart = (e: React.DragEvent, item: T) => {
+  const beginDrag = (item: T, e: React.DragEvent) => {
     dragItemRef.current = item;
     const id = getId(item);
     setDraggingId(id);
     onDraggingChange?.(true);
+    cancelRef.current = false;
+
+    originalItemsRef.current = items.slice();
+    setTempItems(items.slice());
 
     try {
       e.dataTransfer.clearData();
@@ -67,39 +86,119 @@ const DragDrop = <T,>({
     e.dataTransfer.setDragImage(ghost, offsetX, offsetY);
   };
 
-  const handleDragEnter = (_e: React.DragEvent, targetItem: T) => {
-    const draggedItem = dragItemRef.current;
-    if (!draggedItem) return;
+  const reorder = (sourceId: string, targetId: string) => {
+    if (!tempItems) return;
+    if (sourceId === targetId) return;
 
-    const draggedId = getId(draggedItem);
-    const targetId = getId(targetItem);
-    if (draggedId === targetId) return;
-
-    const newList = [...items];
-    const fromIndex = newList.findIndex((i) => getId(i) === draggedId);
+    const newList = tempItems.slice();
+    const fromIndex = newList.findIndex((i) => getId(i) === sourceId);
     const toIndex = newList.findIndex((i) => getId(i) === targetId);
     if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return;
 
-    newList.splice(fromIndex, 1);
-    newList.splice(toIndex, 0, draggedItem);
-    onReorder(newList);
+    const [moved] = newList.splice(fromIndex, 1);
+    newList.splice(toIndex, 0, moved);
+    setTempItems(newList);
   };
 
-  const handleDragEnd = () => {
+  const confirmOrCancel = () => {
+    const currentTemp = tempItems;
+    const original = originalItemsRef.current;
+
     setDraggingId(null);
     dragItemRef.current = null;
+    setTempItems(null);
+    originalItemsRef.current = null;
     cleanupGhost();
     onDraggingChange?.(false);
+
+    if (cancelRef.current) return;
+
+    if (
+      !currentTemp ||
+      !original ||
+      (currentTemp.length === original.length &&
+        currentTemp.every((it, idx) => getId(it) === getId(original[idx])))
+    ) {
+      return;
+    }
+
+    onReorder(currentTemp);
   };
+
+  const handleDragStart = (e: React.DragEvent, item: T) => {
+    beginDrag(item, e);
+  };
+
+  const handleDragEnter = (_e: React.DragEvent, targetItem: T) => {
+    const draggedItem = dragItemRef.current;
+    if (!draggedItem) return;
+    const draggedId = getId(draggedItem);
+    const targetId = getId(targetItem);
+    reorder(draggedId, targetId);
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    const cancelledByBrowser = e.dataTransfer?.dropEffect === "none";
+    if (cancelledByBrowser) {
+      cancelRef.current = true;
+      if (originalItemsRef.current) {
+        setTempItems(originalItemsRef.current.slice());
+      }
+    }
+    confirmOrCancel();
+  };
+
+  useEffect(() => {
+    if (!draggingId) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isEsc =
+        e.key === "Escape" || e.key === "Esc" || e.code === "Escape";
+      if (isEsc) {
+        e.preventDefault();
+        e.stopPropagation();
+        cancelRef.current = true;
+        if (originalItemsRef.current) {
+          setTempItems(originalItemsRef.current.slice());
+        }
+        confirmOrCancel();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown, { capture: true });
+    return () => {
+      document.removeEventListener("keydown", onKeyDown, { capture: true });
+    };
+  }, [draggingId]);
+
+  const listToRender = useMemo(() => {
+    return tempItems ?? items;
+  }, [tempItems, items]);
 
   return (
     <div
       className={`${containerClassName ?? (disableClass ? "" : "flex flex-wrap gap-2")}`}
       onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        if (draggingId) {
+          confirmOrCancel();
+        }
+      }}
     >
-      {items.map((item) => {
+      {listToRender.map((item) => {
         const id = getId(item);
         const isDragging = id === draggingId;
+
+        const rendered = renderItem(item, isDragging);
+        const element =
+          rendered && typeof rendered === "object" && "element" in rendered
+            ? rendered.element
+            : rendered;
+        const extraClass =
+          rendered && typeof rendered === "object" && "className" in rendered
+            ? rendered.className
+            : "";
 
         return (
           <div
@@ -110,9 +209,9 @@ const DragDrop = <T,>({
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => e.preventDefault()}
             onDragEnd={handleDragEnd}
-            className={`${isDragging ? "cursor-grabbing opacity-50" : "cursor-grab opacity-100"}`}
+            className={`${extraClass} ${isDragging ? "cursor-grabbing opacity-50" : "cursor-grab opacity-100"}`}
           >
-            {renderItem(item, isDragging)}
+            {element}
           </div>
         );
       })}

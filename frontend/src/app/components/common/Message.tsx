@@ -15,6 +15,7 @@ import {
   InboxStackIcon,
   LockClosedIcon,
   WrenchScrewdriverIcon,
+  MinusIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { ElementType, ReactNode, useEffect, useState } from "react";
@@ -44,6 +45,7 @@ const Message = (props: Props) => {
     search: MagnifyingGlassCircleIcon,
     lock: LockClosedIcon,
     work: WrenchScrewdriverIcon,
+    noData: MinusIcon,
   };
 
   const contentMap: Record<string, ReactNode> = {

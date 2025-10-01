@@ -767,10 +767,7 @@ const UnitClient = (props: Props) => {
       }
 
       setReports((prev) => prev.filter((r) => r.id !== id));
-      notify(
-        "success",
-        t("ReportModal/Disruption report") + t("Manage/deleted1"),
-      );
+      notify("success", t("ReportModal/Event") + t("Manage/deleted1"));
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -1172,7 +1169,7 @@ const UnitClient = (props: Props) => {
               </CustomTooltip>
 
               <CustomTooltip
-                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report disruptions")}`}
+                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report events")}`}
                 veryLongDelay={props.isReporter == true}
               >
                 <button
@@ -1194,7 +1191,7 @@ const UnitClient = (props: Props) => {
                       className="h-6 min-h-6 w-6 min-w-6"
                     />
                     <span className="hidden lg:block">
-                      {t("Unit/Report disruptions")}
+                      {t("Unit/Report events")}
                     </span>
                   </div>
                 </button>
@@ -1407,7 +1404,7 @@ const UnitClient = (props: Props) => {
                     <th
                       className={`${thClass} ${unitColumnNames.length > 0 ? "w-0" : ""} whitespace-nowrap`}
                     >
-                      {t("Unit/Disruptions")}
+                      {t("Unit/Events")}
                     </th>
 
                     {unitColumnNames.map((col, i, arr) => (
@@ -1431,6 +1428,7 @@ const UnitClient = (props: Props) => {
                                     unitColumnNames[i]
                                   }
                                   mediumDelay
+                                  showOnTouch
                                 >
                                   <span className="group min-h-4 min-w-4 cursor-help">
                                     <HoverIcon
@@ -1562,7 +1560,7 @@ const UnitClient = (props: Props) => {
                               })()}
                             </td>
 
-                            {/* --- Disruptions <td> --- */}
+                            {/* --- Events <td> --- */}
                             <td
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${unitColumnNames.length > 0 ? "w-0" : "border-r-0"} whitespace-nowrap`}
                             >
@@ -1602,8 +1600,9 @@ const UnitClient = (props: Props) => {
                                     {filteredReports.length}{" "}
                                     {hasOngoing && (
                                       <CustomTooltip
-                                        content={t("Unit/Ongoing disruption")}
+                                        content={t("Unit/Ongoing event")}
                                         mediumDelay
+                                        showOnTouch
                                       >
                                         <span className="group ml-1 min-h-4 min-w-4 cursor-help text-[var(--note-error)]">
                                           <HoverIcon
@@ -1917,7 +1916,7 @@ const UnitClient = (props: Props) => {
                               >
                                 <div className="flex flex-col gap-4 p-4">
                                   <CustomTooltip
-                                    content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report disruptions") + t("Unit/Tooltip this hour")}`}
+                                    content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report events") + t("Unit/Tooltip this hour")}`}
                                     veryLongDelay={props.isReporter == true}
                                   >
                                     <button
@@ -2003,7 +2002,7 @@ const UnitClient = (props: Props) => {
                                             {report.categoryId && (
                                               <div className="flex gap-2">
                                                 <CustomTooltip
-                                                  content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit disruption")}`}
+                                                  content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit event")}`}
                                                   veryLongDelay={
                                                     props.isReporter == true
                                                   }
@@ -2040,7 +2039,7 @@ const UnitClient = (props: Props) => {
                                                 </CustomTooltip>
 
                                                 <CustomTooltip
-                                                  content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete disruption")}`}
+                                                  content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete event")}`}
                                                   veryLongDelay={
                                                     props.isReporter == true
                                                   }
@@ -2146,7 +2145,7 @@ const UnitClient = (props: Props) => {
                                           {!report.categoryId && (
                                             <div className="flex gap-2">
                                               <CustomTooltip
-                                                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit disruption")}`}
+                                                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit event")}`}
                                                 veryLongDelay={
                                                   props.isReporter == true
                                                 }
@@ -2182,7 +2181,7 @@ const UnitClient = (props: Props) => {
                                               </CustomTooltip>
 
                                               <CustomTooltip
-                                                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete disruption")}`}
+                                                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete event")}`}
                                                 veryLongDelay={
                                                   props.isReporter == true
                                                 }

@@ -60,7 +60,7 @@
   "UnitCell/Deleted": "Cell borttagen!",
   "UnitCell/Duplicate": "En cell med samma kolumn, enhet, tid och datum finns redan!",
   "UnitCell/DateRangeInvalid": "Slutdatum måste vara efter startdatum!",
-  "UnitCell/Updated": "Data uppdaterad",
+  "UnitCell/Updated": "Data uppdaterad!",
 
   "SubCategory/NotFound": "Underkategorin kunde inte hittas i databasen",
   "SubCategory/Deleted": "Underkategori borttagen!",
@@ -70,7 +70,7 @@
   "Report/NotFound": "Rapporten kunde inte hittas i databasen",
   "Report/Deleted": "Post borttagen!",
   "Report/EndAfterStart": "Sluttid måste vara senare än starttid",
-  "Report/Overlap": "Stoppet får inte överlappa ett annat stopp:<br>{0} - {1}",
+  "Report/Overlap": "Händelsen får inte överlappa en annan händelse:<br>{0} - {1}",
   "Report/Ongoing": "pågående",
 
   "NewsType/NotFound": "Typen kunde inte hittas i databasen",
@@ -102,5 +102,9 @@
   "ShiftTeam/InUse": "Kan inte ta bort ett lag som används",
   "ShiftTeam/Deleted": "Lag borttagen!",
   "ShiftTeam/NameTaken": "Lag med detta namn finns redan!",
-  "ShiftTeam/CannotHideActive": "Kan inte dölja ett lag som är aktivt i en enhet"
+  "ShiftTeam/CannotHideActive": "Kan inte dölja ett lag som är aktivt i en enhet",
+
+  "TrendingPanel/NotFound": "Panelen kunde inte hittas i databasen",
+  "TrendingPanel/Updated": "Panel uppdaterad!",
+  "TrendingPanel/Deleted": "Panel borttagen!"
 }
