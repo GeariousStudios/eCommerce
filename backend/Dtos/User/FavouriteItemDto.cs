@@ -6,5 +6,6 @@ namespace backend.Dtos.User
         public string Label { get; set; } = string.Empty;
         public string Icon { get; set; } = string.Empty;
         public int Order { get; set; }
+        public bool IsHiddenUnit { get; set; }
     }
 }

@@ -213,7 +213,7 @@
   "Categories/No sub categories": "No sub categories",
   "Categories/sub category amount": "sub category amount",
   "Categories/Confirm1": "Deleting a category will also remove the ability to trend related data.",
-  "Categories/Confirm2": "If the category has a lot of related data, it's better to hide it instead.",
+  "Categories/Confirm2": "If the category has a lot of related data, it's better to hide it instead (unlink units).",
   "Categories/Confirm3": "Do you still want to delete?",
 
   "Columns/Data type": "Data type",
@@ -221,7 +221,7 @@
   "Columns/Data1": "by columns with data",
   "Columns/Data2": "by columns without data",
   "Columns/Confirm1": "Deleting a column will also remove all associated data.",
-  "Columns/Confirm2": "If the column contains important data for operations, such as for trend analysis, it's better to hide it instead.",
+  "Columns/Confirm2": "If the column contains important data for operations, such as for trend analysis, it's better to hide it instead (unlink units).",
   "Columns/Confirm3": "Do you still want to delete?",
 
   "Modal/Unsaved": "You have unsaved changes. Do you still want to close?",
@@ -383,6 +383,8 @@
   "TrendingPanel/Settings": "Set up panel",
   "TrendingPanel/Show information": "Show information",
   "TrendingPanel/Hide information": "Hide information",
+  "TrendingPanel/Show unit": "Show",
+  "TrendingPanel/Hide unit": "Hide",
 
   "toolbar": {
     "font": "Font",

@@ -149,15 +149,11 @@ const TrendingPanel: React.FC<Props> = ({
     "var(--graph-three)",
     "var(--graph-four)",
   ];
+  const [hiddenUnits, setHiddenUnits] = useState<number[]>([]);
 
   const priority = [t("TrendingPanel/Total"), t("TrendingPanel/Average")];
 
   // --- Memos ---
-  const selectedUnit = useMemo(
-    () => unitOptions.find((o) => Number(o.value) === selectedUnitIds[0]),
-    [selectedUnitIds, unitOptions],
-  );
-
   const unitCreationDate = useMemo(() => {
     if (!selectedUnitIds.length) {
       return null;
@@ -530,6 +526,15 @@ const TrendingPanel: React.FC<Props> = ({
     }
   };
 
+  // --- TOGGLE UNIT VISIBILITY ---
+  const toggleUnitVisibility = (unitId: number) => {
+    setHiddenUnits((prev) =>
+      prev.includes(unitId)
+        ? prev.filter((id) => id !== unitId)
+        : [...prev, unitId],
+    );
+  };
+
   // --- HELPERS ---
   const daily = useMemo(() => {
     const filtered =
@@ -579,33 +584,28 @@ const TrendingPanel: React.FC<Props> = ({
 
       obj.ALL =
         aggregation === "Total"
-          ? all
-          : selectedUnitIds.length
-            ? Math.round(all / selectedUnitIds.length)
-            : 0;
+          ? Array.from(byUnit.keys())
+              .filter((u) => !hiddenUnits.includes(u))
+              .reduce(
+                (sum, u) =>
+                  sum + (byUnit.get(u)?.reduce((a, b) => a + b, 0) || 0),
+                0,
+              )
+          : (() => {
+              const visible = Array.from(byUnit.keys()).filter(
+                (u) => !hiddenUnits.includes(u),
+              );
+              if (!visible.length) return 0;
+              const sum = visible.reduce(
+                (s, u) => s + (byUnit.get(u)?.reduce((a, b) => a + b, 0) || 0),
+                0,
+              );
+              return Math.round(sum / visible.length);
+            })();
 
       return obj;
     });
-  }, [rows, selectedColumnId, aggregation, selectedUnitIds]);
-
-  const seriesKey = selectedColumnId === "ALL" ? "ALL" : "ALL";
-  const chartData = useMemo(() => {
-    return daily.map((d) => ({
-      x: d.date as string,
-      y: Number(d[seriesKey] ?? 0),
-    }));
-  }, [daily, seriesKey]);
-
-  const aggregatedValue = useMemo(() => {
-    if (!chartData.length) {
-      return null;
-    }
-
-    const values = chartData.map((d) => d.y);
-    return aggregation === "Total"
-      ? values.reduce((a, b) => a + b, 0)
-      : Math.round(values.reduce((a, b) => a + b, 0) / values.length);
-  }, [chartData, aggregation]);
+  }, [rows, selectedColumnId, aggregation, selectedUnitIds, hiddenUnits]);
 
   const sortedUnits = [...selectedUnitIds]
     .map((id) => ({
@@ -888,8 +888,14 @@ const TrendingPanel: React.FC<Props> = ({
           {viewMode === "LineChart" ? (
             // --- LINE CHART ---
             <div className="mt-2 overflow-hidden">
-              {daily.length === 0 ? (
-                <Message icon="noData" content={t("TrendingPanel/No data")} />
+              {isLoadingUnitCells ? (
+                <div className="py-6">
+                  <Message icon="loading" content="content" />
+                </div>
+              ) : daily.length === 0 ? (
+                <div className="py-6">
+                  <Message icon="noData" content={t("TrendingPanel/No data")} />
+                </div>
               ) : (
                 <div className="h-64">
                   <ResponsiveContainer>
@@ -905,6 +911,10 @@ const TrendingPanel: React.FC<Props> = ({
                             return null;
                           }
 
+                          const visiblePayload = payload.filter(
+                            (p) => !hiddenUnits.includes(Number(p.dataKey)),
+                          );
+
                           return (
                             <div
                               style={{
@@ -918,7 +928,7 @@ const TrendingPanel: React.FC<Props> = ({
                                 {formatSE(parseDate(label as string))}
                               </p>
 
-                              {payload
+                              {visiblePayload
                                 .slice()
                                 .sort((a, b) => {
                                   const ai = priority.indexOf(a.name as string);
@@ -962,6 +972,42 @@ const TrendingPanel: React.FC<Props> = ({
                         align="center"
                         iconType="line"
                         iconSize={12}
+                        onClick={(e: any) => {
+                          const unitId = Number(e.dataKey);
+                          if (!isNaN(unitId)) toggleUnitVisibility(unitId);
+                        }}
+                        formatter={(value: string, entry: any) => {
+                          const unitId = Number(entry.dataKey);
+                          const isAll = isNaN(unitId);
+                          const isHidden = hiddenUnits.includes(unitId);
+
+                          if (isAll) {
+                            return (
+                              <span className="cursor-default text-[var(--text-main)]">
+                                {value}
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <CustomTooltip
+                              content={
+                                <span>
+                                  {isHidden
+                                    ? `${t("TrendingPanel/Show unit")} ${value}`
+                                    : `${t("TrendingPanel/Hide unit")} ${value}`}
+                                </span>
+                              }
+                              longDelay
+                            >
+                              <span
+                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer transition-opacity delay-[var(--very-fast)]`}
+                              >
+                                {value}
+                              </span>
+                            </CustomTooltip>
+                          );
+                        }}
                       />
 
                       <Line
@@ -973,17 +1019,22 @@ const TrendingPanel: React.FC<Props> = ({
                         stroke="var(--text-main)"
                       />
 
-                      {sortedUnits.map((u, i) => (
-                        <Line
-                          key={u.id}
-                          type="monotone"
-                          dataKey={String(u.id)}
-                          name={u.label}
-                          dot={false}
-                          strokeWidth={2}
-                          stroke={graphColors[i % graphColors.length]}
-                        />
-                      ))}
+                      {sortedUnits.map((u, i) => {
+                        const isHidden = hiddenUnits.includes(u.id);
+                        return (
+                          <Line
+                            key={u.id}
+                            type="monotone"
+                            dataKey={String(u.id)}
+                            name={u.label}
+                            dot={false}
+                            strokeWidth={2}
+                            stroke={graphColors[i % graphColors.length]}
+                            strokeOpacity={isHidden ? 0 : 1}
+                            activeDot={!isHidden}
+                          />
+                        );
+                      })}
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -992,8 +1043,14 @@ const TrendingPanel: React.FC<Props> = ({
           ) : viewMode === "BarChart" ? (
             // --- BAR CHART ---
             <div className="mt-2 overflow-hidden">
-              {daily.length === 0 ? (
-                <Message icon="noData" content={t("TrendingPanel/No data")} />
+              {isLoadingUnitCells ? (
+                <div className="py-6">
+                  <Message icon="loading" content="content" />
+                </div>
+              ) : daily.length === 0 ? (
+                <div className="py-6">
+                  <Message icon="noData" content={t("TrendingPanel/No data")} />
+                </div>
               ) : (
                 <div className="h-64">
                   <ResponsiveContainer>
@@ -1051,6 +1108,42 @@ const TrendingPanel: React.FC<Props> = ({
                         align="center"
                         iconType="square"
                         iconSize={12}
+                        onClick={(e: any) => {
+                          const unitId = Number(e.dataKey);
+                          if (!isNaN(unitId)) toggleUnitVisibility(unitId);
+                        }}
+                        formatter={(value: string, entry: any) => {
+                          const unitId = Number(entry.dataKey);
+                          const isAll = isNaN(unitId);
+                          const isHidden = hiddenUnits.includes(unitId);
+
+                          if (isAll) {
+                            return (
+                              <span className="cursor-default text-[var(--text-main)]">
+                                {value}
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <CustomTooltip
+                              content={
+                                <span>
+                                  {isHidden
+                                    ? `${t("TrendingPanel/Show unit")} ${value}`
+                                    : `${t("TrendingPanel/Hide unit")} ${value}`}
+                                </span>
+                              }
+                              longDelay
+                            >
+                              <span
+                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer transition-opacity delay-[var(--very-fast)]`}
+                              >
+                                {value}
+                              </span>
+                            </CustomTooltip>
+                          );
+                        }}
                       />
 
                       <Bar
@@ -1058,14 +1151,29 @@ const TrendingPanel: React.FC<Props> = ({
                         name={t("Common/All")}
                         fill="var(--text-main)"
                       />
-                      {sortedUnits.map((u, i) => (
+
+                      {/* {sortedUnits.map((u, i) => (
                         <Bar
                           key={u.id}
                           dataKey={String(u.id)}
                           name={u.label}
                           fill={graphColors[i % graphColors.length]}
                         />
-                      ))}
+                      ))} */}
+
+                      {sortedUnits.map((u, i) => {
+                        const isHidden = hiddenUnits.includes(u.id);
+                        return (
+                          <Bar
+                            key={u.id}
+                            dataKey={String(u.id)}
+                            name={u.label}
+                            fill={graphColors[i % graphColors.length]}
+                            fillOpacity={isHidden ? 0 : 1}
+                            activeBar={!isHidden}
+                          />
+                        );
+                      })}
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -1074,10 +1182,32 @@ const TrendingPanel: React.FC<Props> = ({
           ) : viewMode === "PieChart" ? (
             // --- PIE CHART ---
             <div className="mt-2 overflow-hidden">
-              {daily.length === 0 ? (
-                <Message icon="noData" content={t("TrendingPanel/No data")} />
+              {isLoadingUnitCells ? (
+                <div className="py-6">
+                  <Message icon="loading" content="content" />
+                </div>
+              ) : daily.length === 0 ? (
+                <div className="py-6">
+                  <Message icon="noData" content={t("TrendingPanel/No data")} />
+                </div>
               ) : (
-                <div className="h-64">
+                <div className="flex h-64 flex-col items-center">
+                  <div className="text-sm text-[var(--text-secondary)]">
+                    {t("TrendingPanel/Total")}
+                  </div>
+
+                  <div className="text-xl font-bold text-[var(--text-main)]">
+                    {(aggregation === "Total"
+                      ? daily.reduce((sum, d) => sum + (Number(d.ALL) || 0), 0)
+                      : Math.round(
+                          daily.reduce(
+                            (sum, d) => sum + (Number(d.ALL) || 0),
+                            0,
+                          ) / (daily.length || 1),
+                        )
+                    ).toLocaleString("sv-SE")}
+                  </div>
+
                   <ResponsiveContainer>
                     <PieChart>
                       <Tooltip
@@ -1114,42 +1244,70 @@ const TrendingPanel: React.FC<Props> = ({
                         align="center"
                         iconType="circle"
                         iconSize={12}
+                        onClick={(e: any) => {
+                          const unit = sortedUnits.find(
+                            (u) => u.label === e.value,
+                          );
+                          if (unit) toggleUnitVisibility(unit.id);
+                        }}
+                        formatter={(value: string) => {
+                          const unit = sortedUnits.find(
+                            (u) => u.label === value,
+                          );
+                          const isAll = !unit;
+                          const isHidden = unit
+                            ? hiddenUnits.includes(unit.id)
+                            : false;
+
+                          return isAll ? (
+                            <span className="cursor-default text-[var(--text-main)]">
+                              {value}
+                            </span>
+                          ) : (
+                            <CustomTooltip
+                              content={
+                                <span>
+                                  {isHidden
+                                    ? `${t("TrendingPanel/Show unit")} ${value}`
+                                    : `${t("TrendingPanel/Hide unit")} ${value}`}
+                                </span>
+                              }
+                              longDelay
+                            >
+                              <span
+                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer transition-opacity delay-[var(--very-fast)]`}
+                              >
+                                {value}
+                              </span>
+                            </CustomTooltip>
+                          );
+                        }}
                       />
 
                       <Pie
                         data={[
-                          {
-                            name: t("Common/All"),
-                            value:
-                              aggregation === "Total"
-                                ? daily.reduce(
-                                    (sum, d) => sum + (Number(d.ALL) || 0),
-                                    0,
-                                  )
-                                : Math.round(
-                                    daily.reduce(
-                                      (sum, d) => sum + (Number(d.ALL) || 0),
-                                      0,
-                                    ) / (daily.length || 1),
-                                  ),
-                            fill: "var(--text-main)",
-                          },
-                          ...sortedUnits.map((u, i) => ({
-                            name: u.label,
-                            value:
-                              aggregation === "Total"
-                                ? daily.reduce(
-                                    (sum, d) => sum + (Number(d[u.id]) || 0),
-                                    0,
-                                  )
-                                : Math.round(
-                                    daily.reduce(
+                          ...sortedUnits.map((u, i) => {
+                            const isHidden = hiddenUnits.includes(u.id);
+                            return {
+                              name: u.label,
+                              value: isHidden
+                                ? 0
+                                : aggregation === "Total"
+                                  ? daily.reduce(
                                       (sum, d) => sum + (Number(d[u.id]) || 0),
                                       0,
-                                    ) / (daily.length || 1),
-                                  ),
-                            fill: graphColors[i % graphColors.length],
-                          })),
+                                    )
+                                  : Math.round(
+                                      daily.reduce(
+                                        (sum, d) =>
+                                          sum + (Number(d[u.id]) || 0),
+                                        0,
+                                      ) / (daily.length || 1),
+                                    ),
+                              fill: graphColors[i % graphColors.length],
+                              opacity: isHidden ? 0.25 : 1,
+                            };
+                          }),
                         ]}
                         dataKey="value"
                         nameKey="name"
@@ -1166,15 +1324,21 @@ const TrendingPanel: React.FC<Props> = ({
           ) : (
             // --- VALUE/NO CHART ---
             <div className="mt-2 overflow-hidden">
-              {daily.length === 0 ? (
-                <Message icon="noData" content={t("TrendingPanel/No data")} />
+              {isLoadingUnitCells ? (
+                <div className="py-6">
+                  <Message icon="loading" content="content" />
+                </div>
+              ) : daily.length === 0 ? (
+                <div className="py-6">
+                  <Message icon="noData" content={t("TrendingPanel/No data")} />
+                </div>
               ) : (
                 <div className="flex h-64 flex-col items-center">
-                  <div className="flex flex-1 flex-col items-center justify-center gap-2">
-                    <div
-                      className="text-2xl font-bold"
-                      style={{ color: "var(--text-main)" }}
-                    >
+                  <div className="flex flex-col items-center text-xl text-[var(--text-main)]">
+                    <div className="text-sm text-[var(--text-secondary)]">
+                      {t("TrendingPanel/Total")}
+                    </div>
+                    <div className="text-xl font-bold text-[var(--text-main)]">
                       {(aggregation === "Total"
                         ? daily.reduce(
                             (sum, d) => sum + (Number(d.ALL) || 0),
@@ -1188,57 +1352,78 @@ const TrendingPanel: React.FC<Props> = ({
                           )
                       ).toLocaleString("sv-SE")}
                     </div>
+                  </div>
 
-                    {sortedUnits.map((u, i) => {
-                      const value =
-                        aggregation === "Total"
-                          ? daily.reduce(
-                              (sum, d) => sum + (Number(d[u.id]) || 0),
-                              0,
-                            )
-                          : Math.round(
-                              daily.reduce(
+                  <div className="flex flex-1 flex-col items-center justify-center gap-2">
+                    {sortedUnits
+                      .filter((u) => !hiddenUnits.includes(u.id))
+                      .map((u, i) => {
+                        const value =
+                          aggregation === "Total"
+                            ? daily.reduce(
                                 (sum, d) => sum + (Number(d[u.id]) || 0),
                                 0,
-                              ) / (daily.length || 1),
-                            );
+                              )
+                            : Math.round(
+                                daily.reduce(
+                                  (sum, d) => sum + (Number(d[u.id]) || 0),
+                                  0,
+                                ) / (daily.length || 1),
+                              );
 
-                      return (
-                        <div
-                          key={u.id}
-                          className="text-2xl font-bold"
-                          style={{ color: graphColors[i % graphColors.length] }}
-                        >
-                          {value.toLocaleString("sv-SE")}
-                        </div>
-                      );
-                    })}
+                        return (
+                          <div
+                            key={u.id}
+                            className="text-2xl font-bold"
+                            style={{
+                              color: graphColors[i % graphColors.length],
+                            }}
+                          >
+                            {value.toLocaleString("sv-SE")}
+                          </div>
+                        );
+                      })}
                   </div>
 
                   {/* --- Legend (set to specific px to match rechart) --- */}
-                  <div className="mx-[6px] mt-auto mb-[4px] flex flex-wrap justify-center gap-x-[10px] text-[14px]">
-                    <div className="flex items-center gap-[4px]">
-                      <span className="inline-block h-[12px] w-[12px] bg-[var(--text-main)]" />
-                      {t("Common/All")}
+                  <div className="mx-[6px] mt-auto mb-[5px] flex flex-wrap justify-center gap-x-[12px] text-[14px]">
+                    <div className="flex items-center gap-[11px]">
+                      {sortedUnits.map((u, i) => {
+                        const isHidden = hiddenUnits.includes(u.id);
+                        return (
+                          <CustomTooltip
+                            key={u.id}
+                            content={
+                              <span>
+                                {isHidden
+                                  ? `${t("TrendingPanel/Show unit")} ${u.label}`
+                                  : `${t("TrendingPanel/Hide unit")} ${u.label}`}
+                              </span>
+                            }
+                            longDelay
+                          >
+                            <div
+                              onClick={() => toggleUnitVisibility(u.id)}
+                              className={`flex cursor-pointer items-center gap-[5px] transition-opacity delay-[var(--very-fast)] ${
+                                isHidden ? "opacity-25" : ""
+                              }`}
+                              style={{
+                                color: graphColors[i % graphColors.length],
+                              }}
+                            >
+                              <span
+                                className="inline-block h-[12px] w-[12px]"
+                                style={{
+                                  backgroundColor:
+                                    graphColors[i % graphColors.length],
+                                }}
+                              />
+                              {u.label}
+                            </div>
+                          </CustomTooltip>
+                        );
+                      })}
                     </div>
-                    {sortedUnits.map((u, i) => (
-                      <div
-                        key={u.id}
-                        className="flex items-center gap-[4px]"
-                        style={{
-                          color: graphColors[i % graphColors.length],
-                        }}
-                      >
-                        <span
-                          className="inline-block h-[12px] w-[12px]"
-                          style={{
-                            backgroundColor:
-                              graphColors[i % graphColors.length],
-                          }}
-                        />
-                        {u.label}
-                      </div>
-                    ))}
                   </div>
                 </div>
               )}

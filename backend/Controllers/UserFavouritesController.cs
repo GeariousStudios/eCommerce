@@ -50,6 +50,36 @@ namespace backend.Controllers
         }
 
         [HttpGet]
+        // public async Task<IActionResult> GetFavourites()
+        // {
+        //     var lang = await GetLangAsync();
+        //     var userInfo = await _userService.GetUserInfoAsync();
+
+        //     if (userInfo == null)
+        //     {
+        //         return Unauthorized(
+        //             new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+        //         );
+        //     }
+
+        //     var (_, userId) = userInfo.Value;
+
+        //     var items = await _context
+        //         .UserFavourites.Where(f => f.UserId == userId)
+        //         .OrderBy(f => f.Order)
+        //         .Select(f => new FavouriteItemDto
+        //         {
+        //             Href = f.Href,
+        //             Order = f.Order,
+        //             Label = f.Label,
+        //             Icon = f.Icon,
+        //         })
+        //         .ToListAsync();
+
+        //     return Ok(new FavouritesDto { Items = items });
+        // }
+
+        [HttpGet]
         public async Task<IActionResult> GetFavourites()
         {
             var lang = await GetLangAsync();
@@ -64,19 +94,29 @@ namespace backend.Controllers
 
             var (_, userId) = userInfo.Value;
 
-            var items = await _context
+            var favourites = await _context
                 .UserFavourites.Where(f => f.UserId == userId)
                 .OrderBy(f => f.Order)
-                .Select(f => new FavouriteItemDto
-                {
-                    Href = f.Href,
-                    Order = f.Order,
-                    Label = f.Label,
-                    Icon = f.Icon,
-                })
                 .ToListAsync();
 
-            return Ok(new FavouritesDto { Items = items });
+            var hrefs = favourites.Select(f => f.Href).ToList();
+
+            var units = await _context
+                .Units.IgnoreQueryFilters()
+                .Where(u => hrefs.Contains("/units/" + u.Id))
+                .Select(u => new { u.Id, u.IsHidden })
+                .ToListAsync();
+
+            var items = favourites.Select(f => new FavouriteItemDto
+            {
+                Href = f.Href,
+                Order = f.Order,
+                Label = f.Label,
+                Icon = f.Icon,
+                IsHiddenUnit = units.Any(u => f.Href.EndsWith("/" + u.Id) && u.IsHidden),
+            });
+
+            return Ok(new FavouritesDto { Items = items.ToList() });
         }
 
         [HttpPost]

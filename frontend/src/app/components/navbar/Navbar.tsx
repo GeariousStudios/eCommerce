@@ -36,6 +36,8 @@ type SubmenuItem = {
   overrideLabel?: string;
   isFavourite?: boolean;
   onToggleFavourite?: (isFavourite: boolean, href: string) => void;
+
+  isHidden?: boolean;
 };
 
 type SubmenuGroup = {
@@ -94,7 +96,8 @@ const Navbar = (props: Props) => {
         return;
       }
 
-      const visibleUnits = result.items.filter((unit: any) => !unit.isHidden);
+      // const visibleUnits = result.items.filter((unit: any) => !unit.isHidden);
+      const visibleUnits = result.items;
 
       // --- Success ---
       const grouped: Record<string, SubmenuItem[]> = visibleUnits.reduce(
@@ -108,6 +111,7 @@ const Navbar = (props: Props) => {
           acc[groupName].push({
             label: unit.name,
             href: `/report/units/${unit.unitGroupId}/${unit.id}`,
+            isHidden: unit.isHidden,
           });
 
           return acc;
@@ -128,6 +132,19 @@ const Navbar = (props: Props) => {
 
       setUnitItems(itemsWithTitles);
       setUnitsLoaded(true);
+
+      const isUnitHref = (href: string) => href.startsWith("/report/units/");
+
+      const stale = favourites.filter((f) => {
+        const match = f.href.match(/\/report\/units\/\d+\/(\d+)/);
+        const unitId = match ? parseInt(match[1]) : null;
+        const exists = result.items.some((u: any) => u.id === unitId);
+        return isUnitHref(f.href) && !exists;
+      });
+
+      if (stale.length > 0) {
+        stale.forEach((f) => removeUserFavourite(f.href));
+      }
     } catch (err) {
     } finally {
     }
@@ -295,6 +312,24 @@ const Navbar = (props: Props) => {
     [unitItems, favourites],
   );
 
+  // useEffect(() => {
+  //   if (!isAuthReady || !unitsLoaded) {
+  //     return;
+  //   }
+
+  //   const isUnitHref = (href: string) => href.startsWith("/report/units/");
+
+  //   const stale = favourites.filter(
+  //     (f) => isUnitHref(f.href) && !menuLookup.has(f.href),
+  //   );
+
+  //   if (stale.length === 0) {
+  //     return;
+  //   }
+
+  //   stale.forEach((f) => removeUserFavourite(f.href));
+  // }, [isAuthReady, unitsLoaded, menuLookup, favourites, removeUserFavourite]);
+
   useEffect(() => {
     if (!isAuthReady || !unitsLoaded) {
       return;
@@ -302,16 +337,27 @@ const Navbar = (props: Props) => {
 
     const isUnitHref = (href: string) => href.startsWith("/report/units/");
 
-    const stale = favourites.filter(
-      (f) => isUnitHref(f.href) && !menuLookup.has(f.href),
-    );
+    const stale = favourites.filter((f) => {
+      if (!isUnitHref(f.href)) {
+        return false;
+      }
+
+      const match = f.href.match(/\/report\/units\/\d+\/(\d+)/);
+      const unitId = match ? parseInt(match[1]) : null;
+
+      const exists = unitItems.some(
+        (u) => u.href === f.href || u.href.endsWith("/" + unitId),
+      );
+
+      return !exists;
+    });
 
     if (stale.length === 0) {
       return;
     }
 
     stale.forEach((f) => removeUserFavourite(f.href));
-  }, [isAuthReady, unitsLoaded, menuLookup, favourites, removeUserFavourite]);
+  }, [isAuthReady, unitsLoaded, favourites, removeUserFavourite, unitItems]);
 
   return (
     <>
@@ -488,11 +534,22 @@ const Navbar = (props: Props) => {
                         iconHover={Solid.ChatBubbleBottomCenterTextIcon}
                         hasScrollbar={props.hasScrollbar}
                         menus={[
-                          ...(unitItemsResolved.length > 0
+                          // ...(unitItemsResolved.length > 0
+                          //   ? [
+                          //       {
+                          //         label: t("Common/Units"),
+                          //         items: unitItemsResolved,
+                          //       },
+                          //     ]
+                          //   : []),
+                          ...(unitItemsResolved.filter((u) => !u.isHidden)
+                            .length > 0
                             ? [
                                 {
                                   label: t("Common/Units"),
-                                  items: unitItemsResolved,
+                                  items: unitItemsResolved.filter(
+                                    (u) => !u.isHidden,
+                                  ),
                                 },
                               ]
                             : []),

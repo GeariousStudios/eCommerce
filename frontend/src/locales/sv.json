@@ -214,7 +214,7 @@
   "Categories/No sub categories": "Inga underkategorier",
   "Categories/sub category amount": "antal underkategorier",
   "Categories/Confirm1": "Tar du bort en kategori så tar du bort möjligheten att kunna trenda kopplad data.",
-  "Categories/Confirm2": "Om kategorin har mycket kopplad data så är det bättre att gömma den.",
+  "Categories/Confirm2": "Om kategorin har mycket kopplad data så är det bättre att gömma den (avlänka enheterna).",
   "Categories/Confirm3": "Vill du ta bort ändå?",
 
   "Columns/Data type": "Datatyp",
@@ -222,7 +222,7 @@
   "Columns/Data1": "på kolumner som har data",
   "Columns/Data2": "på kolumner som inte har någon data",
   "Columns/Confirm1": "Tar du bort en kolumn så tar du även bort all knuten data.",
-  "Columns/Confirm2": "Om kolumnen innehåller data som är viktig för verksamheten, t.ex. vid trendning, så är det bättre att gömma den.",
+  "Columns/Confirm2": "Om kolumnen innehåller data som är viktig för verksamheten, t.ex. vid trendning, så är det bättre att gömma den (avlänka enheterna).",
   "Columns/Confirm3": "Vill du ta bort ändå?",
 
   "Modal/Unsaved": "Du har osparade ändringar. Vill du stänga ändå?",
@@ -384,6 +384,8 @@
   "TrendingPanel/Settings": "Ställ in panel",
   "TrendingPanel/Show information": "Visa information",
   "TrendingPanel/Hide information": "Dölj information",
+  "TrendingPanel/Show unit": "Visa",
+  "TrendingPanel/Hide unit": "Dölj",
 
   "toolbar": {
     "font": "Teckensnitt",

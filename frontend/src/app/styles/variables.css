@@ -22,6 +22,7 @@
   --slow: 250ms;
   --medium: 200ms;
   --fast: 150ms;
+  --very-fast: 10ms;
 
   /* --- ACCENT COLOR --- */
   --accent-color-dark: #3d95f4;
