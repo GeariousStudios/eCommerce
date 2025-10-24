@@ -314,8 +314,8 @@ const ShiftTeamModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="mb-8 grid grid-cols-6 gap-6">
-                <div className="xs:col-span-5 col-span-6">
+              <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
+                <div className="xs:col-span-2">
                   <Input
                     label={t("Common/Name")}
                     value={name}
@@ -328,27 +328,23 @@ const ShiftTeamModal = (props: Props) => {
                   />
                 </div>
 
-                <div className="xs:col-span-2 col-span-6">
-                  <Input
-                    label={t("Common/Light color")}
-                    type="color"
-                    value={lightColorHex}
-                    onChange={(val) => setLightColorHex(String(val))}
-                    required
-                    pattern="^#([0-9A-Fa-f]{6})$"
-                    onModal
-                  />
+                <Input
+                  label={t("Common/Light color")}
+                  type="color"
+                  value={lightColorHex}
+                  onChange={(val) => setLightColorHex(String(val))}
+                  pattern="^#([0-9A-Fa-f]{6})$"
+                  onModal
+                />
 
-                  <Input
-                    label={t("Common/Dark color")}
-                    type="color"
-                    value={darkColorHex}
-                    onChange={(val) => setDarkColorHex(String(val))}
-                    required
-                    pattern="^#([0-9A-Fa-f]{6})$"
-                    onModal
-                  />
-                </div>
+                <Input
+                  label={t("Common/Dark color")}
+                  type="color"
+                  value={darkColorHex}
+                  onChange={(val) => setDarkColorHex(String(val))}
+                  pattern="^#([0-9A-Fa-f]{6})$"
+                  onModal
+                />
               </div>
 
               <div className="flex items-center gap-2">

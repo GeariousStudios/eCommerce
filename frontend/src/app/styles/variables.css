@@ -156,7 +156,7 @@
   --badge-main: var(--text-main-light);
   --badge-main-reverse: var(--text-main-dark);
 
-  --skeleton-bg: #c0c0c1;
+  --skeleton-bg: #9c9b98;
 
   /* --- NAVBAR --- */
   --bg-navbar: #f0f0f0;
@@ -225,26 +225,26 @@
 /* --- SCROLLBAR --- */
 [data-theme="dark"] {
   --scrollbar-thumb-bg: #4d4d4d;
-  --scrollbar-thumb-hover-bg: #c0c0c1;
+  --scrollbar-thumb-hover-bg: #9c9b98;
   --scrollbar-up-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="5,2 1,7 9,7" fill="%234d4d4d"/></svg>');
   --scrollbar-down-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="1,3 9,3 5,8" fill="%234d4d4d"/></svg>');
-  --scrollbar-up-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="5,2 1,7 9,7" fill="%23c0c0c1"/></svg>');
-  --scrollbar-down-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="1,3 9,3 5,8" fill="%23c0c0c1"/></svg>');
+  --scrollbar-up-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="5,2 1,7 9,7" fill="%239c9b98"/></svg>');
+  --scrollbar-down-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="1,3 9,3 5,8" fill="%239c9b98"/></svg>');
   --scrollbar-left-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="7,1 2,5 7,9" fill="%234d4d4d"/></svg>');
   --scrollbar-right-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="3,1 8,5 3,9" fill="%234d4d4d"/></svg>');
-  --scrollbar-left-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="7,1 2,5 7,9" fill="%23c0c0c1"/></svg>');
-  --scrollbar-right-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="3,1 8,5 3,9" fill="%23c0c0c1"/></svg>');
+  --scrollbar-left-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="7,1 2,5 7,9" fill="%239c9b98"/></svg>');
+  --scrollbar-right-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="3,1 8,5 3,9" fill="%239c9b98"/></svg>');
 }
 
 [data-theme="light"] {
-  --scrollbar-thumb-bg: #d3d1cb;
-  --scrollbar-thumb-hover-bg: #9c9b98;
-  --scrollbar-up-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="5,2 1,7 9,7" fill="%23d3d1cb"/></svg>');
-  --scrollbar-down-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="1,3 9,3 5,8" fill="%23d3d1cb"/></svg>');
-  --scrollbar-up-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="5,2 1,7 9,7" fill="%239c9b98"/></svg>');
-  --scrollbar-down-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="1,3 9,3 5,8" fill="%239c9b98"/></svg>');
-  --scrollbar-left-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="7,1 2,5 7,9" fill="%23d3d1cb"/></svg>');
-  --scrollbar-right-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="3,1 8,5 3,9" fill="%23d3d1cb"/></svg>');
-  --scrollbar-left-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="7,1 2,5 7,9" fill="%239c9b98"/></svg>');
-  --scrollbar-right-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="3,1 8,5 3,9" fill="%239c9b98"/></svg>');
+  --scrollbar-thumb-bg: #9c9b98;
+  --scrollbar-thumb-hover-bg: #4d4d4d;
+  --scrollbar-up-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="5,2 1,7 9,7" fill="%239c9b98"/></svg>');
+  --scrollbar-down-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="1,3 9,3 5,8" fill="%239c9b98"/></svg>');
+  --scrollbar-up-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="5,2 1,7 9,7" fill="%234d4d4d"/></svg>');
+  --scrollbar-down-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="1,3 9,3 5,8" fill="%234d4d4d"/></svg>');
+  --scrollbar-left-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="7,1 2,5 7,9" fill="%239c9b98"/></svg>');
+  --scrollbar-right-color: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="3,1 8,5 3,9" fill="%239c9b98"/></svg>');
+  --scrollbar-left-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="7,1 2,5 7,9" fill="%234d4d4d"/></svg>');
+  --scrollbar-right-color-hover: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><polygon points="3,1 8,5 3,9" fill="%234d4d4d"/></svg>');
 }
