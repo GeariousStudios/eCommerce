@@ -16,6 +16,7 @@ namespace backend.Dtos.UnitColumn
 
         [MaxLength(32, ErrorMessage = "[4|UnitColumn/Comparison text|32] Validation/cannot exceed")]
         public string ComparisonText { get; set; } = string.Empty;
+        public bool LargeColumn { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

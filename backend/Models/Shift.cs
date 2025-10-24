@@ -16,6 +16,12 @@ namespace backend.Models
         public string Name { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
 
+        [MaxLength(7)]
+        public string LightColorHex { get; set; } = "#212121";
+
+        [MaxLength(7)]
+        public string DarkColorHex { get; set; } = "#e0e0e0";
+
         public ShiftSystemKey? SystemKey { get; set; }
         public bool IsSystem => SystemKey != null;
 

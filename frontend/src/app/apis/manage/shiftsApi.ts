@@ -132,6 +132,10 @@ export const fetchUnits = async (): Promise<UnitOption[]> => {
 export type ShiftTeamOption = {
   id: number;
   name: string;
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
 };
 
 export const fetchShiftTeams = async (): Promise<ShiftTeamOption[]> => {

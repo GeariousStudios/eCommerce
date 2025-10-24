@@ -705,6 +705,7 @@ const TrendingPanel: React.FC<Props> = ({
                     : t("TrendingPanel/Change to value")
             }
             mediumDelay
+            showOnTouch
           >
             <button
               type="button"
@@ -722,7 +723,11 @@ const TrendingPanel: React.FC<Props> = ({
           </CustomTooltip>
 
           {/* --- SETTINGS --- */}
-          <CustomTooltip content={t("TrendingPanel/Settings")} mediumDelay>
+          <CustomTooltip
+            content={t("TrendingPanel/Settings")}
+            mediumDelay
+            showOnTouch
+          >
             <button
               ref={panelButtonRef}
               type="button"
@@ -849,6 +854,7 @@ const TrendingPanel: React.FC<Props> = ({
                     },
                   ]}
                   onModal
+                  showAbove
                 />
               </div>
 
@@ -1048,6 +1054,7 @@ const TrendingPanel: React.FC<Props> = ({
                                 </span>
                               }
                               longDelay
+                              showOnTouch
                             >
                               <span
                                 className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-[var(--text-main)] transition-opacity delay-[var(--very-fast)]`}
@@ -1185,6 +1192,7 @@ const TrendingPanel: React.FC<Props> = ({
                                 </span>
                               }
                               longDelay
+                              showOnTouch
                             >
                               <span
                                 className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-[var(--text-main)] transition-opacity delay-[var(--very-fast)]`}
@@ -1324,6 +1332,7 @@ const TrendingPanel: React.FC<Props> = ({
                                 </span>
                               }
                               longDelay
+                              showOnTouch
                             >
                               <span
                                 className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-[var(--text-main)] transition-opacity delay-[var(--very-fast)]`}
@@ -1450,6 +1459,7 @@ const TrendingPanel: React.FC<Props> = ({
                               </span>
                             }
                             longDelay
+                            showOnTouch
                           >
                             <div
                               onClick={() => toggleUnitVisibility(u.id)}

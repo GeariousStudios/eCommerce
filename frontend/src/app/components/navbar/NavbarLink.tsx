@@ -82,7 +82,9 @@ const NavbarLink = (props: Props) => {
               </span>
             )}
 
-            <span className={`${isActive ? "font-bold" : ""} flex truncate overflow-hidden`}>
+            <span
+              className={`${isActive ? "font-bold" : ""} flex truncate overflow-hidden`}
+            >
               {props.label}
             </span>
           </div>
@@ -98,6 +100,7 @@ const NavbarLink = (props: Props) => {
               }
               longDelay
               hideOnClick
+              showOnTouch
             >
               <button
                 className={`${props.isDragging ? "opacity-0" : "opacity-0 group-hover/link:opacity-100"} ${props.disabled ? "cursor-not-allowed" : ""} group ml-auto flex`}

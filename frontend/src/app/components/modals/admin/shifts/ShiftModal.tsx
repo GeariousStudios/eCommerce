@@ -60,6 +60,8 @@ const ShiftModal = (props: Props) => {
   // --- States ---
   const [name, setName] = useState("");
   const [isHidden, setIsHidden] = useState(false);
+  const [lightColorHex, setLightColorHex] = useState("#212121");
+  const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
   const [shiftTeamIds, setShiftTeamIds] = useState<number[]>([]);
   const [shiftTeams, setShiftTeams] = useState<ShiftTeamOptions[]>([]);
   const [weeklyTimes, setWeeklyTimes] = useState<WeeklyTime[]>([]);
@@ -75,6 +77,8 @@ const ShiftModal = (props: Props) => {
 
   const [originalName, setOriginalName] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
+  const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
+  const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
   const [originalShiftTeamIds, setOriginalShiftTeamIds] = useState<number[]>(
     [],
   );
@@ -125,6 +129,12 @@ const ShiftModal = (props: Props) => {
       setIsHidden(false);
       setOriginalIsHidden(false);
 
+      setLightColorHex("#212121");
+      setOriginalLightColorHex("#212121");
+
+      setDarkColorHex("#e0e0e0");
+      setOriginalDarkColorHex("#e0e0e0");
+
       setShiftTeamIds([]);
       setOriginalShiftTeamIds([]);
 
@@ -168,6 +178,8 @@ const ShiftModal = (props: Props) => {
         body: JSON.stringify({
           name,
           isHidden,
+          lightColorHex,
+          darkColorHex,
           shiftTeamIds,
           weeklyTimes: weeklyTimesToSend,
           shiftTeamDisplayNames: Object.fromEntries(
@@ -296,6 +308,12 @@ const ShiftModal = (props: Props) => {
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
 
+    setLightColorHex(result.lightColorHex ?? "#212121");
+    setOriginalLightColorHex(result.lightColorHex ?? "#212121");
+
+    setDarkColorHex(result.darkColorHex ?? "#e0e0e0");
+    setOriginalDarkColorHex(result.darkColorHex ?? "#e0e0e0");
+
     setShiftTeamIds(result.shiftTeamIds ?? []);
     setOriginalShiftTeamIds(result.shiftTeamIds ?? []);
 
@@ -351,6 +369,8 @@ const ShiftModal = (props: Props) => {
         body: JSON.stringify({
           name,
           isHidden,
+          lightColorHex,
+          darkColorHex,
           shiftTeamIds,
           weeklyTimes: weeklyTimesToSend,
           shiftTeamDisplayNames: Object.fromEntries(
@@ -416,47 +436,14 @@ const ShiftModal = (props: Props) => {
     formRef.current?.requestSubmit();
   };
 
-  // --- COMPONENTS ---
-  // --- DragChip ---
-  const DragChip = ({
-    label,
-    onDelete,
-    isDragging = false,
-    dragging = false,
-  }: {
-    label: string;
-    onDelete: () => void;
-    isDragging?: boolean;
-    dragging?: boolean;
-  }) => {
-    const disableHover = dragging && !isDragging;
-
-    return (
-      <>
-        <button
-          disabled={isDragging}
-          className={`${roundedButtonClass} group w-auto gap-2 !bg-[var(--bg-modal-link)] px-4`}
-          onClick={onDelete}
-        >
-          <span
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} truncate font-semibold transition-colors duration-[var(--fast)]`}
-          >
-            {label}
-          </span>
-          <XMarkIcon
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} h-6 w-6 transition-[color,rotate] duration-[var(--fast)]`}
-          />
-        </button>
-      </>
-    );
-  };
-
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
       const dirty =
         name !== "" ||
         isHidden !== false ||
+        lightColorHex !== "" ||
+        darkColorHex !== "" ||
         JSON.stringify(shiftTeamIds) !== JSON.stringify([]) ||
         JSON.stringify(weeklyTimes) !== JSON.stringify([]) ||
         JSON.stringify(shiftTeamDisplayNames) !== JSON.stringify({}) ||
@@ -469,6 +456,8 @@ const ShiftModal = (props: Props) => {
     const dirty =
       name !== originalName ||
       isHidden !== originalIsHidden ||
+      lightColorHex !== originalLightColorHex ||
+      darkColorHex !== originalDarkColorHex ||
       JSON.stringify(shiftTeamIds) !== JSON.stringify(originalShiftTeamIds) ||
       JSON.stringify(weeklyTimes) !== JSON.stringify(originalWeeklyTimes) ||
       cycleLengthWeeks !== originalCycleLengthWeeks ||
@@ -481,6 +470,8 @@ const ShiftModal = (props: Props) => {
     props.itemId,
     name,
     isHidden,
+    lightColorHex,
+    darkColorHex,
     shiftTeamIds,
     weeklyTimes,
     cycleLengthWeeks,
@@ -488,6 +479,8 @@ const ShiftModal = (props: Props) => {
     shiftTeamDisplayNames,
     originalName,
     originalIsHidden,
+    originalLightColorHex,
+    originalDarkColorHex,
     originalShiftTeamIds,
     originalWeeklyTimes,
     originalCycleLengthWeeks,
@@ -670,16 +663,36 @@ const ShiftModal = (props: Props) => {
                 <hr className="w-full text-[var(--border-tertiary)]" />
               </div>
 
-              <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
+              <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
+                <div className="xs:col-span-2">
+                  <Input
+                    label={t("Common/Name")}
+                    value={name}
+                    onChange={(val) => {
+                      setName(String(val));
+                    }}
+                    onModal
+                    required
+                    {...shiftConstraints.name}
+                  />
+                </div>
+
                 <Input
-                  label={t("Common/Name")}
-                  value={name}
-                  onChange={(val) => {
-                    setName(String(val));
-                  }}
+                  label={t("Common/Light color")}
+                  type="color"
+                  value={lightColorHex}
+                  onChange={(val) => setLightColorHex(String(val))}
+                  pattern="^#([0-9A-Fa-f]{6})$"
                   onModal
-                  required
-                  {...shiftConstraints.name}
+                />
+
+                <Input
+                  label={t("Common/Dark color")}
+                  type="color"
+                  value={darkColorHex}
+                  onChange={(val) => setDarkColorHex(String(val))}
+                  pattern="^#([0-9A-Fa-f]{6})$"
+                  onModal
                 />
               </div>
 

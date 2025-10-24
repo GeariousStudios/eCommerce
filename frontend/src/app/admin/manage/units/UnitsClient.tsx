@@ -204,7 +204,7 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-[var(--badge-one)] text-[var(--text-one)]`}
+                      className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
                     >
                       {col.name}
                     </span>
@@ -231,7 +231,7 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-two)]`}
+                      className={`${badgeClass} bg-[var(--badge-main-reverse)] text-[var(--text-reverse)]`}
                     >
                       {cat.name}
                     </span>
@@ -256,7 +256,17 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-[var(--badge-three)] text-[var(--text-two)]`}
+                      className={badgeClass}
+                      style={{
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? shift.darkColorHex
+                            : shift.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? shift.darkTextColorHex
+                            : shift.lightTextColorHex,
+                      }}
                     >
                       {shift.name}
                     </span>
@@ -350,10 +360,7 @@ const UnitsClient = (props: Props) => {
             }
 
             return (
-              <span
-                key={id}
-                className={`${badgeClass} bg-[var(--badge-one)] text-[var(--text-one)]`}
-              >
+              <span key={id} className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}>
                 {col.name}
               </span>
             );
@@ -379,7 +386,7 @@ const UnitsClient = (props: Props) => {
             return (
               <span
                 key={id}
-                className={`${badgeClass} bg-[var(--badge-two)] text-[var(--text-two)]`}
+                className={`${badgeClass} bg-[var(--badge-main-reverse)] text-[var(--text-reverse)]`}
               >
                 {cat.name}
               </span>
@@ -406,7 +413,17 @@ const UnitsClient = (props: Props) => {
             return (
               <span
                 key={id}
-                className={`${badgeClass} bg-[var(--badge-three)] text-[var(--text-two)]`}
+                className={badgeClass}
+                style={{
+                  backgroundColor:
+                    currentTheme === "dark"
+                      ? shift.darkColorHex
+                      : shift.lightColorHex,
+                  color:
+                    currentTheme === "dark"
+                      ? shift.darkTextColorHex
+                      : shift.lightTextColorHex,
+                }}
               >
                 {shift.name}
               </span>

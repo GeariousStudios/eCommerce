@@ -11,6 +11,7 @@ namespace backend.Dtos.UnitColumn
         public bool HasData { get; set; }
         public bool Compare { get; set; }
         public string ComparisonText { get; set; } = string.Empty;
+        public bool LargeColumn { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }

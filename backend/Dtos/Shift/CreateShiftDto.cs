@@ -9,6 +9,20 @@ namespace backend.Dtos.Shift
         public string Name { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
 
+        [MaxLength(7, ErrorMessage = "[3|Common/a color|7] Validation/cannot exceed")]
+        [RegularExpression(
+            "^#([0-9A-Fa-f]{6})$",
+            ErrorMessage = "[4|Common/Color format] Validation/is invalid"
+        )]
+        public string LightColorHex { get; set; } = "#212121";
+
+        [MaxLength(7, ErrorMessage = "[5|Common/a color|7] Validation/cannot exceed")]
+        [RegularExpression(
+            "^#([0-9A-Fa-f]{6})$",
+            ErrorMessage = "[6|Common/Color format] Validation/is invalid"
+        )]
+        public string DarkColorHex { get; set; } = "#e0e0e0";
+
         public List<int> ShiftTeamIds { get; set; } = new();
         public Dictionary<int, string>? ShiftTeamDisplayNames { get; set; }
 

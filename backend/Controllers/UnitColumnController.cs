@@ -147,6 +147,7 @@ namespace backend.Controllers
                     DataType = c.DataType,
                     Compare = c.Compare,
                     ComparisonText = c.ComparisonText,
+                    LargeColumn = c.LargeColumn,
                     Units = c.UnitToUnitColumns.Select(uuc => uuc.Unit.Name).Distinct().ToList(),
                     HasData = c.HasData,
 
@@ -190,6 +191,7 @@ namespace backend.Controllers
                 DataType = column.DataType,
                 Compare = column.Compare,
                 ComparisonText = column.ComparisonText,
+                LargeColumn = column.LargeColumn,
                 Units = column.UnitToUnitColumns.Select(uuc => uuc.Unit.Name).Distinct().ToList(),
                 HasData = column.HasData,
             };
@@ -222,6 +224,7 @@ namespace backend.Controllers
                     DataType = uuc.UnitColumn.DataType,
                     Compare = uuc.UnitColumn.Compare,
                     ComparisonText = uuc.UnitColumn.ComparisonText,
+                    LargeColumn = uuc.UnitColumn.LargeColumn,
                     HasData = uuc.UnitColumn.HasData,
 
                     // Meta data.
@@ -309,6 +312,7 @@ namespace backend.Controllers
                 DataType = dto.DataType,
                 Compare = dto.Compare,
                 ComparisonText = dto.ComparisonText,
+                LargeColumn = dto.LargeColumn,
 
                 // Meta data.
                 CreationDate = now,
@@ -327,6 +331,7 @@ namespace backend.Controllers
                 HasData = column.HasData,
                 Compare = column.Compare,
                 ComparisonText = column.ComparisonText,
+                LargeColumn = column.LargeColumn,
 
                 // Meta data.
                 CreationDate = column.CreationDate,
@@ -407,6 +412,7 @@ namespace backend.Controllers
             column.Name = dto.Name;
             column.Compare = dto.Compare;
             column.ComparisonText = dto.ComparisonText;
+            column.LargeColumn = dto.LargeColumn;
 
             // Meta data.
             column.UpdateDate = now;
@@ -422,6 +428,7 @@ namespace backend.Controllers
                 HasData = column.HasData,
                 Compare = column.Compare,
                 ComparisonText = column.ComparisonText,
+                LargeColumn = column.LargeColumn,
 
                 // Meta data.
                 UpdateDate = column.UpdateDate,

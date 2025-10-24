@@ -15,6 +15,7 @@ namespace backend.Models
 
         [MaxLength(32)]
         public string ComparisonText { get; set; } = string.Empty;
+        public bool LargeColumn { get; set; } = false;
 
         // Meta data.
         public DateTime CreationDate { get; set; }

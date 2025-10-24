@@ -110,11 +110,6 @@ const ShiftTeamsClient = (props: Props) => {
       .catch((err) => notify("error", t("Modal/Unknown error")));
   }, []);
 
-  const nameCounts = shifts.reduce<Record<string, number>>((acc, shift) => {
-    acc[shift.name] = (acc[shift.name] ?? 0) + 1;
-    return acc;
-  }, {});
-
   // --- TOGGLE MODAL(S) ---
   // --- Delete ---
   const toggleDeleteItemModal = (itemIds: number[] = []) => {
@@ -175,11 +170,22 @@ const ShiftTeamsClient = (props: Props) => {
             ) : (
               (item.shifts ?? []).map((shift, i) => {
                 const label = shift.name;
+                const matchingShift = shifts.find((s) => s.name === label);
 
                 return (
                   <span
                     key={i}
-                    className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                    className={badgeClass}
+                    style={{
+                      backgroundColor:
+                        currentTheme === "dark"
+                          ? matchingShift?.darkColorHex
+                          : matchingShift?.lightColorHex,
+                      color:
+                        currentTheme === "dark"
+                          ? matchingShift?.darkTextColorHex
+                          : matchingShift?.lightTextColorHex,
+                    }}
                   >
                     {label}
                   </span>
@@ -259,11 +265,22 @@ const ShiftTeamsClient = (props: Props) => {
         <div className="flex flex-wrap gap-2">
           {(item.shifts ?? []).map((shift, i) => {
             const label = shift.name;
+            const matchingShift = shifts.find((s) => s.name === label);
 
             return (
               <span
                 key={i}
-                className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                className={badgeClass}
+                style={{
+                  backgroundColor:
+                    currentTheme === "dark"
+                      ? matchingShift?.darkColorHex
+                      : matchingShift?.lightColorHex,
+                  color:
+                    currentTheme === "dark"
+                      ? matchingShift?.darkTextColorHex
+                      : matchingShift?.lightTextColorHex,
+                }}
               >
                 {label}
               </span>

@@ -164,7 +164,7 @@ const CategoriesClient = (props: Props) => {
                 item.subCategories.map((category, i) => (
                   <span
                     key={i}
-                    className={`${badgeClass} bg-[var(--accent-color)] text-[var(--text-main-reverse)]`}
+                    className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
                   >
                     {category}
                   </span>
@@ -255,7 +255,7 @@ const CategoriesClient = (props: Props) => {
           {item.subCategories.map((category, i) => (
             <span
               key={i}
-              className={`${badgeClass} bg-[var(--accent-color)] text-[var(--text-main-reverse)]`}
+              className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
             >
               {category}
             </span>

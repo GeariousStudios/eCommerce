@@ -155,6 +155,7 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
                         </span>
                       </div>
                       <button
+                        type="button"
                         onClick={requestClose}
                         className="xs:h-[32px] xs:min-h-[32px] xs:w-[32px] xs:min-w-[32px] h-[24px] min-h-[24px] w-[24px] min-w-[24px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
                       >

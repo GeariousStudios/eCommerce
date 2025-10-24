@@ -650,6 +650,26 @@ namespace backend.Controllers
                     finalSubCategoryIds.AddRange(newSubCategories.Select(sc => sc.Id));
                 }
 
+                // Uppdatera befintliga subkategori-namn
+                if (
+                    dto.UpdatedExistingSubCategories != null
+                    && dto.UpdatedExistingSubCategories.Any()
+                )
+                {
+                    foreach (var updatedSub in dto.UpdatedExistingSubCategories)
+                    {
+                        var subCategory = await _context.SubCategories.FirstOrDefaultAsync(s =>
+                            s.Id == updatedSub.Id
+                        );
+                        if (subCategory != null && subCategory.Name != updatedSub.Name.Trim())
+                        {
+                            subCategory.Name = updatedSub.Name.Trim();
+                            subCategory.UpdateDate = now;
+                            subCategory.UpdatedBy = updatedBy;
+                        }
+                    }
+                }
+
                 category.Name = dto.Name;
 
                 if (dto.SubCategoryIdsToDelete?.Any() == true)

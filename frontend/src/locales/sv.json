@@ -279,7 +279,9 @@
 
   "ColumnModal/Info1": "Uppgifter om kolumnen",
   "ColumnModal/Info2": "Datatyp: Number",
+  "ColumnModal/Info3": "Datatyp: Text",
   "ColumnModal/Compare to previous hour": "Jämför med föregående timme",
+  "ColumnModal/Large column": "Lång kolumn",
   "ColumnModal/Comparison text": "Jämförelsetext (t.ex.: Timtakt)",
 
   "CategoryModal/Info1": "Uppgifter om kategorin",

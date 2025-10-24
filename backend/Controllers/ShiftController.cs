@@ -152,6 +152,10 @@ namespace backend.Controllers
                         Name = s.Name,
                         SystemKey = s.SystemKey,
                         IsHidden = s.IsHidden,
+                        LightColorHex = s.LightColorHex,
+                        DarkColorHex = s.DarkColorHex,
+                        LightTextColorHex = ColorHelper.GetReadableTextColor(s.LightColorHex),
+                        DarkTextColorHex = ColorHelper.GetReadableTextColor(s.DarkColorHex),
                         ShiftTeamIds = s
                             .ShiftToShiftTeams.OrderBy(sst => sst.Order)
                             .Select(sst => sst.ShiftTeamId)
@@ -195,6 +199,7 @@ namespace backend.Controllers
                                 UnitGroupId = u.UnitGroupId,
                                 UnitGroupName = u.UnitGroup?.Name ?? "",
                                 IsHidden = u.IsHidden,
+
                                 UnitColumnIds = u
                                     .UnitToUnitColumns.OrderBy(uuc => uuc.Order)
                                     .Select(uuc => uuc.UnitColumnId)
@@ -263,6 +268,10 @@ namespace backend.Controllers
                 Name = shift.Name,
                 SystemKey = shift.SystemKey,
                 IsHidden = shift.IsHidden,
+                LightColorHex = shift.LightColorHex,
+                DarkColorHex = shift.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(shift.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(shift.DarkColorHex),
 
                 ShiftTeamIds = shift
                     .ShiftToShiftTeams.OrderBy(x => x.Order)
@@ -408,6 +417,10 @@ namespace backend.Controllers
                         Name = shift.Name,
                         SystemKey = shift.SystemKey,
                         IsHidden = shift.IsHidden,
+                        LightColorHex = shift.LightColorHex,
+                        DarkColorHex = shift.DarkColorHex,
+                        LightTextColorHex = ColorHelper.GetReadableTextColor(shift.LightColorHex),
+                        DarkTextColorHex = ColorHelper.GetReadableTextColor(shift.DarkColorHex),
                         ShiftTeamSpans = teamSpans
                             .Select(ts =>
                             {
@@ -525,6 +538,8 @@ namespace backend.Controllers
             {
                 Name = dto.Name,
                 IsHidden = dto.IsHidden,
+                LightColorHex = dto.LightColorHex,
+                DarkColorHex = dto.DarkColorHex,
                 CycleLengthWeeks = dto.CycleLengthWeeks,
                 AnchorWeekStart = monday,
 
@@ -581,6 +596,10 @@ namespace backend.Controllers
                 Name = shift.Name,
                 SystemKey = shift.SystemKey,
                 IsHidden = shift.IsHidden,
+                LightColorHex = shift.LightColorHex,
+                DarkColorHex = shift.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(shift.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(shift.DarkColorHex),
 
                 // Meta data.
                 CreationDate = shift.CreationDate,
@@ -662,6 +681,9 @@ namespace backend.Controllers
 
             shift.Name = dto.Name;
             shift.IsHidden = dto.IsHidden;
+            shift.LightColorHex = dto.LightColorHex;
+            shift.DarkColorHex = dto.DarkColorHex;
+
             shift.CycleLengthWeeks = dto.CycleLengthWeeks;
             shift.AnchorWeekStart = ToMonday(dto.AnchorWeekStart);
 
@@ -720,6 +742,10 @@ namespace backend.Controllers
                 Name = shift.Name,
                 SystemKey = shift.SystemKey,
                 IsHidden = shift.IsHidden,
+                LightColorHex = shift.LightColorHex,
+                DarkColorHex = shift.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(shift.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(shift.DarkColorHex),
 
                 // Meta data.
                 UpdateDate = shift.UpdateDate,

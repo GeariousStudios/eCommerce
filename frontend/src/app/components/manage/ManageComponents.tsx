@@ -239,6 +239,7 @@ export const ThCell = ({
           : t("Manage/Sort") + labelDesc
       }
       longDelay
+      showOnTouch
     >
       <th
         className={`${thClass} ${classNameAddition ? classNameAddition : ""}`}

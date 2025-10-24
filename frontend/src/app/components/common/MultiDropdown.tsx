@@ -155,7 +155,7 @@ const MultiDropdown = ({
             ref={(el) => {
               dropdownRef.current = el;
             }}
-            className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} ${showAbove ? "rounded-t border-b-0" : "rounded-b border-t-0"} ${smallDropdown ? "text-sm" : ""} absolute z-[var(--z-tooltip)] ml-2 w-[calc(100%-1rem)] list-none border-1 border-[var(--border-tertiary)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
+            className={`${isOpen ? "pointer-events-auto max-h-48 opacity-100" : "max-h-0"} ${options.length >= 4 ? "overflow-y-auto" : "overflow-y-hidden"} ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} ${showAbove ? "bottom-full rounded-t border-b-0" : "rounded-b border-t-0"} ${smallDropdown ? "text-sm" : ""} absolute z-[var(--z-tooltip)] ml-2 w-[calc(100%-1rem)] list-none border-1 border-[var(--border-tertiary)] opacity-0 transition-[opacity,max-height] duration-[var(--medium)]`}
             role="listbox"
             inert={!isOpen || undefined}
           >

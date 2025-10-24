@@ -100,6 +100,10 @@ export const deleteContent = async (id: number): Promise<void> => {
 export type ShiftOption = {
   id: number;
   name: string;
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
 };
 
 export const fetchShifts = async (): Promise<ShiftOption[]> => {

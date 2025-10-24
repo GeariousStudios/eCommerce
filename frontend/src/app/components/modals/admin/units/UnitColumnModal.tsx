@@ -42,12 +42,14 @@ const UnitColumnModal = (props: Props) => {
   const [dataType, setDataType] = useState<UnitColumnDataType>();
   const [compare, setCompare] = useState(false);
   const [comparisonText, setComparisonText] = useState("");
+  const [largeColumn, setLargeColumn] = useState(false);
 
   const [originalName, setOriginalName] = useState("");
   const [originalDataType, setOriginalDataType] =
     useState<UnitColumnDataType>();
   const [originalCompare, setOriginalCompare] = useState(false);
   const [originalComparisonText, setOriginalComparisonText] = useState("");
+  const [originalLargeColumn, setOriginalLargeColumn] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
@@ -74,6 +76,9 @@ const UnitColumnModal = (props: Props) => {
 
       setComparisonText("");
       setOriginalComparisonText("");
+
+      setLargeColumn(false);
+      setOriginalLargeColumn(false);
     }
   }, [props.isOpen, props.itemId]);
 
@@ -184,6 +189,9 @@ const UnitColumnModal = (props: Props) => {
 
     setComparisonText(result.comparisonText ?? "");
     setOriginalComparisonText(result.comparisonText ?? "");
+
+    setLargeColumn(result.largeColumn ?? false);
+    setOriginalLargeColumn(result.largeColumn ?? false);
   };
 
   // --- Update unit column ---
@@ -205,6 +213,7 @@ const UnitColumnModal = (props: Props) => {
             dataType,
             compare,
             comparisonText,
+            largeColumn,
           }),
         },
       );
@@ -275,17 +284,20 @@ const UnitColumnModal = (props: Props) => {
       name !== originalName ||
       dataType !== originalDataType ||
       compare !== originalCompare ||
-      comparisonText !== originalComparisonText;
+      comparisonText !== originalComparisonText ||
+      largeColumn !== originalLargeColumn;
     setIsDirty(dirty);
   }, [
     name,
     dataType,
     compare,
     comparisonText,
+    largeColumn,
     originalName,
     originalDataType,
     originalCompare,
     originalComparisonText,
+    originalLargeColumn,
   ]);
 
   return (
@@ -331,7 +343,9 @@ const UnitColumnModal = (props: Props) => {
 
                 <SingleDropdown
                   addSpacer={
-                    getDataTypeOptions(t).length > 0 && dataType !== "Number"
+                    getDataTypeOptions(t).length > 0 &&
+                    dataType !== "Number" &&
+                    dataType !== "Text"
                   }
                   scrollContainer={getScrollEl}
                   id="dataType"
@@ -344,7 +358,7 @@ const UnitColumnModal = (props: Props) => {
                 />
               </div>
 
-              {dataType === "Number" && (
+              {dataType === "Number" ? (
                 <>
                   <div className="flex items-center gap-2">
                     <hr className="w-12 text-[var(--border-tertiary)]" />
@@ -382,6 +396,46 @@ const UnitColumnModal = (props: Props) => {
                     )}
                   </div>
                 </>
+              ) : dataType === "Text" ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <hr className="w-12 text-[var(--border-tertiary)]" />
+                    <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                      {t("ColumnModal/Info3")}
+                    </h3>
+                    <hr className="w-full text-[var(--border-tertiary)]" />
+                  </div>
+
+                  <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
+                    <div className="flex items-center gap-2 truncate">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={largeColumn}
+                        className={switchClass(largeColumn)}
+                        onClick={() => setLargeColumn((prev) => !prev)}
+                      >
+                        <div className={switchKnobClass(largeColumn)} />
+                      </button>
+                      <span className="mb-0.5">
+                        {t("ColumnModal/Large column")}
+                      </span>
+                    </div>
+
+                    {/* {compare && (
+                      <Input
+                        label={t("ColumnModal/Comparison text")}
+                        value={comparisonText}
+                        onChange={(val) => setComparisonText(String(val))}
+                        onModal
+                        required
+                        {...unitColumnConstraints.comparisonText}
+                      />
+                    )} */}
+                  </div>
+                </>
+              ) : (
+                ""
               )}
             </ModalBase.Content>
 

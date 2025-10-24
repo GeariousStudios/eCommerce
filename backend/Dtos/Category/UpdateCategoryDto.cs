@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using backend.Dtos.SubCategory;
 
 namespace backend.Dtos.Category
 {
@@ -11,5 +12,6 @@ namespace backend.Dtos.Category
         public int[]? SubCategoryIds { get; set; }
         public int[]? SubCategoryIdsToDelete { get; set; }
         public string[]? NewSubCategoryNames { get; set; }
+        public List<UpdateSubCategoryDto>? UpdatedExistingSubCategories { get; set; }
     }
 }

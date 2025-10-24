@@ -15,14 +15,14 @@ namespace backend.Dtos.Unit
         [MaxLength(7, ErrorMessage = "[4|Common/a color|7] Validation/cannot exceed")]
         [RegularExpression(
             "^#([0-9A-Fa-f]{6})$",
-            ErrorMessage = "[5|Common/Color format] Validation/Invalid format"
+            ErrorMessage = "[5|Common/Color format] Validation/is invalid"
         )]
         public string LightColorHex { get; set; } = "#212121";
 
         [MaxLength(7, ErrorMessage = "[6|Common/a color|7] Validation/cannot exceed")]
         [RegularExpression(
             "^#([0-9A-Fa-f]{6})$",
-            ErrorMessage = "[7|Common/Color format] Validation/Invalid format"
+            ErrorMessage = "[7|Common/Color format] Validation/is invalid"
         )]
         public string DarkColorHex { get; set; } = "#e0e0e0";
         public List<int> UnitColumnIds { get; set; } = new();

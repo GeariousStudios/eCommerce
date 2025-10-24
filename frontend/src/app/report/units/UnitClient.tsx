@@ -159,6 +159,9 @@ const UnitClient = (props: Props) => {
   const [unitColumnComparisonTexts, setUnitColumnComparisonTexts] = useState<
     string[]
   >([]);
+  const [unitColumnLargeColumnFlags, setUnitColumnLargeColumnFlags] = useState<
+    boolean[]
+  >([]);
 
   // --- States: UnitCell & Report ---
   const [unitCells, setUnitCells] = useState<any[]>([]);
@@ -497,6 +500,9 @@ const UnitClient = (props: Props) => {
       setUnitColumnCompareFlags(result.map((c: any) => Boolean(c.compare)));
       setUnitColumnComparisonTexts(
         result.map((c: any) => c.comparisonText ?? ""),
+      );
+      setUnitColumnLargeColumnFlags(
+        result.map((c: any) => Boolean(c.largeColumn)),
       );
     };
 
@@ -1150,6 +1156,7 @@ const UnitClient = (props: Props) => {
                 veryLongDelay={
                   props.isReporter == true && unitColumnNames.length > 0
                 }
+                showOnTouch
               >
                 <button
                   className={`${buttonSecondaryClass} group lg:w-max lg:px-4`}
@@ -1179,6 +1186,7 @@ const UnitClient = (props: Props) => {
               <CustomTooltip
                 content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report events")}`}
                 veryLongDelay={props.isReporter == true}
+                showOnTouch
               >
                 <button
                   className={`${buttonSecondaryClass} group lg:w-max lg:px-4`}
@@ -1210,6 +1218,7 @@ const UnitClient = (props: Props) => {
               <CustomTooltip
                 content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Unit/Update page")}`}
                 veryLongDelay
+                showOnTouch
               >
                 <button
                   className={`${buttonSecondaryClass} group flex items-center justify-center`}
@@ -1263,6 +1272,7 @@ const UnitClient = (props: Props) => {
               <CustomTooltip
                 content={`${!props.isReporter ? t("Common/No access") : ""}`}
                 veryLongDelay={props.isReporter == true}
+                showOnTouch
               >
                 <button
                   ref={shiftsRef}
@@ -1418,7 +1428,12 @@ const UnitClient = (props: Props) => {
                     {unitColumnNames.map((col, i, arr) => (
                       <React.Fragment key={`head-${i}`}>
                         <th
-                          className={`${thClass} ${i !== arr.length - 1 && unitColumnCompareFlags[i] && unitColumnDataTypes[i] === "Number" ? "w-0 min-w-[10ch]" : ""} whitespace-nowrap`}
+                          className={`${thClass} ${
+                            unitColumnDataTypes[i] === "Text" &&
+                            unitColumnLargeColumnFlags[i]
+                              ? "min-w-[64ch]"
+                              : "min-w-[10ch]"
+                          } whitespace-nowrap`}
                         >
                           {col}
                         </th>
@@ -1435,7 +1450,6 @@ const UnitClient = (props: Props) => {
                                     t("Unit/Tooltip comparison text") +
                                     unitColumnNames[i]
                                   }
-                                  mediumDelay
                                   showOnTouch
                                 >
                                   <span className="group min-h-4 min-w-4 cursor-help">
@@ -1615,7 +1629,6 @@ const UnitClient = (props: Props) => {
                                     {hasOngoing && (
                                       <CustomTooltip
                                         content={t("Unit/Ongoing event")}
-                                        mediumDelay
                                         showOnTouch
                                       >
                                         <span className="group ml-1 min-h-4 min-w-4 cursor-help text-[var(--note-error)]">
@@ -1688,7 +1701,18 @@ const UnitClient = (props: Props) => {
                                   <td
                                     className={`${tdClass} ${
                                       hour === 23 ? "border-b-0" : ""
-                                    } ${hasCompare && dataType === "Number" ? "" : colIdx === unitColumnNames.length - 1 ? "border-r-0" : ""} group/cell`}
+                                    } ${
+                                      hasCompare && dataType === "Number"
+                                        ? ""
+                                        : colIdx === unitColumnNames.length - 1
+                                          ? "border-r-0"
+                                          : ""
+                                    } ${
+                                      unitColumnDataTypes[colIdx] === "Text" &&
+                                      unitColumnLargeColumnFlags[colIdx]
+                                        ? "min-w-[28ch]"
+                                        : "min-w-[10ch]"
+                                    } group/cell break-normal!`}
                                   >
                                     <div className="flex gap-4">
                                       {displayValue}
@@ -1699,6 +1723,7 @@ const UnitClient = (props: Props) => {
                                           props.isReporter == true &&
                                           unitColumnNames.length > 0
                                         }
+                                        showOnTouch
                                       >
                                         <button
                                           type="button"
@@ -1777,6 +1802,7 @@ const UnitClient = (props: Props) => {
                                       veryLongDelay={
                                         props.isReporter == true && !isSynthetic
                                       }
+                                      showOnTouch
                                     >
                                       <button
                                         ref={menuTriggerRef}
@@ -1932,6 +1958,7 @@ const UnitClient = (props: Props) => {
                                   <CustomTooltip
                                     content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report events") + t("Unit/Tooltip this hour")}`}
                                     veryLongDelay={props.isReporter == true}
+                                    showOnTouch
                                   >
                                     <button
                                       className={`${iconButtonPrimaryClass} ml-auto flex items-center justify-center gap-2`}
@@ -2020,6 +2047,7 @@ const UnitClient = (props: Props) => {
                                                   veryLongDelay={
                                                     props.isReporter == true
                                                   }
+                                                  showOnTouch
                                                 >
                                                   <button
                                                     type="button"
@@ -2057,6 +2085,7 @@ const UnitClient = (props: Props) => {
                                                   veryLongDelay={
                                                     props.isReporter == true
                                                   }
+                                                  showOnTouch
                                                 >
                                                   <button
                                                     type="button"
@@ -2163,6 +2192,7 @@ const UnitClient = (props: Props) => {
                                                 veryLongDelay={
                                                   props.isReporter == true
                                                 }
+                                                showOnTouch
                                               >
                                                 <button
                                                   type="button"
@@ -2199,6 +2229,7 @@ const UnitClient = (props: Props) => {
                                                 veryLongDelay={
                                                   props.isReporter == true
                                                 }
+                                                showOnTouch
                                               >
                                                 <button
                                                   type="button"
@@ -2270,7 +2301,11 @@ const UnitClient = (props: Props) => {
               </tbody>
             </table>
           </div>
-          <CustomTooltip content={t("Unit/Scroll to top")} veryLongDelay>
+          <CustomTooltip
+            content={t("Unit/Scroll to top")}
+            veryLongDelay
+            showOnTouch
+          >
             <button
               className={`${buttonSecondaryClass} ml-auto`}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

@@ -278,7 +278,9 @@
 
   "ColumnModal/Info1": "Details about the column",
   "ColumnModal/Info2": "Data type: Number",
+  "ColumnModal/Info3": "Data type: Text",
   "ColumnModal/Compare to previous hour": "Compare to previous hour",
+  "ColumnModal/Large column": "Large column",
   "ColumnModal/Comparison text": "Comparison text (e.g. Hourly rate)",
 
   "CategoryModal/Info1": "Details about the category",
@@ -299,7 +301,7 @@
   "ReportModal/Info1": "1. Choose a period",
   "ReportModal/Info2": "2. Report events",
   "ReportModal/Failed to check": "Failed to check status of report",
-  "ReportModal/Event report": "Event report",
+  "ReportModal/Event": "Event",
   "ReportModal/Blocking event": "There is a previous event blocking new events:",
   "ReportModal/Report new event": "Report new event",
   "ReportModal/Choose category": "--- Choose category ---",

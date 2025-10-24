@@ -10,6 +10,10 @@ namespace backend.Dtos.Shift
         public string Name { get; set; } = string.Empty;
         public ShiftSystemKey? SystemKey { get; set; }
         public bool IsHidden { get; set; }
+        public string LightColorHex { get; set; } = "#212121";
+        public string DarkColorHex { get; set; } = "#e0e0e0";
+        public string LightTextColorHex { get; set; } = "#ffffff";
+        public string DarkTextColorHex { get; set; } = "#000000";
 
         public List<UnitDto> Units { get; set; } = new();
         public List<ShiftTeamDto> ShiftTeams { get; set; } = new();

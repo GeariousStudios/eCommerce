@@ -558,7 +558,7 @@ const ManageBase = <TItem extends { id: number }>({
         {/* --- Filter: All ---  */}
         {filters && filters.length > 0 && (
           <div className="relative">
-            <CustomTooltip content={t("Manage/All filters")} lgHidden longDelay>
+            <CustomTooltip content={t("Manage/All filters")} lgHidden longDelay showOnTouch>
               <button
                 className={`${roundedButtonClass} group xs:w-auto xs:px-4 gap-2`}
                 onClick={() => {

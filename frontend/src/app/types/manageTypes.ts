@@ -166,8 +166,16 @@ export type ShiftItem = {
   shiftTeams: {
     id: number;
     name: string;
+    lightColorHex: string;
+    darkColorHex: string;
+    lightTextColorHex: string;
+    darkTextColorHex: string;
   }[];
   isHidden?: boolean;
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
 
   creationDate: string;
   updateDate: string;
@@ -188,6 +196,10 @@ export type ShiftTeamItem = {
   shifts: {
     id: number;
     name: string;
+    lightColorHex: string;
+    darkColorHex: string;
+    lightTextColorHex: string;
+    darkTextColorHex: string;
   }[];
   isHidden?: boolean;
   lightColorHex: string;

@@ -1,7 +1,11 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {
+  PencilIcon,
+  PencilSquareIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline";
 import Input from "../../../common/Input";
 import { useToast } from "../../../toast/ToastProvider";
 import {
@@ -54,6 +58,11 @@ const CategoryModal = (props: Props) => {
   const [isDirty, setIsDirty] = useState(false);
 
   const [isAnyDragging, setIsAnyDragging] = useState(false);
+
+  const [editingSubCategoryId, setEditingSubCategoryId] = useState<
+    number | null
+  >(null);
+  const [editingName, setEditingName] = useState("");
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -171,6 +180,10 @@ const CategoryModal = (props: Props) => {
 
     const newSubCategoryIds = subCategoryIds.filter((id) => id > 0);
 
+    const updatedExistingSubCategories = updatedSubCategoriesRef.current
+      .filter((sc) => subCategoryIds.includes(sc.id) && sc.id > 0)
+      .map((sc) => ({ id: sc.id, name: sc.name.trim() }));
+
     try {
       const response = await fetch(
         `${apiUrl}/category/update/${props.itemId}`,
@@ -185,6 +198,7 @@ const CategoryModal = (props: Props) => {
             name,
             subCategoryIds: newSubCategoryIds,
             newSubCategoryNames,
+            updatedExistingSubCategories,
             subCategoryIdsToDelete,
           }),
         },
@@ -363,35 +377,85 @@ const CategoryModal = (props: Props) => {
   // --- COMPONENTS ---
   // --- SubCategoryChip ---
   const SubCategoryChip = ({
+    id,
     label,
     onDelete,
+    onRename,
     isDragging = false,
     dragging = false,
   }: {
+    id: number;
     label: string;
     onDelete: () => void;
+    onRename: (newName: string) => void;
     isDragging?: boolean;
     dragging?: boolean;
   }) => {
-    const disableHover = dragging && !isDragging;
+    const isEditing = editingSubCategoryId === id;
 
     return (
-      <>
-        <button
-          disabled={isDragging}
-          className={`${roundedButtonClass} group w-auto gap-2 !bg-[var(--bg-modal-link)] px-4`}
-          onClick={onDelete}
-        >
-          <span
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} truncate font-semibold transition-colors duration-[var(--fast)]`}
-          >
-            {label}
-          </span>
-          <XMarkIcon
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} h-6 w-6 transition-[color,rotate] duration-[var(--fast)]`}
+      <div
+        className={`${roundedButtonClass} flex w-auto items-center gap-2 !bg-[var(--bg-modal-link)] px-4 transition-transform duration-[var(--fast)]`}
+        style={{
+          cursor: isEditing ? "text" : isDragging ? "grabbing" : "grab",
+        }}
+      >
+        {isEditing ? (
+          <input
+            autoFocus
+            value={editingName}
+            onChange={(e) => setEditingName(e.target.value)}
+            onBlur={() => {
+              const trimmed = editingName.trim();
+              if (trimmed) onRename(trimmed);
+              setEditingSubCategoryId(null);
+              setEditingName("");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const trimmed = editingName.trim();
+                if (trimmed) onRename(trimmed);
+                setEditingSubCategoryId(null);
+                setEditingName("");
+              } else if (e.key === "Escape") {
+                setEditingSubCategoryId(null);
+                setEditingName("");
+              }
+            }}
+            {...categoryConstraints.subCategoryName}
+            className="w-32 border-b border-[var(--border-primary)] bg-transparent outline-none"
           />
-        </button>
-      </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingSubCategoryId(id);
+                setEditingName(label);
+              }}
+              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+              style={{ cursor: "pointer" }}
+            >
+              <PencilIcon className="h-5 w-5" />
+            </button>
+
+            <span className="truncate font-semibold select-none">{label}</span>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+              style={{ cursor: "pointer" }}
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </>
+        )}
+      </div>
     );
   };
 
@@ -514,10 +578,18 @@ const CategoryModal = (props: Props) => {
 
                       return (
                         <SubCategoryChip
+                          id={id}
                           label={label}
                           isDragging={isDragging}
                           dragging={isAnyDragging}
                           onDelete={() => deleteSubCategory(id)}
+                          onRename={(newName) => {
+                            updatedSubCategoriesRef.current =
+                              updatedSubCategoriesRef.current.map((sc) =>
+                                sc.id === id ? { ...sc, name: newName } : sc,
+                              );
+                            setIsDirty(true);
+                          }}
                         />
                       );
                     }}
