@@ -162,9 +162,13 @@ namespace backend.Controllers
                             {
                                 Id = sst.ShiftTeam.Id,
                                 Name = sst.ShiftTeam.Name,
-                                ColorHex = sst.ShiftTeam.ColorHex,
-                                TextColorHex = ColorHelper.GetReadableTextColor(
-                                    sst.ShiftTeam.ColorHex
+                                LightColorHex = sst.ShiftTeam.LightColorHex,
+                                DarkColorHex = sst.ShiftTeam.LightColorHex,
+                                LightTextColorHex = ColorHelper.GetReadableTextColor(
+                                    sst.ShiftTeam.LightColorHex
+                                ),
+                                DarkTextColorHex = ColorHelper.GetReadableTextColor(
+                                    sst.ShiftTeam.DarkColorHex
                                 ),
                             })
                             .ToList(),
@@ -271,8 +275,14 @@ namespace backend.Controllers
                         Id = x.ShiftTeam.Id,
                         Name = x.ShiftTeam.Name,
                         IsHidden = x.ShiftTeam.IsHidden,
-                        ColorHex = x.ShiftTeam.ColorHex,
-                        TextColorHex = ColorHelper.GetReadableTextColor(x.ShiftTeam.ColorHex),
+                        LightColorHex = x.ShiftTeam.LightColorHex,
+                        DarkColorHex = x.ShiftTeam.DarkColorHex,
+                        LightTextColorHex = ColorHelper.GetReadableTextColor(
+                            x.ShiftTeam.LightColorHex
+                        ),
+                        DarkTextColorHex = ColorHelper.GetReadableTextColor(
+                            x.ShiftTeam.DarkColorHex
+                        ),
                     })
                     .ToList(),
                 ShiftTeamDisplayNames = shift.ShiftToShiftTeams.ToDictionary(
@@ -399,24 +409,30 @@ namespace backend.Controllers
                         SystemKey = shift.SystemKey,
                         IsHidden = shift.IsHidden,
                         ShiftTeamSpans = teamSpans
-                            .Select(ts => new ShiftTeamSpanDto
+                            .Select(ts =>
                             {
-                                TeamId = ts.teamId,
-                                Name = ts.name,
-                                Label = ts.label,
-                                Start = ts.start,
-                                End = ts.end,
-                                ColorHex =
-                                    _context
-                                        .ShiftTeams.Where(st => st.Id == ts.teamId)
-                                        .Select(st => st.ColorHex)
-                                        .FirstOrDefault() ?? "#e0e0e0",
-                                TextColorHex = ColorHelper.GetReadableTextColor(
-                                    _context
-                                        .ShiftTeams.Where(st => st.Id == ts.teamId)
-                                        .Select(st => st.ColorHex)
-                                        .FirstOrDefault() ?? "#e0e0e0"
-                                ),
+                                var team = _context
+                                    .ShiftTeams.Where(st => st.Id == ts.teamId)
+                                    .Select(st => new { st.LightColorHex, st.DarkColorHex })
+                                    .FirstOrDefault();
+
+                                var lightColor = team?.LightColorHex ?? "#e0e0e0";
+                                var darkColor = team?.DarkColorHex ?? "#212121";
+
+                                return new ShiftTeamSpanDto
+                                {
+                                    TeamId = ts.teamId,
+                                    Name = ts.name,
+                                    Label = ts.label,
+                                    Start = ts.start,
+                                    End = ts.end,
+                                    LightColorHex = lightColor,
+                                    DarkColorHex = darkColor,
+                                    LightTextColorHex = ColorHelper.GetReadableTextColor(
+                                        lightColor
+                                    ),
+                                    DarkTextColorHex = ColorHelper.GetReadableTextColor(darkColor),
+                                };
                             })
                             .ToList(),
                     }

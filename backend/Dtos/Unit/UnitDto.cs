@@ -13,6 +13,10 @@ namespace backend.Dtos.Unit
         public List<int> CategoryIds { get; set; } = new();
         public List<int> ShiftIds { get; set; } = new();
         public int? ActiveShiftId { get; set; }
+        public string LightColorHex { get; set; } = "#212121";
+        public string DarkColorHex { get; set; } = "#e0e0e0";
+        public string LightTextColorHex { get; set; } = "#ffffff";
+        public string DarkTextColorHex { get; set; } = "#000000";
 
         // Meta data.
         public DateTime CreationDate { get; set; }

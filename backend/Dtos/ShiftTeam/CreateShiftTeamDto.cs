@@ -9,11 +9,18 @@ namespace backend.Dtos.ShiftTeam
         public string Name { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
 
-        [MaxLength(7, ErrorMessage = "[3|ShiftTeam/a color|7] Validation/cannot exceed")]
+        [MaxLength(7, ErrorMessage = "[3|Common/a color|7] Validation/cannot exceed")]
         [RegularExpression(
             "^#([0-9A-Fa-f]{6})$",
-            ErrorMessage = "[4|ShiftTeam/Color format] Validation/Invalid format"
+            ErrorMessage = "[4|Common/Color format] Validation/Invalid format"
         )]
-        public string ColorHex { get; set; } = "#e0e0e0";
+        public string LightColorHex { get; set; } = "#212121";
+
+        [MaxLength(7, ErrorMessage = "[5|Common/a color|7] Validation/cannot exceed")]
+        [RegularExpression(
+            "^#([0-9A-Fa-f]{6})$",
+            ErrorMessage = "[6|Common/Color format] Validation/Invalid format"
+        )]
+        public string DarkColorHex { get; set; } = "#e0e0e0";
     }
 }

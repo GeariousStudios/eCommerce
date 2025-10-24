@@ -39,6 +39,7 @@ import { useTranslations } from "next-intl";
 import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
 import MenuDropdownAnchor from "@/app/components/common/MenuDropdown/MenuDropdownAnchor";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
+import useTheme from "@/app/hooks/useTheme";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -60,8 +61,10 @@ type ShiftTeamSpan = {
   label: string;
   start: string;
   end: string;
-  colorHex: string;
-  textColorHex: string;
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
 };
 
 type ShiftChange = {
@@ -205,6 +208,9 @@ const UnitClient = (props: Props) => {
   const canShowInvalid = !isBootstrapping && isInvalid && !isHidden;
   // const isReady = !isBootstrapping && !isHidden && !isInvalid;
   const isReady = !isHidden && !isInvalid;
+
+  // --- Other ---
+  const { currentTheme } = useTheme();
 
   // --- HELPERS ---
   const overlaps = (
@@ -542,8 +548,10 @@ const UnitClient = (props: Props) => {
           label: ts.label,
           start: ts.start,
           end: ts.end,
-          colorHex: ts.colorHex,
-          textColorHex: ts.textColorHex,
+          lightColorHex: ts.lightColorHex,
+          darkColorHex: ts.darkColorHex,
+          lightTextColorHex: ts.lightTextColorHex,
+          darkTextColorHex: ts.darkTextColorHex,
         })),
         isHidden: s.isHidden ?? false,
       }));
@@ -1550,8 +1558,14 @@ const UnitClient = (props: Props) => {
                                   <span
                                     className={`${badgeClass}`}
                                     style={{
-                                      backgroundColor: span.colorHex,
-                                      color: span.textColorHex,
+                                      backgroundColor:
+                                        currentTheme === "dark"
+                                          ? span.darkColorHex
+                                          : span.lightColorHex,
+                                      color:
+                                        currentTheme === "dark"
+                                          ? span.darkTextColorHex
+                                          : span.lightTextColorHex,
                                     }}
                                   >
                                     {span.label}

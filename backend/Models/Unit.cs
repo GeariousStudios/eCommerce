@@ -13,6 +13,12 @@ namespace backend.Models
         public int UnitGroupId { get; set; }
         public required UnitGroup UnitGroup { get; set; }
 
+        [MaxLength(7)]
+        public string LightColorHex { get; set; } = "#212121";
+
+        [MaxLength(7)]
+        public string DarkColorHex { get; set; } = "#e0e0e0";
+
         // Meta data.
         public DateTime CreationDate { get; set; }
         public DateTime UpdateDate { get; set; }

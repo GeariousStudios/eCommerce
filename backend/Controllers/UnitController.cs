@@ -187,6 +187,10 @@ namespace backend.Controllers
                     Id = u.Id,
                     Name = u.Name,
                     IsHidden = u.IsHidden,
+                    LightColorHex = u.LightColorHex,
+                    DarkColorHex = u.DarkColorHex,
+                    LightTextColorHex = ColorHelper.GetReadableTextColor(u.LightColorHex),
+                    DarkTextColorHex = ColorHelper.GetReadableTextColor(u.DarkColorHex),
                     UnitGroupId = u.UnitGroupId,
                     UnitGroupName = u.UnitGroup.Name ?? "Okänd grupp",
                     UnitColumnIds = u
@@ -249,6 +253,10 @@ namespace backend.Controllers
                 Id = unit.Id,
                 Name = unit.Name,
                 IsHidden = unit.IsHidden,
+                LightColorHex = unit.LightColorHex,
+                DarkColorHex = unit.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(unit.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(unit.DarkColorHex),
                 UnitGroupId = unit.UnitGroupId,
                 UnitGroupName = unit.UnitGroup.Name ?? unknownGroup,
                 UnitColumnIds = unit
@@ -370,6 +378,8 @@ namespace backend.Controllers
                 Name = dto.Name,
                 IsHidden = dto.IsHidden,
                 UnitGroup = unitGroup,
+                LightColorHex = dto.LightColorHex,
+                DarkColorHex = dto.DarkColorHex,
 
                 // Meta data.
                 CreationDate = now,
@@ -429,6 +439,10 @@ namespace backend.Controllers
             {
                 Name = unit.Name,
                 IsHidden = unit.IsHidden,
+                LightColorHex = unit.LightColorHex,
+                DarkColorHex = unit.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(unit.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(unit.DarkColorHex),
                 UnitGroupId = unit.UnitGroupId,
                 UnitColumnIds = unit
                     .UnitToUnitColumns.OrderBy(x => x.Order)
@@ -540,6 +554,8 @@ namespace backend.Controllers
             unit.Name = dto.Name;
             unit.IsHidden = dto.IsHidden;
             unit.UnitGroup = unitGroup;
+            unit.LightColorHex = dto.LightColorHex;
+            unit.DarkColorHex = dto.DarkColorHex;
 
             var oldUnitColumnLinks = await _context
                 .UnitToUnitColumns.Where(l => l.UnitId == unit.Id)
@@ -613,6 +629,10 @@ namespace backend.Controllers
                 Id = unit.Id,
                 Name = unit.Name,
                 IsHidden = unit.IsHidden,
+                LightColorHex = unit.LightColorHex,
+                DarkColorHex = unit.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(unit.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(unit.DarkColorHex),
                 UnitGroupId = unit.UnitGroupId,
                 UnitColumnIds = unit
                     .UnitToUnitColumns.OrderBy(x => x.Order)

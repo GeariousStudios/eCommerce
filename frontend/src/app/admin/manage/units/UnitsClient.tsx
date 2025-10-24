@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
+import useTheme from "@/app/hooks/useTheme";
 
 type Props = {
   isConnected: boolean | null;
@@ -155,6 +156,9 @@ const UnitsClient = (props: Props) => {
     }
   };
 
+  // --- Theme ---
+  const { currentTheme } = useTheme();
+
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
@@ -162,7 +166,20 @@ const UnitsClient = (props: Props) => {
       getValue: (item: UnitItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
           <div className="flex flex-col">
-            <span className="flex items-center justify-between text-2xl font-bold">
+            <span className="flex items-center gap-4 text-2xl font-bold">
+              <span
+                className="h-8 min-h-8 w-8 min-w-8 rounded-full"
+                style={{
+                  backgroundColor:
+                    currentTheme === "dark"
+                      ? item.darkColorHex
+                      : item.lightColorHex,
+                  color:
+                    currentTheme === "dark"
+                      ? item.darkTextColorHex
+                      : item.lightTextColorHex,
+                }}
+              />
               <span className="flex items-center">{item.name}</span>
             </span>
           </div>
@@ -289,7 +306,24 @@ const UnitsClient = (props: Props) => {
       sortingItem: "name",
       labelAsc: t("Common/name") + " Ö-A",
       labelDesc: t("Common/name") + " A-Ö",
-      getValue: (item: UnitItem) => item.name,
+      getValue: (item: UnitItem) => (
+        <div className="flex items-center gap-4">
+          <span
+            className="h-4 min-h-4 w-4 min-w-4 rounded-full"
+            style={{
+              backgroundColor:
+                currentTheme === "dark"
+                  ? item.darkColorHex
+                  : item.lightColorHex,
+              color:
+                currentTheme === "dark"
+                  ? item.darkTextColorHex
+                  : item.lightTextColorHex,
+            }}
+          />
+          {item.name}
+        </div>
+      ),
       responsivePriority: 0,
     },
     {

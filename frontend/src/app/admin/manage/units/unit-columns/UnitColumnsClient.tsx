@@ -21,6 +21,7 @@ import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
+import useTheme from "@/app/hooks/useTheme";
 
 type Props = {
   isConnected: boolean | null;
@@ -143,6 +144,9 @@ const UnitColumnsClient = (props: Props) => {
     }
   };
 
+  // --- Theme ---
+  const { currentTheme } = useTheme();
+
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
@@ -172,7 +176,17 @@ const UnitColumnsClient = (props: Props) => {
                 return (
                   <span
                     key={i}
-                    className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                    className={badgeClass}
+                    style={{
+                      backgroundColor:
+                        currentTheme === "dark"
+                          ? matchingUnit?.darkColorHex
+                          : matchingUnit?.lightColorHex,
+                      color:
+                        currentTheme === "dark"
+                          ? matchingUnit?.darkTextColorHex
+                          : matchingUnit?.lightTextColorHex,
+                    }}
                   >
                     {label}
                   </span>
@@ -241,7 +255,17 @@ const UnitColumnsClient = (props: Props) => {
             return (
               <span
                 key={i}
-                className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                className={badgeClass}
+                style={{
+                  backgroundColor:
+                    currentTheme === "dark"
+                      ? matchingUnit?.darkColorHex
+                      : matchingUnit?.lightColorHex,
+                  color:
+                    currentTheme === "dark"
+                      ? matchingUnit?.darkTextColorHex
+                      : matchingUnit?.lightTextColorHex,
+                }}
               >
                 {label}
               </span>

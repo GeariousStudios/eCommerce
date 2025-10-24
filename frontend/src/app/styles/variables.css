@@ -128,6 +128,7 @@
   --note-success-active: #6faa7f;
 
   /* --- GRAPH COLORS --- */
+  --graph-default: #fbbc04;
   --graph-one: #fbbc04;
   --graph-two: #8ab4f8;
   --graph-three: #34a853;
@@ -210,6 +211,7 @@
   --note-success-active: #4b815bbf;
 
   /* --- GRAPH COLORS --- */
+  --graph-default: #bd4200;
   --graph-one: #bd4200;
   --graph-two: #01579b;
   --graph-three: #33691e;

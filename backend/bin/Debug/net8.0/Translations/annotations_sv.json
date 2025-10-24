@@ -8,6 +8,8 @@
 
   "Common/a name": "ett namn",
   "Common/Name": "Namn",
+  "Common/a color": "en färg",
+  "Common/Color format": "Färgens format",
 
   "Unit/a group": "en grupp",
 
@@ -24,8 +26,5 @@
   "UnitColumn/a comparison text": "en jämförelsetext",
   "UnitColumn/Comparison text": "Jämförelsetext",
 
-  "Report/a start time": "en starttid",
-
-  "ShiftTeam/a color": "en färg",
-  "ShiftTeam/Color format": "Färgens format"
+  "Report/a start time": "en starttid"
 }

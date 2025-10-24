@@ -9,6 +9,7 @@ import NewsTypeModal from "@/app/components/modals/admin/news/NewsTypeModal"; //
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
+import useTheme from "@/app/hooks/useTheme";
 
 type Props = {
   isConnected: boolean | null;
@@ -117,6 +118,9 @@ const NewsTypesClient = (props: Props) => {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
   };
+
+  // --- Theme ---
+  const { currentTheme } = useTheme();
 
   // --- Grid Items (Unique) ---
   const gridItems = () => [

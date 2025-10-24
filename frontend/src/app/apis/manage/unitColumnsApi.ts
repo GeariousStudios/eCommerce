@@ -101,6 +101,10 @@ export type UnitOption = {
   id: number;
   name: string;
   unitGroupName?: string;
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
 };
 
 export const fetchUnits = async (): Promise<UnitOption[]> => {

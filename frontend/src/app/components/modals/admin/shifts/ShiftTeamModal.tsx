@@ -33,11 +33,13 @@ const ShiftTeamModal = (props: Props) => {
   // --- States ---
   const [name, setName] = useState("");
   const [isHidden, setIsHidden] = useState(false);
-  const [colorHex, setColorHex] = useState("#e0e0e0");
+  const [lightColorHex, setLightColorHex] = useState("#212121");
+  const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
 
   const [originalName, setOriginalName] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
-  const [originalColorHex, setOriginalColorHex] = useState("#e0e0e0");
+  const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
+  const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
   const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
@@ -59,8 +61,11 @@ const ShiftTeamModal = (props: Props) => {
       setIsHidden(false);
       setOriginalIsHidden(false);
 
-      setColorHex("#e0e0e0");
-      setOriginalColorHex("#e0e0e0");
+      setLightColorHex("#212121");
+      setOriginalLightColorHex("#212121");
+
+      setDarkColorHex("#e0e0e0");
+      setOriginalDarkColorHex("#e0e0e0");
     }
   }, [props.isOpen, props.itemId]);
 
@@ -80,7 +85,8 @@ const ShiftTeamModal = (props: Props) => {
         body: JSON.stringify({
           name,
           isHidden,
-          colorHex,
+          lightColorHex,
+          darkColorHex,
         }),
       });
 
@@ -165,8 +171,11 @@ const ShiftTeamModal = (props: Props) => {
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
 
-    setColorHex(result.colorHex ?? "#e0e0e0");
-    setOriginalColorHex(result.colorHex ?? "#e0e0e0");
+    setLightColorHex(result.lightColorHex ?? "#212121");
+    setOriginalLightColorHex(result.lightColorHex ?? "#212121");
+
+    setDarkColorHex(result.darkColorHex ?? "#e0e0e0");
+    setOriginalDarkColorHex(result.darkColorHex ?? "#e0e0e0");
   };
 
   // --- Update shift team ---
@@ -186,7 +195,8 @@ const ShiftTeamModal = (props: Props) => {
           body: JSON.stringify({
             name,
             isHidden,
-            colorHex,
+            lightColorHex,
+            darkColorHex,
           }),
         },
       );
@@ -246,7 +256,11 @@ const ShiftTeamModal = (props: Props) => {
   // --- SET/UNSET IS DIRTY ---
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
-      const dirty = name !== "" || isHidden !== false || colorHex !== "";
+      const dirty =
+        name !== "" ||
+        isHidden !== false ||
+        lightColorHex !== "" ||
+        darkColorHex !== "";
 
       setIsDirty(dirty);
       return;
@@ -255,15 +269,18 @@ const ShiftTeamModal = (props: Props) => {
     const dirty =
       name !== originalName ||
       isHidden !== originalIsHidden ||
-      colorHex !== originalColorHex;
+      lightColorHex !== originalLightColorHex ||
+      darkColorHex !== originalDarkColorHex;
     setIsDirty(dirty);
   }, [
     name,
     isHidden,
-    colorHex,
+    lightColorHex,
+    darkColorHex,
     originalName,
     originalIsHidden,
-    originalColorHex,
+    originalLightColorHex,
+    originalDarkColorHex,
   ]);
 
   return (
@@ -311,12 +328,22 @@ const ShiftTeamModal = (props: Props) => {
                   />
                 </div>
 
-                <div className="xs:col-span-1 col-span-6">
+                <div className="xs:col-span-2 col-span-6">
                   <Input
-                    label={t("Common/Color")}
+                    label={t("Common/Light color")}
                     type="color"
-                    value={colorHex}
-                    onChange={(val) => setColorHex(String(val))}
+                    value={lightColorHex}
+                    onChange={(val) => setLightColorHex(String(val))}
+                    required
+                    pattern="^#([0-9A-Fa-f]{6})$"
+                    onModal
+                  />
+
+                  <Input
+                    label={t("Common/Dark color")}
+                    type="color"
+                    value={darkColorHex}
+                    onChange={(val) => setDarkColorHex(String(val))}
                     required
                     pattern="^#([0-9A-Fa-f]{6})$"
                     onModal

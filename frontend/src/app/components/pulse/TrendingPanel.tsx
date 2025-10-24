@@ -32,6 +32,7 @@ import {
   Bar,
   Pie,
 } from "recharts";
+import useTheme from "@/app/hooks/useTheme";
 
 type UnitCellDto = {
   id: number;
@@ -66,7 +67,15 @@ type Props = {
   viewMode?: ViewMode;
   unitIds?: number[];
   unitColumnId?: number | null;
-  unitOptions: { value: string; label: string; creationDate: string }[];
+  unitOptions: {
+    value: string;
+    label: string;
+    creationDate: string;
+    lightColorHex?: string;
+    darkColorHex?: string;
+    lightTextColorHex?: string;
+    darkTextColorHex?: string;
+  }[];
   className?: string;
   onUpdated?: () => void;
   onDeleted?: () => void;
@@ -143,12 +152,7 @@ const TrendingPanel: React.FC<Props> = ({
   const [panelViewMode, setPanelViewMode] = useState<ViewMode>(
     viewMode ?? "Value",
   );
-  const graphColors = [
-    "var(--graph-one)",
-    "var(--graph-two)",
-    "var(--graph-three)",
-    "var(--graph-four)",
-  ];
+
   const [hiddenUnits, setHiddenUnits] = useState<number[]>([]);
 
   const priority = [t("TrendingPanel/Total"), t("TrendingPanel/Average")];
@@ -241,6 +245,7 @@ const TrendingPanel: React.FC<Props> = ({
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const token = localStorage.getItem("token");
   const { notify } = useToast();
+  const { currentTheme } = useTheme();
 
   // --- BACKEND ---
   // --- Fetch unit columns ---
@@ -603,6 +608,12 @@ const TrendingPanel: React.FC<Props> = ({
               return Math.round(sum / visible.length);
             })();
 
+      for (const u of selectedUnitIds) {
+        if (hiddenUnits.includes(u)) {
+          obj[String(u)] = 0;
+        }
+      }
+
       return obj;
     });
   }, [rows, selectedColumnId, aggregation, selectedUnitIds, hiddenUnits]);
@@ -659,6 +670,22 @@ const TrendingPanel: React.FC<Props> = ({
 
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  const getUnitColor = (unitId: number) => {
+    console.log("unitOptions", unitOptions);
+    console.log("unitIds", selectedUnitIds);
+    const unit = unitOptions.find(
+      (o) => Number(o.value) === Number(unitId) || o.label === String(unitId),
+    );
+
+    if (!unit) {
+      return "var(--graph-default)";
+    }
+
+    return currentTheme === "dark"
+      ? (unit.darkColorHex ?? "var(--graph-default)")
+      : (unit.lightColorHex ?? "var(--graph-default)");
   };
 
   return (
@@ -934,9 +961,15 @@ const TrendingPanel: React.FC<Props> = ({
                                   const ai = priority.indexOf(a.name as string);
                                   const bi = priority.indexOf(b.name as string);
 
-                                  if (ai !== -1 && bi !== -1) return ai - bi;
-                                  if (ai !== -1) return -1;
-                                  if (bi !== -1) return 1;
+                                  if (ai !== -1 && bi !== -1) {
+                                    return ai - bi;
+                                  }
+                                  if (ai !== -1) {
+                                    return -1;
+                                  }
+                                  if (bi !== -1) {
+                                    return 1;
+                                  }
 
                                   return String(a.name).localeCompare(
                                     String(b.name),
@@ -945,19 +978,33 @@ const TrendingPanel: React.FC<Props> = ({
                                 .map((entry, i) => {
                                   const colorMap: Record<string, string> = {};
                                   sortedUnits.forEach((u, i) => {
-                                    colorMap[String(u.id)] =
-                                      graphColors[i % graphColors.length];
+                                    colorMap[String(u.id)] = (() => {
+                                      const unit = unitOptions.find(
+                                        (o) => Number(o.value) === u.id,
+                                      );
+                                      if (!unit) {
+                                        return "var(--graph-default)";
+                                      }
+
+                                      return currentTheme === "dark"
+                                        ? (unit.darkColorHex ??
+                                            "var(--graph-default)")
+                                        : (unit.lightColorHex ??
+                                            "var(--graph-default)");
+                                    })();
                                   });
 
                                   return (
-                                    <p
-                                      key={entry.dataKey}
-                                      style={{
-                                        color:
-                                          colorMap[entry.dataKey as string],
-                                      }}
-                                    >
-                                      {entry.name}:{" "}
+                                    <p key={entry.dataKey}>
+                                      <span
+                                        className="font-semibold"
+                                        style={{
+                                          color:
+                                            colorMap[entry.dataKey as string],
+                                        }}
+                                      >
+                                        {entry.name}:{" "}
+                                      </span>
                                       {entry.value?.toLocaleString("sv-SE")}
                                     </p>
                                   );
@@ -974,7 +1021,9 @@ const TrendingPanel: React.FC<Props> = ({
                         iconSize={12}
                         onClick={(e: any) => {
                           const unitId = Number(e.dataKey);
-                          if (!isNaN(unitId)) toggleUnitVisibility(unitId);
+                          if (!isNaN(unitId)) {
+                            toggleUnitVisibility(unitId);
+                          }
                         }}
                         formatter={(value: string, entry: any) => {
                           const unitId = Number(entry.dataKey);
@@ -1001,7 +1050,7 @@ const TrendingPanel: React.FC<Props> = ({
                               longDelay
                             >
                               <span
-                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer transition-opacity delay-[var(--very-fast)]`}
+                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-[var(--text-main)] transition-opacity delay-[var(--very-fast)]`}
                               >
                                 {value}
                               </span>
@@ -1029,7 +1078,7 @@ const TrendingPanel: React.FC<Props> = ({
                             name={u.label}
                             dot={false}
                             strokeWidth={2}
-                            stroke={graphColors[i % graphColors.length]}
+                            stroke={getUnitColor(u.id)}
                             strokeOpacity={isHidden ? 0 : 1}
                             activeDot={!isHidden}
                           />
@@ -1078,23 +1127,22 @@ const TrendingPanel: React.FC<Props> = ({
                               <p className="mb-4 font-semibold">
                                 {formatSE(parseDate(label as string))}
                               </p>
-                              {payload.map((entry, i) => {
-                                const colorMap: Record<string, string> = {};
-                                sortedUnits.forEach((u, i) => {
-                                  colorMap[String(u.id)] =
-                                    graphColors[i % graphColors.length];
-                                });
-                                colorMap["ALL"] = "var(--text-main)";
+                              {payload.map((entry) => {
+                                const unitId = Number(entry.dataKey);
 
                                 return (
-                                  <p
-                                    key={entry.dataKey}
-                                    style={{
-                                      color: colorMap[entry.dataKey as string],
-                                    }}
-                                  >
-                                    {entry.name}:{" "}
-                                    {entry.value?.toLocaleString("sv-SE")}
+                                  <p key={entry.dataKey}>
+                                    <span
+                                      className="font-semibold"
+                                      style={{
+                                        color: !isNaN(unitId)
+                                          ? getUnitColor(unitId)
+                                          : undefined,
+                                      }}
+                                    >
+                                      {entry.name}
+                                    </span>
+                                    : {entry.value?.toLocaleString("sv-SE")}
                                   </p>
                                 );
                               })}
@@ -1110,7 +1158,9 @@ const TrendingPanel: React.FC<Props> = ({
                         iconSize={12}
                         onClick={(e: any) => {
                           const unitId = Number(e.dataKey);
-                          if (!isNaN(unitId)) toggleUnitVisibility(unitId);
+                          if (!isNaN(unitId)) {
+                            toggleUnitVisibility(unitId);
+                          }
                         }}
                         formatter={(value: string, entry: any) => {
                           const unitId = Number(entry.dataKey);
@@ -1137,7 +1187,7 @@ const TrendingPanel: React.FC<Props> = ({
                               longDelay
                             >
                               <span
-                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer transition-opacity delay-[var(--very-fast)]`}
+                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-[var(--text-main)] transition-opacity delay-[var(--very-fast)]`}
                               >
                                 {value}
                               </span>
@@ -1152,25 +1202,24 @@ const TrendingPanel: React.FC<Props> = ({
                         fill="var(--text-main)"
                       />
 
-                      {/* {sortedUnits.map((u, i) => (
-                        <Bar
-                          key={u.id}
-                          dataKey={String(u.id)}
-                          name={u.label}
-                          fill={graphColors[i % graphColors.length]}
-                        />
-                      ))} */}
-
                       {sortedUnits.map((u, i) => {
                         const isHidden = hiddenUnits.includes(u.id);
                         return (
+                          // <Bar
+                          //   key={u.id}
+                          //   dataKey={String(u.id)}
+                          //   name={u.label}
+                          //   fill={getUnitColor(u.id)}
+                          //   fillOpacity={isHidden ? 0 : 1}
+                          //   activeBar={!isHidden}
+                          // />
                           <Bar
                             key={u.id}
                             dataKey={String(u.id)}
                             name={u.label}
-                            fill={graphColors[i % graphColors.length]}
-                            fillOpacity={isHidden ? 0 : 1}
-                            activeBar={!isHidden}
+                            fill={getUnitColor(u.id)}
+                            isAnimationActive={true}
+                            animationDuration={400}
                           />
                         );
                       })}
@@ -1226,12 +1275,14 @@ const TrendingPanel: React.FC<Props> = ({
                               }}
                             >
                               {payload.map((entry) => (
-                                <p
-                                  key={entry.name}
-                                  style={{ color: entry.payload.fill }}
-                                >
-                                  {entry.name}:{" "}
-                                  {entry.value?.toLocaleString("sv-SE")}
+                                <p key={entry.name}>
+                                  <span
+                                    className="font-semibold"
+                                    style={{ color: entry.payload.fill }}
+                                  >
+                                    {entry.name}
+                                  </span>
+                                  : {entry.value?.toLocaleString("sv-SE")}
                                 </p>
                               ))}
                             </div>
@@ -1275,7 +1326,7 @@ const TrendingPanel: React.FC<Props> = ({
                               longDelay
                             >
                               <span
-                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer transition-opacity delay-[var(--very-fast)]`}
+                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-[var(--text-main)] transition-opacity delay-[var(--very-fast)]`}
                               >
                                 {value}
                               </span>
@@ -1304,7 +1355,7 @@ const TrendingPanel: React.FC<Props> = ({
                                         0,
                                       ) / (daily.length || 1),
                                     ),
-                              fill: graphColors[i % graphColors.length],
+                              fill: getUnitColor(u.id),
                               opacity: isHidden ? 0.25 : 1,
                             };
                           }),
@@ -1375,9 +1426,7 @@ const TrendingPanel: React.FC<Props> = ({
                           <div
                             key={u.id}
                             className="text-2xl font-bold"
-                            style={{
-                              color: graphColors[i % graphColors.length],
-                            }}
+                            style={{ color: getUnitColor(u.id) }}
                           >
                             {value.toLocaleString("sv-SE")}
                           </div>
@@ -1407,16 +1456,10 @@ const TrendingPanel: React.FC<Props> = ({
                               className={`flex cursor-pointer items-center gap-[5px] transition-opacity delay-[var(--very-fast)] ${
                                 isHidden ? "opacity-25" : ""
                               }`}
-                              style={{
-                                color: graphColors[i % graphColors.length],
-                              }}
                             >
                               <span
                                 className="inline-block h-[12px] w-[12px]"
-                                style={{
-                                  backgroundColor:
-                                    graphColors[i % graphColors.length],
-                                }}
+                                style={{ backgroundColor: getUnitColor(u.id) }}
                               />
                               {u.label}
                             </div>

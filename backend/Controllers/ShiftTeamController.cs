@@ -133,8 +133,10 @@ namespace backend.Controllers
                     Id = st.Id,
                     Name = st.Name,
                     IsHidden = st.IsHidden,
-                    ColorHex = st.ColorHex,
-                    TextColorHex = ColorHelper.GetReadableTextColor(st.ColorHex),
+                    LightColorHex = st.LightColorHex,
+                    DarkColorHex = st.DarkColorHex,
+                    LightTextColorHex = ColorHelper.GetReadableTextColor(st.LightColorHex),
+                    DarkTextColorHex = ColorHelper.GetReadableTextColor(st.DarkColorHex),
                     Shifts = st
                         .ShiftToShiftTeams.OrderBy(sst => sst.Order)
                         .Select(sst => new ShiftDto
@@ -176,8 +178,10 @@ namespace backend.Controllers
                 Id = shiftTeam.Id,
                 Name = shiftTeam.Name,
                 IsHidden = shiftTeam.IsHidden,
-                ColorHex = shiftTeam.ColorHex,
-                TextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.ColorHex),
+                LightColorHex = shiftTeam.LightColorHex,
+                DarkColorHex = shiftTeam.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.DarkColorHex),
                 Shifts = shiftTeam
                     .ShiftToShiftTeams.OrderBy(x => x.Order)
                     .Select(x => new ShiftDto
@@ -261,7 +265,8 @@ namespace backend.Controllers
             {
                 Name = dto.Name,
                 IsHidden = dto.IsHidden,
-                ColorHex = dto.ColorHex,
+                LightColorHex = dto.LightColorHex,
+                DarkColorHex = dto.DarkColorHex,
 
                 // Meta data.
                 CreationDate = now,
@@ -279,8 +284,10 @@ namespace backend.Controllers
                 Id = shiftTeam.Id,
                 Name = shiftTeam.Name,
                 IsHidden = shiftTeam.IsHidden,
-                ColorHex = shiftTeam.ColorHex,
-                TextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.ColorHex),
+                LightColorHex = shiftTeam.LightColorHex,
+                DarkColorHex = shiftTeam.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.DarkColorHex),
 
                 // Meta data.
                 CreationDate = shiftTeam.CreationDate,
@@ -365,7 +372,8 @@ namespace backend.Controllers
 
             shiftTeam.Name = dto.Name;
             shiftTeam.IsHidden = dto.IsHidden;
-            shiftTeam.ColorHex = dto.ColorHex;
+            shiftTeam.LightColorHex = dto.LightColorHex;
+            shiftTeam.DarkColorHex = dto.DarkColorHex;
 
             // Meta data.
             shiftTeam.UpdateDate = now;
@@ -378,8 +386,10 @@ namespace backend.Controllers
                 Id = shiftTeam.Id,
                 Name = shiftTeam.Name,
                 IsHidden = shiftTeam.IsHidden,
-                ColorHex = shiftTeam.ColorHex,
-                TextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.ColorHex),
+                LightColorHex = shiftTeam.LightColorHex,
+                DarkColorHex = shiftTeam.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.DarkColorHex),
 
                 // Meta data.
                 UpdateDate = shiftTeam.UpdateDate,

@@ -8,6 +8,8 @@
 
   "Common/a name": "a name",
   "Common/Name": "Name",
+  "Common/a color": "a color",
+  "Common/Color format": "Color format",
 
   "Unit/a group": "a group",
 
@@ -24,8 +26,5 @@
   "UnitColumn/a comparison text": "a comparison text",
   "UnitColumn/Comparison text": "Comparison text",
 
-  "Report/a start time": "a start time",
-
-  "ShiftTeam/a color": "a color",
-  "ShiftTeam/Color format": "Color format"
+  "Report/a start time": "a start time"
 }

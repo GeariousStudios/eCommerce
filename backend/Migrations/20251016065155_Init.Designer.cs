@@ -11,8 +11,8 @@ using backend.Data;
 namespace eCommerce.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250821115058_PerHourAdded")]
-    partial class PerHourAdded
+    [Migration("20251016065155_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -118,6 +118,24 @@ namespace eCommerce.Migrations
                     b.HasIndex("ShiftTeamId");
 
                     b.ToTable("ShiftToShiftTeamSchedules");
+                });
+
+            modelBuilder.Entity("backend.Models.ManyToMany.TrendingPanelToUnit", b =>
+                {
+                    b.Property<int>("TrendingPanelId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("TrendingPanelId", "UnitId");
+
+                    b.HasIndex("UnitId");
+
+                    b.ToTable("TrendingPanelToUnits");
                 });
 
             modelBuilder.Entity("backend.Models.ManyToMany.UnitToCategory", b =>
@@ -370,11 +388,6 @@ namespace eCommerce.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("ColorHex")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -382,8 +395,18 @@ namespace eCommerce.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DarkColorHex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsHidden")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("LightColorHex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -432,6 +455,70 @@ namespace eCommerce.Migrations
                     b.ToTable("SubCategories");
                 });
 
+            modelBuilder.Entity("backend.Models.TrendingPanel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ColSpan")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CustomEndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CustomStartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("Period")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("ShowInfo")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("Type")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("UnitColumnId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("UpdateDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("ViewMode")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UnitColumnId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TrendingPanels");
+                });
+
             modelBuilder.Entity("backend.Models.Unit", b =>
                 {
                     b.Property<int>("Id")
@@ -445,8 +532,18 @@ namespace eCommerce.Migrations
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DarkColorHex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsHidden")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("LightColorHex")
+                        .IsRequired()
+                        .HasMaxLength(7)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -523,6 +620,14 @@ namespace eCommerce.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("Compare")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ComparisonText")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -539,13 +644,6 @@ namespace eCommerce.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(32)
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("PerHour")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("PerHourName")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("UpdateDate")
@@ -797,6 +895,25 @@ namespace eCommerce.Migrations
                     b.Navigation("ShiftTeam");
                 });
 
+            modelBuilder.Entity("backend.Models.ManyToMany.TrendingPanelToUnit", b =>
+                {
+                    b.HasOne("backend.Models.TrendingPanel", "TrendingPanel")
+                        .WithMany("TrendingPanelToUnits")
+                        .HasForeignKey("TrendingPanelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.Unit", "Unit")
+                        .WithMany("TrendingPanelToUnits")
+                        .HasForeignKey("UnitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TrendingPanel");
+
+                    b.Navigation("Unit");
+                });
+
             modelBuilder.Entity("backend.Models.ManyToMany.UnitToCategory", b =>
                 {
                     b.HasOne("backend.Models.Category", "Category")
@@ -863,6 +980,23 @@ namespace eCommerce.Migrations
                         .IsRequired();
 
                     b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("backend.Models.TrendingPanel", b =>
+                {
+                    b.HasOne("backend.Models.UnitColumn", "UnitColumn")
+                        .WithMany()
+                        .HasForeignKey("UnitColumnId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("backend.Models.User", "User")
+                        .WithMany("TrendingPanels")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("UnitColumn");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("backend.Models.Unit", b =>
@@ -945,9 +1079,16 @@ namespace eCommerce.Migrations
                     b.Navigation("CategoryToSubCategories");
                 });
 
+            modelBuilder.Entity("backend.Models.TrendingPanel", b =>
+                {
+                    b.Navigation("TrendingPanelToUnits");
+                });
+
             modelBuilder.Entity("backend.Models.Unit", b =>
                 {
                     b.Navigation("Reports");
+
+                    b.Navigation("TrendingPanelToUnits");
 
                     b.Navigation("UnitCells");
 
@@ -970,6 +1111,8 @@ namespace eCommerce.Migrations
 
             modelBuilder.Entity("backend.Models.User", b =>
                 {
+                    b.Navigation("TrendingPanels");
+
                     b.Navigation("UserPreferences")
                         .IsRequired();
                 });

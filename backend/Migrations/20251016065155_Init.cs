@@ -95,7 +95,8 @@ namespace eCommerce.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
-                    ColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
+                    LightColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
+                    DarkColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -132,6 +133,8 @@ namespace eCommerce.Migrations
                     Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     DataType = table.Column<int>(type: "INTEGER", nullable: false),
                     HasData = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Compare = table.Column<bool>(type: "INTEGER", nullable: false),
+                    ComparisonText = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -291,6 +294,8 @@ namespace eCommerce.Migrations
                     Name = table.Column<string>(type: "TEXT", maxLength: 16, nullable: false),
                     IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
                     UnitGroupId = table.Column<int>(type: "INTEGER", nullable: false),
+                    LightColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
+                    DarkColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -303,6 +308,45 @@ namespace eCommerce.Migrations
                         name: "FK_Units_UnitGroups_UnitGroupId",
                         column: x => x.UnitGroupId,
                         principalTable: "UnitGroups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TrendingPanels",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    Type = table.Column<int>(type: "INTEGER", nullable: true),
+                    Period = table.Column<int>(type: "INTEGER", nullable: true),
+                    ViewMode = table.Column<int>(type: "INTEGER", nullable: true),
+                    UnitColumnId = table.Column<int>(type: "INTEGER", nullable: true),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: true),
+                    CustomStartDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    CustomEndDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    ColSpan = table.Column<int>(type: "INTEGER", nullable: false),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false),
+                    ShowInfo = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrendingPanels", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TrendingPanels_UnitColumns_UnitColumnId",
+                        column: x => x.UnitColumnId,
+                        principalTable: "UnitColumns",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_TrendingPanels_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -494,6 +538,31 @@ namespace eCommerce.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TrendingPanelToUnits",
+                columns: table => new
+                {
+                    TrendingPanelId = table.Column<int>(type: "INTEGER", nullable: false),
+                    UnitId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrendingPanelToUnits", x => new { x.TrendingPanelId, x.UnitId });
+                    table.ForeignKey(
+                        name: "FK_TrendingPanelToUnits_TrendingPanels_TrendingPanelId",
+                        column: x => x.TrendingPanelId,
+                        principalTable: "TrendingPanels",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TrendingPanelToUnits_Units_UnitId",
+                        column: x => x.UnitId,
+                        principalTable: "Units",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.InsertData(
                 table: "Shifts",
                 columns: new[] { "Id", "AnchorWeekStart", "CreatedBy", "CreationDate", "CycleLengthWeeks", "IsHidden", "Name", "SystemKey", "UpdateDate", "UpdatedBy" },
@@ -518,6 +587,21 @@ namespace eCommerce.Migrations
                 name: "IX_ShiftToShiftTeamSchedules_ShiftTeamId",
                 table: "ShiftToShiftTeamSchedules",
                 column: "ShiftTeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrendingPanels_UnitColumnId",
+                table: "TrendingPanels",
+                column: "UnitColumnId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrendingPanels_UserId",
+                table: "TrendingPanels",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrendingPanelToUnits_UnitId",
+                table: "TrendingPanelToUnits",
+                column: "UnitId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UnitCells_ColumnId",
@@ -584,6 +668,9 @@ namespace eCommerce.Migrations
                 name: "ShiftToShiftTeamSchedules");
 
             migrationBuilder.DropTable(
+                name: "TrendingPanelToUnits");
+
+            migrationBuilder.DropTable(
                 name: "UnitCells");
 
             migrationBuilder.DropTable(
@@ -611,16 +698,19 @@ namespace eCommerce.Migrations
                 name: "ShiftTeams");
 
             migrationBuilder.DropTable(
+                name: "TrendingPanels");
+
+            migrationBuilder.DropTable(
                 name: "Categories");
 
             migrationBuilder.DropTable(
                 name: "Shifts");
 
             migrationBuilder.DropTable(
-                name: "UnitColumns");
+                name: "Units");
 
             migrationBuilder.DropTable(
-                name: "Units");
+                name: "UnitColumns");
 
             migrationBuilder.DropTable(
                 name: "Users");

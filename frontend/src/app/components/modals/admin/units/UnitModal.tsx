@@ -58,6 +58,8 @@ const UnitModal = (props: Props) => {
   // --- States ---
   const [name, setName] = useState("");
   const [isHidden, setIsHidden] = useState(false);
+  const [lightColorHex, setLightColorHex] = useState("#212121");
+  const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
   const [unitGroup, setUnitGroup] = useState("");
   const [unitColumnIds, setUnitColumnIds] = useState<number[]>([]);
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
@@ -75,6 +77,8 @@ const UnitModal = (props: Props) => {
   const [originalCategoryIds, setOriginalCategoryIds] = useState<number[]>([]);
   const [originalShiftIds, setOriginalShiftIds] = useState<number[]>([]);
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
+  const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
+  const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
   const [isDirty, setIsDirty] = useState(false);
 
   const [isAnyDragging, setIsAnyDragging] = useState(false);
@@ -102,6 +106,12 @@ const UnitModal = (props: Props) => {
 
       setIsHidden(false);
       setOriginalIsHidden(false);
+
+      setLightColorHex("#212121");
+      setOriginalLightColorHex("#212121");
+
+      setDarkColorHex("#e0e0e0");
+      setOriginalDarkColorHex("#e0e0e0");
 
       setUnitGroup("");
       setOriginalUnitGroup("");
@@ -132,6 +142,8 @@ const UnitModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
+          lightColorHex,
+          darkColorHex,
           unitGroupId: parseInt(unitGroup),
           isHidden,
           unitColumnIds,
@@ -320,6 +332,12 @@ const UnitModal = (props: Props) => {
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
 
+    setLightColorHex(result.lightColorHex ?? "#212121");
+    setOriginalLightColorHex(result.lightColorHex ?? "#212121");
+
+    setDarkColorHex(result.darkColorHex ?? "#e0e0e0");
+    setOriginalDarkColorHex(result.darkColorHex ?? "#e0e0e0");
+
     setUnitColumnIds(result.unitColumnIds ?? []);
     setOriginalUnitColumnIds(result.unitColumnIds ?? []);
 
@@ -344,6 +362,8 @@ const UnitModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
+          lightColorHex,
+          darkColorHex,
           unitGroupId: parseInt(unitGroup),
           isHidden,
           unitColumnIds,
@@ -447,6 +467,8 @@ const UnitModal = (props: Props) => {
         name !== "" ||
         unitGroup !== "" ||
         isHidden !== false ||
+        lightColorHex !== "" ||
+        darkColorHex !== "" ||
         JSON.stringify(unitColumnIds) !==
           JSON.stringify(originalUnitColumnIds) ||
         JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
@@ -459,18 +481,24 @@ const UnitModal = (props: Props) => {
     const dirty =
       name !== originalName ||
       unitGroup !== originalUnitGroup ||
-      isHidden !== originalIsHidden;
+      isHidden !== originalIsHidden ||
+      lightColorHex !== originalLightColorHex ||
+      darkColorHex !== originalDarkColorHex;
     setIsDirty(dirty);
   }, [
     name,
     unitGroup,
     isHidden,
+    lightColorHex,
+    darkColorHex,
     unitColumnIds,
     categoryIds,
     shiftIds,
     originalName,
     originalUnitGroup,
     originalIsHidden,
+    originalLightColorHex,
+    originalDarkColorHex,
     originalUnitColumnIds,
     originalCategoryIds,
     originalShiftIds,
@@ -530,6 +558,24 @@ const UnitModal = (props: Props) => {
                     label: ug.name,
                     value: String(ug.id),
                   }))}
+                />
+
+                <Input
+                  label={t("Common/Light color")}
+                  type="color"
+                  value={lightColorHex}
+                  onChange={(val) => setLightColorHex(String(val))}
+                  pattern="^#([0-9A-Fa-f]{6})$"
+                  onModal
+                />
+
+                <Input
+                  label={t("Common/Dark color")}
+                  type="color"
+                  value={darkColorHex}
+                  onChange={(val) => setDarkColorHex(String(val))}
+                  pattern="^#([0-9A-Fa-f]{6})$"
+                  onModal
                 />
               </div>
 

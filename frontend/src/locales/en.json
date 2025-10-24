@@ -90,6 +90,8 @@
   "Common/Saturday": "Saturday",
   "Common/Sunday": "Sunday",
   "Common/Color": "Color",
+  "Common/Light color": "Color (light theme)",
+  "Common/Dark color": "Color (dark theme)",
   "Common/Unknown": "Unknown",
   "Common/All": "All",
 

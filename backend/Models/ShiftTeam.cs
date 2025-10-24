@@ -12,7 +12,10 @@ namespace backend.Models
         public bool IsHidden { get; set; }
 
         [MaxLength(7)]
-        public string ColorHex { get; set; } = "#e0e0e0";
+        public string LightColorHex { get; set; } = "#212121";
+
+        [MaxLength(7)]
+        public string DarkColorHex { get; set; } = "#e0e0e0";
 
         // Meta data.
         public DateTime CreationDate { get; set; }

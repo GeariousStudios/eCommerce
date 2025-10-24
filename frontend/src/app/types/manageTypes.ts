@@ -31,6 +31,10 @@ export type CategoryItem = {
     name: string;
     categoryId?: number;
     unitGroupName?: string;
+    lightColorHex: string;
+    darkColorHex: string;
+    lightTextColorHex: string;
+    darkTextColorHex: string;
   }[];
 
   creationDate: string;
@@ -90,6 +94,10 @@ export type UnitGroupItem = {
   units: {
     id: number;
     name: string;
+    lightColorHex: string;
+    darkColorHex: string;
+    lightTextColorHex: string;
+    darkTextColorHex: string;
   }[];
 
   creationDate: string;
@@ -111,6 +119,10 @@ export type UnitItem = {
   categoryIds: number[];
   shiftIds: number[];
   isHidden?: boolean;
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
 
   creationDate: string;
   updateDate: string;
@@ -146,6 +158,10 @@ export type ShiftItem = {
   units: {
     id: number;
     name: string;
+    lightColorHex: string;
+    darkColorHex: string;
+    lightTextColorHex: string;
+    darkTextColorHex: string;
   }[];
   shiftTeams: {
     id: number;
@@ -174,8 +190,10 @@ export type ShiftTeamItem = {
     name: string;
   }[];
   isHidden?: boolean;
-  colorHex: string;
-  textColorHex: string;
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
 
   creationDate: string;
   updateDate: string;

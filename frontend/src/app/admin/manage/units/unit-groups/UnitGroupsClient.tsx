@@ -16,6 +16,7 @@ import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
+import useTheme from "@/app/hooks/useTheme";
 
 type Props = {
   isConnected: boolean | null;
@@ -138,6 +139,9 @@ const UnitGroupsClient = (props: Props) => {
     }
   };
 
+  // --- Theme ---
+  const { currentTheme } = useTheme();
+
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
@@ -158,11 +162,22 @@ const UnitGroupsClient = (props: Props) => {
             ) : (
               (item.units ?? []).map((unit, i) => {
                 const label = unit.name;
+                const matchingUnit = units.find((u) => u.name === unit.name);
 
                 return (
                   <span
                     key={i}
-                    className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                    className={badgeClass}
+                    style={{
+                      backgroundColor:
+                        currentTheme === "dark"
+                          ? matchingUnit?.darkColorHex
+                          : matchingUnit?.lightColorHex,
+                      color:
+                        currentTheme === "dark"
+                          ? matchingUnit?.darkTextColorHex
+                          : matchingUnit?.lightTextColorHex,
+                    }}
                   >
                     {label}
                   </span>
@@ -216,11 +231,22 @@ const UnitGroupsClient = (props: Props) => {
         <div className="flex flex-wrap gap-2">
           {(item.units ?? []).map((unit, i) => {
             const label = unit.name;
+            const matchingUnit = units.find((u) => u.name === unit.name);
 
             return (
               <span
                 key={i}
-                className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                className={badgeClass}
+                style={{
+                  backgroundColor:
+                    currentTheme === "dark"
+                      ? matchingUnit?.darkColorHex
+                      : matchingUnit?.lightColorHex,
+                  color:
+                    currentTheme === "dark"
+                      ? matchingUnit?.darkTextColorHex
+                      : matchingUnit?.lightTextColorHex,
+                }}
               >
                 {label}
               </span>

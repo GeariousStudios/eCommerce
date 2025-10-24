@@ -50,6 +50,10 @@ type Unit = {
   id: number;
   name: string;
   creationDate: string;
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
 };
 
 const HomeClient = (props: Props) => {
@@ -213,6 +217,10 @@ const HomeClient = (props: Props) => {
                 id: u.id ?? u.Id,
                 name: u.name ?? u.Name,
                 creationDate: u.creationDate ?? u.CreationDate,
+                lightColorHex: u.lightColorHex ?? u.LightColorHex,
+                darkColorHex: u.darkColorHex ?? u.DarkColorHex,
+                lightTextColorHex: u.lightTextColorHex ?? u.LightTextColorHex,
+                darkTextColorHex: u.darkTextColorHex ?? u.DarkTextColorHex,
               }))
             : [],
         );
@@ -394,6 +402,10 @@ const HomeClient = (props: Props) => {
                     value: String(u.id),
                     label: u.name ?? String(u.id),
                     creationDate: u.creationDate,
+                    lightColorHex: u.lightColorHex,
+                    darkColorHex: u.darkColorHex,
+                    lightTextColorHex: u.lightTextColorHex,
+                    darkTextColorHex: u.darkTextColorHex,
                   }))}
                   onUpdated={fetchTrendingPanels}
                   onDeleted={fetchTrendingPanels}
