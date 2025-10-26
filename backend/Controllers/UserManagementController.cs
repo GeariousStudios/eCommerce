@@ -1,6 +1,7 @@
 using backend.Data;
 using backend.Dtos.User;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,17 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
-        public UserManagementController(AppDbContext context, ITranslationService t)
+        public UserManagementController(
+            AppDbContext context,
+            ITranslationService t,
+            AuditTrailService audit
+        )
         {
             _context = context;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()
@@ -433,6 +440,28 @@ namespace backend.Controllers
             };
 
             return Ok(result);
+        }
+
+        [HttpGet("list")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetUserList()
+        {
+            var users = await _context
+                .Users.OrderBy(u => u.Username)
+                .Select(u => new
+                {
+                    label = string.IsNullOrWhiteSpace(u.FirstName)
+                    && string.IsNullOrWhiteSpace(u.LastName)
+                        ? u.Username
+                        : $"{u.FirstName} {u.LastName}".Trim() + $" ({u.Username})",
+                    value = u.Username,
+                    username = u.Username,
+                    firstName = u.FirstName,
+                    lastName = u.LastName,
+                })
+                .ToListAsync();
+
+            return Ok(users);
         }
     }
 

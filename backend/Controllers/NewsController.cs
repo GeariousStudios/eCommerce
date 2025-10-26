@@ -15,12 +15,19 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
-        public NewsController(AppDbContext context, UserService userService, ITranslationService t)
+        public NewsController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t,
+            AuditTrailService audit
+        )
         {
             _context = context;
             _userService = userService;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()
@@ -119,6 +126,23 @@ namespace backend.Controllers
                 UpdatedBy = newsItem.UpdatedBy,
             };
 
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "News",
+                newsItem.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = newsItem.Id,
+                    ["Date"] = newsItem.Date.ToString("yyyy-MM-dd HH:mm"),
+                    ["NewsType"] = $"{newsItem.TypeName} (ID: {newsItem.TypeId})",
+                    ["Headline"] = newsItem.Headline,
+                    ["Content"] = newsItem.Content,
+                }
+            );
+
             return Ok(result);
         }
 
@@ -191,6 +215,15 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = newsItem.Id,
+                ["Date"] = newsItem.Date.ToString("yyyy-MM-dd HH:mm"),
+                ["NewsType"] = $"{newsItem.TypeName} (ID: {newsItem.TypeId})",
+                ["Headline"] = newsItem.Headline,
+                ["Content"] = newsItem.Content,
+            };
+
             newsItem.Date = dto.Date;
             newsItem.TypeId = newsType.Id;
             newsItem.TypeName = newsType.Name;
@@ -217,6 +250,27 @@ namespace backend.Controllers
                 UpdatedBy = newsItem.UpdatedBy,
             };
 
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "News",
+                newsItem.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = newsItem.Id,
+                        ["Date"] = newsItem.Date.ToString("yyyy-MM-dd HH:mm"),
+                        ["NewsType"] = $"{newsItem.TypeName} (ID: {newsItem.TypeId})",
+                        ["Headline"] = newsItem.Headline,
+                        ["Content"] = newsItem.Content,
+                    },
+                }
+            );
+
             return Ok(result);
         }
 
@@ -225,12 +279,39 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteNewsItem(int id)
         {
             var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
             var newsItem = await _context.News.FindAsync(id);
 
             if (newsItem == null)
             {
                 return NotFound(new { message = await _t.GetAsync("News/NotFound", lang) });
             }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "News",
+                newsItem.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = newsItem.Id,
+                    ["Date"] = newsItem.Date.ToString("yyyy-MM-dd HH:mm"),
+                    ["NewsType"] = $"{newsItem.TypeName} (ID: {newsItem.TypeId})",
+                    ["Headline"] = newsItem.Headline,
+                    ["Content"] = newsItem.Content,
+                }
+            );
 
             _context.News.Remove(newsItem);
             await _context.SaveChangesAsync();

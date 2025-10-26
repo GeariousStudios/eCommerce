@@ -16,16 +16,19 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
         public TrendingPanelController(
             AppDbContext context,
             UserService userService,
-            ITranslationService t
+            ITranslationService t,
+            AuditTrailService audit
         )
         {
             _context = context;
             _userService = userService;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()
@@ -211,6 +214,45 @@ namespace backend.Controllers
                 UpdatedBy = panel.UpdatedBy,
             };
 
+            if (!dto.IsGlobal)
+            {
+                // Audit trail.
+                await _audit.LogAsync(
+                    "Create",
+                    "TrendingPanel",
+                    panel.Id,
+                    createdBy,
+                    userId,
+                    new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = panel.Id,
+                        ["Name"] = panel.Name,
+                        ["ViewMode"] = panel.ViewMode,
+                        ["PanelSize"] = panel.ColSpan,
+                        ["UnitsToTrend"] = panel
+                            .TrendingPanelToUnits.Join(
+                                _context.Units,
+                                tpu => tpu.UnitId,
+                                u => u.Id,
+                                (tpu, u) => $"{u.Name} (ID: {u.Id})"
+                            )
+                            .ToList(),
+                        ["DataToTrend"] =
+                            panel.UnitColumnId == null
+                                ? new[] { "Common/All" }
+                                : _context
+                                    .UnitColumns.Where(uc => uc.Id == panel.UnitColumnId)
+                                    .Select(uc => $"{uc.Name} (ID: {uc.Id})")
+                                    .FirstOrDefault(),
+                        ["TrendingType"] = panel.Type,
+                        ["TrendingPeriod"] = panel.Period,
+                        ["CustomStartDate"] = panel.CustomStartDate,
+                        ["CustomEndDate"] = panel.CustomEndDate,
+                        ["ShowInfo"] = panel.ShowInfo,
+                    }
+                );
+            }
+
             return Ok(result);
         }
 
@@ -246,8 +288,37 @@ namespace backend.Controllers
                     new { message = await _t.GetAsync("Common/Unauthorized", lang) }
                 );
 
-            var (updatedBy, _) = userInfo.Value;
+            var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
+            var isGlobal = panel.UserId == null;
+
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = panel.Id,
+                ["Name"] = panel.Name,
+                ["ViewMode"] = panel.ViewMode,
+                ["PanelSize"] = panel.ColSpan,
+                ["UnitsToTrend"] = panel
+                    .TrendingPanelToUnits.Join(
+                        _context.Units,
+                        tpu => tpu.UnitId,
+                        u => u.Id,
+                        (tpu, u) => $"{u.Name} (ID: {u.Id})"
+                    )
+                    .ToList(),
+                ["DataToTrend"] =
+                    panel.UnitColumnId == null
+                        ? new[] { "Common/All" }
+                        : _context
+                            .UnitColumns.Where(uc => uc.Id == panel.UnitColumnId)
+                            .Select(uc => $"{uc.Name} (ID: {uc.Id})")
+                            .FirstOrDefault(),
+                ["TrendingType"] = panel.Type,
+                ["TrendingPeriod"] = panel.Period,
+                ["CustomStartDate"] = panel.CustomStartDate,
+                ["CustomEndDate"] = panel.CustomEndDate,
+                ["ShowInfo"] = panel.ShowInfo,
+            };
 
             panel.Name = dto.Name;
             panel.Type = dto.Type ?? panel.Type;
@@ -303,6 +374,49 @@ namespace backend.Controllers
                 UpdatedBy = panel.UpdatedBy,
             };
 
+            if (!isGlobal)
+            {
+                // Audit trail.
+                await _audit.LogAsync(
+                    "Update",
+                    "TrendingPanel",
+                    panel.Id,
+                    updatedBy,
+                    userId,
+                    new
+                    {
+                        OldValues = oldValues,
+                        NewValues = new Dictionary<string, object?>
+                        {
+                            ["ObjectID"] = panel.Id,
+                            ["Name"] = panel.Name,
+                            ["ViewMode"] = panel.ViewMode,
+                            ["PanelSize"] = panel.ColSpan,
+                            ["UnitsToTrend"] = dto
+                                .UnitIds.Join(
+                                    _context.Units,
+                                    id => id,
+                                    u => u.Id,
+                                    (id, u) => $"{u.Name} (ID: {u.Id})"
+                                )
+                                .ToList(),
+                            ["DataToTrend"] =
+                                panel.UnitColumnId == null
+                                    ? new[] { "Common/All" }
+                                    : _context
+                                        .UnitColumns.Where(uc => uc.Id == panel.UnitColumnId)
+                                        .Select(uc => $"{uc.Name} (ID: {uc.Id})")
+                                        .FirstOrDefault(),
+                            ["TrendingType"] = panel.Type,
+                            ["TrendingPeriod"] = panel.Period,
+                            ["CustomStartDate"] = panel.CustomStartDate,
+                            ["CustomEndDate"] = panel.CustomEndDate,
+                            ["ShowInfo"] = panel.ShowInfo,
+                        },
+                    }
+                );
+            }
+
             return Ok(result);
         }
 
@@ -310,6 +424,17 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteTrendingPanel(int id)
         {
             var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
+
             var panel = await _context.TrendingPanels.FirstOrDefaultAsync(tp => tp.Id == id);
 
             if (panel == null)
@@ -319,8 +444,50 @@ namespace backend.Controllers
                 );
             }
 
+            var isGlobal = panel.UserId == null;
+
             _context.TrendingPanels.Remove(panel);
             await _context.SaveChangesAsync();
+
+            if (!isGlobal)
+            {
+                // Audit trail.
+                await _audit.LogAsync(
+                    "Delete",
+                    "TrendingPanel",
+                    panel.Id,
+                    deletedBy,
+                    userId,
+                    new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = panel.Id,
+                        ["Name"] = panel.Name,
+                        ["ViewMode"] = panel.ViewMode,
+                        ["PanelSize"] = panel.ColSpan,
+                        ["UnitsToTrend"] = _context
+                            .TrendingPanelToUnits.Where(tpu => tpu.TrendingPanelId == panel.Id)
+                            .Join(
+                                _context.Units,
+                                tpu => tpu.UnitId,
+                                u => u.Id,
+                                (tpu, u) => $"{u.Name} (ID: {u.Id})"
+                            )
+                            .ToList(),
+                        ["DataToTrend"] =
+                            panel.UnitColumnId == null
+                                ? new[] { "Common/All" }
+                                : _context
+                                    .UnitColumns.Where(uc => uc.Id == panel.UnitColumnId)
+                                    .Select(uc => $"{uc.Name} (ID: {uc.Id})")
+                                    .FirstOrDefault(),
+                        ["TrendingType"] = panel.Type,
+                        ["TrendingPeriod"] = panel.Period,
+                        ["CustomStartDate"] = panel.CustomStartDate,
+                        ["CustomEndDate"] = panel.CustomEndDate,
+                        ["ShowInfo"] = panel.ShowInfo,
+                    }
+                );
+            }
 
             return Ok(new { message = await _t.GetAsync("TrendingPanel/Deleted", lang) });
         }

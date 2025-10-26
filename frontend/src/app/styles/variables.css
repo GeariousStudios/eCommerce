@@ -86,6 +86,7 @@
   /* --- MODAL --- */
   --bg-modal: var(--bg-topbar);
   --bg-modal-link: var(--bg-topbar-link);
+  --bg-modal-zebra: #454545;
 
   /* --- GRID --- */
   --bg-grid: #121212;
@@ -169,6 +170,7 @@
   /* --- MODAL --- */
   --bg-modal: var(--bg-topbar);
   --bg-modal-link: var(--bg-topbar-link);
+  --bg-modal-zebra: #e2e2e2;
 
   /* --- GRID --- */
   --bg-grid: #fafafa;

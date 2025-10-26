@@ -19,16 +19,19 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
         public SubCategoryController(
             AppDbContext context,
             UserService userService,
-            ITranslationService t
+            ITranslationService t,
+            AuditTrailService audit
         )
         {
             _context = context;
             _userService = userService;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()

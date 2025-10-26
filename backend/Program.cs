@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using backend;
@@ -87,6 +88,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<AuditTrailService>();
 
 var app = builder.Build();
 

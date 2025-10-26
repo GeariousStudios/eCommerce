@@ -15,16 +15,19 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
         public ReportController(
             AppDbContext context,
             UserService userService,
-            ITranslationService t
+            ITranslationService t,
+            AuditTrailService audit
         )
         {
             _context = context;
             _userService = userService;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()
@@ -228,12 +231,43 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteReport(int id)
         {
             var lang = await GetLangAsync();
-            var report = await _context.Reports.FindAsync(id);
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
+            var report = await _context
+                .Reports.Include(r => r.Unit)
+                .FirstOrDefaultAsync(r => r.Id == id);
 
             if (report == null)
             {
                 return NotFound(new { message = await _t.GetAsync("Report/NotFound", lang) });
             }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "Report",
+                report.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = report.Id,
+                    ["BelongsToUnit"] = $"{report.Unit.Name} (ID: {report.UnitId})",
+                    ["Category"] = report.CategoryName,
+                    ["SubCategory"] = report.SubCategoryName,
+                    ["StartTime"] = report.StartTime.ToString("yyyy-MM-dd HH:mm"),
+                    ["StopTime"] = report.StopTime?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                    ["Content"] = report.Content,
+                }
+            );
 
             _context.Reports.Remove(report);
             await _context.SaveChangesAsync();
@@ -342,6 +376,25 @@ namespace backend.Controllers
                 UpdatedBy = report.UpdatedBy,
             };
 
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "Report",
+                report.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = report.Id,
+                    ["BelongsToUnit"] = $"{unit?.Name} (ID: {report.UnitId})",
+                    ["Category"] = report.CategoryName,
+                    ["SubCategory"] = report.SubCategoryName,
+                    ["StartTime"] = report.StartTime.ToString("yyyy-MM-dd HH:mm"),
+                    ["StopTime"] = report.StopTime?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                    ["Content"] = report.Content,
+                }
+            );
+
             return Ok(result);
         }
 
@@ -402,6 +455,17 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = report.Id,
+                ["BelongsToUnit"] = $"{report.Unit.Name} (ID: {report.UnitId})",
+                ["StartTime"] = report.StartTime.ToString("yyyy-MM-dd HH:mm"),
+                ["StopTime"] = report.StopTime?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                ["Category"] = report.CategoryName,
+                ["SubCategory"] = report.SubCategoryName,
+                ["Content"] = report.Content,
+            };
+
             report.CategoryId = dto.CategoryId;
             report.SubCategoryId = dto.SubCategoryId;
             report.CategoryName = _context
@@ -440,6 +504,29 @@ namespace backend.Controllers
                 UpdateDate = report.UpdateDate,
                 UpdatedBy = report.UpdatedBy,
             };
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "Report",
+                report.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = report.Id,
+                        ["BelongsToUnit"] = $"{report.Unit.Name} (ID: {report.UnitId})",
+                        ["StartTime"] = report.StartTime.ToString("yyyy-MM-dd HH:mm"),
+                        ["StopTime"] = report.StopTime?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                        ["Category"] = report.CategoryName,
+                        ["SubCategory"] = report.SubCategoryName,
+                        ["Content"] = report.Content,
+                    },
+                }
+            );
 
             return Ok(result);
         }

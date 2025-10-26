@@ -89,6 +89,7 @@ const LayoutWrapper = (props: Props) => {
     () => ({
       // --- General ---
       manage: { label: t("Common/Manage"), clickable: false },
+      "audit-trail": { label: t("Navbar/Audit trail"), clickable: false },
 
       // --- Report ---
       report: { label: t("Navbar/Report"), clickable: false },

@@ -15,16 +15,19 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
         public NewsTypeController(
             AppDbContext context,
             UserService userService,
-            ITranslationService t
+            ITranslationService t,
+            AuditTrailService audit
         )
         {
             _context = context;
             _userService = userService;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()
@@ -124,12 +127,36 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteNewsType(int id)
         {
             var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
             var newsType = await _context.NewsTypes.FindAsync(id);
 
             if (newsType == null)
             {
                 return NotFound(new { message = await _t.GetAsync("NewsType/NotFound", lang) });
             }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "NewsType",
+                newsType.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = newsType.Id,
+                    ["Name"] = newsType.Name,
+                }
+            );
 
             _context.NewsTypes.Remove(newsType);
             await _context.SaveChangesAsync();
@@ -202,6 +229,20 @@ namespace backend.Controllers
                 UpdatedBy = newsType.UpdatedBy,
             };
 
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "NewsType",
+                newsType.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = newsType.Id,
+                    ["Name"] = newsType.Name,
+                }
+            );
+
             return Ok(result);
         }
 
@@ -252,6 +293,12 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = newsType.Id,
+                ["Name"] = newsType.Name,
+            };
+
             newsType.Name = dto.Name;
 
             // Meta data.
@@ -276,6 +323,24 @@ namespace backend.Controllers
                 UpdateDate = newsType.UpdateDate,
                 UpdatedBy = newsType.UpdatedBy,
             };
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "NewsType",
+                newsType.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = newsType.Id,
+                        ["Name"] = newsType.Name,
+                    },
+                }
+            );
 
             return Ok(result);
         }

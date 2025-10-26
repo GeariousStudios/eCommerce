@@ -20,16 +20,19 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
         public CategoryController(
             AppDbContext context,
             UserService userService,
-            ITranslationService t
+            ITranslationService t,
+            AuditTrailService audit
         )
         {
             _context = context;
             _userService = userService;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()
@@ -302,6 +305,16 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
             var category = await _context
                 .Categories.Include(c => c.UnitToCategories)
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -332,6 +345,24 @@ namespace backend.Controllers
             var subCategoriesToDelete = subCategoriesToCheck
                 .Where(sc => sc.CategoryToSubCategories.Count == 1)
                 .ToList();
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "Category",
+                category.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = category.Id,
+                    ["Name"] = category.Name,
+                    ["SubCategories"] = string.Join(
+                        "<br>",
+                        subCategoriesToDelete.Select(sc => $"{sc.Name} (ID: {sc.Id})")
+                    ),
+                }
+            );
 
             _context.SubCategories.RemoveRange(subCategoriesToDelete);
             _context.Categories.Remove(category);
@@ -516,6 +547,26 @@ namespace backend.Controllers
                     UpdatedBy = category.UpdatedBy,
                 };
 
+                // Audit trail.
+                await _audit.LogAsync(
+                    "Create",
+                    "Category",
+                    category.Id,
+                    createdBy,
+                    userId,
+                    new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = category.Id,
+                        ["Name"] = category.Name,
+                        ["SubCategories"] = string.Join(
+                            "<br>",
+                            _context
+                                .SubCategories.Where(sc => finalSubCategoryIds.Contains(sc.Id))
+                                .Select(sc => $"{sc.Name} (ID: {sc.Id})")
+                        ),
+                    }
+                );
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -575,6 +626,18 @@ namespace backend.Controllers
 
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
+
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = category.Id,
+                ["Name"] = category.Name,
+                ["SubCategories"] = string.Join(
+                    "<br>",
+                    category.CategoryToSubCategories.Select(csc =>
+                        $"{csc.SubCategory.Name} (ID: {csc.SubCategoryId})"
+                    )
+                ),
+            };
 
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -733,6 +796,30 @@ namespace backend.Controllers
                     UpdateDate = category.UpdateDate,
                     UpdatedBy = category.UpdatedBy,
                 };
+
+                // Audit trail.
+                await _audit.LogAsync(
+                    "Update",
+                    "Category",
+                    category.Id,
+                    updatedBy,
+                    userId,
+                    new
+                    {
+                        OldValues = oldValues,
+                        NewValues = new Dictionary<string, object?>
+                        {
+                            ["ObjectID"] = category.Id,
+                            ["Name"] = category.Name,
+                            ["SubCategories"] = string.Join(
+                                "<br>",
+                                _context
+                                    .SubCategories.Where(sc => finalSubCategoryIds.Contains(sc.Id))
+                                    .Select(sc => $"{sc.Name} (ID: {sc.Id})")
+                            ),
+                        },
+                    }
+                );
 
                 return Ok(result);
             }

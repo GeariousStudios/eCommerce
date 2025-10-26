@@ -1315,7 +1315,7 @@ const UnitClient = (props: Props) => {
                     })()}
                   </span>
                   <ChevronDownIcon
-                    className={`${shiftsIconClass} ${shiftsOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
+                    className={`${shiftsIconClass} ${shiftsOpen ? "-rotate-180 text-[var(--accent-color)]" : ""}`}
                   />
                 </button>
               </CustomTooltip>

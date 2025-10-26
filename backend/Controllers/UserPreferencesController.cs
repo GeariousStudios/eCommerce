@@ -1,4 +1,5 @@
 using backend.Data;
+using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,11 +11,17 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
-        public UserPreferencesController(AppDbContext context, ITranslationService t)
+        public UserPreferencesController(
+            AppDbContext context,
+            ITranslationService t,
+            AuditTrailService audit
+        )
         {
             _context = context;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()

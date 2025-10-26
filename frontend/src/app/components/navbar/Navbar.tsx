@@ -59,7 +59,8 @@ const Navbar = (props: Props) => {
   const [isAnyDragging, setIsAnyDragging] = useState(false);
 
   // --- Other ---
-  const { isAuthReady, isDev, isAdmin, isLoggedIn } = useAuthStatus();
+  const { isAuthReady, isDev, isAdmin, isReporter, isLoggedIn } =
+    useAuthStatus();
   const { currentTheme } = useTheme();
   const { notify } = useToast();
   const isDesktop = useIsDesktop();
@@ -272,6 +273,11 @@ const Navbar = (props: Props) => {
         // label: t("Common/Manage") + " / " + t("Common/Types"),
         label: t("Common/Shift teams"),
         icon: "WrenchIcon",
+      },
+      {
+        href: "/audit-trail/",
+        label: t("Navbar/Audit trail"),
+        icon: "BookOpenIcon",
       },
     ];
 
@@ -565,6 +571,20 @@ const Navbar = (props: Props) => {
                         // isFavourite={favourites.some((f) => f.href === "#")}
                         // onToggleFavourite={onToggleFavourite}
                       />
+
+                      {(isAdmin || isDev || isReporter) && (
+                        <NavbarLink
+                          href="/audit-trail/"
+                          label={t("Navbar/Audit trail")}
+                          icon="BookOpenIcon"
+                          isFavourite={favourites.some(
+                            (f) => f.href === "/audit-trail/",
+                          )}
+                          onToggleFavourite={
+                            isLoggedIn ? onToggleFavourite : undefined
+                          }
+                        />
+                      )}
 
                       {isAdmin && (
                         <div>

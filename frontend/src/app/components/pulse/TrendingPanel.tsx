@@ -33,6 +33,7 @@ import {
   Pie,
 } from "recharts";
 import useTheme from "@/app/hooks/useTheme";
+import { AnimatePresence, motion } from "framer-motion";
 
 type UnitCellDto = {
   id: number;
@@ -862,7 +863,7 @@ const TrendingPanel: React.FC<Props> = ({
                 <div className="flex flex-col gap-6">
                   <Input
                     type="date"
-                    label={t("TrendingPanel/Start date")}
+                    label={t("Common/Start date")}
                     value={customStart ?? ""}
                     min={unitCreationDate?.toISOString().slice(0, 10)}
                     max={todayStr()}
@@ -884,7 +885,7 @@ const TrendingPanel: React.FC<Props> = ({
                   />
                   <Input
                     type="date"
-                    label={t("TrendingPanel/End date")}
+                    label={t("Common/End date")}
                     value={customEnd ?? ""}
                     min={
                       customStart ??
@@ -1495,104 +1496,106 @@ const TrendingPanel: React.FC<Props> = ({
                     ? t("TrendingPanel/Hide information")
                     : t("TrendingPanel/Show information")}
                 </span>
-                {showInfo ? (
-                  <HoverIcon
-                    outline={Outline.ChevronDownIcon}
-                    solid={Solid.ChevronDownIcon}
-                    className="h-4 w-4"
-                  />
-                ) : (
-                  <HoverIcon
-                    outline={Outline.ChevronUpIcon}
-                    solid={Solid.ChevronUpIcon}
-                    className="h-4 w-4"
-                  />
-                )}
+                <motion.div
+                  animate={{ rotate: showInfo ? 0 : 180 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                >
+                  <Outline.ChevronUpIcon className="h-4 w-4 text-[var(--text-primary)]" />
+                </motion.div>
               </button>
             </div>
 
-            {showInfo && (
-              <>
-                {/* --- Data to trend --- */}
-                <div className="-mx-2 flex justify-between px-2 py-1">
-                  <span className="text-[var(--text-secondary)]">
-                    {t("TrendingPanel/Data to trend")}
-                  </span>
-                  <span className="font-medium">
-                    {selectedColumnId === "ALL"
-                      ? t("Common/All")
-                      : (unitColumns.find((c) => c.id === selectedColumnId)
-                          ?.name ?? t("TrendingPanel/No data"))}
-                  </span>
-                </div>
+            <AnimatePresence initial={false}>
+              {showInfo && (
+                <motion.div
+                  key="info-content"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="overflow-hidden"
+                >
+                  {/* --- Data to trend --- */}
+                  <div className="-mx-2 flex justify-between px-2 py-1">
+                    <span className="text-[var(--text-secondary)]">
+                      {t("TrendingPanel/Data to trend")}
+                    </span>
+                    <span className="font-medium">
+                      {selectedColumnId === "ALL"
+                        ? t("Common/All")
+                        : (unitColumns.find((c) => c.id === selectedColumnId)
+                            ?.name ?? t("TrendingPanel/No data"))}
+                    </span>
+                  </div>
 
-                {/* --- Trending type --- */}
-                <div className="-mx-2 flex justify-between bg-[var(--bg-grid-zebra)] px-2 py-1">
-                  <span className="text-[var(--text-secondary)]">
-                    {t("TrendingPanel/Trending type")}
-                  </span>
-                  <span className="font-medium">
-                    {aggregation === "Total"
-                      ? t("TrendingPanel/Total")
-                      : t("TrendingPanel/Average")}
-                  </span>
-                </div>
+                  {/* --- Trending type --- */}
+                  <div className="-mx-2 flex justify-between bg-[var(--bg-grid-zebra)] px-2 py-1">
+                    <span className="text-[var(--text-secondary)]">
+                      {t("TrendingPanel/Trending type")}
+                    </span>
+                    <span className="font-medium">
+                      {aggregation === "Total"
+                        ? t("TrendingPanel/Total")
+                        : t("TrendingPanel/Average")}
+                    </span>
+                  </div>
 
-                {/* --- Units to trend --- */}
-                <div className="-mx-2 flex justify-between px-2 py-1">
-                  <span className="text-[var(--text-secondary)]">
-                    {t("Common/Units")}
-                  </span>
-                  <span className="max-w-[60%] text-right font-medium">
-                    {sortedUnits.length > 0
-                      ? sortedUnits.map((u) => u.label).join(", ")
-                      : t("TrendingPanel/No units selected")}
-                  </span>
-                </div>
+                  {/* --- Units to trend --- */}
+                  <div className="-mx-2 flex justify-between px-2 py-1">
+                    <span className="text-[var(--text-secondary)]">
+                      {t("Common/Units")}
+                    </span>
+                    <span className="max-w-[60%] text-right font-medium">
+                      {sortedUnits.length > 0
+                        ? sortedUnits.map((u) => u.label).join(", ")
+                        : t("TrendingPanel/No units selected")}
+                    </span>
+                  </div>
 
-                {/* --- Trending period --- */}
-                <div className="-mx-2 flex justify-between bg-[var(--bg-grid-zebra)] px-2 py-1">
-                  <span className="text-[var(--text-secondary)]">
-                    {t("TrendingPanel/Trending period")}
-                  </span>
-                  <span className="font-medium">
-                    {days === "Today"
-                      ? t("TrendingPanel/Today")
-                      : days === "Yesterday"
-                        ? t("TrendingPanel/Yesterday")
-                        : days === "Weekly"
-                          ? t("TrendingPanel/Last week")
-                          : days === "Monthly"
-                            ? t("TrendingPanel/Last month")
-                            : days === "Quarterly"
-                              ? t("TrendingPanel/Last quarter")
-                              : days === "Custom"
-                                ? t("TrendingPanel/Custom period")
-                                : t("TrendingPanel/Since start")}
-                  </span>
-                </div>
+                  {/* --- Trending period --- */}
+                  <div className="-mx-2 flex justify-between bg-[var(--bg-grid-zebra)] px-2 py-1">
+                    <span className="text-[var(--text-secondary)]">
+                      {t("TrendingPanel/Trending period")}
+                    </span>
+                    <span className="font-medium">
+                      {days === "Today"
+                        ? t("TrendingPanel/Today")
+                        : days === "Yesterday"
+                          ? t("TrendingPanel/Yesterday")
+                          : days === "Weekly"
+                            ? t("TrendingPanel/Last week")
+                            : days === "Monthly"
+                              ? t("TrendingPanel/Last month")
+                              : days === "Quarterly"
+                                ? t("TrendingPanel/Last quarter")
+                                : days === "Custom"
+                                  ? t("TrendingPanel/Custom period")
+                                  : t("TrendingPanel/Since start")}
+                    </span>
+                  </div>
 
-                {/* --- Date range --- */}
-                <div className="-mx-2 flex justify-between px-2 py-1">
-                  <span className="text-[var(--text-secondary)]">
-                    {t("TrendingPanel/Date range")}
-                  </span>
-                  <span className="font-medium">
-                    {days === "Custom"
-                      ? customStart && customEnd && customStart <= customEnd
-                        ? `${formatSE(parseDate(customStart))} – ${formatSE(parseDate(customEnd))}`
-                        : customStart && customEnd && customStart > customEnd
-                          ? `${formatSE(parseDate(customStart))} – ${formatSE(parseDate(customStart))}`
-                          : t("TrendingPanel/No data")
-                      : start && end && start <= end
-                        ? `${formatSE(parseDate(start))} – ${formatSE(parseDate(end))}`
-                        : start && end && start > end
-                          ? `${formatSE(parseDate(start))} – ${formatSE(parseDate(start))}`
-                          : t("TrendingPanel/No data")}
-                  </span>
-                </div>
-              </>
-            )}
+                  {/* --- Date range --- */}
+                  <div className="-mx-2 flex justify-between px-2 py-1">
+                    <span className="text-[var(--text-secondary)]">
+                      {t("Common/Date range")}
+                    </span>
+                    <span className="font-medium">
+                      {days === "Custom"
+                        ? customStart && customEnd && customStart <= customEnd
+                          ? `${formatSE(parseDate(customStart))} – ${formatSE(parseDate(customEnd))}`
+                          : customStart && customEnd && customStart > customEnd
+                            ? `${formatSE(parseDate(customStart))} – ${formatSE(parseDate(customStart))}`
+                            : t("TrendingPanel/No data")
+                        : start && end && start <= end
+                          ? `${formatSE(parseDate(start))} – ${formatSE(parseDate(end))}`
+                          : start && end && start > end
+                            ? `${formatSE(parseDate(start))} – ${formatSE(parseDate(start))}`
+                            : t("TrendingPanel/No data")}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* --- RESIZE HANDLE --- */}
             <div

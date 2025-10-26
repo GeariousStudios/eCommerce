@@ -18,12 +18,19 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly ITranslationService _t;
+        public readonly AuditTrailService _audit;
 
-        public ShiftController(AppDbContext context, UserService userService, ITranslationService t)
+        public ShiftController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t,
+            AuditTrailService audit
+        )
         {
             _context = context;
             _userService = userService;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()
@@ -460,6 +467,16 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteShift(int id)
         {
             var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
             var shift = await _context
                 .Shifts.Include(s => s.UnitToShifts)
                 .Include(s => s.ShiftToShiftTeams)
@@ -476,6 +493,64 @@ namespace backend.Controllers
             }
 
             _context.ShiftToShiftTeams.RemoveRange(shift.ShiftToShiftTeams);
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "Shift",
+                shift.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = shift.Id,
+                    ["Name"] = shift.Name,
+                    ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                    ["LightColorHex"] = shift.LightColorHex,
+                    ["DarkColorHex"] = shift.DarkColorHex,
+                    ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
+                    ["AnchorWeekStart"] = shift.AnchorWeekStart,
+                    ["Teams"] = shift
+                        .ShiftToShiftTeams.Select(st =>
+                            st.ShiftTeam != null
+                                ? $"{st.ShiftTeam.Name} (ID: {st.ShiftTeam.Id})"
+                                : $"(ID: {st.ShiftTeamId})"
+                        )
+                        .ToList(),
+                    ["WeeklyTimes"] = _context
+                        .ShiftToShiftTeamSchedules.Where(s => s.ShiftId == shift.Id)
+                        .AsEnumerable()
+                        .Select(s =>
+                        {
+                            var team = _context.ShiftTeams.FirstOrDefault(t =>
+                                t.Id == s.ShiftTeamId
+                            );
+                            var displayName = _context
+                                .ShiftToShiftTeams.Where(x =>
+                                    x.ShiftId == shift.Id && x.ShiftTeamId == s.ShiftTeamId
+                                )
+                                .Select(x => x.DisplayName)
+                                .FirstOrDefault();
+
+                            return new Dictionary<string, object?>
+                            {
+                                ["TeamId"] = team?.Name,
+                                ["DisplayName"] = string.IsNullOrWhiteSpace(displayName)
+                                    ? "—"
+                                    : displayName,
+                                ["WeekIndex"] = s.WeekIndex + 1,
+                                ["DayOfWeek"] = s.DayOfWeek,
+                                ["Start"] = TimeSpan
+                                    .FromMinutes(Math.Floor(s.StartTime.TotalMinutes))
+                                    .ToString(@"hh\:mm"),
+                                ["Stop"] = TimeSpan
+                                    .FromMinutes(Math.Floor(s.EndTime.TotalMinutes))
+                                    .ToString(@"hh\:mm"),
+                            };
+                        })
+                        .ToList(),
+                }
+            );
 
             _context.Shifts.Remove(shift);
             await _context.SaveChangesAsync();
@@ -608,6 +683,57 @@ namespace backend.Controllers
                 UpdatedBy = shift.UpdatedBy,
             };
 
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "Shift",
+                shift.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = shift.Id,
+                    ["Name"] = shift.Name,
+                    ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                    ["LightColorHex"] = shift.LightColorHex,
+                    ["DarkColorHex"] = shift.DarkColorHex,
+                    ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
+                    ["AnchorWeekStart"] = shift.AnchorWeekStart,
+                    ["Teams"] = dto
+                        .ShiftTeamIds?.Select(id =>
+                        {
+                            var team = _context.ShiftTeams.FirstOrDefault(t => t.Id == id);
+                            return team != null ? $"{team.Name} (ID: {team.Id})" : $"(ID: {id})";
+                        })
+                        .ToList(),
+                    ["WeeklyTimes"] = dto
+                        .WeeklyTimes?.Select(w =>
+                        {
+                            var team = _context.ShiftTeams.FirstOrDefault(t => t.Id == w.TeamId);
+                            var displayName = dto.ShiftTeamDisplayNames?.GetValueOrDefault(
+                                w.TeamId
+                            );
+
+                            return new Dictionary<string, object?>
+                            {
+                                ["TeamId"] = team?.Name,
+                                ["DisplayName"] = string.IsNullOrWhiteSpace(displayName)
+                                    ? "—"
+                                    : displayName,
+                                ["WeekIndex"] = w.WeekIndex + 1,
+                                ["DayOfWeek"] = w.DayOfWeek,
+                                ["Start"] = TimeSpan
+                                    .FromMinutes(Math.Floor(w.Start.TotalMinutes))
+                                    .ToString(@"hh\:mm"),
+                                ["Stop"] = TimeSpan
+                                    .FromMinutes(Math.Floor(w.End.TotalMinutes))
+                                    .ToString(@"hh\:mm"),
+                            };
+                        })
+                        .ToList(),
+                }
+            );
+
             return Ok(result);
         }
 
@@ -678,6 +804,59 @@ namespace backend.Controllers
 
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
+
+            var oldTeams = _context
+                .ShiftToShiftTeams.Include(st => st.ShiftTeam)
+                .Where(st => st.ShiftId == shift.Id)
+                .ToList();
+
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = shift.Id,
+                ["Name"] = shift.Name,
+                ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                ["LightColorHex"] = shift.LightColorHex,
+                ["DarkColorHex"] = shift.DarkColorHex,
+                ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
+                ["AnchorWeekStart"] = shift.AnchorWeekStart,
+                ["Teams"] = oldTeams
+                    .Select(st =>
+                        st.ShiftTeam != null
+                            ? $"{st.ShiftTeam.Name} (ID: {st.ShiftTeam.Id})"
+                            : $"(ID: {st.ShiftTeamId})"
+                    )
+                    .ToList(),
+                ["WeeklyTimes"] = _context
+                    .ShiftToShiftTeamSchedules.Where(s => s.ShiftId == shift.Id)
+                    .AsEnumerable()
+                    .Select(s =>
+                    {
+                        var team = _context.ShiftTeams.FirstOrDefault(t => t.Id == s.ShiftTeamId);
+                        var displayName = _context
+                            .ShiftToShiftTeams.Where(x =>
+                                x.ShiftId == shift.Id && x.ShiftTeamId == s.ShiftTeamId
+                            )
+                            .Select(x => x.DisplayName)
+                            .FirstOrDefault();
+
+                        return new Dictionary<string, object?>
+                        {
+                            ["TeamId"] = team?.Name,
+                            ["DisplayName"] = string.IsNullOrWhiteSpace(displayName)
+                                ? "—"
+                                : displayName,
+                            ["WeekIndex"] = s.WeekIndex + 1,
+                            ["DayOfWeek"] = s.DayOfWeek,
+                            ["Start"] = TimeSpan
+                                .FromMinutes(Math.Floor(s.StartTime.TotalMinutes))
+                                .ToString(@"hh\:mm"),
+                            ["Stop"] = TimeSpan
+                                .FromMinutes(Math.Floor(s.EndTime.TotalMinutes))
+                                .ToString(@"hh\:mm"),
+                        };
+                    })
+                    .ToList(),
+            };
 
             shift.Name = dto.Name;
             shift.IsHidden = dto.IsHidden;
@@ -751,6 +930,67 @@ namespace backend.Controllers
                 UpdateDate = shift.UpdateDate,
                 UpdatedBy = shift.UpdatedBy,
             };
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "Shift",
+                shift.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = shift.Id,
+                        ["Name"] = shift.Name,
+                        ["IsHidden"] = shift.IsHidden
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                        ["LightColorHex"] = shift.LightColorHex,
+                        ["DarkColorHex"] = shift.DarkColorHex,
+                        ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
+                        ["AnchorWeekStart"] = shift.AnchorWeekStart,
+                        ["Teams"] = dto
+                            .ShiftTeamIds?.Select(id =>
+                            {
+                                var team = _context.ShiftTeams.FirstOrDefault(t => t.Id == id);
+                                return team != null
+                                    ? $"{team.Name} (ID: {team.Id})"
+                                    : $"(ID: {id})";
+                            })
+                            .ToList(),
+                        ["WeeklyTimes"] = dto
+                            .WeeklyTimes?.Select(w =>
+                            {
+                                var team = _context.ShiftTeams.FirstOrDefault(t =>
+                                    t.Id == w.TeamId
+                                );
+                                var displayName = dto.ShiftTeamDisplayNames?.GetValueOrDefault(
+                                    w.TeamId
+                                );
+
+                                return new Dictionary<string, object?>
+                                {
+                                    ["TeamId"] = team?.Name,
+                                    ["DisplayName"] = string.IsNullOrWhiteSpace(displayName)
+                                        ? "—"
+                                        : displayName,
+                                    ["WeekIndex"] = w.WeekIndex + 1,
+                                    ["DayOfWeek"] = w.DayOfWeek,
+                                    ["Start"] = TimeSpan
+                                        .FromMinutes(Math.Floor(w.Start.TotalMinutes))
+                                        .ToString(@"hh\:mm"),
+                                    ["Stop"] = TimeSpan
+                                        .FromMinutes(Math.Floor(w.End.TotalMinutes))
+                                        .ToString(@"hh\:mm"),
+                                };
+                            })
+                            .ToList(),
+                    },
+                }
+            );
 
             return Ok(result);
         }

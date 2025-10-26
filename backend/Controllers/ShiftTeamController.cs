@@ -19,16 +19,19 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly UserService _userService;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
         public ShiftTeamController(
             AppDbContext context,
             UserService userService,
-            ITranslationService t
+            ITranslationService t,
+            AuditTrailService audit
         )
         {
             _context = context;
             _userService = userService;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()
@@ -201,6 +204,16 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteShiftTeam(int id)
         {
             var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
             var shiftTeam = await _context
                 .ShiftTeams.Include(st => st.ShiftToShiftTeams)
                 .FirstOrDefaultAsync(sst => sst.Id == id);
@@ -214,6 +227,25 @@ namespace backend.Controllers
             {
                 return BadRequest(new { message = await _t.GetAsync("ShiftTeam/InUse", lang) });
             }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "ShiftTeam",
+                shiftTeam.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = shiftTeam.Id,
+                    ["Name"] = shiftTeam.Name,
+                    ["IsHidden"] = shiftTeam.IsHidden
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["LightColorHex"] = shiftTeam.LightColorHex,
+                    ["DarkColorHex"] = shiftTeam.DarkColorHex,
+                }
+            );
 
             _context.ShiftTeams.Remove(shiftTeam);
             await _context.SaveChangesAsync();
@@ -296,6 +328,25 @@ namespace backend.Controllers
                 UpdatedBy = shiftTeam.UpdatedBy,
             };
 
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "ShiftTeam",
+                shiftTeam.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = shiftTeam.Id,
+                    ["Name"] = shiftTeam.Name,
+                    ["IsHidden"] = shiftTeam.IsHidden
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["LightColorHex"] = shiftTeam.LightColorHex,
+                    ["DarkColorHex"] = shiftTeam.DarkColorHex,
+                }
+            );
+
             return Ok(result);
         }
 
@@ -370,6 +421,15 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = shiftTeam.Id,
+                ["Name"] = shiftTeam.Name,
+                ["IsHidden"] = shiftTeam.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                ["LightColorHex"] = shiftTeam.LightColorHex,
+                ["DarkColorHex"] = shiftTeam.DarkColorHex,
+            };
+
             shiftTeam.Name = dto.Name;
             shiftTeam.IsHidden = dto.IsHidden;
             shiftTeam.LightColorHex = dto.LightColorHex;
@@ -395,6 +455,29 @@ namespace backend.Controllers
                 UpdateDate = shiftTeam.UpdateDate,
                 UpdatedBy = shiftTeam.UpdatedBy,
             };
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "ShiftTeam",
+                shiftTeam.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = shiftTeam.Id,
+                        ["Name"] = shiftTeam.Name,
+                        ["IsHidden"] = shiftTeam.IsHidden
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                        ["LightColorHex"] = shiftTeam.LightColorHex,
+                        ["DarkColorHex"] = shiftTeam.DarkColorHex,
+                    },
+                }
+            );
 
             return Ok(result);
         }

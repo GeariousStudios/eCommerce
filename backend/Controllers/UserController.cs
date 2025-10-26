@@ -4,6 +4,7 @@ using System.Text;
 using backend.Data;
 using backend.Dtos.User;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -17,16 +18,19 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
         public UserController(
             AppDbContext context,
             IConfiguration configuration,
-            ITranslationService t
+            ITranslationService t,
+            AuditTrailService audit
         )
         {
             _context = context;
             _configuration = configuration;
             _t = t;
+            _audit = audit;
         }
 
         private async Task<string> GetLangAsync()

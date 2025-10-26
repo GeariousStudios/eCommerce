@@ -77,7 +77,7 @@ export const Filter = ({
           {label}
         </span>
         <ChevronDownIcon
-          className={`${filterIconClass} ${filterOpen ? "rotate-180 text-[var(--accent-color)]" : ""}`}
+          className={`${filterIconClass} ${filterOpen ? "-rotate-180 text-[var(--accent-color)]" : ""}`}
         />
       </button>
 
@@ -139,7 +139,7 @@ export const AllFilter = ({
       >
         <span className="text-lg font-semibold">{label}</span>
         <ChevronDownIcon
-          className={`${filterOpen ? "rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
+          className={`${filterOpen ? "-rotate-180" : ""} transition-rotate h-6 w-6 duration-[var(--fast)]`}
         />
       </button>
 
