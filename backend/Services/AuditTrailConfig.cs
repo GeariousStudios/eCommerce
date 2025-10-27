@@ -21,6 +21,7 @@ namespace backend.Services
                 ("UnitCell", null),
                 ("Unit", null),
                 ("UnitGroup", null),
+                ("ShiftChange", null),
             },
 
             // Developers can see all actions.

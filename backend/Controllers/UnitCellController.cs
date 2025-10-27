@@ -253,23 +253,25 @@ namespace backend.Controllers
             }
 
             // Audit trail.
-            await _audit.LogAsync(
-                "Delete",
-                "UnitCell",
-                cell.Id,
-                deletedBy,
-                userId,
-                new Dictionary<string, object?>
-                {
-                    ["ObjectID"] = cell.Id,
-                    ["BelongsToUnit"] = $"{cell.Unit?.Name} (ID: {cell.UnitId})",
-                    ["BelongsToColumn"] = $"{cell.Column?.Name} (ID: {cell.ColumnId})",
-                    ["Date"] = cell.Date?.ToString("yyyy-MM-dd") ?? "—",
-                    ["Hour"] = cell.Hour,
-                    ["Value"] = cell.Value,
-                    ["IntValue"] = cell.IntValue,
-                }
-            );
+            var logData = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = cell.Id,
+                ["BelongsToUnit"] = $"{cell.Unit?.Name} (ID: {cell.UnitId})",
+                ["BelongsToColumn"] = $"{cell.Column?.Name} (ID: {cell.ColumnId})",
+                ["Date"] = cell.Date?.ToString("yyyy-MM-dd") ?? "—",
+                ["Hour"] = cell.Hour,
+            };
+
+            if (cell.Column?.DataType == UnitColumnDataType.Number)
+            {
+                logData["Value"] = cell.IntValue;
+            }
+            else
+            {
+                logData["Value"] = cell.Value;
+            }
+
+            await _audit.LogAsync("Delete", "UnitCell", cell.Id, deletedBy, userId, logData);
 
             _context.UnitCells.Remove(cell);
             await _context.SaveChangesAsync();
@@ -365,23 +367,25 @@ namespace backend.Controllers
             };
 
             // Audit trail.
-            await _audit.LogAsync(
-                "Create",
-                "UnitCell",
-                cell.Id,
-                createdBy,
-                userId,
-                new Dictionary<string, object?>
-                {
-                    ["ObjectID"] = cell.Id,
-                    ["BelongsToUnit"] = $"{cell.Unit?.Name} (ID: {cell.UnitId})",
-                    ["BelongsToColumn"] = $"{cell.Column?.Name} (ID: {cell.ColumnId})",
-                    ["Date"] = cell.Date?.ToString("yyyy-MM-dd") ?? "—",
-                    ["Hour"] = cell.Hour,
-                    ["Value"] = cell.Value,
-                    ["IntValue"] = cell.IntValue,
-                }
-            );
+            var logData = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = cell.Id,
+                ["BelongsToUnit"] = $"{cell.Unit?.Name} (ID: {cell.UnitId})",
+                ["BelongsToColumn"] = $"{cell.Column?.Name} (ID: {cell.ColumnId})",
+                ["Date"] = cell.Date?.ToString("yyyy-MM-dd") ?? "—",
+                ["Hour"] = cell.Hour,
+            };
+
+            if (cell.Column?.DataType == UnitColumnDataType.Number)
+            {
+                logData["Value"] = cell.IntValue;
+            }
+            else
+            {
+                logData["Value"] = cell.Value;
+            }
+
+            await _audit.LogAsync("Create", "UnitCell", cell.Id, createdBy, userId, logData);
 
             return Ok(result);
         }
@@ -421,6 +425,16 @@ namespace backend.Controllers
                 );
             }
 
+            if (string.IsNullOrWhiteSpace(dto.Value) && dto.IntValue == null)
+            {
+                if (cell.Date == null)
+                {
+                    return BadRequest();
+                }
+
+                return await DeleteCell(cell.UnitId, cell.ColumnId, cell.Hour, cell.Date.Value);
+            }
+
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
@@ -431,9 +445,16 @@ namespace backend.Controllers
                 ["BelongsToColumn"] = $"{cell.Column?.Name} (ID: {cell.ColumnId})",
                 ["Date"] = cell.Date?.ToString("yyyy-MM-dd") ?? "—",
                 ["Hour"] = cell.Hour,
-                ["Value"] = cell.Value,
-                ["IntValue"] = cell.IntValue,
             };
+
+            if (cell.Column?.DataType == UnitColumnDataType.Number)
+            {
+                oldValues["Value"] = cell.IntValue;
+            }
+            else
+            {
+                oldValues["Value"] = cell.Value;
+            }
 
             cell.Value = dto.Value ?? cell.Value;
             cell.IntValue = dto.IntValue ?? cell.IntValue;
@@ -464,6 +485,24 @@ namespace backend.Controllers
                 UpdatedBy = cell.UpdatedBy,
             };
 
+            var newValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = cell.Id,
+                ["BelongsToUnit"] = $"{cell.Unit?.Name} (ID: {cell.UnitId})",
+                ["BelongsToColumn"] = $"{cell.Column?.Name} (ID: {cell.ColumnId})",
+                ["Date"] = cell.Date?.ToString("yyyy-MM-dd") ?? "—",
+                ["Hour"] = cell.Hour,
+            };
+
+            if (cell.Column?.DataType == UnitColumnDataType.Number)
+            {
+                newValues["Value"] = cell.IntValue;
+            }
+            else
+            {
+                newValues["Value"] = cell.Value;
+            }
+
             // Audit trail.
             await _audit.LogAsync(
                 "Update",
@@ -471,20 +510,7 @@ namespace backend.Controllers
                 cell.Id,
                 updatedBy,
                 userId,
-                new
-                {
-                    OldValues = oldValues,
-                    NewValues = new Dictionary<string, object?>
-                    {
-                        ["ObjectID"] = cell.Id,
-                        ["BelongsToUnit"] = $"{cell.Unit?.Name} (ID: {cell.UnitId})",
-                        ["BelongsToColumn"] = $"{cell.Column?.Name} (ID: {cell.ColumnId})",
-                        ["Date"] = cell.Date?.ToString("yyyy-MM-dd") ?? "—",
-                        ["Hour"] = cell.Hour,
-                        ["Value"] = cell.Value,
-                        ["IntValue"] = cell.IntValue,
-                    },
-                }
+                new { OldValues = oldValues, NewValues = newValues }
             );
 
             return Ok(result);
@@ -521,9 +547,6 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
-            var allOldValues = new List<Dictionary<string, object?>>();
-            var allNewValues = new List<Dictionary<string, object?>>();
-
             foreach (var value in dto.Values)
             {
                 var existing = await _context
@@ -538,6 +561,36 @@ namespace backend.Controllers
 
                 if (existing != null)
                 {
+                    if (string.IsNullOrWhiteSpace(value.Value) && value.IntValue == null)
+                    {
+                        if (existing.Date == null)
+                        {
+                            continue;
+                        }
+
+                        await DeleteCell(
+                            existing.UnitId,
+                            existing.ColumnId,
+                            existing.Hour,
+                            existing.Date.Value
+                        );
+
+                        continue;
+                    }
+
+                    string oldValue = string.IsNullOrWhiteSpace(existing.Value)
+                        ? ""
+                        : existing.Value;
+                    string newValue = string.IsNullOrWhiteSpace(value.Value) ? "" : value.Value;
+
+                    bool valueChanged =
+                        oldValue != newValue || (existing.IntValue ?? 0) != (value.IntValue ?? 0);
+
+                    if (!valueChanged)
+                    {
+                        continue;
+                    }
+
                     var oldValues = new Dictionary<string, object?>
                     {
                         ["ObjectID"] = existing.Id,
@@ -545,16 +598,25 @@ namespace backend.Controllers
                         ["BelongsToColumn"] = $"{existing.Column?.Name} (ID: {existing.ColumnId})",
                         ["Date"] = existing.Date?.ToString("yyyy-MM-dd") ?? "—",
                         ["Hour"] = existing.Hour,
-                        ["Value"] = existing.Value,
-                        ["IntValue"] = existing.IntValue,
                     };
 
-                    existing.Value = value.Value;
+                    if (existing.Column?.DataType == UnitColumnDataType.Number)
+                    {
+                        oldValues["Value"] = existing.IntValue;
+                    }
+                    else
+                    {
+                        oldValues["Value"] = existing.Value;
+                    }
+
+                    existing.Value = string.IsNullOrWhiteSpace(value.Value) ? null : value.Value;
                     existing.IntValue = value.IntValue;
 
                     // Meta data.
                     existing.UpdateDate = now;
                     existing.UpdatedBy = updatedBy;
+
+                    await _context.SaveChangesAsync();
 
                     var newValues = new Dictionary<string, object?>
                     {
@@ -563,72 +625,93 @@ namespace backend.Controllers
                         ["BelongsToColumn"] = $"{existing.Column?.Name} (ID: {existing.ColumnId})",
                         ["Date"] = existing.Date?.ToString("yyyy-MM-dd") ?? "—",
                         ["Hour"] = existing.Hour,
-                        ["Value"] = existing.Value,
-                        ["IntValue"] = existing.IntValue,
                     };
 
-                    allOldValues.Add(oldValues);
-                    allNewValues.Add(newValues);
+                    if (existing.Column?.DataType == UnitColumnDataType.Number)
+                    {
+                        newValues["Value"] = existing.IntValue;
+                    }
+                    else
+                    {
+                        newValues["Value"] = existing.Value;
+                    }
+
+                    await _audit.LogAsync(
+                        "Update",
+                        "UnitCell",
+                        existing.Id,
+                        updatedBy,
+                        userId,
+                        new { OldValues = oldValues, NewValues = newValues }
+                    );
                 }
                 else
                 {
-                    _context.UnitCells.Add(
-                        new UnitCell
-                        {
-                            UnitId = unitId,
-                            ColumnId = value.ColumnId,
-                            Hour = dto.Hour,
-                            Date = dto.Date,
-                            Value = value.Value,
-                            IntValue = value.IntValue,
+                    if (string.IsNullOrWhiteSpace(value.Value) && value.IntValue == null)
+                    {
+                        continue;
+                    }
 
-                            // Meta data.
-                            CreationDate = now,
-                            CreatedBy = updatedBy,
-                            UpdateDate = now,
-                            UpdatedBy = updatedBy,
-                        }
-                    );
+                    var newCell = new UnitCell
+                    {
+                        UnitId = unitId,
+                        ColumnId = value.ColumnId,
+                        Hour = dto.Hour,
+                        Date = dto.Date,
+                        Value = string.IsNullOrWhiteSpace(value.Value) ? null : value.Value,
+                        IntValue = value.IntValue,
 
-                    allNewValues.Add(
-                        new Dictionary<string, object?>
-                        {
-                            ["BelongsToUnit"] = $"{unitId}",
-                            ["BelongsToColumn"] = $"{value.ColumnId}",
-                            ["Date"] = dto.Date.ToString("yyyy-MM-dd"),
-                            ["Hour"] = dto.Hour,
-                            ["Value"] = value.Value,
-                            ["IntValue"] = value.IntValue,
-                        }
+                        // Meta data.
+                        CreationDate = now,
+                        CreatedBy = updatedBy,
+                        UpdateDate = now,
+                        UpdatedBy = updatedBy,
+                    };
+
+                    _context.UnitCells.Add(newCell);
+                    await _context.SaveChangesAsync();
+
+                    newCell.Column = (
+                        await _context.UnitColumns.FirstOrDefaultAsync(c =>
+                            c.Id == newCell.ColumnId
+                        )
+                    )!;
+                    newCell.Unit = (
+                        await _context.Units.FirstOrDefaultAsync(u => u.Id == newCell.UnitId)
+                    )!;
+
+                    var logData = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = newCell.Id,
+                        ["BelongsToUnit"] = $"{newCell.Unit?.Name} (ID: {newCell.UnitId})",
+                        ["BelongsToColumn"] = $"{newCell.Column?.Name} (ID: {newCell.ColumnId})",
+                        ["Date"] = dto.Date.ToString("yyyy-MM-dd"),
+                        ["Hour"] = dto.Hour,
+                    };
+
+                    if (newCell.Column?.DataType == UnitColumnDataType.Number)
+                    {
+                        logData["Value"] = newCell.IntValue;
+                    }
+                    else
+                    {
+                        logData["Value"] = newCell.Value;
+                    }
+
+                    await _audit.LogAsync(
+                        "Create",
+                        "UnitCell",
+                        newCell.Id,
+                        updatedBy,
+                        userId,
+                        logData
                     );
                 }
             }
 
-            await _context.SaveChangesAsync();
-
             var affectedColumnIds = dto.Values.Select(v => v.ColumnId).Distinct();
             await UpdateHasDataFlags(affectedColumnIds);
             await _context.SaveChangesAsync();
-
-            // Audit trail.
-            await _audit.LogAsync(
-                "Update",
-                "UnitCell",
-                0,
-                updatedBy,
-                userId,
-                new
-                {
-                    OldValues = allOldValues,
-                    NewValues = allNewValues,
-                    Meta = new Dictionary<string, object?>
-                    {
-                        ["BelongsToUnit"] = $"{unitId}",
-                        ["Date"] = dto.Date.ToString("yyyy-MM-dd"),
-                        ["Hour"] = dto.Hour,
-                    },
-                }
-            );
 
             return Ok(new { message = await _t.GetAsync("UnitCell/Updated", lang) });
         }

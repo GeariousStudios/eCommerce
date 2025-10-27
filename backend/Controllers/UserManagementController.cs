@@ -14,16 +14,19 @@ namespace backend.Controllers
     public class UserManagementController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly UserService _userService;
         private readonly ITranslationService _t;
         private readonly AuditTrailService _audit;
 
         public UserManagementController(
             AppDbContext context,
+            UserService userService,
             ITranslationService t,
             AuditTrailService audit
         )
         {
             _context = context;
+            _userService = userService;
             _t = t;
             _audit = audit;
         }
@@ -217,6 +220,16 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteUser(int id)
         {
             var lang = await GetLangAsync();
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+            var (deletedBy, userId) = userInfo.Value;
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
@@ -230,6 +243,25 @@ namespace backend.Controllers
                     new { message = await _t.GetAsync("Users/CannotDeleteOnline", lang) }
                 );
             }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "UserManagement",
+                user.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = user.Id,
+                    ["Username"] = user.Username,
+                    ["FirstName"] = user.FirstName,
+                    ["LastName"] = user.LastName,
+                    ["Email"] = user.Email,
+                    ["Roles"] = user.GetRoleStrings(),
+                    ["IsLocked"] = user.IsLocked ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                }
+            );
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
@@ -252,6 +284,15 @@ namespace backend.Controllers
 
                 return BadRequest(
                     new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
+            }
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
                 );
             }
 
@@ -286,6 +327,8 @@ namespace backend.Controllers
                 }
             }
 
+            var (createdBy, userId) = userInfo.Value;
+
             var user = new User
             {
                 Username = dto.Username,
@@ -315,6 +358,34 @@ namespace backend.Controllers
                 LastLogin = user.LastLogin,
             };
 
+            // Audit trail.
+            try
+            {
+                await _audit.LogAsync(
+                    "Create",
+                    "UserManagement",
+                    user.Id,
+                    createdBy,
+                    userId,
+                    new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = user.Id,
+                        ["Username"] = user.Username,
+                        ["FirstName"] = user.FirstName,
+                        ["LastName"] = user.LastName,
+                        ["Email"] = user.Email,
+                        ["Roles"] = user.GetRoleStrings(),
+                        ["IsLocked"] = user.IsLocked
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AUDIT] Delete failed: {ex.Message}");
+            }
+
             return Ok(result);
         }
 
@@ -323,6 +394,15 @@ namespace backend.Controllers
         {
             var lang = await GetLangAsync();
             var user = await _context.Users.FindAsync(id);
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
 
             if (user == null)
             {
@@ -411,6 +491,19 @@ namespace backend.Controllers
                 );
             }
 
+            var (updatedBy, userId) = userInfo.Value;
+
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = user.Id,
+                ["Username"] = user.Username,
+                ["FirstName"] = user.FirstName,
+                ["LastName"] = user.LastName,
+                ["Email"] = user.Email,
+                ["Roles"] = user.GetRoleStrings(),
+                ["IsLocked"] = user.IsLocked ? new[] { "Common/Yes" } : new[] { "Common/No" },
+            };
+
             user.Username = dto.Username;
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
@@ -438,6 +531,31 @@ namespace backend.Controllers
                 CreationDate = user.CreationDate,
                 LastLogin = user.LastLogin,
             };
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "UserManagement",
+                user.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = user.Id,
+                        ["Username"] = user.Username,
+                        ["FirstName"] = user.FirstName,
+                        ["LastName"] = user.LastName,
+                        ["Email"] = user.Email,
+                        ["Roles"] = user.GetRoleStrings(),
+                        ["IsLocked"] = user.IsLocked
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                    },
+                }
+            );
 
             return Ok(result);
         }

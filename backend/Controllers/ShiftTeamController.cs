@@ -239,11 +239,11 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = shiftTeam.Id,
                     ["Name"] = shiftTeam.Name,
+                    ["LightColorHex"] = shiftTeam.LightColorHex,
+                    ["DarkColorHex"] = shiftTeam.DarkColorHex,
                     ["IsHidden"] = shiftTeam.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
-                    ["LightColorHex"] = shiftTeam.LightColorHex,
-                    ["DarkColorHex"] = shiftTeam.DarkColorHex,
                 }
             );
 
@@ -339,11 +339,11 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = shiftTeam.Id,
                     ["Name"] = shiftTeam.Name,
+                    ["LightColorHex"] = shiftTeam.LightColorHex,
+                    ["DarkColorHex"] = shiftTeam.DarkColorHex,
                     ["IsHidden"] = shiftTeam.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
-                    ["LightColorHex"] = shiftTeam.LightColorHex,
-                    ["DarkColorHex"] = shiftTeam.DarkColorHex,
                 }
             );
 
@@ -425,9 +425,9 @@ namespace backend.Controllers
             {
                 ["ObjectID"] = shiftTeam.Id,
                 ["Name"] = shiftTeam.Name,
-                ["IsHidden"] = shiftTeam.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 ["LightColorHex"] = shiftTeam.LightColorHex,
                 ["DarkColorHex"] = shiftTeam.DarkColorHex,
+                ["IsHidden"] = shiftTeam.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
             shiftTeam.Name = dto.Name;
@@ -470,11 +470,11 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = shiftTeam.Id,
                         ["Name"] = shiftTeam.Name,
+                        ["LightColorHex"] = shiftTeam.LightColorHex,
+                        ["DarkColorHex"] = shiftTeam.DarkColorHex,
                         ["IsHidden"] = shiftTeam.IsHidden
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },
-                        ["LightColorHex"] = shiftTeam.LightColorHex,
-                        ["DarkColorHex"] = shiftTeam.DarkColorHex,
                     },
                 }
             );

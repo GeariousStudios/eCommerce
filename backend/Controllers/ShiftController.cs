@@ -505,7 +505,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = shift.Id,
                     ["Name"] = shift.Name,
-                    ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                     ["LightColorHex"] = shift.LightColorHex,
                     ["DarkColorHex"] = shift.DarkColorHex,
                     ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
@@ -549,6 +548,7 @@ namespace backend.Controllers
                             };
                         })
                         .ToList(),
+                    ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 }
             );
 
@@ -694,7 +694,6 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = shift.Id,
                     ["Name"] = shift.Name,
-                    ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                     ["LightColorHex"] = shift.LightColorHex,
                     ["DarkColorHex"] = shift.DarkColorHex,
                     ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
@@ -731,6 +730,7 @@ namespace backend.Controllers
                             };
                         })
                         .ToList(),
+                    ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 }
             );
 
@@ -814,7 +814,6 @@ namespace backend.Controllers
             {
                 ["ObjectID"] = shift.Id,
                 ["Name"] = shift.Name,
-                ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 ["LightColorHex"] = shift.LightColorHex,
                 ["DarkColorHex"] = shift.DarkColorHex,
                 ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
@@ -856,6 +855,7 @@ namespace backend.Controllers
                         };
                     })
                     .ToList(),
+                ["IsHidden"] = shift.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
             shift.Name = dto.Name;
@@ -945,9 +945,6 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = shift.Id,
                         ["Name"] = shift.Name,
-                        ["IsHidden"] = shift.IsHidden
-                            ? new[] { "Common/Yes" }
-                            : new[] { "Common/No" },
                         ["LightColorHex"] = shift.LightColorHex,
                         ["DarkColorHex"] = shift.DarkColorHex,
                         ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
@@ -988,6 +985,9 @@ namespace backend.Controllers
                                 };
                             })
                             .ToList(),
+                        ["IsHidden"] = shift.IsHidden
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
                     },
                 }
             );

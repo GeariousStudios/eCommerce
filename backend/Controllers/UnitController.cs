@@ -165,7 +165,7 @@ namespace backend.Controllers
             var unitGroupCount = _context
                 .Units.Include(u => u.UnitGroup)
                 .AsEnumerable()
-                .GroupBy(u => u.UnitGroup?.Name ?? "Okänd grupp")
+                .GroupBy(u => u.UnitGroup.Name)
                 .ToDictionary(g => g.Key, g => g.Count());
 
             var unitColumnCount = _context
@@ -199,7 +199,7 @@ namespace backend.Controllers
                     LightTextColorHex = ColorHelper.GetReadableTextColor(u.LightColorHex),
                     DarkTextColorHex = ColorHelper.GetReadableTextColor(u.DarkColorHex),
                     UnitGroupId = u.UnitGroupId,
-                    UnitGroupName = u.UnitGroup.Name ?? "Okänd grupp",
+                    UnitGroupName = u.UnitGroup.Name,
                     UnitColumnIds = u
                         .UnitToUnitColumns.OrderBy(x => x.Order)
                         .Select(x => x.UnitColumnId)
@@ -296,7 +296,26 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteUnit(int id)
         {
             var lang = await GetLangAsync();
-            var unit = await _context.Units.FindAsync(id);
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
+            var unit = await _context
+                .Units.Include(u => u.UnitGroup)
+                .Include(u => u.UnitToUnitColumns)
+                .ThenInclude(uuc => uuc.UnitColumn)
+                .Include(u => u.UnitToCategories)
+                .ThenInclude(uc => uc.Category)
+                .Include(u => u.UnitToShifts)
+                .ThenInclude(us => us.Shift)
+                .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unit == null)
             {
@@ -308,6 +327,48 @@ namespace backend.Controllers
                 .Select(uc => uc.ColumnId)
                 .Distinct()
                 .ToListAsync();
+
+            var unitColumnsList = string.Join(
+                "\n",
+                unit.UnitToUnitColumns.OrderBy(x => x.Order)
+                    .Select(uuc => $"{uuc.UnitColumn.Name} (ID: {uuc.UnitColumnId})")
+                    .DefaultIfEmpty("—")
+            );
+
+            var categoriesList = string.Join(
+                "\n",
+                unit.UnitToCategories.OrderBy(x => x.Order)
+                    .Select(uc => $"{uc.Category.Name} (ID: {uc.CategoryId})")
+                    .DefaultIfEmpty("—")
+            );
+
+            var shiftsList = string.Join(
+                "\n",
+                unit.UnitToShifts.OrderBy(x => x.Order)
+                    .Select(us => $"{us.Shift.Name} (ID: {us.ShiftId})")
+                    .DefaultIfEmpty("—")
+            );
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "Unit",
+                unit.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = unit.Id,
+                    ["Name"] = unit.Name,
+                    ["LightColorHex"] = unit.LightColorHex,
+                    ["DarkColorHex"] = unit.DarkColorHex,
+                    ["UnitGroup"] = $"{unit.UnitGroup.Name} (ID: {unit.UnitGroupId})",
+                    ["UnitColumns"] = unitColumnsList,
+                    ["Categories"] = categoriesList,
+                    ["Shifts"] = shiftsList,
+                    ["IsHidden"] = unit.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                }
+            );
 
             _context.Units.Remove(unit);
             await _context.SaveChangesAsync();
@@ -442,6 +503,27 @@ namespace backend.Controllers
             _context.Units.Add(unit);
             await _context.SaveChangesAsync();
 
+            await _context
+                .Entry(unit)
+                .Collection(u => u.UnitToUnitColumns)
+                .Query()
+                .Include(uuc => uuc.UnitColumn)
+                .LoadAsync();
+
+            await _context
+                .Entry(unit)
+                .Collection(u => u.UnitToCategories)
+                .Query()
+                .Include(uc => uc.Category)
+                .LoadAsync();
+
+            await _context
+                .Entry(unit)
+                .Collection(u => u.UnitToShifts)
+                .Query()
+                .Include(us => us.Shift)
+                .LoadAsync();
+
             var result = new UnitDto
             {
                 Name = unit.Name,
@@ -469,6 +551,48 @@ namespace backend.Controllers
                 UpdatedBy = unit.UpdatedBy,
             };
 
+            var unitColumnsList = string.Join(
+                "\n",
+                unit.UnitToUnitColumns.OrderBy(x => x.Order)
+                    .Select(uuc => $"{uuc.UnitColumn.Name} (ID: {uuc.UnitColumnId})")
+                    .DefaultIfEmpty("—")
+            );
+
+            var categoriesList = string.Join(
+                "\n",
+                unit.UnitToCategories.OrderBy(x => x.Order)
+                    .Select(uc => $"{uc.Category.Name} (ID: {uc.CategoryId})")
+                    .DefaultIfEmpty("—")
+            );
+
+            var shiftsList = string.Join(
+                "\n",
+                unit.UnitToShifts.OrderBy(x => x.Order)
+                    .Select(us => $"{us.Shift.Name} (ID: {us.ShiftId})")
+                    .DefaultIfEmpty("—")
+            );
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "Unit",
+                unit.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = unit.Id,
+                    ["Name"] = unit.Name,
+                    ["LightColorHex"] = unit.LightColorHex,
+                    ["DarkColorHex"] = unit.DarkColorHex,
+                    ["UnitGroup"] = $"{unit.UnitGroup.Name} (ID: {unit.UnitGroupId})",
+                    ["UnitColumns"] = unitColumnsList,
+                    ["Categories"] = categoriesList,
+                    ["Shifts"] = shiftsList,
+                    ["IsHidden"] = unit.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                }
+            );
+
             return Ok(result);
         }
 
@@ -478,9 +602,13 @@ namespace backend.Controllers
         {
             var lang = await GetLangAsync();
             var unit = await _context
-                .Units.Include(u => u.UnitToUnitColumns)
+                .Units.Include(u => u.UnitGroup)
+                .Include(u => u.UnitToUnitColumns)
+                .ThenInclude(uuc => uuc.UnitColumn)
                 .Include(u => u.UnitToCategories)
+                .ThenInclude(uc => uc.Category)
                 .Include(u => u.UnitToShifts)
+                .ThenInclude(us => us.Shift)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unit == null)
@@ -557,6 +685,38 @@ namespace backend.Controllers
 
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
+
+            var oldUnitColumns = string.Join(
+                "\n",
+                unit.UnitToUnitColumns.OrderBy(x => x.Order)
+                    .Select(x => $"{x.UnitColumn.Name} (ID: {x.UnitColumnId})")
+                    .DefaultIfEmpty("—")
+            );
+            var oldCategories = string.Join(
+                "\n",
+                unit.UnitToCategories.OrderBy(x => x.Order)
+                    .Select(x => $"{x.Category.Name} (ID: {x.CategoryId})")
+                    .DefaultIfEmpty("—")
+            );
+            var oldShifts = string.Join(
+                "\n",
+                unit.UnitToShifts.OrderBy(x => x.Order)
+                    .Select(x => $"{x.Shift.Name} (ID: {x.ShiftId})")
+                    .DefaultIfEmpty("—")
+            );
+
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = unit.Id,
+                ["Name"] = unit.Name,
+                ["LightColorHex"] = unit.LightColorHex,
+                ["DarkColorHex"] = unit.DarkColorHex,
+                ["UnitGroup"] = $"{unit.UnitGroup.Name} (ID: {unit.UnitGroupId})",
+                ["UnitColumns"] = oldUnitColumns,
+                ["Categories"] = oldCategories,
+                ["Shifts"] = oldShifts,
+                ["IsHidden"] = unit.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
+            };
 
             unit.Name = dto.Name;
             unit.IsHidden = dto.IsHidden;
@@ -656,6 +816,65 @@ namespace backend.Controllers
                 UpdateDate = unit.UpdateDate,
                 UpdatedBy = unit.UpdatedBy,
             };
+
+            var unitColumns = await _context
+                .UnitColumns.Where(uc => dto.UnitColumnIds.Contains(uc.Id))
+                .ToListAsync();
+
+            var newUnitColumns = string.Join(
+                "\n",
+                unitColumns
+                    .OrderBy(uc => dto.UnitColumnIds.IndexOf(uc.Id))
+                    .Select(uc => $"{uc.Name} (ID: {uc.Id})")
+                    .DefaultIfEmpty("—")
+            );
+
+            var categories = await _context
+                .Categories.Where(c => dto.CategoryIds.Contains(c.Id))
+                .ToListAsync();
+
+            var newCategories = string.Join(
+                "\n",
+                categories
+                    .OrderBy(c => dto.CategoryIds.IndexOf(c.Id))
+                    .Select(c => $"{c.Name} (ID: {c.Id})")
+                    .DefaultIfEmpty("—")
+            );
+
+            var shifts = await _context
+                .Shifts.Where(s => finalShiftIds.Contains(s.Id))
+                .ToListAsync();
+
+            var newShifts = string.Join(
+                "\n",
+                shifts
+                    .OrderBy(s => finalShiftIds.IndexOf(s.Id))
+                    .Select(s => $"{s.Name} (ID: {s.Id})")
+                    .DefaultIfEmpty("—")
+            );
+
+            var newValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = unit.Id,
+                ["Name"] = unit.Name,
+                ["LightColorHex"] = unit.LightColorHex,
+                ["DarkColorHex"] = unit.DarkColorHex,
+                ["UnitGroup"] = $"{unit.UnitGroup.Name} (ID: {unit.UnitGroupId})",
+                ["UnitColumns"] = newUnitColumns,
+                ["Categories"] = newCategories,
+                ["Shifts"] = newShifts,
+                ["IsHidden"] = unit.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
+            };
+
+            // AUDIT
+            await _audit.LogAsync(
+                "Update",
+                "Unit",
+                unit.Id,
+                updatedBy,
+                userId,
+                new { OldValues = oldValues, NewValues = newValues }
+            );
 
             return Ok(result);
         }
@@ -794,6 +1013,37 @@ namespace backend.Controllers
                 unit.UpdateDate = now;
                 unit.UpdatedBy = updatedBy;
                 await _context.SaveChangesAsync();
+
+                // Audit trail.
+                var createdChange = await _context
+                    .UnitShiftChanges.OrderByDescending(c => c.Id)
+                    .FirstOrDefaultAsync(c =>
+                        c.UnitId == id && c.EffectiveFromUtc == effectiveFromUtc
+                    );
+
+                if (createdChange != null)
+                {
+                    var oldShift = await _context.Shifts.FindAsync(oldActiveIdAtThatTime);
+                    var newShift = await _context.Shifts.FindAsync(dto.ActiveShiftId);
+
+                    await _audit.LogAsync(
+                        "Create",
+                        "ShiftChange",
+                        createdChange.Id,
+                        updatedBy,
+                        userId,
+                        new Dictionary<string, object?>
+                        {
+                            ["ObjectID"] = createdChange.Id,
+                            ["Unit"] = $"{unit.Name} (ID: {unit.Id})",
+                            // ["OldShift"] = $"{oldShift?.Name} (ID: {oldShift?.Id})",
+                            ["NewShift"] = $"{newShift?.Name} (ID: {newShift?.Id})",
+                            ["EffectiveFromUtc"] = effectiveFromUtc
+                                .ToLocalTime()
+                                .ToString("yyyy-MM-dd HH:mm"),
+                        }
+                    );
+                }
             }
 
             return NoContent();
@@ -818,6 +1068,13 @@ namespace backend.Controllers
                     new { message = await _t.GetAsync("Unit/ShiftChangeNotFound", lang) }
                 );
             }
+
+            var oldValues = new
+            {
+                OldShiftId = change.OldShiftId,
+                NewShiftId = change.NewShiftId,
+                EffectiveFromUtc = change.EffectiveFromUtc,
+            };
 
             DateTime? newEffectiveFromUtc = null;
             if (!string.IsNullOrWhiteSpace(dto.Date) && dto.Hour.HasValue)
@@ -866,12 +1123,50 @@ namespace backend.Controllers
                     new { message = await _t.GetAsync("Common/Unauthorized", lang) }
                 );
 
-            var (updatedBy, _) = userInfo.Value;
+            var (updatedBy, userId) = userInfo.Value;
 
             change.UpdateDate = DateTime.UtcNow;
             change.UpdatedBy = updatedBy;
 
             await _context.SaveChangesAsync();
+
+            var unit = await _context.Units.FindAsync(unitId);
+
+            // Audit trail.
+            var oldShift = await _context.Shifts.FindAsync(change.OldShiftId);
+            var oldNewShift = await _context.Shifts.FindAsync(oldValues.NewShiftId);
+            var newShift = await _context.Shifts.FindAsync(change.NewShiftId);
+
+            await _audit.LogAsync(
+                "Update",
+                "ShiftChange",
+                change.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = change.Id,
+                        ["Unit"] = $"{unit?.Name} (ID: {unit?.Id})",
+                        // ["OldShift"] = $"{oldShift?.Name} (ID: {oldShift?.Id})",
+                        ["NewShift"] = $"{oldNewShift?.Name} (ID: {oldNewShift?.Id})",
+                        ["EffectiveFromUtc"] = oldValues
+                            .EffectiveFromUtc.ToLocalTime()
+                            .ToString("yyyy-MM-dd HH:mm"),
+                    },
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = change.Id,
+                        ["Unit"] = $"{unit?.Name} (ID: {unit?.Id})",
+                        // ["OldShift"] = $"{oldShift?.Name} (ID: {oldShift?.Id})",
+                        ["NewShift"] = $"{newShift?.Name} (ID: {newShift?.Id})",
+                        ["EffectiveFromUtc"] = change
+                            .EffectiveFromUtc.ToLocalTime()
+                            .ToString("yyyy-MM-dd HH:mm"),
+                    },
+                }
+            );
 
             var nowUtc = DateTime.UtcNow;
 
@@ -883,22 +1178,19 @@ namespace backend.Controllers
 
             if (newActiveShiftId.HasValue)
             {
-                var unit = await _context
-                    .Units.Include(u => u.UnitToShifts)
-                    .FirstOrDefaultAsync(u => u.Id == unitId);
-
-                if (unit == null)
-                    return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
-
-                foreach (var l in unit.UnitToShifts)
+                if (unit != null)
                 {
-                    l.IsActive = (l.ShiftId == newActiveShiftId.Value);
+                    foreach (var l in unit.UnitToShifts)
+                        l.IsActive = (l.ShiftId == newActiveShiftId.Value);
+
+                    unit.UpdateDate = DateTime.UtcNow;
+                    unit.UpdatedBy = updatedBy;
+
+                    await _context.SaveChangesAsync();
+
+                    unit.UpdateDate = DateTime.UtcNow;
+                    unit.UpdatedBy = updatedBy;
                 }
-
-                unit.UpdateDate = DateTime.UtcNow;
-                unit.UpdatedBy = updatedBy;
-
-                await _context.SaveChangesAsync();
             }
 
             return NoContent();
@@ -909,6 +1201,16 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteShiftChange(int unitId, int changeId)
         {
             var lang = await GetLangAsync();
+
+            var userInfo = await _userService.GetUserInfoAsync();
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
             var change = await _context.UnitShiftChanges.FirstOrDefaultAsync(x =>
                 x.Id == changeId && x.UnitId == unitId
             );
@@ -920,8 +1222,39 @@ namespace backend.Controllers
                 );
             }
 
+            var unit = await _context
+                .Units.Include(u => u.UnitToShifts)
+                .FirstOrDefaultAsync(u => u.Id == unitId);
+
+            if (unit == null)
+            {
+                return NotFound(new { message = await _t.GetAsync("Unit/NotFound", lang) });
+            }
+
             _context.UnitShiftChanges.Remove(change);
             await _context.SaveChangesAsync();
+
+            // Audit trail.
+            var oldShift = await _context.Shifts.FindAsync(change.OldShiftId);
+            var newShift = await _context.Shifts.FindAsync(change.NewShiftId);
+
+            await _audit.LogAsync(
+                "Delete",
+                "ShiftChange",
+                change.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = change.Id,
+                    ["Unit"] = $"{unit.Name} (ID: {unit.Id})",
+                    // ["OldShift"] = $"{oldShift?.Name} (ID: {oldShift?.Id})",
+                    ["NewShift"] = $"{newShift?.Name} (ID: {newShift?.Id})",
+                    ["EffectiveFromUtc"] = change
+                        .EffectiveFromUtc.ToLocalTime()
+                        .ToString("yyyy-MM-dd HH:mm"),
+                }
+            );
 
             var nowUtc = DateTime.UtcNow;
 
@@ -929,10 +1262,6 @@ namespace backend.Controllers
                 .UnitShiftChanges.Where(c => c.UnitId == unitId && c.EffectiveFromUtc <= nowUtc)
                 .OrderByDescending(c => c.EffectiveFromUtc)
                 .FirstOrDefaultAsync();
-
-            var unit = await _context
-                .Units.Include(u => u.UnitToShifts)
-                .FirstOrDefaultAsync(u => u.Id == unitId);
 
             if (unit == null)
             {
@@ -956,13 +1285,8 @@ namespace backend.Controllers
             foreach (var l in unit.UnitToShifts)
                 l.IsActive = (l.ShiftId == newActiveShiftId);
 
-            var userInfo = await _userService.GetUserInfoAsync();
-            if (userInfo != null)
-            {
-                var (updatedBy, _) = userInfo.Value;
-                unit.UpdateDate = DateTime.UtcNow;
-                unit.UpdatedBy = updatedBy;
-            }
+            unit.UpdateDate = DateTime.UtcNow;
+            unit.UpdatedBy = deletedBy;
 
             await _context.SaveChangesAsync();
 

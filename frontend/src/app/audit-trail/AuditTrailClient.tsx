@@ -690,6 +690,12 @@ const AuditTrailClient = (props: Props) => {
                                                         >
                                                           {String(value)}
                                                         </span>
+                                                      ) : typeof value ===
+                                                          "string" &&
+                                                        value.includes("\n") ? (
+                                                        <pre className="font-[Karla] whitespace-pre-wrap">
+                                                          {value}
+                                                        </pre>
                                                       ) : (
                                                         String(value ?? "—")
                                                       )}
@@ -794,6 +800,12 @@ const AuditTrailClient = (props: Props) => {
                                                         >
                                                           {String(value)}
                                                         </span>
+                                                      ) : typeof value ===
+                                                          "string" &&
+                                                        value.includes("\n") ? (
+                                                        <pre className="font-[Karla] whitespace-pre-wrap">
+                                                          {value}
+                                                        </pre>
                                                       ) : (
                                                         String(value ?? "—")
                                                       )}
@@ -898,6 +910,12 @@ const AuditTrailClient = (props: Props) => {
                                                     >
                                                       {String(value)}
                                                     </span>
+                                                  ) : typeof value ===
+                                                      "string" &&
+                                                    value.includes("\n") ? (
+                                                    <pre className="font-[Karla] whitespace-pre-wrap">
+                                                      {value}
+                                                    </pre>
                                                   ) : (
                                                     String(value ?? "—")
                                                   )}
