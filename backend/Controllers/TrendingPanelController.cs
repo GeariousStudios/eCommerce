@@ -84,7 +84,9 @@ namespace backend.Controllers
                 ViewMode = tp.ViewMode,
                 UnitColumnId = tp.UnitColumnId,
                 UnitColumnName = tp.UnitColumn?.Name,
-                UnitIds = tp.TrendingPanelToUnits.Select(tpu => tpu.UnitId).ToList(),
+                UnitIds = tp.TrendingPanelToUnits.Any()
+                    ? tp.TrendingPanelToUnits.Select(tpu => tpu.UnitId).ToList()
+                    : null,
                 CustomStartDate = tp.CustomStartDate,
                 CustomEndDate = tp.CustomEndDate,
                 ColSpan = tp.ColSpan,
@@ -125,7 +127,9 @@ namespace backend.Controllers
                 ViewMode = panel.ViewMode,
                 UnitColumnId = panel.UnitColumnId,
                 UnitColumnName = panel.UnitColumn?.Name,
-                UnitIds = panel.TrendingPanelToUnits.Select(tpu => tpu.UnitId).ToList(),
+                UnitIds = panel.TrendingPanelToUnits.Any()
+                    ? panel.TrendingPanelToUnits.Select(tpu => tpu.UnitId).ToList()
+                    : null,
                 CustomStartDate = panel.CustomStartDate,
                 CustomEndDate = panel.CustomEndDate,
                 ColSpan = panel.ColSpan,
@@ -181,6 +185,7 @@ namespace backend.Controllers
                     .UnitIds.Distinct()
                     .Select(unitId => new TrendingPanelToUnit { UnitId = unitId })
                     .ToList(),
+                Order = await _context.TrendingPanels.CountAsync(tp => tp.UserId == userId),
 
                 // Meta data.
                 CreationDate = now,
@@ -201,7 +206,9 @@ namespace backend.Controllers
                 ViewMode = panel.ViewMode,
                 UnitColumnId = panel.UnitColumnId,
                 UnitColumnName = panel.UnitColumn?.Name,
-                UnitIds = panel.TrendingPanelToUnits.Select(tpu => tpu.UnitId).ToList(),
+                UnitIds = panel.TrendingPanelToUnits.Any()
+                    ? panel.TrendingPanelToUnits.Select(tpu => tpu.UnitId).ToList()
+                    : null,
                 CustomStartDate = panel.CustomStartDate,
                 CustomEndDate = panel.CustomEndDate,
                 ColSpan = panel.ColSpan,
@@ -236,6 +243,8 @@ namespace backend.Controllers
                                 u => u.Id,
                                 (tpu, u) => $"{u.Name} (ID: {u.Id})"
                             )
+                            .ToList()
+                            .DefaultIfEmpty("—")
                             .ToList(),
                         ["DataToTrend"] =
                             panel.UnitColumnId == null
@@ -246,9 +255,14 @@ namespace backend.Controllers
                                     .FirstOrDefault(),
                         ["TrendingType"] = panel.Type,
                         ["TrendingPeriod"] = panel.Period,
-                        ["CustomStartDate"] = panel.CustomStartDate,
-                        ["CustomEndDate"] = panel.CustomEndDate,
-                        ["ShowInfo"] = panel.ShowInfo,
+                        ["CustomStartDate"] =
+                            panel.CustomStartDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                        ["CustomEndDate"] =
+                            panel.CustomEndDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                        ["ShowInfo"] = panel.ShowInfo
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                        ["Order"] = $"{panel.Order + 1}: {panel.Name} (ID: {panel.Id})",
                     }
                 );
             }
@@ -305,6 +319,8 @@ namespace backend.Controllers
                         u => u.Id,
                         (tpu, u) => $"{u.Name} (ID: {u.Id})"
                     )
+                    .ToList()
+                    .DefaultIfEmpty("—")
                     .ToList(),
                 ["DataToTrend"] =
                     panel.UnitColumnId == null
@@ -315,9 +331,10 @@ namespace backend.Controllers
                             .FirstOrDefault(),
                 ["TrendingType"] = panel.Type,
                 ["TrendingPeriod"] = panel.Period,
-                ["CustomStartDate"] = panel.CustomStartDate,
-                ["CustomEndDate"] = panel.CustomEndDate,
-                ["ShowInfo"] = panel.ShowInfo,
+                ["CustomStartDate"] = panel.CustomStartDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                ["CustomEndDate"] = panel.CustomEndDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                ["ShowInfo"] = panel.ShowInfo ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                ["Order"] = $"{panel.Order + 1}: {panel.Name} (ID: {panel.Id})",
             };
 
             panel.Name = dto.Name;
@@ -361,7 +378,7 @@ namespace backend.Controllers
                 ViewMode = panel.ViewMode,
                 UnitColumnId = panel.UnitColumnId,
                 UnitColumnName = panel.UnitColumn?.Name,
-                UnitIds = newLinks.Select(x => x.UnitId).ToList(),
+                UnitIds = newLinks.Any() ? newLinks.Select(x => x.UnitId).ToList() : null,
                 CustomStartDate = panel.CustomStartDate,
                 CustomEndDate = panel.CustomEndDate,
                 ColSpan = panel.ColSpan,
@@ -392,13 +409,15 @@ namespace backend.Controllers
                             ["Name"] = panel.Name,
                             ["ViewMode"] = panel.ViewMode,
                             ["PanelSize"] = panel.ColSpan,
-                            ["UnitsToTrend"] = dto
-                                .UnitIds.Join(
+                            ["UnitsToTrend"] = panel
+                                .TrendingPanelToUnits.Join(
                                     _context.Units,
-                                    id => id,
+                                    tpu => tpu.UnitId,
                                     u => u.Id,
-                                    (id, u) => $"{u.Name} (ID: {u.Id})"
+                                    (tpu, u) => $"{u.Name} (ID: {u.Id})"
                                 )
+                                .ToList()
+                                .DefaultIfEmpty("—")
                                 .ToList(),
                             ["DataToTrend"] =
                                 panel.UnitColumnId == null
@@ -409,9 +428,14 @@ namespace backend.Controllers
                                         .FirstOrDefault(),
                             ["TrendingType"] = panel.Type,
                             ["TrendingPeriod"] = panel.Period,
-                            ["CustomStartDate"] = panel.CustomStartDate,
-                            ["CustomEndDate"] = panel.CustomEndDate,
-                            ["ShowInfo"] = panel.ShowInfo,
+                            ["CustomStartDate"] =
+                                panel.CustomStartDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                            ["CustomEndDate"] =
+                                panel.CustomEndDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                            ["ShowInfo"] = panel.ShowInfo
+                                ? new[] { "Common/Yes" }
+                                : new[] { "Common/No" },
+                            ["Order"] = $"{panel.Order + 1}: {panel.Name} (ID: {panel.Id})",
                         },
                     }
                 );
@@ -435,7 +459,10 @@ namespace backend.Controllers
 
             var (deletedBy, userId) = userInfo.Value;
 
-            var panel = await _context.TrendingPanels.FirstOrDefaultAsync(tp => tp.Id == id);
+            var panel = await _context
+                .TrendingPanels.Include(tp => tp.TrendingPanelToUnits)
+                .ThenInclude(tpu => tpu.Unit)
+                .FirstOrDefaultAsync(tp => tp.Id == id);
 
             if (panel == null)
             {
@@ -464,14 +491,15 @@ namespace backend.Controllers
                         ["Name"] = panel.Name,
                         ["ViewMode"] = panel.ViewMode,
                         ["PanelSize"] = panel.ColSpan,
-                        ["UnitsToTrend"] = _context
-                            .TrendingPanelToUnits.Where(tpu => tpu.TrendingPanelId == panel.Id)
-                            .Join(
+                        ["UnitsToTrend"] = panel
+                            .TrendingPanelToUnits.Join(
                                 _context.Units,
                                 tpu => tpu.UnitId,
                                 u => u.Id,
                                 (tpu, u) => $"{u.Name} (ID: {u.Id})"
                             )
+                            .ToList()
+                            .DefaultIfEmpty("—")
                             .ToList(),
                         ["DataToTrend"] =
                             panel.UnitColumnId == null
@@ -482,9 +510,14 @@ namespace backend.Controllers
                                     .FirstOrDefault(),
                         ["TrendingType"] = panel.Type,
                         ["TrendingPeriod"] = panel.Period,
-                        ["CustomStartDate"] = panel.CustomStartDate,
-                        ["CustomEndDate"] = panel.CustomEndDate,
-                        ["ShowInfo"] = panel.ShowInfo,
+                        ["CustomStartDate"] =
+                            panel.CustomStartDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                        ["CustomEndDate"] =
+                            panel.CustomEndDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                        ["ShowInfo"] = panel.ShowInfo
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                        ["Order"] = $"{panel.Order + 1}: {panel.Name} (ID: {panel.Id})",
                     }
                 );
             }
@@ -499,28 +532,127 @@ namespace backend.Controllers
         {
             var lang = await GetLangAsync();
             var userInfo = await _userService.GetUserInfoAsync();
+
             if (userInfo == null)
                 return Unauthorized(
                     new { message = await _t.GetAsync("Common/Unauthorized", lang) }
                 );
 
-            var (_, userId) = userInfo.Value;
+            var (updatedBy, userId) = userInfo.Value;
+            var now = DateTime.UtcNow;
 
             var list = await _context
-                .TrendingPanels.Where(tp => tp.UserId == userId || tp.UserId == null)
+                .TrendingPanels.Include(tp => tp.TrendingPanelToUnits)
+                .ThenInclude(tpu => tpu.Unit)
+                .Where(tp => tp.UserId == userId || tp.UserId == null)
                 .ToListAsync();
 
             var dict = list.ToDictionary(tp => tp.Id);
+
+            var oldOrder = list.OrderBy(tp => tp.Order)
+                .Select(tp => $"{tp.Order + 1}: {tp.Name} (ID: {tp.Id})")
+                .ToList();
+
+            var oldValuesPerPanel = new Dictionary<int, Dictionary<string, object?>>();
+            foreach (var p in list)
+            {
+                var unitsOld = p
+                    .TrendingPanelToUnits.OrderBy(x => x.UnitId)
+                    .Select(x =>
+                        x.Unit != null ? $"{x.Unit.Name} (ID: {x.UnitId})" : $"(ID: {x.UnitId})"
+                    )
+                    .ToList()
+                    .DefaultIfEmpty("—")
+                    .ToList();
+
+                var dataToTrendOld =
+                    p.UnitColumnId == null
+                        ? new List<string> { "Common/All" }
+                        : _context
+                            .UnitColumns.Where(uc => uc.Id == p.UnitColumnId)
+                            .Select(uc => $"{uc.Name} (ID: {uc.Id})")
+                            .ToList();
+
+                oldValuesPerPanel[p.Id] = new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = p.Id,
+                    ["Name"] = p.Name,
+                    ["ViewMode"] = p.ViewMode,
+                    ["PanelSize"] = p.ColSpan,
+                    ["UnitsToTrend"] = unitsOld,
+                    ["DataToTrend"] = dataToTrendOld,
+                    ["TrendingType"] = p.Type,
+                    ["TrendingPeriod"] = p.Period,
+                    ["CustomStartDate"] = p.CustomStartDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                    ["CustomEndDate"] = p.CustomEndDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                    ["ShowInfo"] = p.ShowInfo ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                    ["Order"] = oldOrder,
+                };
+            }
 
             foreach (var dto in panels)
             {
                 if (dict.TryGetValue(dto.Id, out var panel))
                 {
                     panel.Order = dto.Order;
+                    panel.UpdateDate = now;
+                    panel.UpdatedBy = updatedBy;
                 }
             }
 
             await _context.SaveChangesAsync();
+
+            var newOrder = list.OrderBy(tp => tp.Order)
+                .Select(tp => $"{tp.Order + 1}: {tp.Name} (ID: {tp.Id})")
+                .ToList();
+
+            // Audit trail.
+            foreach (var panel in list.Where(tp => tp.UserId == userId))
+            {
+                var unitsNew = panel
+                    .TrendingPanelToUnits.OrderBy(x => x.UnitId)
+                    .Select(x =>
+                        x.Unit != null ? $"{x.Unit.Name} (ID: {x.UnitId})" : $"(ID: {x.UnitId})"
+                    )
+                    .ToList()
+                    .DefaultIfEmpty("—")
+                    .ToList();
+
+                var dataToTrendNew =
+                    panel.UnitColumnId == null
+                        ? new List<string> { "Common/All" }
+                        : _context
+                            .UnitColumns.Where(uc => uc.Id == panel.UnitColumnId)
+                            .Select(uc => $"{uc.Name} (ID: {uc.Id})")
+                            .ToList();
+
+                var newValues = new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = panel.Id,
+                    ["Name"] = panel.Name,
+                    ["ViewMode"] = panel.ViewMode,
+                    ["PanelSize"] = panel.ColSpan,
+                    ["UnitsToTrend"] = unitsNew,
+                    ["DataToTrend"] = dataToTrendNew,
+                    ["TrendingType"] = panel.Type,
+                    ["TrendingPeriod"] = panel.Period,
+                    ["CustomStartDate"] =
+                        panel.CustomStartDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                    ["CustomEndDate"] = panel.CustomEndDate?.ToString("yyyy-MM-dd HH:mm") ?? "—",
+                    ["ShowInfo"] = panel.ShowInfo ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                    ["Order"] = newOrder,
+                };
+
+                await _audit.LogAsync(
+                    "Update",
+                    "TrendingPanel",
+                    panel.Id,
+                    updatedBy,
+                    userId,
+                    new { OldValues = oldValuesPerPanel[panel.Id], NewValues = newValues }
+                );
+            }
+
             return Ok();
         }
     }

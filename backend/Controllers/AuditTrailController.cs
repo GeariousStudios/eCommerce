@@ -227,7 +227,7 @@ namespace backend.Controllers
                     "ShiftTeam",
                     // "SubCategory",
                     "TrendingPanel",
-                    // "UnitCell",
+                    "UnitCell",
                     "UnitColumn",
                     "Unit",
                     "UnitGroup",
@@ -349,13 +349,13 @@ namespace backend.Controllers
                             var num = prop.Value.GetInt32();
                             string periodName = num switch
                             {
-                                0 => "Today",
-                                1 => "Yesterday",
-                                2 => "LastWeek",
-                                3 => "LastMonth",
-                                4 => "LastQuarter",
-                                5 => "SinceStart",
-                                6 => "CustomPeriod",
+                                0 => "AllTime",
+                                1 => "Today",
+                                2 => "Yesterday",
+                                3 => "Weekly",
+                                4 => "Monthly",
+                                5 => "Quarterly",
+                                6 => "Custom",
                                 _ => num.ToString(),
                             };
                             var translated =
@@ -378,6 +378,23 @@ namespace backend.Controllers
                             };
                             var translated =
                                 await t.GetAsync($"AuditTrail/{sizeName}", lang) ?? sizeName;
+                            dict[key] = translated;
+                        }
+                        else if (
+                            prop.Name == "TrendingType"
+                            && prop.Value.ValueKind == JsonValueKind.Number
+                        )
+                        {
+                            var num = prop.Value.GetInt32();
+                            string trendingType = num switch
+                            {
+                                0 => "Total",
+                                1 => "Average",
+                                _ => num.ToString(),
+                            };
+                            var translated =
+                                await t.GetAsync($"AuditTrail/{trendingType}", lang)
+                                ?? trendingType;
                             dict[key] = translated;
                         }
                         else if (

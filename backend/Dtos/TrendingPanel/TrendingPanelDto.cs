@@ -11,7 +11,7 @@ namespace backend.Dtos.TrendingPanel
         public TrendingPeriods? Period { get; set; }
         public TrendingViewModes? ViewMode { get; set; }
 
-        public List<int> UnitIds { get; set; } = new();
+        public List<int>? UnitIds { get; set; }
 
         public int? UnitColumnId { get; set; }
         public string? UnitColumnName { get; set; }

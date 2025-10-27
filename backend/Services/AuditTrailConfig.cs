@@ -18,6 +18,7 @@ namespace backend.Services
                 ("ShiftTeam", null),
                 ("TrendingPanel", null),
                 ("UnitColumn", null),
+                ("UnitCell", null),
                 ("Unit", null),
                 ("UnitGroup", null),
             },

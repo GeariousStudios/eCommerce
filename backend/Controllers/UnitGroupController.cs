@@ -154,6 +154,17 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteUnitGroup(int id)
         {
             var lang = await GetLangAsync();
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
             var unitGroup = await _context
                 .UnitGroups.Include(u => u.Units)
                 .FirstOrDefaultAsync(u => u.Id == id);
@@ -167,6 +178,20 @@ namespace backend.Controllers
             {
                 return BadRequest(new { message = await _t.GetAsync("UnitGroup/InUse", lang) });
             }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "UnitGroup",
+                unitGroup.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = unitGroup.Id,
+                    ["Name"] = unitGroup.Name,
+                }
+            );
 
             _context.UnitGroups.Remove(unitGroup);
             await _context.SaveChangesAsync();
@@ -240,6 +265,20 @@ namespace backend.Controllers
                 UpdatedBy = unitGroup.UpdatedBy,
             };
 
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "UnitGroup",
+                unitGroup.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = unitGroup.Id,
+                    ["Name"] = unitGroup.Name,
+                }
+            );
+
             return Ok(result);
         }
 
@@ -290,6 +329,12 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = unitGroup.Id,
+                ["Name"] = unitGroup.Name,
+            };
+
             unitGroup.Name = dto.Name;
 
             // Meta data.
@@ -307,6 +352,24 @@ namespace backend.Controllers
                 UpdateDate = unitGroup.UpdateDate,
                 UpdatedBy = unitGroup.UpdatedBy,
             };
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "UnitGroup",
+                unitGroup.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = unitGroup.Id,
+                        ["Name"] = unitGroup.Name,
+                    },
+                }
+            );
 
             return Ok(result);
         }

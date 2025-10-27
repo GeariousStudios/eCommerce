@@ -474,13 +474,16 @@ const TrendingPanel: React.FC<Props> = ({
 
   // --- SET UNITS ---
   useEffect(() => {
-    if (
-      unitOptions.length &&
-      !selectedUnitIds.some((id) =>
-        unitOptions.some((o) => Number(o.value) === id),
-      )
-    ) {
-      setSelectedUnitIds([Number(unitOptions[0].value)]);
+    if (!unitOptions.length || selectedUnitIds.length === 0) {
+      return;
+    }
+
+    const anyValid = selectedUnitIds.some((id) =>
+      unitOptions.some((o) => Number(o.value) === id),
+    );
+
+    if (!anyValid) {
+      return;
     }
   }, [unitOptions, selectedUnitIds]);
 

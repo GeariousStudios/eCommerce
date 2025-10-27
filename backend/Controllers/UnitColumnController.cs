@@ -245,6 +245,17 @@ namespace backend.Controllers
         public async Task<IActionResult> DeleteColumn(int id)
         {
             var lang = await GetLangAsync();
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (deletedBy, userId) = userInfo.Value;
             var column = await _context
                 .UnitColumns.Include(c => c.UnitToUnitColumns)
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -260,6 +271,26 @@ namespace backend.Controllers
             {
                 return BadRequest(new { message = await _t.GetAsync("UnitColumn/InUse", lang) });
             }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "UnitColumn",
+                column.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = column.Id,
+                    ["Name"] = column.Name,
+                    ["DataType"] = column.DataType.ToString(),
+                    ["Compare"] = column.Compare ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                    ["ComparisonText"] = column.ComparisonText,
+                    ["LargeColumn"] = column.LargeColumn
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                }
+            );
 
             _context.UnitColumns.Remove(column);
             await _context.SaveChangesAsync();
@@ -343,6 +374,26 @@ namespace backend.Controllers
                 UpdatedBy = column.UpdatedBy,
             };
 
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "UnitColumn",
+                column.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = column.Id,
+                    ["Name"] = column.Name,
+                    ["DataType"] = column.DataType.ToString(),
+                    ["Compare"] = column.Compare ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                    ["ComparisonText"] = column.ComparisonText,
+                    ["LargeColumn"] = column.LargeColumn
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                }
+            );
+
             return Ok(result);
         }
 
@@ -412,7 +463,20 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = column.Id,
+                ["Name"] = column.Name,
+                ["DataType"] = column.DataType.ToString(),
+                ["Compare"] = column.Compare ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                ["ComparisonText"] = column.ComparisonText,
+                ["LargeColumn"] = column.LargeColumn
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
+            };
+
             column.Name = dto.Name;
+            column.DataType = dto.DataType;
             column.Compare = dto.Compare;
             column.ComparisonText = dto.ComparisonText;
             column.LargeColumn = dto.LargeColumn;
@@ -437,6 +501,32 @@ namespace backend.Controllers
                 UpdateDate = column.UpdateDate,
                 UpdatedBy = column.UpdatedBy,
             };
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "UnitColumn",
+                column.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = column.Id,
+                        ["Name"] = column.Name,
+                        ["DataType"] = column.DataType.ToString(),
+                        ["Compare"] = column.Compare
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                        ["ComparisonText"] = column.ComparisonText,
+                        ["LargeColumn"] = column.LargeColumn
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                    },
+                }
+            );
 
             return Ok(result);
         }

@@ -246,6 +246,7 @@ const HomeClient = (props: Props) => {
           type: null,
           period: null,
           unitColumnId: null,
+          unitIds: [],
         }),
       });
 
@@ -255,7 +256,8 @@ const HomeClient = (props: Props) => {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         notify("info", t("TrendingPanel/Trending panel") + t("Modal/created"));
-        setTrendingPanels((prev) => [result, ...prev]);
+        setTrendingPanels((prev) => [...prev, result]); // <-- lägg till sist
+        fetchTrendingPanels();
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
