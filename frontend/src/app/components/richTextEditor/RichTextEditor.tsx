@@ -78,7 +78,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
       },
     }));
 
-    // --- PASTE HTML FROM ITEM ---
+    // --- INITIALIZE EDITOR CONTENT ---
     useEffect(() => {
       const interval = setInterval(() => {
         const editor = quillRef.current?.getEditor?.();
@@ -87,21 +87,32 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           onReady?.();
           clearInterval(interval);
 
-          // editor.clipboard.addMatcher(
-          //   Node.ELEMENT_NODE,
-          //   (_node: any, delta: any) => {
-          //     delta.ops.forEach((op: any) => {
-          //       if (op.attributes) {
-          //         delete op.attributes;
-          //       }
-          //     });
-          //     return delta;
-          //   },
-          // );
+          if (value && value.trim() !== "") {
+            editor.clipboard.dangerouslyPasteHTML(value, "silent");
+          } else {
+            editor.clipboard.dangerouslyPasteHTML("<p><br></p>", "silent");
+          }
 
-          // try {
-          //   editor.format("size", DEFAULT_SIZE);
-          // } catch {}
+          setTimeout(() => {
+            try {
+              editor.focus();
+              editor.setSelection(0, 0);
+            } catch {}
+          }, 10);
+        }
+      }, 50);
+
+      return () => clearInterval(interval);
+    }, [onReady]);
+
+    // --- PASTE HTML FROM ITEM ---
+    useEffect(() => {
+      const interval = setInterval(() => {
+        const editor = quillRef.current?.getEditor?.();
+        if (editor) {
+          setIsEditorReady(true);
+          onReady?.();
+          clearInterval(interval);
 
           setTimeout(() => {
             const toolbar = editor.getModule("toolbar");
@@ -232,7 +243,6 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           id="quill-editor"
           theme="snow"
           placeholder=" "
-          defaultValue={value ?? "<p><br></p>"}
           modules={modules}
           shouldAutoFocus={shouldAutoFocus ?? false}
           onChange={(val) => {
