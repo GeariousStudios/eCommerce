@@ -237,6 +237,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           onChange={(val) => {
             if (!hasInitialized) {
               setHasInitialized(true);
+              setTimeout(() => onChange?.(val), 0);
               return;
             }
 
