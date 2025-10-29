@@ -45,7 +45,6 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     const quillRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isEditorReady, setIsEditorReady] = useState(false);
-    const [initialHtml, setInitialHtml] = useState(value ?? "<p><br></p>");
 
     const Size = Quill.import("attributors/style/size") as any;
     Size.whitelist = SIZE_WHITELIST;
@@ -70,54 +69,163 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
         const editor = quillRef.current?.getEditor();
         if (editor) {
           editor.clipboard.dangerouslyPasteHTML(value, "silent");
+          editor.root.blur();
         }
       },
-      getTextarea: () => textareaRef.current,
+      getTextarea: () => {
+        return textareaRef.current;
+      },
     }));
 
-    // initiera editorn
+    // --- PASTE HTML FROM ITEM ---
     useEffect(() => {
-      const check = setInterval(() => {
+      const interval = setInterval(() => {
         const editor = quillRef.current?.getEditor?.();
         if (editor) {
-          clearInterval(check);
           setIsEditorReady(true);
           onReady?.();
-          const html = value?.trim() ? value : "<p><br></p>";
-          editor.clipboard.dangerouslyPasteHTML(html, "silent");
+          clearInterval(interval);
+
+          // editor.clipboard.addMatcher(
+          //   Node.ELEMENT_NODE,
+          //   (_node: any, delta: any) => {
+          //     delta.ops.forEach((op: any) => {
+          //       if (op.attributes) {
+          //         delete op.attributes;
+          //       }
+          //     });
+          //     return delta;
+          //   },
+          // );
+
+          // try {
+          //   editor.format("size", DEFAULT_SIZE);
+          // } catch {}
+
+          setTimeout(() => {
+            const toolbar = editor.getModule("toolbar");
+            const container = toolbar.container;
+
+            const addResetOption = (
+              pickerSelector: string,
+              formatName: "color" | "background",
+            ) => {
+              const picker = container.querySelector(
+                pickerSelector,
+              ) as HTMLElement | null;
+              if (!picker) {
+                return;
+              }
+
+              const options = picker.querySelector(
+                ".ql-picker-options",
+              ) as HTMLElement | null;
+              if (!options) {
+                return;
+              }
+
+              if (options.querySelector('.ql-picker-item[data-value=""]')) {
+                return;
+              }
+
+              const resetItem = document.createElement("span");
+              resetItem.className = "ql-picker-item";
+              resetItem.setAttribute("data-value", "");
+              resetItem.setAttribute(
+                "tooltip-title",
+                t("toolbar.reset") ?? "Reset",
+              );
+
+              options.append(resetItem);
+
+              resetItem.addEventListener("click", () => {
+                editor.format(formatName, false);
+              });
+            };
+
+            addResetOption(".ql-color", "color");
+            addResetOption(".ql-background", "background");
+
+            const sizeBtn = container.querySelector(".ql-size");
+            if (sizeBtn)
+              sizeBtn.setAttribute("tooltip-title", t("toolbar.size"));
+
+            const boldBtn = container.querySelector(".ql-bold");
+            if (boldBtn)
+              boldBtn.setAttribute("tooltip-title", t("toolbar.bold"));
+
+            const italicBtn = container.querySelector(".ql-italic");
+            if (italicBtn)
+              italicBtn.setAttribute("tooltip-title", t("toolbar.italic"));
+
+            const underlineBtn = container.querySelector(".ql-underline");
+            if (underlineBtn)
+              underlineBtn.setAttribute(
+                "tooltip-title",
+                t("toolbar.underline"),
+              );
+
+            const strikeBtn = container.querySelector(".ql-strike");
+            if (strikeBtn)
+              strikeBtn.setAttribute("tooltip-title", t("toolbar.strike"));
+
+            const orderedListBtn = container.querySelector(
+              '.ql-list[value="ordered"]',
+            );
+            if (orderedListBtn)
+              orderedListBtn.setAttribute(
+                "tooltip-title",
+                t("toolbar.listOrdered"),
+              );
+
+            const bulletListBtn = container.querySelector(
+              '.ql-list[value="bullet"]',
+            );
+            if (bulletListBtn)
+              bulletListBtn.setAttribute(
+                "tooltip-title",
+                t("toolbar.listBullet"),
+              );
+
+            const cleanBtn = container.querySelector(".ql-clean");
+            if (cleanBtn)
+              cleanBtn.setAttribute("tooltip-title", t("toolbar.clean"));
+
+            const colorPicker = container.querySelector(".ql-color");
+            if (colorPicker)
+              colorPicker.setAttribute("tooltip-title", t("toolbar.color"));
+
+            const backgroundPicker = container.querySelector(".ql-background");
+            if (backgroundPicker)
+              backgroundPicker.setAttribute(
+                "tooltip-title",
+                t("toolbar.background"),
+              );
+          }, 100);
         }
       }, 50);
-      return () => clearInterval(check);
-    }, []);
 
-    // uppdatera vid value-ändring (utan att påverka fokus)
-    useEffect(() => {
-      if (!isEditorReady) return;
-      const editor = quillRef.current?.getEditor?.();
-      if (!editor) return;
-      const current = editor.root.innerHTML;
-      const incoming = value?.trim() || "<p><br></p>";
-      if (current !== incoming) {
-        const selection = editor.getSelection();
-        editor.clipboard.dangerouslyPasteHTML(incoming, "silent");
-        if (selection) editor.setSelection(selection);
-      }
-    }, [value, isEditorReady]);
+      return () => clearInterval(interval);
+    }, [t]);
 
     const modules = {
       toolbar: [
-        [{ size: [false, ...SIZE_WHITELIST] }],
+        [{ size: [false, ...Size.whitelist] }],
         ["bold", "italic", "underline", "strike"],
         [{ color: [] }, { background: [] }],
         [{ list: "ordered" }, { list: "bullet" }],
         ["clean"],
       ],
-      keyboard: { bindings: { tab: false } },
+      keyboard: {
+        bindings: {
+          tab: false,
+        },
+      },
       history: { delay: 1000, maxStack: 100, userOnly: true },
     };
 
     return (
-      <div className="focus-within:z-[calc(var(--z-base)+1)] relative w-full rounded border border-[var(--border-tertiary)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
+      <div className="focus-within:z-[calc(var(--z-base)+1) relative w-full rounded border-1 border-[var(--border-tertiary)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
         <QuillWrapper
           ref={quillRef}
           id="quill-editor"
@@ -125,8 +233,11 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           placeholder=" "
           modules={modules}
           shouldAutoFocus={shouldAutoFocus ?? false}
-          onChange={(val) => onChange?.(val)}
+          onChange={(val) => {
+            onChange?.(val);
+          }}
         />
+
         <textarea
           ref={textareaRef}
           tabIndex={-1}
