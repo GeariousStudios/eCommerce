@@ -21,6 +21,8 @@ const QuillWrapper = dynamic(() => import("../../helpers/QuillWrapper"), {
     React.RefAttributes<ReactQuill>
 >;
 
+const [hasInitialized, setHasInitialized] = useState(false);
+
 export type RichTextEditorRef = {
   getContent: () => string;
   getContentText: () => string;
@@ -83,17 +85,6 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
         const editor = quillRef.current?.getEditor?.();
         if (editor) {
           setIsEditorReady(true);
-
-          setTimeout(() => {
-            try {
-              editor.focus();
-              const selection = editor.getSelection();
-              if (!selection) {
-                editor.setSelection(0, 0);
-              }
-            } catch {}
-          }, 0);
-
           onReady?.();
           clearInterval(interval);
 
@@ -245,6 +236,11 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           modules={modules}
           shouldAutoFocus={shouldAutoFocus ?? false}
           onChange={(val) => {
+            if (!hasInitialized) {
+              setHasInitialized(true);
+              return;
+            }
+
             onChange?.(val);
           }}
         />
