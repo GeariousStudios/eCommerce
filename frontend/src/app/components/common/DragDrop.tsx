@@ -12,6 +12,7 @@ type DragDropProps<T> = {
   onDraggingChange?: (isDragging: boolean) => void;
   disableClass?: boolean;
   containerClassName?: string;
+  active?: boolean;
 };
 
 const DragDrop = <T,>({
@@ -22,6 +23,7 @@ const DragDrop = <T,>({
   onDraggingChange,
   disableClass = false,
   containerClassName,
+  active = true,
 }: DragDropProps<T>) => {
   const dragItemRef = useRef<T | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -203,13 +205,19 @@ const DragDrop = <T,>({
         return (
           <div
             key={id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, item)}
-            onDragEnter={(e) => handleDragEnter(e, item)}
+            draggable={active}
+            onDragStart={(e) => active && handleDragStart(e, item)}
+            onDragEnter={(e) => active && handleDragEnter(e, item)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => e.preventDefault()}
             onDragEnd={handleDragEnd}
-            className={`${extraClass} ${isDragging ? "cursor-grabbing opacity-50" : "cursor-grab opacity-100"}`}
+            className={`${extraClass} ${
+              active
+                ? isDragging
+                  ? "cursor-grabbing opacity-50"
+                  : "cursor-grab opacity-100"
+                : "cursor-default opacity-100"
+            }`}
           >
             {element}
           </div>

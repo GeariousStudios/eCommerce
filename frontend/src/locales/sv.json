@@ -135,6 +135,7 @@
 
   "Unit/Tooltip this hour": " denna timme",
   "Unit/Tooltip report data": "Rapportera data i en eller flera kolumner",
+  "Unit/Tooltip report this data": "Rapportera data i denna kolumn för",
   "Unit/Tooltip report events": "Infoga ny eller redigera befintlig händelse",
   "Unit/Tooltip comparison text": "Skillnad från föregående timme i kolumn: ",
   "Unit/Report data": "Rapportera data",
@@ -394,6 +395,14 @@
   "TrendingPanel/Hide information": "Dölj information",
   "TrendingPanel/Show unit": "Visa",
   "TrendingPanel/Hide unit": "Dölj",
+  "TrendingPanel/Edit layout": "Redigera layout",
+  "TrendingPanel/Save layout": "Spara layout",
+  "TrendingPanel/Cancel": "Avbryt",
+  "TrendingPanel/Layout saved": "Layout sparades!",
+  "TrendingPanel/No changes": "Inga ändringar sparades!",
+  "TrendingPanel/Autoinfo on": "Klicka för att dölja information automatiskt",
+  "TrendingPanel/Autoinfo off": "Klicka för att visa information automatiskt",
+  "TrendingPanel/Saving": "Sparar...",
 
   "AuditTrail/Show all": "Visa allt",
   "AuditTrail/Entity": "Objekt",

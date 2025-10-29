@@ -12,6 +12,8 @@ import {
   buttonDeletePrimaryClass,
   buttonPrimaryClass,
   iconButtonPrimaryClass,
+  smallSwitchClass,
+  smallSwitchKnobClass,
 } from "@/app/styles/buttonClasses";
 import MenuDropdown from "../common/MenuDropdown/MenuDropdown";
 import Input from "../common/Input";
@@ -85,15 +87,24 @@ type Props = {
   colSpan?: number;
   onColSpanChange?: (colSpan: number) => void;
   showInfo?: boolean;
+  isEditing?: boolean;
+  onPanelChange?: (
+    id: number,
+    updates: Partial<Props> & { _deleted?: boolean; _new?: boolean },
+  ) => void;
+  resetTrigger?: number;
 };
 
-const parseDate = (d: string) => {
+const parseDate = (d?: string | null) => {
+  if (!d) return new Date("1970-01-01");
   const [y, m, day] = d.split("-").map(Number);
   return new Date(y, (m ?? 1) - 1, day ?? 1);
 };
 
 const formatSE = (d: Date) =>
-  d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
+  isNaN(d.getTime())
+    ? ""
+    : d.toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
 
 const todayStr = () => {
   const d = new Date();
@@ -117,6 +128,9 @@ const TrendingPanel: React.FC<Props> = ({
   colSpan = 1,
   onColSpanChange,
   showInfo = true,
+  isEditing = false,
+  onPanelChange,
+  resetTrigger,
 }) => {
   const t = useTranslations();
 
@@ -144,6 +158,8 @@ const TrendingPanel: React.FC<Props> = ({
   const [isLoadingUnitCells, setIsLoadingUnitCells] = useState(false);
   const [panelColSpan, setPanelColSpan] = useState(colSpan);
   const [isResizing, setIsResizing] = useState(false);
+  const [localShowInfo, setLocalShowInfo] = useState(showInfo);
+  const [showInfoState, setShowInfoState] = useState(showInfo);
 
   // --- States: Custom period ---
   const [customStart, setCustomStart] = useState<string | null>(null);
@@ -155,6 +171,8 @@ const TrendingPanel: React.FC<Props> = ({
   );
 
   const [hiddenUnits, setHiddenUnits] = useState<number[]>([]);
+
+  const [isVisible, setIsVisible] = useState(true);
 
   const priority = [t("TrendingPanel/Total"), t("TrendingPanel/Average")];
 
@@ -422,28 +440,36 @@ const TrendingPanel: React.FC<Props> = ({
   };
 
   // --- Delete trending panel ---
-  const deletePanel = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/trending-panel/delete/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          "X-User-Language": localStorage.getItem("language") || "sv",
-        },
-      });
+  const deletePanel = () => {
+    setIsVisible(false);
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        notify("error", result?.message ?? t("Modal/Unknown error"));
-      } else {
-        notify("info", result?.message);
-        onDeleted?.();
-      }
-    } catch {
-      notify("error", t("Modal/Unknown error"));
+    if (isEditing || id < 0) {
+      onPanelChange?.(id, { _deleted: true });
+      return;
     }
+
+    fetch(`${apiUrl}/trending-panel/delete/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        "X-User-Language": localStorage.getItem("language") || "sv",
+      },
+    })
+      .then(async (res) => {
+        const result = await res.json();
+        if (!res.ok) {
+          notify("error", result?.message ?? t("Modal/Unknown error"));
+          setIsVisible(true);
+        } else {
+          notify("info", result?.message);
+          onDeleted?.();
+        }
+      })
+      .catch(() => {
+        notify("error", t("Modal/Unknown error"));
+        setIsVisible(true);
+      });
   };
 
   // --- SET CUSTOM PERIOD DEFAULT ---
@@ -497,16 +523,18 @@ const TrendingPanel: React.FC<Props> = ({
   // --- TOGGLE/GET VIEW MODE ---
   const toggleViewMode = () => {
     const modes: ViewMode[] = ["Value", "LineChart", "BarChart", "PieChart"];
-    const currentIndex = modes.indexOf(viewMode);
+    const currentIndex = modes.indexOf(panelViewMode);
     const nextIndex = (currentIndex + 1) % modes.length;
     const next = modes[nextIndex];
 
     setPanelViewMode(next);
-    updatePanel({ viewMode: next });
+
+    if (isEditing) onPanelChange?.(id, { viewMode: next });
+    else updatePanel({ viewMode: next });
   };
 
   const getOutlineIcon = () => {
-    switch (viewMode) {
+    switch (panelViewMode) {
       case "Value":
         return Outline.TableCellsIcon;
       case "LineChart":
@@ -521,7 +549,7 @@ const TrendingPanel: React.FC<Props> = ({
   };
 
   const getSolidIcon = () => {
-    switch (viewMode) {
+    switch (panelViewMode) {
       case "Value":
         return Solid.TableCellsIcon;
       case "LineChart":
@@ -543,6 +571,29 @@ const TrendingPanel: React.FC<Props> = ({
         : [...prev, unitId],
     );
   };
+
+  // --- SET TEMPORARY STATES ---
+  useEffect(() => {
+    setShowInfoState(showInfo);
+  }, [showInfo]);
+
+  useEffect(() => {
+    if (resetTrigger) {
+      setPanelName(title);
+      setSelectedUnitIds(unitIds ?? []);
+      setDays(period ?? "AllTime");
+      setAggregation(type ?? "Total");
+      setSelectedColumnId(unitColumnId ?? "ALL");
+      setCustomStart(customStartDate ?? null);
+      setCustomEnd(customEndDate ?? null);
+      setPanelViewMode(viewMode ?? "Value");
+      setHiddenUnits([]);
+
+      setShowInfoState(showInfo);
+      setIsVisible(true);
+      setPanelOpen(false);
+    }
+  }, [resetTrigger]);
 
   // --- HELPERS ---
   const daily = useMemo(() => {
@@ -651,7 +702,11 @@ const TrendingPanel: React.FC<Props> = ({
           const next = allowedSpans[idx + 1];
           setPanelColSpan(next);
           onColSpanChange?.(next);
-          updatePanel({ colSpan: next });
+
+          if (isEditing) {
+            onPanelChange?.(id, { colSpan: next });
+          }
+
           startX = moveEvent.clientX;
         }
       } else if (deltaX < -threshold) {
@@ -660,7 +715,11 @@ const TrendingPanel: React.FC<Props> = ({
           const next = allowedSpans[idx - 1];
           setPanelColSpan(next);
           onColSpanChange?.(next);
-          updatePanel({ colSpan: next });
+
+          if (isEditing) {
+            onPanelChange?.(id, { colSpan: next });
+          }
+
           startX = moveEvent.clientX;
         }
       }
@@ -692,61 +751,70 @@ const TrendingPanel: React.FC<Props> = ({
       : (unit.lightColorHex ?? "var(--graph-default)");
   };
 
+  if (!isVisible) {
+    return null;
+  }
+
   return (
     <div ref={panelRef} className={`${className} relative`}>
       <div className="relative flex h-[40px] items-center justify-between rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
-        <span className="truncate font-semibold">{title}</span>
+        <span className="truncate font-semibold">{panelName}</span>
         <div className="flex items-center gap-2">
-          {/* --- TOGGLE VIEW MODE --- */}
-          <CustomTooltip
-            content={
-              panelViewMode === "Value"
-                ? t("TrendingPanel/Change to line chart")
-                : panelViewMode === "LineChart"
-                  ? t("TrendingPanel/Change to bar chart")
-                  : panelViewMode === "BarChart"
-                    ? t("TrendingPanel/Change to pie chart")
-                    : t("TrendingPanel/Change to value")
-            }
-            mediumDelay
-            showOnTouch
-          >
-            <button
-              type="button"
-              className={`${iconButtonPrimaryClass} group`}
-              onClick={() => {
-                toggleViewMode();
-              }}
-            >
-              <HoverIcon
-                outline={getOutlineIcon()}
-                solid={getSolidIcon()}
-                className="h-6 min-h-6 w-6 min-w-6"
-              />
-            </button>
-          </CustomTooltip>
+          {isEditing && (
+            <>
+              {/* --- TOGGLE VIEW MODE --- */}
+              <CustomTooltip
+                content={
+                  panelViewMode === "Value"
+                    ? t("TrendingPanel/Change to line chart")
+                    : panelViewMode === "LineChart"
+                      ? t("TrendingPanel/Change to bar chart")
+                      : panelViewMode === "BarChart"
+                        ? t("TrendingPanel/Change to pie chart")
+                        : t("TrendingPanel/Change to value")
+                }
+                mediumDelay
+                showOnTouch
+              >
+                <button
+                  type="button"
+                  className={`${iconButtonPrimaryClass} group`}
+                  onClick={() => {
+                    toggleViewMode();
+                  }}
+                >
+                  <HoverIcon
+                    outline={getOutlineIcon()}
+                    solid={getSolidIcon()}
+                    className="h-6 min-h-6 w-6 min-w-6"
+                  />
+                </button>
+              </CustomTooltip>
 
-          {/* --- SETTINGS --- */}
-          <CustomTooltip
-            content={t("TrendingPanel/Settings")}
-            mediumDelay
-            showOnTouch
-          >
-            <button
-              ref={panelButtonRef}
-              type="button"
-              className={`${iconButtonPrimaryClass} group`}
-              onClick={() => {
-                setPanelOpen((prev) => !prev);
-              }}
-            >
-              <HoverIcon
-                outline={Outline.EllipsisHorizontalIcon}
-                solid={Solid.EllipsisHorizontalIcon}
-                className="h-6 min-h-6 w-6 min-w-6"
-              />
-            </button>
-          </CustomTooltip>
+              {/* --- SETTINGS --- */}
+
+              <CustomTooltip
+                content={t("TrendingPanel/Settings")}
+                mediumDelay
+                showOnTouch
+              >
+                <button
+                  ref={panelButtonRef}
+                  type="button"
+                  className={`${iconButtonPrimaryClass} group`}
+                  onClick={() => {
+                    setPanelOpen((prev) => !prev);
+                  }}
+                >
+                  <HoverIcon
+                    outline={Outline.EllipsisHorizontalIcon}
+                    solid={Solid.EllipsisHorizontalIcon}
+                    className="h-6 min-h-6 w-6 min-w-6"
+                  />
+                </button>
+              </CustomTooltip>
+            </>
+          )}
           <MenuDropdown
             triggerRef={panelButtonRef}
             isOpen={panelOpen}
@@ -769,7 +837,8 @@ const TrendingPanel: React.FC<Props> = ({
                     return;
                   }
 
-                  updatePanel({ title: val as string });
+                  if (isEditing) onPanelChange?.(id, { title: val as string });
+                  else updatePanel({ title: val as string });
                 }}
                 onBlur={() => {
                   if (String(panelName).length === 0) {
@@ -788,7 +857,9 @@ const TrendingPanel: React.FC<Props> = ({
                 onChange={(vals) => {
                   const ids = vals.map(Number);
                   setSelectedUnitIds(ids);
-                  updatePanel({ unitIds: ids });
+
+                  if (isEditing) onPanelChange?.(id, { unitIds: ids });
+                  else updatePanel({ unitIds: ids });
                 }}
                 options={unitOptions}
                 onModal
@@ -801,11 +872,17 @@ const TrendingPanel: React.FC<Props> = ({
                   selectedColumnId === "ALL" ? "ALL" : String(selectedColumnId)
                 }
                 onChange={(val) => {
-                  const id = val === "ALL" ? "ALL" : Number(val);
-                  setSelectedColumnId(id);
-                  updatePanel({
-                    unitColumnId: id === "ALL" ? null : id,
-                  });
+                  const idValue = val === "ALL" ? "ALL" : Number(val);
+                  setSelectedColumnId(idValue);
+
+                  if (isEditing)
+                    onPanelChange?.(id, {
+                      unitColumnId: idValue === "ALL" ? null : idValue,
+                    });
+                  else
+                    updatePanel({
+                      unitColumnId: idValue === "ALL" ? null : idValue,
+                    });
                 }}
                 options={[
                   { value: "ALL", label: t("Common/All") },
@@ -824,7 +901,9 @@ const TrendingPanel: React.FC<Props> = ({
                 onChange={(val) => {
                   const agg = val as Aggregation;
                   setAggregation(agg);
-                  updatePanel({ type: agg });
+
+                  if (isEditing) onPanelChange?.(id, { type: agg });
+                  else updatePanel({ type: agg });
                 }}
                 options={[
                   { value: "Total", label: t("TrendingPanel/Total") },
@@ -839,8 +918,11 @@ const TrendingPanel: React.FC<Props> = ({
                   label={t("TrendingPanel/Trending period")}
                   value={days}
                   onChange={(val) => {
-                    setDays(val as TrendingPeriod);
-                    updatePanel({ period: val as TrendingPeriod });
+                    const v = val as TrendingPeriod;
+                    setDays(v);
+
+                    if (isEditing) onPanelChange?.(id, { period: v });
+                    else updatePanel({ period: v });
                   }}
                   options={[
                     { value: "Today", label: t("TrendingPanel/Today") },
@@ -876,12 +958,25 @@ const TrendingPanel: React.FC<Props> = ({
 
                       if (customEnd && v && customEnd < v) {
                         setCustomEnd(v);
-                        updatePanel({ customStartDate: v, customEndDate: v });
+
+                        if (isEditing)
+                          onPanelChange?.(id, {
+                            customStartDate: v,
+                            customEndDate: v,
+                          });
+                        else
+                          updatePanel({ customStartDate: v, customEndDate: v });
                       } else {
-                        updatePanel({
-                          customStartDate: v,
-                          customEndDate: customEnd,
-                        });
+                        if (isEditing)
+                          onPanelChange?.(id, {
+                            customStartDate: v,
+                            customEndDate: customEnd,
+                          });
+                        else
+                          updatePanel({
+                            customStartDate: v,
+                            customEndDate: customEnd,
+                          });
                       }
                     }}
                     onModal
@@ -897,11 +992,16 @@ const TrendingPanel: React.FC<Props> = ({
                     max={todayStr()}
                     onChange={(val) => {
                       const v = (val as string) || null;
-                      setCustomEnd(v);
-                      updatePanel({
-                        customStartDate: customStart,
-                        customEndDate: v,
-                      });
+                      if (isEditing)
+                        onPanelChange?.(id, {
+                          customStartDate: customStart,
+                          customEndDate: v,
+                        });
+                      else
+                        updatePanel({
+                          customStartDate: customStart,
+                          customEndDate: v,
+                        });
                     }}
                     onModal
                   />
@@ -922,7 +1022,7 @@ const TrendingPanel: React.FC<Props> = ({
 
       <div className="col-span-2">
         <div className="flex flex-col overflow-y-auto rounded-b border-1 border-t-0 border-[var(--border-main)] px-2 pt-1">
-          {viewMode === "LineChart" ? (
+          {panelViewMode === "LineChart" ? (
             // --- LINE CHART ---
             <div className="mt-2 overflow-hidden">
               {isLoadingUnitCells ? (
@@ -1100,7 +1200,7 @@ const TrendingPanel: React.FC<Props> = ({
                 </div>
               )}
             </div>
-          ) : viewMode === "BarChart" ? (
+          ) : panelViewMode === "BarChart" ? (
             // --- BAR CHART ---
             <div className="mt-2 overflow-hidden">
               {isLoadingUnitCells ? (
@@ -1215,16 +1315,7 @@ const TrendingPanel: React.FC<Props> = ({
                       />
 
                       {sortedUnits.map((u, i) => {
-                        const isHidden = hiddenUnits.includes(u.id);
                         return (
-                          // <Bar
-                          //   key={u.id}
-                          //   dataKey={String(u.id)}
-                          //   name={u.label}
-                          //   fill={getUnitColor(u.id)}
-                          //   fillOpacity={isHidden ? 0 : 1}
-                          //   activeBar={!isHidden}
-                          // />
                           <Bar
                             key={u.id}
                             dataKey={String(u.id)}
@@ -1240,7 +1331,7 @@ const TrendingPanel: React.FC<Props> = ({
                 </div>
               )}
             </div>
-          ) : viewMode === "PieChart" ? (
+          ) : panelViewMode === "PieChart" ? (
             // --- PIE CHART ---
             <div className="mt-2 overflow-hidden">
               {isLoadingUnitCells ? (
@@ -1490,26 +1581,57 @@ const TrendingPanel: React.FC<Props> = ({
           {/* --- PANEL INFO --- */}
           <div className="mt-2 text-sm">
             <div className="-mx-2 bg-[var(--bg-grid-zebra)] px-2 py-1">
-              <button
-                className="flex w-full cursor-pointer items-center justify-between transition-colors delay-[var(--transition-fast)] hover:text-[var(--accent-color)]"
-                onClick={() => updatePanel({ showInfo: !showInfo })}
-              >
-                <span className="">
-                  {showInfo
-                    ? t("TrendingPanel/Hide information")
-                    : t("TrendingPanel/Show information")}
-                </span>
-                <motion.div
-                  animate={{ rotate: showInfo ? 0 : 180 }}
-                  transition={{ duration: 0.25, ease: "easeInOut" }}
+              <div className="flex w-full items-center justify-between gap-2">
+                <button
+                  className="flex w-full cursor-pointer items-center justify-between text-left transition-colors delay-[var(--transition-fast)] hover:text-[var(--accent-color)]"
+                  onClick={() => setLocalShowInfo(!localShowInfo)}
                 >
-                  <Outline.ChevronUpIcon className="h-4 w-4 text-[var(--text-primary)]" />
-                </motion.div>
-              </button>
+                  <span>
+                    {localShowInfo
+                      ? t("TrendingPanel/Hide information")
+                      : t("TrendingPanel/Show information")}
+                  </span>
+
+                  <motion.div
+                    animate={{ rotate: localShowInfo ? 0 : 180 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                  >
+                    <Outline.ChevronUpIcon className="h-4 w-4 text-[var(--text-primary)]" />
+                  </motion.div>
+                </button>
+
+                {isEditing && (
+                  <CustomTooltip
+                    content={
+                      showInfoState
+                        ? t("TrendingPanel/Autoinfo on")
+                        : t("TrendingPanel/Autoinfo off")
+                    }
+                  >
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={showInfoState}
+                      className={smallSwitchClass(showInfoState)}
+                      onClick={() => {
+                        const newValue = !showInfoState;
+                        setShowInfoState(newValue);
+                        if (isEditing) {
+                          onPanelChange?.(id, { showInfo: newValue });
+                        } else {
+                          updatePanel({ showInfo: newValue });
+                        }
+                      }}
+                    >
+                      <div className={smallSwitchKnobClass(showInfoState)} />
+                    </button>
+                  </CustomTooltip>
+                )}
+              </div>
             </div>
 
             <AnimatePresence initial={false}>
-              {showInfo && (
+              {localShowInfo && (
                 <motion.div
                   key="info-content"
                   initial={{ height: 0, opacity: 0 }}
@@ -1601,10 +1723,12 @@ const TrendingPanel: React.FC<Props> = ({
             </AnimatePresence>
 
             {/* --- RESIZE HANDLE --- */}
-            <div
-              className={`absolute top-0 right-0 h-full w-2 cursor-ew-resize hover:bg-[var(--text-secondary)] ${isResizing ? "bg-[var(--text-secondary)]" : "bg-transparent"}`}
-              onMouseDown={handleMouseDown}
-            />
+            {isEditing && (
+              <div
+                className={`absolute top-0 right-0 h-full w-2 cursor-ew-resize hover:bg-[var(--text-secondary)] ${isResizing ? "bg-[var(--text-secondary)]" : "bg-transparent"}`}
+                onMouseDown={handleMouseDown}
+              />
+            )}
           </div>
         </div>
       </div>

@@ -166,6 +166,13 @@ const UnitClient = (props: Props) => {
   // --- States: UnitCell & Report ---
   const [unitCells, setUnitCells] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
+  const [editingCell, setEditingCell] = useState<{
+    hour: number;
+    columnId: number;
+  } | null>(null);
+  const [editingValue, setEditingValue] = useState<string | number | boolean>(
+    "",
+  );
 
   // --- States: This ---
   const [expandedRows, setExpandedRows] = useState<number[]>([]);
@@ -787,6 +794,65 @@ const UnitClient = (props: Props) => {
     }
   };
 
+  // --- Save unit cell ---
+  const saveInlineEdit = async () => {
+    if (!editingCell) {
+      return;
+    }
+
+    try {
+      const { hour, columnId } = editingCell;
+      const dataType = unitColumnDataTypes[unitColumnIds.indexOf(columnId)];
+
+      const isEmpty =
+        dataType === "Number" && (editingValue === "" || editingValue === null);
+
+      const body = {
+        unitId: parsedUnitId,
+        date: selectedDate,
+        hour,
+        values: [
+          {
+            columnId,
+            value:
+              dataType === "Boolean"
+                ? editingValue
+                  ? "true"
+                  : "false"
+                : isEmpty
+                  ? ""
+                  : String(editingValue),
+            intValue:
+              dataType === "Number" && !isEmpty
+                ? Number(editingValue)
+                : undefined,
+          },
+        ],
+      };
+
+      const response = await fetch(`${apiUrl}/unit-cell/update-all/${unitId}`, {
+        method: "PUT",
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        notify("success", t("Common/Changes saved"));
+        setEditingCell(null);
+        setRefetchData(true);
+      } else {
+        const result = await response.json();
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      }
+    } catch {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
   // --- UI HANDLERS ---
   const toggleRow = (index: number) => {
     setExpandedRows((prev) =>
@@ -1389,7 +1455,7 @@ const UnitClient = (props: Props) => {
           <div className="w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
             <table className="w-full max-w-full min-w-fit border-collapse overflow-x-auto">
               <thead className="bg-[var(--bg-grid-header)]">
-                {refetchData ? (
+                {isBootstrapping ? (
                   <tr>
                     <th
                       colSpan={unitColumnNames.length + compareColsCount + 4}
@@ -1469,7 +1535,7 @@ const UnitClient = (props: Props) => {
                 )}
               </thead>
               <tbody>
-                {refetchData ? (
+                {isBootstrapping ? (
                   <tr>
                     {/* 960px = h-[tdClass] * 24 */}
                     <td
@@ -1520,7 +1586,14 @@ const UnitClient = (props: Props) => {
                         <React.Fragment key={hour}>
                           <tr
                             role="button"
-                            onClick={() => toggleRow(hour)}
+                            onClick={(e) => {
+                              if (editingCell) {
+                                e.stopPropagation();
+                                return;
+                              }
+
+                              toggleRow(hour);
+                            }}
                             aria-label="Öppna/stäng"
                             className={`${hour % 2 === 0 ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} group/row cursor-pointer transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
                           >
@@ -1651,6 +1724,7 @@ const UnitClient = (props: Props) => {
 
                             {/* --- Unit Columns <td>s --- */}
                             {unitColumnNames.map((_, colIdx) => {
+                              const columnId = unitColumnIds[colIdx];
                               const columnName = unitColumnNames[colIdx];
                               const dataType = unitColumnDataTypes[colIdx];
                               const hasCompare = unitColumnCompareFlags[colIdx];
@@ -1715,35 +1789,81 @@ const UnitClient = (props: Props) => {
                                     } group/cell break-normal!`}
                                   >
                                     <div className="flex gap-4">
-                                      {displayValue}
-
-                                      <CustomTooltip
-                                        content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Tooltip report data") + t("Unit/Tooltip this hour") : t("Unit/No columns")}`}
-                                        veryLongDelay={
-                                          props.isReporter == true &&
-                                          unitColumnNames.length > 0
-                                        }
-                                        showOnTouch
-                                      >
-                                        <button
-                                          type="button"
-                                          className={`${iconButtonPrimaryClass} group invisible ml-auto group-hover/cell:visible`}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            toggleUnitCellModal(hour);
-                                          }}
-                                          disabled={
-                                            !props.isReporter ||
-                                            unitColumnNames.length === 0
+                                      {editingCell?.hour === hour &&
+                                      editingCell?.columnId === columnId ? (
+                                        <Input
+                                          compact
+                                          focusOnMount
+                                          type={
+                                            dataType === "Number"
+                                              ? "number"
+                                              : "text"
                                           }
-                                        >
-                                          <HoverIcon
-                                            outline={Outline.PencilSquareIcon}
-                                            solid={Solid.PencilSquareIcon}
-                                            className="h-6 min-h-6 w-6 min-w-6"
-                                          />
-                                        </button>
-                                      </CustomTooltip>
+                                          value={String(editingValue ?? "")}
+                                          onChange={(val) =>
+                                            setEditingValue(
+                                              dataType === "Number"
+                                                ? val === ""
+                                                  ? ""
+                                                  : isNaN(Number(val))
+                                                    ? ""
+                                                    : Number(val)
+                                                : val,
+                                            )
+                                          }
+                                          onBlur={() => setEditingCell(null)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === "Escape") {
+                                              e.stopPropagation();
+                                              setEditingCell(null);
+                                            } else if (e.key === "Enter") {
+                                              e.preventDefault();
+                                              saveInlineEdit();
+                                            }
+                                          }}
+                                        />
+                                      ) : (
+                                        <>
+                                          {displayValue}
+
+                                          <CustomTooltip
+                                            content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Tooltip report this data") + t("Unit/Tooltip this hour") : t("Unit/No columns")}`}
+                                            veryLongDelay={
+                                              props.isReporter == true &&
+                                              unitColumnNames.length > 0
+                                            }
+                                            showOnTouch
+                                          >
+                                            <button
+                                              type="button"
+                                              className={`${iconButtonPrimaryClass} group invisible ml-auto group-hover/cell:visible`}
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                // toggleUnitCellModal(hour);
+                                                setEditingCell({
+                                                  hour,
+                                                  columnId,
+                                                });
+                                                setEditingValue(
+                                                  cell?.value ??
+                                                    cell?.intValue ??
+                                                    "",
+                                                );
+                                              }}
+                                              disabled={
+                                                !props.isReporter ||
+                                                unitColumnNames.length === 0
+                                              }
+                                            >
+                                              <HoverIcon
+                                                outline={Outline.PencilIcon}
+                                                solid={Solid.PencilIcon}
+                                                className="h-6 min-h-6 w-6 min-w-6"
+                                              />
+                                            </button>
+                                          </CustomTooltip>
+                                        </>
+                                      )}
                                     </div>
                                   </td>
 

@@ -149,7 +149,7 @@ namespace backend.Controllers
                 {
                     if (roleName == "Developer")
                     {
-                        allRules.Add((null, null)); // Developer ser allt
+                        allRules.Add((null, null));
                     }
                     else
                     {
@@ -204,128 +204,6 @@ namespace backend.Controllers
 
             return Ok(trails);
         }
-
-        //     var query = _context.AuditTrails.AsQueryable();
-
-        //     if (entity != null && entity.Count > 0)
-        //         query = query.Where(a => entity.Contains(a.EntityName));
-
-        //     if (entityId.HasValue)
-        //         query = query.Where(a => a.EntityId == entityId);
-
-        //     if (Request.Query.ContainsKey("user"))
-        //     {
-        //         var usersFromQuery = Request.Query["user"].ToList();
-        //         if (usersFromQuery.Count > 0)
-        //         {
-        //             var matchedUsers = await _context
-        //                 .Users.Where(u =>
-        //                     usersFromQuery.Contains(u.Username)
-        //                     || usersFromQuery.Contains(u.FirstName + " " + u.LastName)
-        //                 )
-        //                 .Select(u => new
-        //                 {
-        //                     u.Id,
-        //                     u.Username,
-        //                     FullName = u.FirstName + " " + u.LastName,
-        //                 })
-        //                 .ToListAsync();
-
-        //             var matchedUserIds = matchedUsers.Select(u => u.Id).ToList();
-        //             var matchedUsernames = matchedUsers.Select(u => u.Username).ToList();
-        //             var matchedFullNames = matchedUsers.Select(u => u.FullName).ToList();
-
-        //             query = query.Where(a =>
-        //                 matchedUserIds.Contains(a.UserId)
-        //                 || matchedUsernames.Contains(a.Username)
-        //                 || matchedFullNames.Contains(a.User)
-        //             );
-        //         }
-        //     }
-
-        //     if (userId.HasValue)
-        //         query = query.Where(a => a.UserId == userId);
-
-        //     if (action != null && action.Count > 0)
-        //         query = query.Where(a => action.Contains(a.Action));
-
-        //     if (from.HasValue)
-        //         query = query.Where(a => a.Timestamp >= from.Value);
-
-        //     if (to.HasValue)
-        //         query = query.Where(a => a.Timestamp <= to.Value);
-
-        //     var role =
-        //         User.IsInRole("Admin") ? "Admin"
-        //         : User.IsInRole("Developer") ? "Developer"
-        //         : User.IsInRole("Reporter") ? "Reporter"
-        //         : null;
-
-        //     var lang = await GetLangAsync();
-
-        //     query = sortBy?.ToLower() switch
-        //     {
-        //         "action" => sortOrder == "asc"
-        //             ? query.OrderBy(a => a.Action)
-        //             : query.OrderByDescending(a => a.Action),
-        //         "entityname" => sortOrder == "asc"
-        //             ? query.OrderBy(a => a.EntityName)
-        //             : query.OrderByDescending(a => a.EntityName),
-        //         "entityid" => sortOrder == "asc"
-        //             ? query.OrderBy(a => a.EntityId)
-        //             : query.OrderByDescending(a => a.EntityId),
-        //         "user" => sortOrder == "asc"
-        //             ? query.OrderBy(a => a.User)
-        //             : query.OrderByDescending(a => a.User),
-        //         "userid" => sortOrder == "asc"
-        //             ? query.OrderBy(a => a.UserId)
-        //             : query.OrderByDescending(a => a.UserId),
-        //         _ => sortOrder == "asc"
-        //             ? query.OrderBy(a => a.Timestamp)
-        //             : query.OrderByDescending(a => a.Timestamp),
-        //     };
-
-        //     if (role != null && AuditTrailConfig.Rules.TryGetValue(role, out var rules))
-        //     {
-        //         if (!(rules.Count == 1 && rules[0].EntityName == null && rules[0].Action == null))
-        //         {
-        //             var list = await query.Take(500).ToListAsync();
-
-        //             list = list.Where(a =>
-        //                     rules.Any(r =>
-        //                         (r.EntityName == null || r.EntityName == a.EntityName)
-        //                         && (r.Action == null || r.Action == a.Action)
-        //                     )
-        //                 )
-        //                 .ToList();
-
-        //             await TranslateDetailsAsync(list, lang);
-        //             await TranslateEntitiesAndActionsAsync(list, lang);
-        //             return Ok(list);
-        //         }
-        //     }
-
-        //     var trails = await query.Take(500).ToListAsync();
-
-        //     foreach (var trail in trails)
-        //     {
-        //         var userInfo = await _context
-        //             .Users.Where(u => u.Id == trail.UserId)
-        //             .Select(u => new { FullName = u.FirstName + " " + u.LastName, u.Username })
-        //             .FirstOrDefaultAsync();
-
-        //         if (userInfo != null)
-        //         {
-        //             trail.User = userInfo.FullName?.Trim() ?? trail.User;
-        //             trail.Username = userInfo.Username;
-        //         }
-        //     }
-
-        //     await TranslateDetailsAsync(trails, lang);
-        //     await TranslateEntitiesAndActionsAsync(trails, lang);
-
-        //     return Ok(trails);
-        // }
 
         [HttpGet("rules")]
         public async Task<IActionResult> GetAuditTrailRules()

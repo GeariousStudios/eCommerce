@@ -29,7 +29,13 @@ export const roundedButtonClass =
   "h-[40px] w-[40px] flex justify-center items-center cursor-pointer bg-[var(--bg-navbar-link)] rounded-full z-[calc(var(--z-base)+1)]";
 
 export const switchClass = (isTrue: boolean) =>
-  `${isTrue ? "bg-[var(--accent-color)]" : "bg-gray-500"} h-6 w-10 cursor-pointer rounded-full px-0.5`;
+  `${isTrue ? "bg-[var(--accent-color)]" : "bg-gray-500"} min-h-6 min-w-10 h-6 w-10 cursor-pointer rounded-full px-0.5`;
 
 export const switchKnobClass = (isTrue: boolean) =>
-  `${isTrue ? "translate-x-4" : "translate-x-0"} h-5 w-5 rounded-full bg-white duration-[var(--fast)]`;
+  `${isTrue ? "translate-x-4" : "translate-x-0"} h-5 w-5 min-h-5 min-w-5 rounded-full bg-white duration-[var(--fast)]`;
+
+export const smallSwitchClass = (isTrue: boolean) =>
+  `${isTrue ? "bg-[var(--accent-color)]" : "bg-gray-500"} h-4 w-6.5 min-h-4 min-w-6.5 cursor-pointer rounded-full px-0.5`;
+
+export const smallSwitchKnobClass = (isTrue: boolean) =>
+  `${isTrue ? "translate-x-2.25" : "translate-x-0"} h-3.25 w-3.25 min-h-3.25 min-w-3.25 rounded-full bg-white duration-[var(--fast)]`;

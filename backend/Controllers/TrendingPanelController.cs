@@ -221,7 +221,7 @@ namespace backend.Controllers
                 UpdatedBy = panel.UpdatedBy,
             };
 
-            if (!dto.IsGlobal)
+            if (dto.IsGlobal)
             {
                 // Audit trail.
                 await _audit.LogAsync(
@@ -305,6 +305,29 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
             var isGlobal = panel.UserId == null;
+
+            var oldUnitIds = panel
+                .TrendingPanelToUnits.Select(x => x.UnitId)
+                .OrderBy(x => x)
+                .ToList();
+            var newUnitIds = dto.UnitIds.Distinct().OrderBy(x => x).ToList();
+
+            bool hasChanges =
+                panel.Name != dto.Name
+                || panel.Type != dto.Type
+                || panel.Period != dto.Period
+                || panel.ViewMode != dto.ViewMode
+                || panel.UnitColumnId != dto.UnitColumnId
+                || panel.CustomStartDate != dto.CustomStartDate
+                || panel.CustomEndDate != dto.CustomEndDate
+                || panel.ColSpan != dto.ColSpan
+                || panel.ShowInfo != dto.ShowInfo
+                || !oldUnitIds.SequenceEqual(newUnitIds);
+
+            if (!hasChanges)
+            {
+                return Ok();
+            }
 
             var oldValues = new Dictionary<string, object?>
             {
@@ -391,7 +414,7 @@ namespace backend.Controllers
                 UpdatedBy = panel.UpdatedBy,
             };
 
-            if (!isGlobal)
+            if (isGlobal)
             {
                 // Audit trail.
                 await _audit.LogAsync(
@@ -476,7 +499,7 @@ namespace backend.Controllers
             _context.TrendingPanels.Remove(panel);
             await _context.SaveChangesAsync();
 
-            if (!isGlobal)
+            if (isGlobal)
             {
                 // Audit trail.
                 await _audit.LogAsync(
@@ -553,6 +576,26 @@ namespace backend.Controllers
                 .Select(tp => $"{tp.Order + 1}: {tp.Name} (ID: {tp.Id})")
                 .ToList();
 
+            var changedPanels = new List<TrendingPanel>();
+
+            foreach (var dto in panels)
+            {
+                if (dict.TryGetValue(dto.Id, out var panel))
+                {
+                    if (panel.Order != dto.Order)
+                    {
+                        panel.UpdateDate = now;
+                        panel.UpdatedBy = updatedBy;
+                        changedPanels.Add(panel);
+                    }
+                }
+            }
+
+            if (!changedPanels.Any())
+            {
+                return Ok();
+            }
+
             var oldValuesPerPanel = new Dictionary<int, Dictionary<string, object?>>();
             foreach (var p in list)
             {
@@ -607,7 +650,7 @@ namespace backend.Controllers
                 .ToList();
 
             // Audit trail.
-            foreach (var panel in list.Where(tp => tp.UserId == userId))
+            foreach (var panel in changedPanels.Where(tp => tp.UserId == userId))
             {
                 var unitsNew = panel
                     .TrendingPanelToUnits.OrderBy(x => x.UnitId)

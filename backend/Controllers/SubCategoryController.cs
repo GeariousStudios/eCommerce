@@ -203,6 +203,17 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            var existsWithSameName = await _context.SubCategories.AnyAsync(sc =>
+                sc.Id != id && sc.Name.ToLower() == dto.Name.ToLower()
+            );
+
+            if (existsWithSameName)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("SubCategory/NameTaken", lang) }
+                );
+            }
+
             subCategory.Name = dto.Name;
 
             _context.CategoryToSubCategories.RemoveRange(subCategory.CategoryToSubCategories);

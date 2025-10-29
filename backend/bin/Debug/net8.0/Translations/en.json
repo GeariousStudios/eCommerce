@@ -67,6 +67,8 @@
   "SubCategory/Deleted": "Sub category deleted!",
   "SubCategory/SomeNotFound": "One or more sub categories could not be found",
   "SubCategory/ExistsInCategory": "Sub category {0} already exists in this category!",
+  "SubCategory/NameTaken": "A sub category with the same name already exists!",
+  "SubCategory/DuplicateName": "Another sub category already has the name \"{0}\".",
 
   "Report/NotFound": "Report could not be found in the database",
   "Report/Deleted": "Report deleted!",
@@ -142,6 +144,7 @@
   "AuditTrail/Headline": "Headline",
   "AuditTrail/Name": "Name",
   "AuditTrail/SubCategories": "Sub categories",
+  "AuditTrail/SubCategory": "Sub category",
   "AuditTrail/IsHidden": "Hidden",
   "AuditTrail/LightColorHex": "Light color (hex)",
   "AuditTrail/DarkColorHex": "Dark color (hex)",

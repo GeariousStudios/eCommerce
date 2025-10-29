@@ -28,6 +28,8 @@ type InputProps = {
   inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
   min?: string | number;
   max?: string | number;
+  focusOnMount?: boolean;
+  compact?: boolean;
 };
 
 const isDarkTheme = () => {
@@ -67,6 +69,8 @@ const Input = ({
   inputMode,
   min,
   max,
+  focusOnMount = false,
+  compact = false,
 }: InputProps & { icon?: ReactNode }) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -79,6 +83,13 @@ const Input = ({
   const isDisabled = id === "disabled";
 
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (focusOnMount && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [focusOnMount]);
 
   return (
     <>
@@ -93,8 +104,9 @@ const Input = ({
           ref={(el) => {
             if (el) {
               el.indeterminate = !!indeterminate;
-              inputRef.current = el;
             }
+
+            inputRef.current = el;
           }}
           type={type === "password" && showPassword ? "text" : type}
           id={id}
@@ -139,7 +151,7 @@ const Input = ({
           onBlur={onBlur}
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!pointer-events-none opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : "duration-medium flex h-[40px] w-full caret-[var(--accent-color)]"} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer ${notRounded ? "border-y-1" : "rounded border-1"} ${!value && (isDate || isTime || isDateTime) ? "is-empty" : ""} ${inChip ? "border-[var(--text-main)]" : "border-[var(--border-tertiary)]"} ${
+          className={`${isDisabled ? "!pointer-events-none opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : `duration-medium flex ${compact ? "h-[24px] border-0! p-0!" : "h-[40px]"} w-full caret-[var(--accent-color)]`} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer ${notRounded ? "border-y-1" : "rounded border-1"} ${!value && (isDate || isTime || isDateTime) ? "is-empty" : ""} ${inChip ? "border-[var(--text-main)]" : "border-[var(--border-tertiary)]"} ${
             isColor ? "cursor-pointer p-1" : "p-2"
           }`}
           readOnly={readOnly}

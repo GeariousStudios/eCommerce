@@ -399,7 +399,6 @@ namespace backend.Controllers
             }
 
             var userInfo = await _userService.GetUserInfoAsync();
-
             if (userInfo == null)
             {
                 return Unauthorized(
@@ -407,25 +406,10 @@ namespace backend.Controllers
                 );
             }
 
-            if (dto.SubCategoryIds != null && dto.SubCategoryIds.Any())
-            {
-                var subCategories = await _context
-                    .SubCategories.Where(sc => dto.SubCategoryIds.Contains(sc.Id))
-                    .ToListAsync();
-
-                if (subCategories.Count != dto.SubCategoryIds.Length)
-                {
-                    return BadRequest(
-                        new { message = await _t.GetAsync("SubCategory/SomeNotFound", lang) }
-                    );
-                }
-            }
-
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
             using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
                 var finalSubCategoryIds = new List<int>();
@@ -434,22 +418,18 @@ namespace backend.Controllers
                 {
                     var subCategoryIds = dto.SubCategoryIds!;
                     var existingSubCategories = await _context
-                        .SubCategories.Where(sc => dto.SubCategoryIds.Contains(sc.Id))
+                        .SubCategories.Where(sc => subCategoryIds.Contains(sc.Id))
                         .ToListAsync();
 
                     if (existingSubCategories.Count != subCategoryIds.Length)
-                    {
                         return BadRequest(
                             new { message = await _t.GetAsync("SubCategory/SomeNotFound", lang) }
                         );
-                    }
 
-                    var orderedIds = subCategoryIds.Where(id =>
-                        existingSubCategories.Any(sc => sc.Id == id)
-                    );
-
-                    finalSubCategoryIds.AddRange(orderedIds);
+                    finalSubCategoryIds.AddRange(subCategoryIds);
                 }
+
+                var newSubCategories = new List<SubCategory>();
 
                 if (dto.NewSubCategoryNames?.Any() == true)
                 {
@@ -480,25 +460,49 @@ namespace backend.Controllers
                         var newSubCategory = new SubCategory
                         {
                             Name = trimmed,
-
-                            // Meta data.
                             CreationDate = now,
                             CreatedBy = createdBy,
                             UpdateDate = now,
                             UpdatedBy = createdBy,
                         };
 
-                        _context.SubCategories.Add(newSubCategory);
-                        await _context.SaveChangesAsync();
+                        newSubCategories.Add(newSubCategory);
+                    }
 
-                        finalSubCategoryIds.Add(newSubCategory.Id);
+                    if (newSubCategories.Any())
+                    {
+                        _context.SubCategories.AddRange(newSubCategories);
+                        await _context.SaveChangesAsync();
+                        finalSubCategoryIds.AddRange(newSubCategories.Select(sc => sc.Id));
+                    }
+                }
+
+                var orderedSubCategoryIds = new List<int>();
+
+                foreach (var tempId in (dto.OrderedSubCategoryIds ?? Array.Empty<int>()))
+                {
+                    if (tempId > 0)
+                    {
+                        orderedSubCategoryIds.Add(tempId);
+                    }
+                    else if (
+                        dto.TempSubCategoryNames != null
+                        && dto.TempSubCategoryNames.TryGetValue(tempId, out var name)
+                    )
+                    {
+                        var match = newSubCategories.FirstOrDefault(sc =>
+                            sc.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase)
+                        );
+                        if (match != null)
+                            orderedSubCategoryIds.Add(match.Id);
                     }
                 }
 
                 var category = new Category
                 {
                     Name = dto.Name,
-                    CategoryToSubCategories = finalSubCategoryIds
+                    CategoryToSubCategories = orderedSubCategoryIds
+                        .Where(id => finalSubCategoryIds.Contains(id))
                         .Select(
                             (id, index) =>
                                 new CategoryToSubCategory { SubCategoryId = id, Order = index }
@@ -514,13 +518,6 @@ namespace backend.Controllers
 
                 _context.Categories.Add(category);
                 await _context.SaveChangesAsync();
-                await _context
-                    .Entry(category)
-                    .Collection(c => c.CategoryToSubCategories)
-                    .Query()
-                    .Include(csc => csc.SubCategory)
-                    .LoadAsync();
-
                 await transaction.CommitAsync();
 
                 var result = new CategoryDto
@@ -532,11 +529,10 @@ namespace backend.Controllers
                         .CategoryToSubCategories.OrderBy(csc => csc.Order)
                         .Select(csc => new SubCategoryDto
                         {
-                            Id = csc.SubCategory.Id,
-                            Name = csc.SubCategory.Name,
-                            CategoryIds = csc
-                                .SubCategory.CategoryToSubCategories.Select(csc => csc.CategoryId)
-                                .ToList(),
+                            Id = csc.SubCategoryId,
+                            Name = _context
+                                .SubCategories.First(sc => sc.Id == csc.SubCategoryId)
+                                .Name,
                         })
                         .ToList(),
 
@@ -582,15 +578,12 @@ namespace backend.Controllers
         {
             var lang = await GetLangAsync();
             var category = await _context
-                .Categories.Include(c => c.UnitToCategories)
-                .Include(c => c.CategoryToSubCategories)
+                .Categories.Include(c => c.CategoryToSubCategories)
                 .ThenInclude(csc => csc.SubCategory)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)
-            {
                 return NotFound(new { message = await _t.GetAsync("Category/NotFound", lang) });
-            }
 
             if (!ModelState.IsValid)
             {
@@ -611,36 +604,18 @@ namespace backend.Controllers
             );
 
             if (existingCategory != null)
-            {
                 return BadRequest(new { message = await _t.GetAsync("Category/NameTaken", lang) });
-            }
 
             var userInfo = await _userService.GetUserInfoAsync();
-
             if (userInfo == null)
-            {
                 return Unauthorized(
                     new { message = await _t.GetAsync("Common/Unauthorized", lang) }
                 );
-            }
 
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
-            var oldValues = new Dictionary<string, object?>
-            {
-                ["ObjectID"] = category.Id,
-                ["Name"] = category.Name,
-                ["SubCategories"] = string.Join(
-                    "<br>",
-                    category.CategoryToSubCategories.Select(csc =>
-                        $"{csc.SubCategory.Name} (ID: {csc.SubCategoryId})"
-                    )
-                ),
-            };
-
             using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
                 var finalSubCategoryIds = new List<int>();
@@ -657,11 +632,7 @@ namespace backend.Controllers
                             new { message = await _t.GetAsync("SubCategory/SomeNotFound", lang) }
                         );
 
-                    var orderedIds = subCategoryIds.Where(id =>
-                        existingSubCategories.Any(sc => sc.Id == id)
-                    );
-
-                    finalSubCategoryIds.AddRange(orderedIds);
+                    finalSubCategoryIds.AddRange(subCategoryIds);
                 }
 
                 var newSubCategories = new List<SubCategory>();
@@ -676,16 +647,14 @@ namespace backend.Controllers
                     {
                         var trimmed = name.Trim();
 
-                        var existingSubCategory = await _context
+                        var duplicate = await _context
                             .SubCategories.Include(sc => sc.CategoryToSubCategories)
                             .Where(sc => sc.Name.ToLower() == trimmed.ToLower())
-                            .ToListAsync();
+                            .AnyAsync(sc =>
+                                sc.CategoryToSubCategories.Any(csc => csc.CategoryId == category.Id)
+                            );
 
-                        var isDuplicateInSameCategory = existingSubCategory.Any(sc =>
-                            sc.CategoryToSubCategories.Any(csc => csc.CategoryId == category.Id)
-                        );
-
-                        if (isDuplicateInSameCategory)
+                        if (duplicate)
                         {
                             var template = await _t.GetAsync("SubCategory/ExistsInCategory", lang);
                             return BadRequest(new { message = string.Format(template, trimmed) });
@@ -704,40 +673,50 @@ namespace backend.Controllers
 
                         newSubCategories.Add(newSubCategory);
                     }
+
+                    if (newSubCategories.Any())
+                    {
+                        _context.SubCategories.AddRange(newSubCategories);
+                        await _context.SaveChangesAsync();
+                        finalSubCategoryIds.AddRange(newSubCategories.Select(sc => sc.Id));
+                    }
                 }
 
-                if (newSubCategories.Any())
-                {
-                    _context.SubCategories.AddRange(newSubCategories);
-                    await _context.SaveChangesAsync();
-                    finalSubCategoryIds.AddRange(newSubCategories.Select(sc => sc.Id));
-                }
-
-                // Uppdatera befintliga subkategori-namn
-                if (
-                    dto.UpdatedExistingSubCategories != null
-                    && dto.UpdatedExistingSubCategories.Any()
-                )
+                if (dto.UpdatedExistingSubCategories?.Any() == true)
                 {
                     foreach (var updatedSub in dto.UpdatedExistingSubCategories)
                     {
                         var subCategory = await _context.SubCategories.FirstOrDefaultAsync(s =>
                             s.Id == updatedSub.Id
                         );
-                        if (subCategory != null && subCategory.Name != updatedSub.Name.Trim())
+                        if (subCategory == null)
+                            continue;
+
+                        var trimmed = updatedSub.Name.Trim();
+                        if (subCategory.Name != trimmed)
                         {
-                            subCategory.Name = updatedSub.Name.Trim();
+                            var exists = await _context.SubCategories.AnyAsync(sc =>
+                                sc.Id != updatedSub.Id && sc.Name.ToLower() == trimmed.ToLower()
+                            );
+
+                            if (exists)
+                            {
+                                var template = await _t.GetAsync("SubCategory/NameTaken", lang);
+                                return BadRequest(
+                                    new { message = string.Format(template, trimmed) }
+                                );
+                            }
+
+                            subCategory.Name = trimmed;
                             subCategory.UpdateDate = now;
                             subCategory.UpdatedBy = updatedBy;
                         }
                     }
                 }
 
-                category.Name = dto.Name;
-
                 if (dto.SubCategoryIdsToDelete?.Any() == true)
                 {
-                    var subCategoriesToDelete = await _context
+                    var subsToDelete = await _context
                         .SubCategories.Include(sc => sc.CategoryToSubCategories)
                         .Where(sc =>
                             dto.SubCategoryIdsToDelete.Contains(sc.Id)
@@ -745,11 +724,27 @@ namespace backend.Controllers
                         )
                         .ToListAsync();
 
-                    _context.SubCategories.RemoveRange(subCategoriesToDelete);
+                    _context.SubCategories.RemoveRange(subsToDelete);
+                }
+
+                var orderedSubCategoryIds = new List<int>();
+                var createdIdsQueue = new Queue<int>(newSubCategories.Select(sc => sc.Id));
+                var incomingOrder =
+                    (dto.OrderedSubCategoryIds != null && dto.OrderedSubCategoryIds.Any())
+                        ? dto.OrderedSubCategoryIds.ToList()
+                        : finalSubCategoryIds.ToList();
+
+                foreach (var subId in incomingOrder)
+                {
+                    if (subId > 0)
+                        orderedSubCategoryIds.Add(subId);
+                    else if (createdIdsQueue.Count > 0)
+                        orderedSubCategoryIds.Add(createdIdsQueue.Dequeue());
                 }
 
                 _context.CategoryToSubCategories.RemoveRange(category.CategoryToSubCategories);
-                category.CategoryToSubCategories = finalSubCategoryIds
+                category.CategoryToSubCategories = orderedSubCategoryIds
+                    .Where(id => finalSubCategoryIds.Contains(id))
                     .Select(
                         (id, index) =>
                             new CategoryToSubCategory
@@ -761,17 +756,11 @@ namespace backend.Controllers
                     )
                     .ToList();
 
-                // Meta data.
+                category.Name = dto.Name;
                 category.UpdateDate = now;
                 category.UpdatedBy = updatedBy;
 
                 await _context.SaveChangesAsync();
-                await _context
-                    .Entry(category)
-                    .Collection(c => c.CategoryToSubCategories)
-                    .Query()
-                    .Include(csc => csc.SubCategory)
-                    .LoadAsync();
                 await transaction.CommitAsync();
 
                 var result = new CategoryDto
@@ -781,14 +770,12 @@ namespace backend.Controllers
                     Units = new List<UnitDto>(),
                     SubCategories = category
                         .CategoryToSubCategories.OrderBy(x => x.Order)
-                        .Select(csc => csc.SubCategory)
-                        .Select(sc => new SubCategoryDto
+                        .Select(csc => new SubCategoryDto
                         {
-                            Id = sc.Id,
-                            Name = sc.Name,
-                            CategoryIds = sc
-                                .CategoryToSubCategories.Select(csc => csc.CategoryId)
-                                .ToList(),
+                            Id = csc.SubCategoryId,
+                            Name = _context
+                                .SubCategories.First(sc => sc.Id == csc.SubCategoryId)
+                                .Name,
                         })
                         .ToList(),
 
@@ -806,7 +793,6 @@ namespace backend.Controllers
                     userId,
                     new
                     {
-                        OldValues = oldValues,
                         NewValues = new Dictionary<string, object?>
                         {
                             ["ObjectID"] = category.Id,
@@ -825,6 +811,7 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 var prefix = await _t.GetAsync("Common/ErrorPrefix", await GetLangAsync());
                 return StatusCode(500, new { message = prefix + ex.Message });
             }

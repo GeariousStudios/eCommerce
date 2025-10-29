@@ -134,6 +134,7 @@
 
   "Unit/Tooltip this hour": " this hour",
   "Unit/Tooltip report data": "Report data in one or more columns",
+  "Unit/Tooltip report this data": "Report data in this column for",
   "Unit/Tooltip report events": "Add new or edit existing event",
   "Unit/Tooltip comparison text": "Difference from the previous hour in column: ",
   "Unit/Report data": "Report data",
@@ -393,6 +394,14 @@
   "TrendingPanel/Hide information": "Hide information",
   "TrendingPanel/Show unit": "Show",
   "TrendingPanel/Hide unit": "Hide",
+  "TrendingPanel/Edit layout": "Edit layout",
+  "TrendingPanel/Save layout": "Save layout",
+  "TrendingPanel/Cancel": "Cancel",
+  "TrendingPanel/Layout saved": "Layout has been saved!",
+  "TrendingPanel/No changes": "No changes were saved!",
+  "TrendingPanel/Autoinfo on": "Click to hide information automatically",
+  "TrendingPanel/Autoinfo off": "Click to show information automatically",
+  "TrendingPanel/Saving": "Saving...",
 
   "AuditTrail/Show all": "Show all",
   "AuditTrail/Entity": "Object",

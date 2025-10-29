@@ -26,6 +26,7 @@ import Input from "../common/Input";
 import CustomTooltip from "../common/CustomTooltip";
 import useLanguage from "@/app/hooks/useLanguage";
 import { useTranslations } from "next-intl";
+import { userConstraints } from "@/app/helpers/inputConstraints";
 
 type Props = {
   isOpen: boolean;
@@ -414,6 +415,7 @@ const SettingsModal = (props: Props) => {
                           }}
                           type="password"
                           autoComplete="new-password"
+                          {...userConstraints.password}
                         />
                         <button
                           onClick={() => updateProfile()}
@@ -451,6 +453,7 @@ const SettingsModal = (props: Props) => {
                           onChange={(val) => {
                             setInputValue(val as string);
                           }}
+                          {...userConstraints.firstName}
                         />
                         <button
                           onClick={() => {
@@ -499,6 +502,7 @@ const SettingsModal = (props: Props) => {
                           onChange={(val) => {
                             setInputValue(val as string);
                           }}
+                          {...userConstraints.lastName}
                         />
                         <button
                           onClick={() => {
@@ -549,6 +553,7 @@ const SettingsModal = (props: Props) => {
                           }}
                           type="email"
                           id="email"
+                          {...userConstraints.email}
                         />
                         <button
                           onClick={() => {

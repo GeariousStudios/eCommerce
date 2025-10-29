@@ -4,11 +4,15 @@ import {
   PlusIcon,
   PencilSquareIcon as OutlinePencilSquareIcon,
   TrashIcon as OutlineTrashIcon,
-  PencilIcon,
-  Squares2X2Icon,
+  PencilIcon as OutlinePencilIcon,
+  NoSymbolIcon as OutlineNoSymbolIcon,
+  CheckIcon as OutlineCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
   PencilSquareIcon as SolidPencilSquareIcon,
+  PencilIcon as SolidPencilIcon,
+  NoSymbolIcon as SolidNoSymbolIcon,
+  CheckIcon as SolidCheckIcon,
   TrashIcon as SolidTrashIcon,
 } from "@heroicons/react/24/solid";
 import { FormEvent, useEffect, useState } from "react";
@@ -28,6 +32,7 @@ import { useTranslations } from "next-intl";
 import { utcIsoToLocalDateTime } from "./helpers/timeUtils";
 import TrendingPanel from "./components/pulse/TrendingPanel";
 import DragDrop from "./components/common/DragDrop";
+import LoadingSpinner from "./components/common/LoadingSpinner";
 
 type Props = {
   isAuthReady: boolean | null;
@@ -78,6 +83,10 @@ const HomeClient = (props: Props) => {
 
   // --- States: Trending panels ---
   const [trendingPanels, setTrendingPanels] = useState<any[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedPanels, setEditedPanels] = useState<Record<number, any>>({});
+  const [resetTrigger, setResetTrigger] = useState(0);
+  const [isSavingPanels, setIsSavingPanels] = useState(false);
 
   // --- Other ---
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -232,36 +241,21 @@ const HomeClient = (props: Props) => {
   };
 
   // --- Create trending panel ---
-  const createTrendingPanel = async () => {
-    try {
-      const response = await fetch(`${apiUrl}/trending-panel/create`, {
-        method: "POST",
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: "Ny trendpanel",
-          type: null,
-          period: null,
-          unitColumnId: null,
-          unitIds: [],
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        notify("error", result?.message ?? t("Modal/Unknown error"));
-      } else {
-        notify("info", t("TrendingPanel/Trending panel") + t("Modal/created"));
-        setTrendingPanels((prev) => [...prev, result]); // <-- lägg till sist
-        fetchTrendingPanels();
-      }
-    } catch (err) {
-      notify("error", t("Modal/Unknown error"));
-    }
+  const createTrendingPanel = () => {
+    const tempId = Date.now() * -1;
+    const newPanel = {
+      id: tempId,
+      name: "Ny trendpanel",
+      type: "Total",
+      period: "AllTime",
+      viewMode: "Value",
+      unitColumnId: null,
+      unitIds: [],
+      colSpan: 1,
+      showInfo: true,
+    };
+    setTrendingPanels((prev) => [...prev, newPanel]);
+    setEditedPanels((prev) => ({ ...prev, [tempId]: { _new: true } }));
   };
 
   // --- Fetch trending panels ---
@@ -287,20 +281,132 @@ const HomeClient = (props: Props) => {
   const reorderTrendingPanels = async (newPanels: any[]) => {
     setTrendingPanels(newPanels);
 
-    await fetch(`${apiUrl}/trending-panel/reorder`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-        "X-User-Language": localStorage.getItem("language") || "sv",
-      },
-      body: JSON.stringify(
-        newPanels.map((p, index) => ({
-          id: p.id,
-          order: index,
-        })),
-      ),
-    });
+    if (isEditing) {
+      setEditedPanels((prev) => {
+        const updated: Record<number, any> = { ...prev };
+        newPanels.forEach((p, index) => {
+          updated[p.id] = { ...(updated[p.id] || {}), order: index };
+        });
+        return updated;
+      });
+    }
+  };
+
+  // --- Save updates ---
+  const saveUpdates = async () => {
+    try {
+      setIsSavingPanels(true);
+
+      const newPanels = Object.entries(editedPanels)
+        .filter(([_, updates]) => (updates as any)._new)
+        .map(([id, updates]) => {
+          const panel = trendingPanels.find((p) => String(p.id) === id);
+          return panel ? { ...panel, ...updates } : null;
+        })
+        .filter(Boolean);
+
+      for (const panel of newPanels) {
+        await fetch(`${apiUrl}/trending-panel/create`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "X-User-Language": localStorage.getItem("language") || "sv",
+          },
+          body: JSON.stringify({
+            name: panel.name,
+            type: panel.type,
+            period: panel.period,
+            viewMode: panel.viewMode,
+            unitColumnId: panel.unitColumnId,
+            unitIds: panel.unitIds,
+            colSpan: panel.colSpan,
+            showInfo: panel.showInfo,
+            customStartDate: panel.customStartDate,
+            customEndDate: panel.customEndDate,
+          }),
+        });
+      }
+
+      const deletedIds = Object.entries(editedPanels)
+        .filter(([_, updates]) => (updates as any)._deleted)
+        .map(([id]) => Number(id));
+
+      for (const id of deletedIds) {
+        await fetch(`${apiUrl}/trending-panel/delete/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            "X-User-Language": localStorage.getItem("language") || "sv",
+          },
+        });
+      }
+
+      const updatePromises = Object.entries(editedPanels)
+        .filter(([_, updates]) => {
+          const u = updates as any;
+          return !u._new && !u._deleted && Object.keys(u).length > 0;
+        })
+        .map(async ([id, updates]) => {
+          const panel = trendingPanels.find((p) => String(p.id) === id);
+          if (!panel) return;
+
+          const merged = { ...panel, ...updates };
+
+          const body = {
+            name: merged.title ?? merged.name ?? "Unnamed panel",
+            type: merged.type ?? "Total",
+            period: merged.period ?? "AllTime",
+            viewMode: merged.viewMode ?? "Value",
+            unitColumnId: merged.unitColumnId ?? null,
+            unitIds: merged.unitIds ?? [],
+            colSpan: Number(merged.colSpan ?? 1),
+            showInfo: merged.showInfo ?? false,
+            customStartDate: merged.customStartDate ?? null,
+            customEndDate: merged.customEndDate ?? null,
+          };
+
+          await fetch(`${apiUrl}/trending-panel/update/${id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+              "X-User-Language": localStorage.getItem("language") || "sv",
+            },
+            body: JSON.stringify(body),
+          });
+        });
+
+      const reorderPromise = fetch(`${apiUrl}/trending-panel/reorder`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-User-Language": localStorage.getItem("language") || "sv",
+        },
+        body: JSON.stringify(
+          trendingPanels.map((p, index) => ({
+            id: p.id,
+            order: index,
+          })),
+        ),
+      });
+
+      await Promise.all([...updatePromises, reorderPromise]);
+
+      await new Promise((r) => setTimeout(r, 200));
+      await fetchTrendingPanels();
+
+      setIsSavingPanels(false);
+      setIsEditing(false);
+      setEditedPanels({});
+      notify("success", t("TrendingPanel/Layout saved"));
+    } catch (err) {
+      setIsSavingPanels(false);
+      console.error(err);
+      notify("error", t("Modal/Unknown error"));
+    }
   };
 
   // --- FETCH NEWS, UNITS & TRENDING PANELS ON INIT ---
@@ -368,25 +474,101 @@ const HomeClient = (props: Props) => {
       />
       <div className="flex flex-col gap-4">
         {props.isLoggedIn && (
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex justify-between gap-4">
             {/* --- Add new trending panel --- */}
-            <button
-              onClick={createTrendingPanel}
-              className="duration-fast flex w-full cursor-pointer items-center justify-center gap-2 rounded border-1 border-dashed border-[var(--border-main)] bg-[var(--bg-grid-header)] p-4 transition-colors hover:bg-[var(--bg-navbar-link)]"
-            >
-              {/* <PlusIcon className="h-6 w-6" /> */}
-              {t("TrendingPanel/Add trending panel")}
-            </button>
-            {/* <button className={`${iconButtonPrimaryClass}`}>
-              <PencilIcon className="min-h-4 min-w-4" />
-            </button> */}
+            {isEditing ? (
+              <button
+                onClick={createTrendingPanel}
+                className="duration-fast flex w-full cursor-pointer items-center justify-center gap-2 rounded border-1 border-dashed border-[var(--border-main)] bg-[var(--bg-grid-header)] p-2 transition-colors hover:bg-[var(--bg-navbar-link)]"
+              >
+                {t("TrendingPanel/Add trending panel")}
+              </button>
+            ) : (
+              <div />
+            )}
+
+            {/* --- Edit layout --- */}
+            <div className="flex gap-4">
+              {!isEditing ? (
+                <button
+                  className={`${buttonSecondaryClass} group lg:w-auto lg:px-4`}
+                  onClick={() => setIsEditing(true)}
+                >
+                  <div className="flex items-center justify-center gap-2 truncate">
+                    <HoverIcon
+                      outline={OutlinePencilIcon}
+                      solid={SolidPencilIcon}
+                      className="h-6 min-h-6 w-6 min-w-6"
+                    />
+                    <span className="hidden md:block">
+                      {t("TrendingPanel/Edit layout")}
+                    </span>
+                  </div>
+                </button>
+              ) : (
+                <>
+                  <button
+                    className={`${buttonPrimaryClass} group lg:w-auto lg:px-4`}
+                    onClick={saveUpdates}
+                    disabled={isSavingPanels}
+                  >
+                    <div className="flex items-center justify-center gap-2 truncate">
+                      {isSavingPanels ? (
+                        <>
+                          <LoadingSpinner />
+                          <span className="hidden md:block">
+                            {t("TrendingPanel/Saving")}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <HoverIcon
+                            outline={OutlineCheckIcon}
+                            solid={SolidCheckIcon}
+                            className="h-6 min-h-6 w-6 min-w-6"
+                          />
+                          <span className="hidden md:block">
+                            {t("TrendingPanel/Save layout")}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                  <button
+                    className={`${buttonSecondaryClass} group lg:w-auto lg:px-4`}
+                    onClick={() => {
+                      setResetTrigger((n) => n + 1);
+                      setIsEditing(false);
+                      setEditedPanels({});
+                      fetchTrendingPanels();
+                      notify("info", t("TrendingPanel/No changes"));
+                    }}
+                  >
+                    <div className="flex items-center justify-center gap-2 truncate">
+                      <HoverIcon
+                        outline={OutlineNoSymbolIcon}
+                        solid={SolidNoSymbolIcon}
+                        className="h-6 min-h-6 w-6 min-w-6"
+                      />
+                      <span className="hidden md:block">
+                        {t("TrendingPanel/Cancel")}
+                      </span>
+                    </div>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         )}
 
         {props.isLoggedIn && trendingPanels.length > 0 && (
           <DragDrop
+            active={isEditing}
             containerClassName="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-6 lg:grid-cols-12"
-            items={trendingPanels}
+            items={trendingPanels.filter(
+              (p) =>
+                !(editedPanels[p.id]?.["_deleted"] || p.isVisible === false),
+            )}
             getId={(p) => String(p.id)}
             onReorder={(newOrder) => reorderTrendingPanels(newOrder)}
             renderItem={(panel, isDragging) => ({
@@ -420,8 +602,26 @@ const HomeClient = (props: Props) => {
                         p.id === panel.id ? { ...p, colSpan: newSpan } : p,
                       ),
                     );
+
+                    if (isEditing) {
+                      setEditedPanels((prev) => ({
+                        ...prev,
+                        [panel.id]: {
+                          ...(prev[panel.id] || {}),
+                          colSpan: newSpan,
+                        },
+                      }));
+                    }
                   }}
                   showInfo={panel.showInfo}
+                  isEditing={isEditing}
+                  onPanelChange={(id, updates) =>
+                    setEditedPanels((prev) => ({
+                      ...prev,
+                      [id]: { ...(prev[id] || {}), ...updates },
+                    }))
+                  }
+                  resetTrigger={resetTrigger}
                 />
               ),
             })}

@@ -108,6 +108,8 @@ const CategoryModal = (props: Props) => {
           subCategoryIds: newSubCategoryIds,
           newSubCategoryNames,
           subCategoryIdsToDelete,
+          orderedSubCategoryIds: subCategoryIds,
+          tempSubCategoryNames,
         }),
       });
 
@@ -200,6 +202,7 @@ const CategoryModal = (props: Props) => {
             newSubCategoryNames,
             updatedExistingSubCategories,
             subCategoryIdsToDelete,
+            orderedSubCategoryIds: subCategoryIds,
           }),
         },
       );
@@ -333,7 +336,7 @@ const CategoryModal = (props: Props) => {
     }
 
     const match = updatedSubCategoriesRef.current.find(
-      (sc) => sc.name.trim() === trimmed.trim(),
+      (sc) => sc.name.trim().toLowerCase() === trimmed.toLowerCase(),
     );
 
     if (match) {
@@ -342,7 +345,7 @@ const CategoryModal = (props: Props) => {
         return;
       }
 
-      setSubCategoryIds((prev) => [match.id, ...prev]);
+      setSubCategoryIds((prev) => [...prev, match.id]);
       setNewSubCategory("");
       return;
     }
@@ -355,10 +358,10 @@ const CategoryModal = (props: Props) => {
     };
 
     updatedSubCategoriesRef.current = [
-      tempSubCategory,
       ...updatedSubCategoriesRef.current,
+      tempSubCategory,
     ];
-    setSubCategoryIds((prev) => [tempId, ...prev]);
+    setSubCategoryIds((prev) => [...prev, tempId]);
     setNewSubCategory("");
   };
 
@@ -484,6 +487,12 @@ const CategoryModal = (props: Props) => {
     setIsDirty(dirty);
   }, [name, subCategoryIds, originalName, originalSubCategoryIds]);
 
+  // --- HELPERS ---
+  const tempSubCategoryNames: Record<number, string> = {};
+  updatedSubCategoriesRef.current
+    .filter((sc) => sc.id < 0)
+    .forEach((sc) => (tempSubCategoryNames[sc.id] = sc.name.trim()));
+
   return (
     <>
       {props.isOpen && (
@@ -584,10 +593,28 @@ const CategoryModal = (props: Props) => {
                           dragging={isAnyDragging}
                           onDelete={() => deleteSubCategory(id)}
                           onRename={(newName) => {
+                            const trimmed = newName.trim();
+
+                            if (!trimmed) return;
+
+                            const duplicate =
+                              updatedSubCategoriesRef.current.some(
+                                (sc) =>
+                                  sc.id !== id &&
+                                  sc.name.trim().toLowerCase() ===
+                                    trimmed.toLowerCase(),
+                              );
+
+                            if (duplicate) {
+                              notify("error", t("CategoryModal/Error2"));
+                              return;
+                            }
+
                             updatedSubCategoriesRef.current =
                               updatedSubCategoriesRef.current.map((sc) =>
-                                sc.id === id ? { ...sc, name: newName } : sc,
+                                sc.id === id ? { ...sc, name: trimmed } : sc,
                               );
+
                             setIsDirty(true);
                           }}
                         />

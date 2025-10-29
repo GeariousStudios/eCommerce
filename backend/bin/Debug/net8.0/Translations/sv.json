@@ -67,7 +67,9 @@
   "SubCategory/Deleted": "Underkategori borttagen!",
   "SubCategory/SomeNotFound": "En eller flera underkategorier kunde inte hittas",
   "SubCategory/ExistsInCategory": "Underkategori {0} finns redan i denna kategori!",
-
+  "SubCategory/NameTaken": "En underkategori med samma namn finns redan",
+  "SubCategory/DuplicateName": "En annan underkategori har redan namnet \"{0}\".",
+  
   "Report/NotFound": "Rapporten kunde inte hittas i databasen",
   "Report/Deleted": "Post borttagen!",
   "Report/EndAfterStart": "Sluttid måste vara senare än starttid",
@@ -141,6 +143,7 @@
   "AuditTrail/Headline": "Rubrik",
   "AuditTrail/Name": "Namn",
   "AuditTrail/SubCategories": "Underkategorier",
+  "AuditTrail/SubCategory": "Underkategori",
   "AuditTrail/IsHidden": "Dold",
   "AuditTrail/LightColorHex": "Ljus färg (hex)",
   "AuditTrail/DarkColorHex": "Mörk färg (hex)",

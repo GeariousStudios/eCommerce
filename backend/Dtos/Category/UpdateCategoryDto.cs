@@ -13,5 +13,6 @@ namespace backend.Dtos.Category
         public int[]? SubCategoryIdsToDelete { get; set; }
         public string[]? NewSubCategoryNames { get; set; }
         public List<UpdateSubCategoryDto>? UpdatedExistingSubCategories { get; set; }
+        public int[]? OrderedSubCategoryIds { get; set; }
     }
 }

@@ -27,13 +27,8 @@ namespace backend.Services
             // Developers can see all actions.
             ["Developer"] = new() { (null, null) },
 
-            // Reporters can only see actions related to reports.
-            ["Reporter"] = new()
-            {
-                ("Report", "Create"),
-                ("Report", "Update"),
-                ("Report", "Delete"),
-            },
+            // Reporters can only see actions related to reports and unit cells.
+            ["Reporter"] = new() { ("Report", null), ("UnitCell", null) },
         };
     }
 }

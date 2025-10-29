@@ -10,5 +10,7 @@ namespace backend.Dtos.Category
         public int[]? Units { get; set; }
         public int[]? SubCategoryIds { get; set; }
         public string[]? NewSubCategoryNames { get; set; }
+        public int[]? OrderedSubCategoryIds { get; set; }
+        public Dictionary<int, string>? TempSubCategoryNames { get; set; }
     }
 }
