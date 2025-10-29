@@ -83,6 +83,17 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
         const editor = quillRef.current?.getEditor?.();
         if (editor) {
           setIsEditorReady(true);
+
+          setTimeout(() => {
+            try {
+              editor.focus();
+              const selection = editor.getSelection();
+              if (!selection) {
+                editor.setSelection(0, 0);
+              }
+            } catch {}
+          }, 0);
+
           onReady?.();
           clearInterval(interval);
 
@@ -230,7 +241,6 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           ref={quillRef}
           id="quill-editor"
           theme="snow"
-          value={value && value.trim() !== "" ? value : "<p><br></p>"}
           placeholder=" "
           modules={modules}
           shouldAutoFocus={shouldAutoFocus ?? false}
