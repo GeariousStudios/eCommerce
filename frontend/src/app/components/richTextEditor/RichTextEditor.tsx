@@ -239,10 +239,10 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
             }}
           />
         </div>
-        
+
         <textarea
           ref={textareaRef}
-          tabIndex={-1}
+          // tabIndex={-1}
           autoComplete="off"
           onChange={() => {}}
           name={name}
