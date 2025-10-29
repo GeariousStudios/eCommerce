@@ -86,12 +86,14 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           // 🟢 sätt initial HTML manuellt (produktionstabilt)
           requestAnimationFrame(() => {
             try {
-              const html = value?.trim()
-                ? value
-                : "<p><br></p>";
+              const html = value?.trim() ? value : "<p><br></p>";
               editor.clipboard.dangerouslyPasteHTML(html, "silent");
-              editor.focus();
-              editor.setSelection(0, 0);
+
+              // 🔹 endast auto-fokusera om det begärts
+              if (shouldAutoFocus) {
+                editor.focus();
+                editor.setSelection(editor.getLength(), 0);
+              }
             } catch {}
           });
 
@@ -114,7 +116,8 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
               ) as HTMLElement | null;
               if (!options) return;
 
-              if (options.querySelector('.ql-picker-item[data-value=""]')) return;
+              if (options.querySelector('.ql-picker-item[data-value=""]'))
+                return;
 
               const resetItem = document.createElement("span");
               resetItem.className = "ql-picker-item";
@@ -171,7 +174,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     };
 
     return (
-      <div className="focus-within:z-[calc(var(--z-base)+1)] relative w-full rounded border border-[var(--border-tertiary)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
+      <div className="relative w-full rounded border border-[var(--border-tertiary)] focus-within:z-[calc(var(--z-base)+1)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
         <QuillWrapper
           ref={quillRef}
           id="quill-editor"
