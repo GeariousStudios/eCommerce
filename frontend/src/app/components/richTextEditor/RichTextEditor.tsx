@@ -21,8 +21,6 @@ const QuillWrapper = dynamic(() => import("../../helpers/QuillWrapper"), {
     React.RefAttributes<ReactQuill>
 >;
 
-const [hasInitialized, setHasInitialized] = useState(false);
-
 export type RichTextEditorRef = {
   getContent: () => string;
   getContentText: () => string;
@@ -47,6 +45,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     const quillRef = useRef<any>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isEditorReady, setIsEditorReady] = useState(false);
+    const [hasInitialized, setHasInitialized] = useState(false);
 
     const Size = Quill.import("attributors/style/size") as any;
     Size.whitelist = SIZE_WHITELIST;
