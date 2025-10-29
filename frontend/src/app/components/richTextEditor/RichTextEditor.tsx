@@ -225,39 +225,38 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
     };
 
     return (
-      <>
-        <div className="focus-within:z-[calc(var(--z-base)+1) relative w-full rounded border-1 border-[var(--border-tertiary)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
-          <QuillWrapper
-            ref={quillRef}
-            id="quill-editor"
-            theme="snow"
-            placeholder=" "
-            modules={modules}
-            shouldAutoFocus={shouldAutoFocus ?? false}
-            onChange={(val) => {
-              onChange?.(val);
-            }}
-          />
-        </div>
+      <div className="focus-within:z-[calc(var(--z-base)+1) relative w-full rounded border-1 border-[var(--border-tertiary)] focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[var(--accent-color)]">
+        <QuillWrapper
+          ref={quillRef}
+          id="quill-editor"
+          theme="snow"
+          value={value || " "}
+          placeholder=" "
+          modules={modules}
+          shouldAutoFocus={shouldAutoFocus ?? false}
+          onChange={(val) => {
+            // onChange?.(val);
+            onChange?.(val.trimStart());
+          }}
+        />
 
         <textarea
           ref={textareaRef}
-          // tabIndex={-1}
+          tabIndex={-1}
           autoComplete="off"
           onChange={() => {}}
           name={name}
           required={required}
           defaultValue=""
           style={{
-            // position: "absolute",
-            position: "fixed",
+            position: "absolute",
             width: "100%",
             bottom: "0",
             pointerEvents: "none",
             opacity: "0",
           }}
         />
-      </>
+      </div>
     );
   },
 );
