@@ -232,15 +232,10 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           id="quill-editor"
           theme="snow"
           placeholder=" "
+          value={value ?? "<p><br></p>"}
           modules={modules}
           shouldAutoFocus={shouldAutoFocus ?? false}
           onChange={(val) => {
-            if (!hasInitialized) {
-              setHasInitialized(true);
-              setTimeout(() => onChange?.(val), 0);
-              return;
-            }
-
             onChange?.(val);
           }}
         />
