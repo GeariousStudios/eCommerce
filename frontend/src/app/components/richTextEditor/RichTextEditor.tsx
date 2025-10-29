@@ -87,21 +87,15 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           onReady?.();
           clearInterval(interval);
 
-          // editor.clipboard.addMatcher(
-          //   Node.ELEMENT_NODE,
-          //   (_node: any, delta: any) => {
-          //     delta.ops.forEach((op: any) => {
-          //       if (op.attributes) {
-          //         delete op.attributes;
-          //       }
-          //     });
-          //     return delta;
-          //   },
-          // );
-
-          // try {
-          //   editor.format("size", DEFAULT_SIZE);
-          // } catch {}
+          setTimeout(() => {
+            try {
+              editor.focus();
+              const selection = editor.getSelection();
+              if (!selection) {
+                editor.setSelection(0, 0);
+              }
+            } catch {}
+          }, 50);
 
           setTimeout(() => {
             const toolbar = editor.getModule("toolbar");
@@ -232,7 +226,6 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           id="quill-editor"
           theme="snow"
           placeholder=" "
-          value={value ?? "<p><br></p>"}
           modules={modules}
           shouldAutoFocus={shouldAutoFocus ?? false}
           onChange={(val) => {
