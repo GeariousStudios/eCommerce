@@ -230,13 +230,12 @@ const RichTextEditor = forwardRef<RichTextEditorRef, Props>(
           ref={quillRef}
           id="quill-editor"
           theme="snow"
-          value={value || " "}
+          value={value && value.trim() !== "" ? value : "<p><br></p>"}
           placeholder=" "
           modules={modules}
           shouldAutoFocus={shouldAutoFocus ?? false}
           onChange={(val) => {
-            // onChange?.(val);
-            onChange?.(val.trimStart());
+            onChange?.(val);
           }}
         />
 
