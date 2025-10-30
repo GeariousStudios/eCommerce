@@ -26,6 +26,7 @@ namespace backend.Data
         public DbSet<UnitShiftChange> UnitShiftChanges { get; set; }
         public DbSet<TrendingPanel> TrendingPanels { get; set; }
         public DbSet<AuditTrail> AuditTrails { get; set; }
+        public DbSet<StopType> StopTypes { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }

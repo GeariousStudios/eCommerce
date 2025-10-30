@@ -69,7 +69,7 @@
   "SubCategory/ExistsInCategory": "Underkategori {0} finns redan i denna kategori!",
   "SubCategory/NameTaken": "En underkategori med samma namn finns redan",
   "SubCategory/DuplicateName": "En annan underkategori har redan namnet \"{0}\".",
-  
+
   "Report/NotFound": "Rapporten kunde inte hittas i databasen",
   "Report/Deleted": "Post borttagen!",
   "Report/EndAfterStart": "Sluttid måste vara senare än starttid",
@@ -110,6 +110,10 @@
   "TrendingPanel/NotFound": "Panelen kunde inte hittas i databasen",
   "TrendingPanel/Updated": "Panel uppdaterad!",
   "TrendingPanel/Deleted": "Panel borttagen!",
+
+  "StopType/NotFound": "Typen kunde inte hittas i databasen",
+  "StopType/Deleted": "Typ borttagen!",
+  "StopType/NameTaken": "En typ med detta namn finns redan!",
 
   "AuditTrail/All": "Alla",
   "AuditTrail/Category": "Kategori",

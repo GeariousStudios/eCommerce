@@ -111,6 +111,10 @@
   "TrendingPanel/Updated": "Panel updated!",
   "TrendingPanel/Deleted": "Panel deleted!",
 
+  "StopType/NotFound": "Type could not be found in the database",
+  "StopType/Deleted": "Type deleted!",
+  "StopType/NameTaken": "A type with this name already exists!",
+
   "AuditTrail/All": "All",
   "AuditTrail/Category": "Category",
   "AuditTrail/Categories": "Categories",
