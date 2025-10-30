@@ -217,3 +217,32 @@ export type ShiftTeamFilters = {
   shiftIds?: number[];
   isHidden?: boolean;
 };
+
+// --- admin/manage/stops/stop-types/StopTypesClient.tsx ---
+export type StopTypeItem = {
+  id: number;
+  name: string;
+  units: {
+    id: number;
+    name: string;
+    lightColorHex: string;
+    darkColorHex: string;
+    lightTextColorHex: string;
+    darkTextColorHex: string;
+  }[];
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
+  isHidden?: boolean;
+
+  creationDate: string;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
+};
+
+export type StopTypeFilters = {
+  unitIds?: number[];
+  isHidden?: boolean;
+};

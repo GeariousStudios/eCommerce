@@ -214,6 +214,7 @@
   "AuditTrail/Email": "Email",
   "AuditTrail/Roles": "Roles",
   "AuditTrail/IsLocked": "Locked",
+  "AuditTrail/StopType": "Stop type",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

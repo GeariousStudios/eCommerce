@@ -275,6 +275,12 @@ const Navbar = (props: Props) => {
         icon: "WrenchIcon",
       },
       {
+        href: "/admin/manage/stops/stop-types/",
+        // label: t("Common/Manage") + " / " + t("Common/Types"),
+        label: t("Common/Types"),
+        icon: "WrenchIcon",
+      },
+      {
         href: "/audit-trail/",
         label: t("Navbar/Audit trail"),
         icon: "BookOpenIcon",
@@ -703,6 +709,24 @@ const Navbar = (props: Props) => {
                                       (f) =>
                                         f.href ===
                                         "/admin/manage/news/news-types/",
+                                    ),
+                                  },
+                                ],
+                              },
+                              {
+                                label: t("Common/Stops"),
+                                items: [
+                                  {
+                                    href: "/admin/manage/stops/stop-types/",
+                                    label: t("Common/Types"),
+
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
+                                    isFavourite: favourites.some(
+                                      (f) =>
+                                        f.href ===
+                                        "/admin/manage/stops/stop-types/",
                                     ),
                                   },
                                 ],

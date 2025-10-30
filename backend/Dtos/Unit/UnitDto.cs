@@ -12,6 +12,7 @@ namespace backend.Dtos.Unit
         public List<int> UnitColumnIds { get; set; } = new();
         public List<int> CategoryIds { get; set; } = new();
         public List<int> ShiftIds { get; set; } = new();
+        public List<int> StopTypeIds { get; set; } = new();
         public int? ActiveShiftId { get; set; }
         public string LightColorHex { get; set; } = "#212121";
         public string DarkColorHex { get; set; } = "#e0e0e0";

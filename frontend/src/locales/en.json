@@ -333,6 +333,10 @@
   "ShiftTeamModal/Info1": "Details about the team",
   "ShiftTeamModal/Hide shift team": "Hide team",
 
+  "StopTypeModal/Info1": "Details about the type",
+  "StopTypeModal/Info2": "",
+  "StopTypeModal/Hide stop type": "Hide stop type",
+
   "Shifts/None": "None",
   "Shifts/Unmanned": "Unmanned",
   "Shifts/shift team amount": "shift team amount",
@@ -381,7 +385,7 @@
   "TrendingPanel/Value": "Value",
   "TrendingPanel/No units selected": "No units selected",
   "TrendingPanel/Panel size": "Panel size",
-  "TrendingPanel/Full width": "Full width",
+  "TrendingPanel/Full width": "Full width",Confirm1
   "TrendingPanel/Three fourths": "3 fourths",
   "TrendingPanel/Half": "Half width",
   "TrendingPanel/One fourth": "1 fourth",
@@ -402,6 +406,12 @@
   "TrendingPanel/Autoinfo on": "Click to hide information automatically",
   "TrendingPanel/Autoinfo off": "Click to show information automatically",
   "TrendingPanel/Saving": "Saving...",
+
+  "StopTypes/Hidden stop types": "Hidden stop types",
+  "StopTypes/hidden stop types": "hidden stop types",
+  "StopTypes/Confirm1": "Deleting a stop type will also remove the ability to trend related data.",
+  "StopTypes/Confirm2": "If the stop type has a lot of related data, it's better to hide it instead.",
+  "StopTypes/Confirm3": "Do you still want to delete?",
 
   "AuditTrail/Show all": "Show all",
   "AuditTrail/Entity": "Object",

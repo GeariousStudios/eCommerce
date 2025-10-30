@@ -32,6 +32,7 @@ namespace backend.Data
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
         public DbSet<UnitToCategory> UnitToCategories { get; set; }
         public DbSet<UnitToShift> UnitToShifts { get; set; }
+        public DbSet<UnitToStopType> UnitToStopTypes { get; set; }
         public DbSet<CategoryToSubCategory> CategoryToSubCategories { get; set; }
         public DbSet<ShiftToShiftTeam> ShiftToShiftTeams { get; set; }
         public DbSet<ShiftToShiftTeamSchedule> ShiftToShiftTeamSchedules { get; set; }
@@ -119,6 +120,23 @@ namespace backend.Data
                 .HasOne(us => us.Shift)
                 .WithMany(s => s.UnitToShifts)
                 .HasForeignKey(us => us.ShiftId);
+
+            // Unit <-> Stop type many-to-many relationship.
+            modelBuilder
+                .Entity<UnitToStopType>()
+                .HasKey(ust => new { ust.UnitId, ust.StopTypeId });
+
+            modelBuilder
+                .Entity<UnitToStopType>()
+                .HasOne(ust => ust.Unit)
+                .WithMany(u => u.UnitToStopTypes)
+                .HasForeignKey(us => us.UnitId);
+
+            modelBuilder
+                .Entity<UnitToStopType>()
+                .HasOne(ust => ust.StopType)
+                .WithMany(s => s.UnitToStopTypes)
+                .HasForeignKey(us => us.StopTypeId);
 
             // User -> TrendingPanel 1-to-many relationship.
             modelBuilder

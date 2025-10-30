@@ -28,6 +28,7 @@ namespace backend.Models
         public List<UnitToCategory> UnitToCategories { get; set; } = new();
         public List<UnitToUnitColumn> UnitToUnitColumns { get; set; } = new();
         public List<UnitToShift> UnitToShifts { get; set; } = new();
+        public List<UnitToStopType> UnitToStopTypes { get; set; } = new();
         public List<TrendingPanelToUnit> TrendingPanelToUnits { get; set; } = new();
 
         public List<UnitCell> UnitCells { get; set; } = new();

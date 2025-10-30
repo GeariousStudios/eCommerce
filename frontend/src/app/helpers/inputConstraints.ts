@@ -32,11 +32,13 @@ export const unitGroupConstraints = {
 // --- UnitModal ---
 export const unitConstraints = {
   name: { maxLength: 16 },
+  colorHex: { pattern: /^#([0-9A-Fa-f]{6})$/ },
 };
 
 // --- ShiftModal ---
 export const shiftConstraints = {
   name: { maxLength: 32 },
+  colorHex: { pattern: /^#([0-9A-Fa-f]{6})$/ },
 };
 
 // --- ShiftTeamModal ---
@@ -48,4 +50,10 @@ export const shiftTeamConstraints = {
 // --- TrendingPanel ---
 export const trendingPanelConstraints = {
   name: { maxLength: 32 },
+};
+
+// --- StopTypeModal ---
+export const stopTypeConstraints = {
+  name: { maxLength: 32 },
+  colorHex: { pattern: /^#([0-9A-Fa-f]{6})$/ },
 };

@@ -1,12 +1,12 @@
 import { useTranslations } from "next-intl";
-import { UnitGroupFilters, UnitGroupItem } from "../../types/manageTypes";
+import { StopTypeFilters, StopTypeItem } from "../../types/manageTypes";
 
 const token = localStorage.getItem("token");
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export type SortOrder = "asc" | "desc";
 
-// --- report/manage/UnitGroupsClient.tsx ---
+// --- report/manage/ShiftsClient.tsx ---
 export const fetchContent = async ({
   page,
   pageSize,
@@ -20,8 +20,8 @@ export const fetchContent = async ({
   sortBy: string;
   sortOrder: SortOrder;
   search: string;
-  filters?: UnitGroupFilters;
-}): Promise<{ items: UnitGroupItem[]; total: number; counts?: any }> => {
+  filters?: StopTypeFilters;
+}): Promise<{ items: StopTypeItem[]; total: number; counts?: any }> => {
   const params = new URLSearchParams({
     page: String(page),
     pageSize: String(pageSize),
@@ -31,12 +31,16 @@ export const fetchContent = async ({
   });
 
   // --- FILTERS START ---
+  if (filters?.isHidden !== undefined) {
+    params.append("isHidden", String(filters.isHidden));
+  }
+
   filters?.unitIds?.forEach((id) => {
     params.append("unitIds", id.toString());
   });
   // --- FILTERS STOP ---
 
-  const response = await fetch(`${apiUrl}/unit-group?${params}`, {
+  const response = await fetch(`${apiUrl}/stop-type?${params}`, {
     headers: {
       "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",
@@ -58,7 +62,7 @@ export const fetchContent = async ({
 };
 
 export const deleteContent = async (id: number): Promise<void> => {
-  const response = await fetch(`${apiUrl}/unit-group/delete/${id}`, {
+  const response = await fetch(`${apiUrl}/stop-type/delete/${id}`, {
     method: "DELETE",
     headers: {
       "X-User-Language": localStorage.getItem("language") || "sv",
@@ -74,7 +78,7 @@ export const deleteContent = async (id: number): Promise<void> => {
 
   if (!response.ok) {
     // const t = useTranslations();
-    // let errorMessage = t("Api/Failed to delete") + t("Common/group");
+    // let errorMessage = t("Api/Failed to delete") + t("Common/stop type");
     // try {
     //   const errorData = await response.json();
     //   errorMessage = errorData.message || errorMessage;

@@ -213,6 +213,7 @@
   "AuditTrail/Email": "Mejladress",
   "AuditTrail/Roles": "Behörigheter",
   "AuditTrail/IsLocked": "Låst",
+  "AuditTrail/StopType": "Stopptyp",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

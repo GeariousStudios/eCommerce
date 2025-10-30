@@ -1,5 +1,6 @@
 using backend.Data;
 using backend.Dtos.StopType;
+using backend.Dtos.Unit;
 using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -55,12 +56,30 @@ namespace backend.Controllers
         public async Task<IActionResult> GetAll(
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
+            [FromQuery] int[]? unitIds = null,
+            [FromQuery] bool? isHidden = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            IQueryable<StopType> query = _context.StopTypes;
+            var lang = await GetLangAsync();
+
+            IQueryable<StopType> query = _context
+                .StopTypes.Include(st => st.UnitToStopTypes)
+                .ThenInclude(ust => ust.Unit);
+
+            if (isHidden.HasValue)
+            {
+                query = query.Where(s => s.IsHidden == isHidden.Value);
+            }
+
+            if (unitIds?.Any() == true)
+            {
+                query = query.Where(s =>
+                    s.UnitToStopTypes.Any(ust => unitIds.Contains(ust.UnitId))
+                );
+            }
 
             if (!string.IsNullOrWhiteSpace(search))
             {
@@ -73,12 +92,33 @@ namespace backend.Controllers
                 "name" => sortOrder == "desc"
                     ? query.OrderByDescending(t => t.Name.ToLower())
                     : query.OrderBy(t => t.Name.ToLower()),
+                "unitcount" => sortOrder == "desc"
+                    ? query
+                        .OrderByDescending(t => t.UnitToStopTypes.Count)
+                        .ThenBy(st => st.Name.ToLower())
+                    : query.OrderBy(st => st.UnitToStopTypes.Count).ThenBy(st => st.Name.ToLower()),
+                "visibilitycount" => sortOrder == "desc"
+                    ? query.OrderByDescending(t => t.IsHidden).ThenBy(t => t.Name.ToLower())
+                    : query.OrderBy(t => t.IsHidden).ThenBy(t => t.Name.ToLower()),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(t => t.Id)
                     : query.OrderBy(t => t.Id),
             };
 
             var totalCount = await query.CountAsync();
+
+            // Filters.
+            var visibilityCount = new Dictionary<string, int>
+            {
+                ["Visible"] = await _context.Shifts.CountAsync(s => !s.IsHidden),
+                ["Hidden"] = await _context.Shifts.CountAsync(s => s.IsHidden),
+            };
+
+            var unitCount = await query
+                .SelectMany(s => s.UnitToShifts)
+                .GroupBy(us => us.UnitId)
+                .Select(g => new { g.Key, Count = g.Select(x => x.ShiftId).Distinct().Count() })
+                .ToDictionaryAsync(x => x.Key, x => x.Count);
 
             var stopTypes = await query
                 .Skip((page - 1) * pageSize)
@@ -87,6 +127,39 @@ namespace backend.Controllers
                 {
                     Id = t.Id,
                     Name = t.Name,
+                    LightColorHex = t.LightColorHex,
+                    DarkColorHex = t.DarkColorHex,
+                    LightTextColorHex = ColorHelper.GetReadableTextColor(t.LightColorHex),
+                    DarkTextColorHex = ColorHelper.GetReadableTextColor(t.DarkColorHex),
+                    Units = t
+                        .UnitToStopTypes.Select(ust => ust.Unit)
+                        .Select(u => new UnitDto
+                        {
+                            Id = u.Id,
+                            Name = u.Name,
+                            UnitGroupId = u.UnitGroupId,
+                            UnitGroupName = u.UnitGroup?.Name ?? "",
+                            IsHidden = u.IsHidden,
+
+                            UnitColumnIds = u
+                                .UnitToUnitColumns.OrderBy(uuc => uuc.Order)
+                                .Select(uuc => uuc.UnitColumnId)
+                                .ToList(),
+                            CategoryIds = u
+                                .UnitToCategories.OrderBy(uc => uc.Order)
+                                .Select(uc => uc.CategoryId)
+                                .ToList(),
+                            ShiftIds = u
+                                .UnitToShifts.OrderBy(us => us.Order)
+                                .Select(us => us.ShiftId)
+                                .ToList(),
+                            CreationDate = u.CreationDate,
+                            CreatedBy = u.CreatedBy,
+                            UpdateDate = u.UpdateDate,
+                            UpdatedBy = u.UpdatedBy,
+                        })
+                        .ToList(),
+                    IsHidden = t.IsHidden,
 
                     // Meta data.
                     CreationDate = t.CreationDate,
@@ -117,7 +190,16 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("StopType/NotFound", lang) });
             }
 
-            var result = new StopTypeDto { Id = stopType.Id, Name = stopType.Name };
+            var result = new StopTypeDto
+            {
+                Id = stopType.Id,
+                Name = stopType.Name,
+                LightColorHex = stopType.LightColorHex,
+                DarkColorHex = stopType.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(stopType.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(stopType.DarkColorHex),
+                IsHidden = stopType.IsHidden,
+            };
 
             return Ok(result);
         }
@@ -155,6 +237,11 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = stopType.Id,
                     ["Name"] = stopType.Name,
+                    ["LightColorHex"] = stopType.LightColorHex,
+                    ["DarkColorHex"] = stopType.DarkColorHex,
+                    ["IsHidden"] = stopType.IsHidden
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                 }
             );
 
@@ -220,7 +307,13 @@ namespace backend.Controllers
 
             var result = new StopTypeDto
             {
+                Id = stopType.Id,
                 Name = stopType.Name,
+                LightColorHex = stopType.LightColorHex,
+                DarkColorHex = stopType.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(stopType.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(stopType.DarkColorHex),
+                IsHidden = stopType.IsHidden,
 
                 // Meta data.
                 CreationDate = stopType.CreationDate,
@@ -240,6 +333,11 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = stopType.Id,
                     ["Name"] = stopType.Name,
+                    ["LightColorHex"] = stopType.LightColorHex,
+                    ["DarkColorHex"] = stopType.DarkColorHex,
+                    ["IsHidden"] = stopType.IsHidden
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                 }
             );
 
@@ -297,6 +395,9 @@ namespace backend.Controllers
             {
                 ["ObjectID"] = stopType.Id,
                 ["Name"] = stopType.Name,
+                ["LightColorHex"] = stopType.LightColorHex,
+                ["DarkColorHex"] = stopType.DarkColorHex,
+                ["IsHidden"] = stopType.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
             stopType.Name = dto.Name;
@@ -318,6 +419,11 @@ namespace backend.Controllers
             {
                 Id = stopType.Id,
                 Name = stopType.Name,
+                LightColorHex = stopType.LightColorHex,
+                DarkColorHex = stopType.DarkColorHex,
+                LightTextColorHex = ColorHelper.GetReadableTextColor(stopType.LightColorHex),
+                DarkTextColorHex = ColorHelper.GetReadableTextColor(stopType.DarkColorHex),
+                IsHidden = stopType.IsHidden,
 
                 // Meta data.
                 UpdateDate = stopType.UpdateDate,
@@ -338,6 +444,11 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = stopType.Id,
                         ["Name"] = stopType.Name,
+                        ["LightColorHex"] = stopType.LightColorHex,
+                        ["DarkColorHex"] = stopType.DarkColorHex,
+                        ["IsHidden"] = stopType.IsHidden
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
                     },
                 }
             );

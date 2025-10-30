@@ -101,6 +101,10 @@
   "Common/Start date": "Startdatum",
   "Common/End date": "Slutdatum",
   "Common/Date range": "Datumintervall",
+  "Common/Stop types": "Stopptyper",
+  "Common/stop types": "stopptyper",
+  "Common/Stop type": "Stopptyp",
+  "Common/stop type": "stopptyp",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
@@ -334,6 +338,10 @@
   "ShiftTeamModal/Info1": "Uppgifter om laget",
   "ShiftTeamModal/Hide shift team": "Dölj lag",
 
+  "StopTypeModal/Info1": "Uppgifter om typen",
+  "StopTypeModal/Info2": "",
+  "StopTypeModal/Hide stop type": "Dölj stoptyp",
+
   "Shifts/None": "Inget",
   "Shifts/Unmanned": "Obemannad",
   "Shifts/shift team amount": "antal lag",
@@ -403,6 +411,12 @@
   "TrendingPanel/Autoinfo on": "Klicka för att dölja information automatiskt",
   "TrendingPanel/Autoinfo off": "Klicka för att visa information automatiskt",
   "TrendingPanel/Saving": "Sparar...",
+
+  "StopTypes/Hidden stop types": "Dolda stopptyper",
+  "StopTypes/hidden stop types": "dolda stopptyper",
+  "StopTypes/Confirm1": "Tar du bort en stopptyp så tar du bort möjligheten att kunna trenda kopplad data.",
+  "StopTypes/Confirm2": "Om stopptypen har mycket kopplad data så är det bättre att dölja det.",
+  "StopTypes/Confirm3": "Vill du ta bort ändå?",
 
   "AuditTrail/Show all": "Visa allt",
   "AuditTrail/Entity": "Objekt",
