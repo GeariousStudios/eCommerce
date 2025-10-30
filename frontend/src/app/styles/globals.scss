@@ -103,6 +103,10 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
+input::placeholder {
+  color: var(--text-secondary);
+}
+
 /* --- SCROLLBAR --- */
 * {
   &::-webkit-scrollbar {

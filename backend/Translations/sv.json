@@ -214,6 +214,7 @@
   "AuditTrail/Roles": "Behörigheter",
   "AuditTrail/IsLocked": "Låst",
   "AuditTrail/StopType": "Stopptyp",
+  "AuditTrail/StopTypes": "Stopptyper",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

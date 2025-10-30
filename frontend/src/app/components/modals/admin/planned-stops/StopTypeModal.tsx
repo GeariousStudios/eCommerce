@@ -258,8 +258,8 @@ const StopTypeModal = (props: Props) => {
     if (props.itemId === null || props.itemId === undefined) {
       const dirty =
         name !== "" ||
-        lightColorHex !== "" ||
-        darkColorHex !== "" ||
+        lightColorHex !== "#212121" ||
+        darkColorHex !== "#e0e0e0" ||
         isHidden !== false;
 
       setIsDirty(dirty);

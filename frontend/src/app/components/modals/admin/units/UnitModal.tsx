@@ -46,6 +46,11 @@ type ShiftOptions = {
   name: string;
 };
 
+type StopTypeOptions = {
+  id: number;
+  name: string;
+};
+
 const UnitModal = (props: Props) => {
   const t = useTranslations();
 
@@ -64,10 +69,12 @@ const UnitModal = (props: Props) => {
   const [unitColumnIds, setUnitColumnIds] = useState<number[]>([]);
   const [categoryIds, setCategoryIds] = useState<number[]>([]);
   const [shiftIds, setShiftIds] = useState<number[]>([]);
+  const [stopTypeIds, setStopTypeIds] = useState<number[]>([]);
   const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
   const [unitColumns, setUnitColumns] = useState<UnitColumnOptions[]>([]);
   const [categories, setCategories] = useState<CategoryOptions[]>([]);
   const [shifts, setShifts] = useState<ShiftOptions[]>([]);
+  const [stopTypes, setStopTypes] = useState<StopTypeOptions[]>([]);
 
   const [originalName, setOriginalName] = useState("");
   const [originalUnitGroup, setOriginalUnitGroup] = useState("");
@@ -76,6 +83,7 @@ const UnitModal = (props: Props) => {
   );
   const [originalCategoryIds, setOriginalCategoryIds] = useState<number[]>([]);
   const [originalShiftIds, setOriginalShiftIds] = useState<number[]>([]);
+  const [originalStopTypeIds, setOriginalStopTypeIds] = useState<number[]>([]);
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
   const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
@@ -97,6 +105,7 @@ const UnitModal = (props: Props) => {
     fetchUnitColumns();
     fetchCategories();
     fetchShifts();
+    fetchStopTypes();
 
     if (props.itemId !== null && props.itemId !== undefined) {
       fetchUnit();
@@ -124,6 +133,9 @@ const UnitModal = (props: Props) => {
 
       setShiftIds([]);
       setOriginalShiftIds([]);
+
+      setStopTypeIds([]);
+      setOriginalStopTypeIds([]);
     }
   }, [props.isOpen, props.itemId]);
 
@@ -149,6 +161,7 @@ const UnitModal = (props: Props) => {
           unitColumnIds,
           categoryIds,
           shiftIds,
+          stopTypeIds,
         }),
       });
 
@@ -299,6 +312,32 @@ const UnitModal = (props: Props) => {
     }
   };
 
+  // --- Fetch stop types ---
+  const fetchStopTypes = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/stop-type?sortBy=name&sortOrder=asc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      } else {
+        setStopTypes(result.items);
+      }
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
   // --- Fetch unit ---
   const fetchUnit = async () => {
     try {
@@ -346,6 +385,9 @@ const UnitModal = (props: Props) => {
 
     setShiftIds(result.shiftIds ?? []);
     setOriginalShiftIds(result.shiftIds ?? []);
+
+    setStopTypeIds(result.stopTypeIds ?? []);
+    setOriginalStopTypeIds(result.stopTypeIds ?? []);
   };
 
   // --- Update unit ---
@@ -369,6 +411,7 @@ const UnitModal = (props: Props) => {
           unitColumnIds,
           categoryIds,
           shiftIds,
+          stopTypeIds,
         }),
       });
 
@@ -467,12 +510,13 @@ const UnitModal = (props: Props) => {
         name !== "" ||
         unitGroup !== "" ||
         isHidden !== false ||
-        lightColorHex !== "" ||
-        darkColorHex !== "" ||
+        lightColorHex !== "#212121" ||
+        darkColorHex !== "#e0e0e0" ||
         JSON.stringify(unitColumnIds) !==
           JSON.stringify(originalUnitColumnIds) ||
         JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
-        JSON.stringify(shiftIds) !== JSON.stringify(originalShiftIds);
+        JSON.stringify(shiftIds) !== JSON.stringify(originalShiftIds) ||
+        JSON.stringify(stopTypeIds) !== JSON.stringify(originalStopTypeIds);
 
       setIsDirty(dirty);
       return;
@@ -483,7 +527,11 @@ const UnitModal = (props: Props) => {
       unitGroup !== originalUnitGroup ||
       isHidden !== originalIsHidden ||
       lightColorHex !== originalLightColorHex ||
-      darkColorHex !== originalDarkColorHex;
+      darkColorHex !== originalDarkColorHex ||
+      JSON.stringify(unitColumnIds) !== JSON.stringify(originalUnitColumnIds) ||
+      JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
+      JSON.stringify(shiftIds) !== JSON.stringify(originalShiftIds) ||
+      JSON.stringify(stopTypeIds) !== JSON.stringify(originalStopTypeIds);
     setIsDirty(dirty);
   }, [
     name,
@@ -494,6 +542,7 @@ const UnitModal = (props: Props) => {
     unitColumnIds,
     categoryIds,
     shiftIds,
+    stopTypeIds,
     originalName,
     originalUnitGroup,
     originalIsHidden,
@@ -502,6 +551,7 @@ const UnitModal = (props: Props) => {
     originalUnitColumnIds,
     originalCategoryIds,
     originalShiftIds,
+    originalStopTypeIds,
   ]);
 
   return (
@@ -696,7 +746,6 @@ const UnitModal = (props: Props) => {
               </div>
 
               <MultiDropdown
-                addSpacer={shiftIds.length === 0 && shifts.length > 3}
                 scrollContainer={getScrollEl}
                 label={t("Common/Shifts")}
                 value={shiftIds.map(String)}
@@ -736,6 +785,62 @@ const UnitModal = (props: Props) => {
                   <span className="text-sm text-[var(--text-secondary)] italic">
                     {t("Modal/Drag and drop2") +
                       t("Common/shift") +
+                      t("Modal/Drag and drop3")}
+                  </span>
+                </>
+              )}
+
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("UnitModal/Info5")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <MultiDropdown
+                addSpacer={stopTypeIds.length === 0 && stopTypes.length > 3}
+                scrollContainer={getScrollEl}
+                label={t("Common/Stop types")}
+                value={stopTypeIds.map(String)}
+                onChange={(val: string[]) => setStopTypeIds(val.map(Number))}
+                options={stopTypes.map((c) => ({
+                  label: c.name,
+                  value: String(c.id),
+                }))}
+                onModal
+              />
+
+              {stopTypeIds.length > 0 && (
+                <>
+                  <DragDrop
+                    items={stopTypeIds}
+                    getId={(id) => String(id)}
+                    onReorder={(newList) => setStopTypeIds(newList)}
+                    onDraggingChange={setIsAnyDragging}
+                    renderItem={(id, isDragging) => {
+                      const col = stopTypes.find((c) => c.id === id);
+                      if (!col) {
+                        return null;
+                      }
+
+                      return (
+                        <DragChip
+                          label={col.name}
+                          isDragging={isDragging}
+                          dragging={isAnyDragging}
+                          onDelete={() =>
+                            setStopTypeIds((prev) =>
+                              prev.filter((v) => v !== id),
+                            )
+                          }
+                        />
+                      );
+                    }}
+                  />
+                  <span className="text-sm text-[var(--text-secondary)] italic">
+                    {t("Modal/Drag and drop2") +
+                      t("Common/stop type") +
                       t("Modal/Drag and drop3")}
                   </span>
                 </>

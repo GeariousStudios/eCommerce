@@ -442,8 +442,8 @@ const ShiftModal = (props: Props) => {
       const dirty =
         name !== "" ||
         isHidden !== false ||
-        lightColorHex !== "" ||
-        darkColorHex !== "" ||
+        lightColorHex !== "#212121" ||
+        darkColorHex !== "#e0e0e0" ||
         JSON.stringify(shiftTeamIds) !== JSON.stringify([]) ||
         JSON.stringify(weeklyTimes) !== JSON.stringify([]) ||
         JSON.stringify(shiftTeamDisplayNames) !== JSON.stringify({}) ||

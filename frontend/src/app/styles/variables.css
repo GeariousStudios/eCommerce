@@ -130,10 +130,10 @@
 
   /* --- GRAPH COLORS --- */
   --graph-default: #fbbc04;
-  --graph-one: #fbbc04;
+  /* --graph-one: #fbbc04;
   --graph-two: #8ab4f8;
   --graph-three: #34a853;
-  --graph-four: #f28b82;
+  --graph-four: #f28b82; */
 
   /* --- OTHER --- */
   --locked: var(--note-error);
@@ -214,10 +214,10 @@
 
   /* --- GRAPH COLORS --- */
   --graph-default: #bd4200;
-  --graph-one: #bd4200;
+  /* --graph-one: #bd4200;
   --graph-two: #01579b;
   --graph-three: #33691e;
-  --graph-four: #880e4f;
+  --graph-four: #880e4f; */
 
   /* --- OTHER --- */
   --locked: var(--note-error);

@@ -259,7 +259,7 @@ const Navbar = (props: Props) => {
       {
         href: "/admin/manage/news/news-types/",
         // label: t("Common/Manage") + " / " + t("Common/Types"),
-        label: t("Common/Types"),
+        label: t("Common/News types"),
         icon: "WrenchIcon",
       },
       {
@@ -275,9 +275,9 @@ const Navbar = (props: Props) => {
         icon: "WrenchIcon",
       },
       {
-        href: "/admin/manage/stops/stop-types/",
+        href: "/admin/manage/planned-stops/stop-types/",
         // label: t("Common/Manage") + " / " + t("Common/Types"),
-        label: t("Common/Types"),
+        label: t("Common/Stop types"),
         icon: "WrenchIcon",
       },
       {
@@ -700,7 +700,7 @@ const Navbar = (props: Props) => {
                                 items: [
                                   {
                                     href: "/admin/manage/news/news-types/",
-                                    label: t("Common/Types"),
+                                    label: t("Common/News types"),
 
                                     onToggleFavourite: isLoggedIn
                                       ? onToggleFavourite
@@ -714,11 +714,11 @@ const Navbar = (props: Props) => {
                                 ],
                               },
                               {
-                                label: t("Common/Stops"),
+                                label: t("Common/Planned stops"),
                                 items: [
                                   {
-                                    href: "/admin/manage/stops/stop-types/",
-                                    label: t("Common/Types"),
+                                    href: "/admin/manage/planned-stops/stop-types/",
+                                    label: t("Common/Stop types"),
 
                                     onToggleFavourite: isLoggedIn
                                       ? onToggleFavourite
@@ -726,7 +726,7 @@ const Navbar = (props: Props) => {
                                     isFavourite: favourites.some(
                                       (f) =>
                                         f.href ===
-                                        "/admin/manage/stops/stop-types/",
+                                        "/admin/manage/planned-stops/stop-types/",
                                     ),
                                   },
                                 ],

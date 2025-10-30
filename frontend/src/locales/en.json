@@ -100,6 +100,15 @@
   "Common/Start date": "Start date",
   "Common/End date": "End date",
   "Common/Date range": "Date range",
+  "Common/Planned stops": "Planned stops",
+  "Common/Stop types": "Stop types",
+  "Common/stop types": "stop types",
+  "Common/Stop type": "Stop type",
+  "Common/stop type": "stop type",
+  "Common/News types": "News types",
+  "Common/news types": "news types",
+  "Common/News type": "News type",
+  "Common/news type": "news type",
 
   "Message/Loading": "Loading...",
   "Message/Auth": "Authenticating...",
@@ -210,6 +219,7 @@
   "Units/column amount": "column amount",
   "Units/category amount": "category amount",
   "Units/shift amount": "shift amount",
+  "Units/stop type amount": "stop type amount",
   "Units/Hidden units": "Hidden units",
   "Units/hidden units": "hidden units",
   "Units/Visible units": "Visible units",
@@ -256,7 +266,6 @@
   "NewsModal/News item": "News item",
   "NewsModal/news item": "news item",
   "NewsModal/Unknown type": "Unknown type",
-  "NewsModal/News type": "News type",
   "NewsModal/Headline": "Headline",
 
   "SettingsModal/Logout message": "You're now logged out!",
@@ -301,6 +310,7 @@
   "UnitModal/Info2": "Columns",
   "UnitModal/Info3": "Categories",
   "UnitModal/Info4": "Shifts",
+  "UnitModal/Info5": "Stop types",
   "UnitModal/Hide unit": "Hide unit",
 
   "UnitCellModal/Info1": "1. Choose a period",
@@ -385,7 +395,7 @@
   "TrendingPanel/Value": "Value",
   "TrendingPanel/No units selected": "No units selected",
   "TrendingPanel/Panel size": "Panel size",
-  "TrendingPanel/Full width": "Full width",Confirm1
+  "TrendingPanel/Full width": "Full width",
   "TrendingPanel/Three fourths": "3 fourths",
   "TrendingPanel/Half": "Half width",
   "TrendingPanel/One fourth": "1 fourth",
@@ -409,6 +419,8 @@
 
   "StopTypes/Hidden stop types": "Hidden stop types",
   "StopTypes/hidden stop types": "hidden stop types",
+  "StopTypes/Visible stop types": "Visible stop types",
+  "StopTypes/visible stop types": "visible stop types",
   "StopTypes/Confirm1": "Deleting a stop type will also remove the ability to trend related data.",
   "StopTypes/Confirm2": "If the stop type has a lot of related data, it's better to hide it instead.",
   "StopTypes/Confirm3": "Do you still want to delete?",

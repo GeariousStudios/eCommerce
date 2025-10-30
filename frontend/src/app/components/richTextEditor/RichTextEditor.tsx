@@ -29,7 +29,7 @@ export type RichTextEditorRef = {
 };
 
 type Props = {
-  value: string;
+  value?: string;
   name?: string;
   required?: boolean;
   onReady?: () => void;

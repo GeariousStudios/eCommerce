@@ -1,3 +1,4 @@
+import useTheme from "@/app/hooks/useTheme";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 
@@ -32,16 +33,6 @@ type InputProps = {
   compact?: boolean;
 };
 
-const isDarkTheme = () => {
-  const currentTheme = localStorage.getItem("theme");
-
-  if (currentTheme === "dark") {
-    return true;
-  }
-
-  return false;
-};
-
 const Input = ({
   id,
   name,
@@ -72,6 +63,8 @@ const Input = ({
   focusOnMount = false,
   compact = false,
 }: InputProps & { icon?: ReactNode }) => {
+  const { currentTheme } = useTheme();
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   const isCheckbox = type === "checkbox";
@@ -94,7 +87,7 @@ const Input = ({
   return (
     <>
       <div
-        className={`${isCheckbox || isRadio ? "flex items-center justify-center" : "w-full"} ${isDarkTheme() ? "dark-calendar" : ""} relative`}
+        className={`${isCheckbox || isRadio ? "flex items-center justify-center" : "w-full"} ${currentTheme === "dark" ? "dark-calendar" : ""} relative`}
       >
         <input
           inputMode={inputMode}

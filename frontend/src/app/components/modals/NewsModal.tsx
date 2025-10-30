@@ -333,7 +333,7 @@ const NewsModal = (props: Props) => {
             isDirty={isDirty}
           >
             <ModalBase.Content>
-              <div className="grid grid-cols-1 gap-6 mt-2 mb-8">
+              <div className="mt-2 mb-8 grid grid-cols-1 gap-6">
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <Input
                     id="date"
@@ -346,7 +346,7 @@ const NewsModal = (props: Props) => {
                   />
 
                   <SingleDropdown
-                    label={t("NewsModal/News type")}
+                    label={t("Common/News type")}
                     value={typeId}
                     onChange={setTypeId}
                     options={[
@@ -377,13 +377,20 @@ const NewsModal = (props: Props) => {
                   required
                 />
 
-                <RichTextEditor
+                {/* <RichTextEditor
                   ref={editorRef}
                   value={content}
                   name="content"
                   onReady={() => {
                     setIsEditorReady(true);
                   }}
+                  onChange={(val) => setContent(val)}
+                  required
+                /> */}
+                <RichTextEditor
+                  ref={editorRef}
+                  name="content"
+                  onReady={() => setIsEditorReady(true)}
                   onChange={(val) => setContent(val)}
                   required
                 />

@@ -79,7 +79,7 @@ const NewsTypesClient = (props: Props) => {
       } catch (err: any) {
         notify(
           "error",
-          err.message || t("Manage/Failed to fetch") + t("Common/types"),
+          err.message || t("Manage/Failed to fetch") + t("Common/news types"),
         ); // <-- Unique.
         return {
           items: [],
@@ -113,7 +113,7 @@ const NewsTypesClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
-      notify("success", t("Common/Type") + t("Manage/deleted1"), 4000); // <-- Unique.
+      notify("success", t("Common/News type") + t("Manage/deleted1"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
     }
@@ -174,7 +174,7 @@ const NewsTypesClient = (props: Props) => {
   return (
     <>
       <ManageBase<NewsTypeItem> // <-- Unique.
-        itemName={t("Common/type")} // <-- Unique.
+        itemName={t("Common/news type")} // <-- Unique.
         items={items}
         selectedItems={selectedItems}
         setSelectedItems={setSelectedItems}

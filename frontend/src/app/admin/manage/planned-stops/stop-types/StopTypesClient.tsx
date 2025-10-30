@@ -10,7 +10,7 @@ import {
   UnitOption,
 } from "@/app/apis/manage/stopTypesApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
-import StopTypeModal from "@/app/components/modals/admin/stops/StopTypeModal"; // <-- Unique.
+import StopTypeModal from "@/app/components/modals/admin/planned-stops/StopTypeModal"; // <-- Unique.
 import DeleteModal from "@/app/components/modals/DeleteModal";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
 import { useEffect, useState } from "react";

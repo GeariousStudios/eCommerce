@@ -856,6 +856,26 @@ namespace backend.Controllers
 
             _context.UnitToShifts.AddRange(newShiftLinks);
 
+            var oldStopTypeLinks = await _context
+                .UnitToStopTypes.Where(l => l.UnitId == unit.Id)
+                .ToListAsync();
+
+            _context.UnitToStopTypes.RemoveRange(oldStopTypeLinks);
+
+            var newStopTypeLinks = dto
+                .StopTypeIds.Select(
+                    (typeId, index) =>
+                        new UnitToStopType
+                        {
+                            UnitId = unit.Id,
+                            StopTypeId = typeId,
+                            Order = index,
+                        }
+                )
+                .ToList();
+
+            _context.UnitToStopTypes.AddRange(newStopTypeLinks);
+
             // Meta data.
             unit.UpdateDate = now;
             unit.UpdatedBy = updatedBy;

@@ -110,10 +110,13 @@ const LayoutWrapper = (props: Props) => {
       },
 
       news: { label: t("Common/News"), clickable: false },
-      "news-types": { label: t("Common/Types"), clickable: false },
+      "news-types": { label: t("Common/News types"), clickable: false },
 
       shifts: { label: t("Common/Shifts"), clickable: false },
       "shift-teams": { label: t("Common/Shift teams"), clickable: false },
+
+      "planned-stops": { label: t("Common/Planned stops"), clickable: false },
+      "stop-types": { label: t("Common/Stop types"), clickable: false },
 
       // --- Developer ---
       developer: { label: t("Common/Developer"), clickable: false },

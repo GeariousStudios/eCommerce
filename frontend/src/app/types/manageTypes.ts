@@ -118,6 +118,7 @@ export type UnitItem = {
   unitColumnIds: number[];
   categoryIds: number[];
   shiftIds: number[];
+  stopTypeIds: number[];
   isHidden?: boolean;
   lightColorHex: string;
   darkColorHex: string;
@@ -135,6 +136,7 @@ export type UnitFilters = {
   unitColumnIds?: number[];
   categoryIds?: number[];
   shiftIds?: number[];
+  stopTypeIds?: number[];
   isHidden?: boolean;
 };
 

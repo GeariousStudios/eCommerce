@@ -101,10 +101,15 @@
   "Common/Start date": "Startdatum",
   "Common/End date": "Slutdatum",
   "Common/Date range": "Datumintervall",
+  "Common/Planned stops": "Planerade stopp",
   "Common/Stop types": "Stopptyper",
   "Common/stop types": "stopptyper",
   "Common/Stop type": "Stopptyp",
   "Common/stop type": "stopptyp",
+  "Common/News types": "Nyhetstyper",
+  "Common/news types": "nyhetstyper",
+  "Common/News type": "Nyhetstyp",
+  "Common/news type": "nyhetstyp",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
@@ -215,6 +220,7 @@
   "Units/column amount": "antal kolumner",
   "Units/category amount": "antal kategorier",
   "Units/shift amount": "antal skift",
+  "Units/stop type amount": "antal stopptyper",
   "Units/Hidden units": "Dolda enheter",
   "Units/hidden units": "dolda enheter",
   "Units/Visible units": "Synliga enheter",
@@ -261,7 +267,6 @@
   "NewsModal/News item": "Nyhet",
   "NewsModal/news item": "nyhet",
   "NewsModal/Unknown type": "Okänd typ",
-  "NewsModal/News type": "Nyhetstyp",
   "NewsModal/Headline": "Rubrik",
 
   "SettingsModal/Logout message": "Du är nu utloggad!",
@@ -306,6 +311,7 @@
   "UnitModal/Info2": "Kolumner",
   "UnitModal/Info3": "Kategorier",
   "UnitModal/Info4": "Skift",
+  "UnitModal/Info5": "Stopptyper",
   "UnitModal/Hide unit": "Dölj enhet",
 
   "UnitCellModal/Info1": "1. Välj tidpunkt",
@@ -414,6 +420,8 @@
 
   "StopTypes/Hidden stop types": "Dolda stopptyper",
   "StopTypes/hidden stop types": "dolda stopptyper",
+  "StopTypes/Visible stop types": "Synliga stopptyper",
+  "StopTypes/visible stop types": "synliga stopptyper",
   "StopTypes/Confirm1": "Tar du bort en stopptyp så tar du bort möjligheten att kunna trenda kopplad data.",
   "StopTypes/Confirm2": "Om stopptypen har mycket kopplad data så är det bättre att dölja det.",
   "StopTypes/Confirm3": "Vill du ta bort ändå?",

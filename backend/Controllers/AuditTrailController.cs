@@ -263,6 +263,7 @@ namespace backend.Controllers
                     "UserManagement",
                     // "UserPreferences",
                     "ShiftChange",
+                    "StopType",
                 };
 
                 actions = new[] { "All", "Create", "Update", "Delete" };

@@ -355,10 +355,7 @@ const ReportModal = (props: Props) => {
 
       await fetchReportsForHour();
       props.onItemUpdated();
-      notify(
-        "success",
-        t("ReportModal/Event") + t("Modal/created"),
-      );
+      notify("success", t("ReportModal/Event") + t("Modal/created"));
       return true;
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -404,10 +401,7 @@ const ReportModal = (props: Props) => {
 
       await fetchReportsForHour();
       props.onItemUpdated();
-      notify(
-        "success",
-        t("ReportModal/Event") + t("Modal/updated"),
-      );
+      notify("success", t("ReportModal/Event") + t("Modal/updated"));
       return true;
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -440,10 +434,7 @@ const ReportModal = (props: Props) => {
 
       setReports((prev) => prev.filter((r) => r.id !== id));
       props.onItemUpdated();
-      notify(
-        "success",
-        t("ReportModal/Event") + t("Manage/deleted1"),
-      );
+      notify("success", t("ReportModal/Event") + t("Manage/deleted1"));
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -1141,13 +1132,25 @@ const ReportModal = (props: Props) => {
                           />
                         </div>
 
-                        <RichTextEditor
+                        {/* <RichTextEditor
                           ref={editorRef}
                           value={currentReport.content}
                           name="content"
                           onReady={() => {
                             setIsEditorReady(true);
                           }}
+                          onChange={(val) =>
+                            setCurrentReport((prev) => ({
+                              ...prev,
+                              content: val,
+                            }))
+                          }
+                        /> */}
+
+                        <RichTextEditor
+                          ref={editorRef}
+                          name="content"
+                          onReady={() => setIsEditorReady(true)}
                           onChange={(val) =>
                             setCurrentReport((prev) => ({
                               ...prev,

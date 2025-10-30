@@ -215,6 +215,7 @@
   "AuditTrail/Roles": "Roles",
   "AuditTrail/IsLocked": "Locked",
   "AuditTrail/StopType": "Stop type",
+  "AuditTrail/StopTypes": "Stop types",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

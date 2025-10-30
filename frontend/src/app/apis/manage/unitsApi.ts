@@ -58,6 +58,12 @@ export const fetchContent = async ({
       params.append("shiftIds", id.toString());
     }
   }
+
+  if (filters?.stopTypeIds) {
+    for (const id of filters.stopTypeIds) {
+      params.append("stopTypeIds", id.toString());
+    }
+  }
   // --- FILTERS STOP ---
 
   const response = await fetch(`${apiUrl}/unit?${params}`, {
@@ -188,6 +194,33 @@ export type ShiftOption = {
 
 export const fetchShifts = async (): Promise<ShiftOption[]> => {
   const response = await fetch(`${apiUrl}/shift`, {
+    headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
+};
+
+export type StopTypeOption = {
+  id: number;
+  name: string;
+  lightColorHex: string;
+  darkColorHex: string;
+  lightTextColorHex: string;
+  darkTextColorHex: string;
+};
+
+export const fetchStopTypes = async (): Promise<StopTypeOption[]> => {
+  const response = await fetch(`${apiUrl}/stop-type`, {
     headers: {
       "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",

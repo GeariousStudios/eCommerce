@@ -22,6 +22,7 @@ namespace backend.Services
                 ("Unit", null),
                 ("UnitGroup", null),
                 ("ShiftChange", null),
+                ("StopType", null),
             },
 
             // Developers can see all actions.

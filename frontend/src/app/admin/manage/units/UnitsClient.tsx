@@ -14,6 +14,8 @@ import {
   CategoryOption,
   UnitGroupOption,
   ShiftOption,
+  StopTypeOption,
+  fetchStopTypes,
 } from "@/app/apis/manage/unitsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
 import UnitModal from "@/app/components/modals/admin/units/UnitModal"; // <-- Unique.
@@ -113,6 +115,7 @@ const UnitsClient = (props: Props) => {
   const [unitColumns, setUnitColumns] = useState<UnitColumnOption[]>([]);
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [shifts, setShifts] = useState<ShiftOption[]>([]);
+  const [stopTypes, setStopTypes] = useState<StopTypeOption[]>([]);
   useEffect(() => {
     fetchUnitGroups()
       .then(setUnitGroups)
@@ -128,6 +131,10 @@ const UnitsClient = (props: Props) => {
 
     fetchShifts()
       .then(setShifts)
+      .catch((err) => notify("error", t("Modal/Unknown error")));
+
+    fetchStopTypes()
+      .then(setStopTypes)
       .catch((err) => notify("error", t("Modal/Unknown error")));
   }, []);
 
@@ -276,6 +283,44 @@ const UnitsClient = (props: Props) => {
             </>
           </div>
           <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("Common/Stop types")}:
+            </span>
+            <>
+              {stopTypes.filter((stopType) =>
+                item.stopTypeIds.includes(stopType.id),
+              ).length === 0 ? (
+                <span className="-mt-2">-</span>
+              ) : (
+                item.stopTypeIds.map((id) => {
+                  const stopType = stopTypes.find((s) => s.id === id);
+                  if (!stopType) {
+                    return null;
+                  }
+
+                  return (
+                    <span
+                      key={id}
+                      className={badgeClass}
+                      style={{
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? stopType.darkColorHex
+                            : stopType.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? stopType.darkTextColorHex
+                            : stopType.lightTextColorHex,
+                      }}
+                    >
+                      {stopType.name}
+                    </span>
+                  );
+                })
+              )}
+            </>
+          </div>
+          <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Status")}:</span>
             <span
               className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} text-[var(--text-main-reverse)]`}
@@ -360,7 +405,10 @@ const UnitsClient = (props: Props) => {
             }
 
             return (
-              <span key={id} className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}>
+              <span
+                key={id}
+                className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+              >
                 {col.name}
               </span>
             );
@@ -426,6 +474,43 @@ const UnitsClient = (props: Props) => {
                 }}
               >
                 {shift.name}
+              </span>
+            );
+          })}
+        </div>
+      ),
+      responsivePriority: 5,
+    },
+    {
+      key: "stopTypes",
+      label: t("Common/Stop types"),
+      sortingItem: "stoptypecount",
+      labelAsc: t("Units/stop type amount") + t("Manage/ascending"),
+      labelDesc: t("Units/stop type amount") + t("Manage/descending"),
+      getValue: (item: UnitItem) => (
+        <div className="flex flex-wrap gap-2">
+          {item.stopTypeIds.map((id) => {
+            const stopType = stopTypes.find((s) => s.id === id);
+            if (!stopType) {
+              return null;
+            }
+
+            return (
+              <span
+                key={id}
+                className={badgeClass}
+                style={{
+                  backgroundColor:
+                    currentTheme === "dark"
+                      ? stopType.darkColorHex
+                      : stopType.lightColorHex,
+                  color:
+                    currentTheme === "dark"
+                      ? stopType.darkTextColorHex
+                      : stopType.lightTextColorHex,
+                }}
+              >
+                {stopType.name}
               </span>
             );
           })}
@@ -512,6 +597,16 @@ const UnitsClient = (props: Props) => {
           : (prev.shiftIds ?? []).filter((id) => id !== shiftId),
       }));
     },
+
+    selectedStopTypes: filters.stopTypeIds ?? [],
+    setStopTypeSelected: (stopTypeId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        stopTypeIds: val
+          ? [...(prev.stopTypeIds ?? []), stopTypeId]
+          : (prev.stopTypeIds ?? []).filter((id) => id !== stopTypeId),
+      }));
+    },
   };
 
   // --- Filter List (Unique)
@@ -582,6 +677,17 @@ const UnitsClient = (props: Props) => {
         setSelected: (val: boolean) =>
           filterControls.setShiftSelected(shift.id, val),
         count: counts?.shiftCount?.[shift.id],
+      })),
+    },
+     {
+      label: t("Common/Stop types"),
+      breakpoint: "2xl",
+      options: stopTypes.map((stopType) => ({
+        label: stopType.name,
+        isSelected: filterControls.selectedStopTypes.includes(stopType.id),
+        setSelected: (val: boolean) =>
+          filterControls.setStopTypeSelected(stopType.id, val),
+        count: counts?.stopTypeCount?.[stopType.id],
       })),
     },
   ];

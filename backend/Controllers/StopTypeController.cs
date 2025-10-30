@@ -115,9 +115,9 @@ namespace backend.Controllers
             };
 
             var unitCount = await query
-                .SelectMany(s => s.UnitToShifts)
+                .SelectMany(s => s.UnitToStopTypes)
                 .GroupBy(us => us.UnitId)
-                .Select(g => new { g.Key, Count = g.Select(x => x.ShiftId).Distinct().Count() })
+                .Select(g => new { g.Key, Count = g.Select(x => x.StopTypeId).Distinct().Count() })
                 .ToDictionaryAsync(x => x.Key, x => x.Count);
 
             var stopTypes = await query
@@ -137,28 +137,10 @@ namespace backend.Controllers
                         {
                             Id = u.Id,
                             Name = u.Name,
-                            UnitGroupId = u.UnitGroupId,
-                            UnitGroupName = u.UnitGroup?.Name ?? "",
-                            IsHidden = u.IsHidden,
-
-                            UnitColumnIds = u
-                                .UnitToUnitColumns.OrderBy(uuc => uuc.Order)
-                                .Select(uuc => uuc.UnitColumnId)
-                                .ToList(),
-                            CategoryIds = u
-                                .UnitToCategories.OrderBy(uc => uc.Order)
-                                .Select(uc => uc.CategoryId)
-                                .ToList(),
-                            ShiftIds = u
-                                .UnitToShifts.OrderBy(us => us.Order)
-                                .Select(us => us.ShiftId)
-                                .ToList(),
-                            CreationDate = u.CreationDate,
-                            CreatedBy = u.CreatedBy,
-                            UpdateDate = u.UpdateDate,
-                            UpdatedBy = u.UpdatedBy,
+                            UnitGroupName = u.UnitGroup != null ? u.UnitGroup.Name : "",
                         })
                         .ToList(),
+
                     IsHidden = t.IsHidden,
 
                     // Meta data.
@@ -183,7 +165,11 @@ namespace backend.Controllers
         public async Task<IActionResult> GetStopType(int id)
         {
             var lang = await GetLangAsync();
-            var stopType = await _context.StopTypes.FindAsync(id);
+            var stopType = await _context
+                .StopTypes.Include(st => st.UnitToStopTypes)
+                .ThenInclude(ust => ust.Unit)
+                .ThenInclude(u => u.UnitGroup)
+                .FirstOrDefaultAsync(st => st.Id == id);
 
             if (stopType == null)
             {
@@ -198,6 +184,15 @@ namespace backend.Controllers
                 DarkColorHex = stopType.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(stopType.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(stopType.DarkColorHex),
+                Units = stopType
+                    .UnitToStopTypes.Select(ust => ust.Unit)
+                    .Select(u => new UnitDto
+                    {
+                        Id = u.Id,
+                        Name = u.Name,
+                        UnitGroupName = u.UnitGroup != null ? u.UnitGroup.Name : "",
+                    })
+                    .ToList(),
                 IsHidden = stopType.IsHidden,
             };
 
@@ -294,6 +289,9 @@ namespace backend.Controllers
             var stopType = new StopType
             {
                 Name = dto.Name,
+                LightColorHex = dto.LightColorHex,
+                DarkColorHex = dto.DarkColorHex,
+                IsHidden = dto.IsHidden,
 
                 // Meta data.
                 CreationDate = now,
@@ -401,6 +399,9 @@ namespace backend.Controllers
             };
 
             stopType.Name = dto.Name;
+            stopType.LightColorHex = dto.LightColorHex;
+            stopType.DarkColorHex = dto.DarkColorHex;
+            stopType.IsHidden = dto.IsHidden;
 
             // Meta data.
             stopType.UpdateDate = now;
