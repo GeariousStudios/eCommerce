@@ -12,6 +12,26 @@ namespace eCommerce.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "AuditTrails",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Timestamp = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Action = table.Column<string>(type: "TEXT", nullable: false),
+                    EntityName = table.Column<string>(type: "TEXT", nullable: false),
+                    EntityId = table.Column<int>(type: "INTEGER", nullable: false),
+                    User = table.Column<string>(type: "TEXT", nullable: false),
+                    Username = table.Column<string>(type: "TEXT", nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Details = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditTrails", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
                 {
@@ -26,6 +46,38 @@ namespace eCommerce.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MasterPlanElements",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    BatchNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    ScheduledStart = table.Column<DateTime>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MasterPlanElements", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MasterPlans",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MasterPlans", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -67,6 +119,47 @@ namespace eCommerce.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PreparationBatches",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    BatchNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    Material = table.Column<string>(type: "TEXT", nullable: true),
+                    MaterialDescription = table.Column<string>(type: "TEXT", nullable: true),
+                    OrderQuantity = table.Column<double>(type: "REAL", nullable: true),
+                    OUM = table.Column<string>(type: "TEXT", nullable: true),
+                    Comment = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PreparationBatches", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ProductionOrders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    OrderNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    SequenceNumber = table.Column<string>(type: "TEXT", nullable: true),
+                    MaterialPlanAsm = table.Column<string>(type: "TEXT", nullable: true),
+                    Material = table.Column<string>(type: "TEXT", nullable: true),
+                    MaterialDescription = table.Column<string>(type: "TEXT", nullable: true),
+                    DestinationCountry = table.Column<string>(type: "TEXT", nullable: true),
+                    OrderQuantity = table.Column<double>(type: "REAL", nullable: true),
+                    QuantityPlan = table.Column<double>(type: "REAL", nullable: true),
+                    OUM = table.Column<string>(type: "TEXT", nullable: true),
+                    PM = table.Column<string>(type: "TEXT", nullable: true),
+                    Comment = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProductionOrders", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Shifts",
                 columns: table => new
                 {
@@ -74,6 +167,8 @@ namespace eCommerce.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
                     IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
+                    LightColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
+                    DarkColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
                     SystemKey = table.Column<int>(type: "INTEGER", nullable: true),
                     CycleLengthWeeks = table.Column<int>(type: "INTEGER", nullable: false),
                     AnchorWeekStart = table.Column<DateOnly>(type: "TEXT", nullable: false),
@@ -108,6 +203,26 @@ namespace eCommerce.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StopTypes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    LightColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
+                    DarkColorHex = table.Column<string>(type: "TEXT", maxLength: 7, nullable: false),
+                    IsHidden = table.Column<bool>(type: "INTEGER", nullable: false),
+                    CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StopTypes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SubCategories",
                 columns: table => new
                 {
@@ -135,6 +250,7 @@ namespace eCommerce.Migrations
                     HasData = table.Column<bool>(type: "INTEGER", nullable: false),
                     Compare = table.Column<bool>(type: "INTEGER", nullable: false),
                     ComparisonText = table.Column<string>(type: "TEXT", maxLength: 32, nullable: false),
+                    LargeColumn = table.Column<bool>(type: "INTEGER", nullable: false),
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
@@ -203,6 +319,81 @@ namespace eCommerce.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MasterPlanToMasterPlanElements",
+                columns: table => new
+                {
+                    MasterPlanId = table.Column<int>(type: "INTEGER", nullable: false),
+                    MasterPlanElementId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MasterPlanToMasterPlanElements", x => new { x.MasterPlanId, x.MasterPlanElementId });
+                    table.ForeignKey(
+                        name: "FK_MasterPlanToMasterPlanElements_MasterPlanElements_MasterPlanElementId",
+                        column: x => x.MasterPlanElementId,
+                        principalTable: "MasterPlanElements",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MasterPlanToMasterPlanElements_MasterPlans_MasterPlanId",
+                        column: x => x.MasterPlanId,
+                        principalTable: "MasterPlans",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MasterPlanElementToPreparationBatches",
+                columns: table => new
+                {
+                    MasterPlanElementId = table.Column<int>(type: "INTEGER", nullable: false),
+                    PreparationBatchId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MasterPlanElementToPreparationBatches", x => new { x.MasterPlanElementId, x.PreparationBatchId });
+                    table.ForeignKey(
+                        name: "FK_MasterPlanElementToPreparationBatches_MasterPlanElements_MasterPlanElementId",
+                        column: x => x.MasterPlanElementId,
+                        principalTable: "MasterPlanElements",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MasterPlanElementToPreparationBatches_PreparationBatches_PreparationBatchId",
+                        column: x => x.PreparationBatchId,
+                        principalTable: "PreparationBatches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MasterPlanElementToProductionOrders",
+                columns: table => new
+                {
+                    MasterPlanElementId = table.Column<int>(type: "INTEGER", nullable: false),
+                    ProductionOrderId = table.Column<int>(type: "INTEGER", nullable: false),
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MasterPlanElementToProductionOrders", x => new { x.MasterPlanElementId, x.ProductionOrderId });
+                    table.ForeignKey(
+                        name: "FK_MasterPlanElementToProductionOrders_MasterPlanElements_MasterPlanElementId",
+                        column: x => x.MasterPlanElementId,
+                        principalTable: "MasterPlanElements",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_MasterPlanElementToProductionOrders_ProductionOrders_ProductionOrderId",
+                        column: x => x.ProductionOrderId,
+                        principalTable: "ProductionOrders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -299,11 +490,17 @@ namespace eCommerce.Migrations
                     CreationDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UpdateDate = table.Column<DateTime>(type: "TEXT", nullable: false),
                     CreatedBy = table.Column<string>(type: "TEXT", nullable: false),
-                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: false)
+                    UpdatedBy = table.Column<string>(type: "TEXT", nullable: false),
+                    MasterPlanId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Units", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Units_MasterPlans_MasterPlanId",
+                        column: x => x.MasterPlanId,
+                        principalTable: "MasterPlans",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Units_UnitGroups_UnitGroupId",
                         column: x => x.UnitGroupId,
@@ -514,6 +711,32 @@ namespace eCommerce.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UnitToStopTypes",
+                columns: table => new
+                {
+                    UnitId = table.Column<int>(type: "INTEGER", nullable: false),
+                    StopTypeId = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    Order = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UnitToStopTypes", x => new { x.UnitId, x.StopTypeId });
+                    table.ForeignKey(
+                        name: "FK_UnitToStopTypes_StopTypes_StopTypeId",
+                        column: x => x.StopTypeId,
+                        principalTable: "StopTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UnitToStopTypes_Units_UnitId",
+                        column: x => x.UnitId,
+                        principalTable: "Units",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UnitToUnitColumns",
                 columns: table => new
                 {
@@ -565,13 +788,28 @@ namespace eCommerce.Migrations
 
             migrationBuilder.InsertData(
                 table: "Shifts",
-                columns: new[] { "Id", "AnchorWeekStart", "CreatedBy", "CreationDate", "CycleLengthWeeks", "IsHidden", "Name", "SystemKey", "UpdateDate", "UpdatedBy" },
-                values: new object[] { 1, new DateOnly(1, 1, 1), "system", new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), 1, false, "Unmanned", 0, new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), "system" });
+                columns: new[] { "Id", "AnchorWeekStart", "CreatedBy", "CreationDate", "CycleLengthWeeks", "DarkColorHex", "IsHidden", "LightColorHex", "Name", "SystemKey", "UpdateDate", "UpdatedBy" },
+                values: new object[] { 1, new DateOnly(1, 1, 1), "system", new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), 1, "#e0e0e0", false, "#212121", "Unmanned", 0, new DateTime(2025, 8, 10, 0, 0, 0, 0, DateTimeKind.Utc), "system" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CategoryToSubCategories_SubCategoryId",
                 table: "CategoryToSubCategories",
                 column: "SubCategoryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MasterPlanElementToPreparationBatches_PreparationBatchId",
+                table: "MasterPlanElementToPreparationBatches",
+                column: "PreparationBatchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MasterPlanElementToProductionOrders_ProductionOrderId",
+                table: "MasterPlanElementToProductionOrders",
+                column: "ProductionOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MasterPlanToMasterPlanElements_MasterPlanElementId",
+                table: "MasterPlanToMasterPlanElements",
+                column: "MasterPlanElementId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reports_UnitId",
@@ -614,6 +852,11 @@ namespace eCommerce.Migrations
                 column: "UnitId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Units_MasterPlanId",
+                table: "Units",
+                column: "MasterPlanId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Units_UnitGroupId",
                 table: "Units",
                 column: "UnitGroupId");
@@ -627,6 +870,11 @@ namespace eCommerce.Migrations
                 name: "IX_UnitToShifts_ShiftId",
                 table: "UnitToShifts",
                 column: "ShiftId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UnitToStopTypes_StopTypeId",
+                table: "UnitToStopTypes",
+                column: "StopTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UnitToUnitColumns_UnitColumnId",
@@ -650,7 +898,19 @@ namespace eCommerce.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "AuditTrails");
+
+            migrationBuilder.DropTable(
                 name: "CategoryToSubCategories");
+
+            migrationBuilder.DropTable(
+                name: "MasterPlanElementToPreparationBatches");
+
+            migrationBuilder.DropTable(
+                name: "MasterPlanElementToProductionOrders");
+
+            migrationBuilder.DropTable(
+                name: "MasterPlanToMasterPlanElements");
 
             migrationBuilder.DropTable(
                 name: "News");
@@ -683,6 +943,9 @@ namespace eCommerce.Migrations
                 name: "UnitToShifts");
 
             migrationBuilder.DropTable(
+                name: "UnitToStopTypes");
+
+            migrationBuilder.DropTable(
                 name: "UnitToUnitColumns");
 
             migrationBuilder.DropTable(
@@ -693,6 +956,15 @@ namespace eCommerce.Migrations
 
             migrationBuilder.DropTable(
                 name: "SubCategories");
+
+            migrationBuilder.DropTable(
+                name: "PreparationBatches");
+
+            migrationBuilder.DropTable(
+                name: "ProductionOrders");
+
+            migrationBuilder.DropTable(
+                name: "MasterPlanElements");
 
             migrationBuilder.DropTable(
                 name: "ShiftTeams");
@@ -707,6 +979,9 @@ namespace eCommerce.Migrations
                 name: "Shifts");
 
             migrationBuilder.DropTable(
+                name: "StopTypes");
+
+            migrationBuilder.DropTable(
                 name: "Units");
 
             migrationBuilder.DropTable(
@@ -714,6 +989,9 @@ namespace eCommerce.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "MasterPlans");
 
             migrationBuilder.DropTable(
                 name: "UnitGroups");

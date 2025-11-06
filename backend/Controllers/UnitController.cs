@@ -974,7 +974,7 @@ namespace backend.Controllers
                 ["IsHidden"] = unit.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
-            // AUDIT
+            // Audit trail.
             await _audit.LogAsync(
                 "Update",
                 "Unit",

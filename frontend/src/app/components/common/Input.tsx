@@ -141,6 +141,12 @@ const Input = ({
               }
             }
           }}
+          onInput={(e) => {
+            const value = (e.target as HTMLInputElement).value;
+            if ((isDate || isDateTime) && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+              onBlur?.(e as any);
+            }
+          }}
           onBlur={onBlur}
           spellCheck={spellCheck}
           required={required}

@@ -8,9 +8,8 @@ namespace backend.Models
         public int Id { get; set; }
 
         // Details.
-        public string? FillingBatchNumber { get; set; }
-        public DateTime? PlannedStart { get; set; }
-        public DateTime? PlannedEnd { get; set; }
+        public string? BatchNumber { get; set; }
+        public DateTime? ScheduledStart { get; set; }
 
         // Relations.
         public List<MasterPlanElementToProductionOrder> MasterPlanElementToProductionOrders { get; set; } =

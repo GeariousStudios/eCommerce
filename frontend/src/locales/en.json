@@ -214,6 +214,12 @@
   "Users/unlocked users": "unlocked users",
   "Users/Locked": "Locked",
   "Users/Unlocked": "Unlocked",
+  "Roles/Admin": "Administrator",
+  "Roles/Developer": "Developer",
+  "Roles/Reporter": "Reporter",
+  "Roles/Planner": "Planner",
+  "Roles/MasterPlanner": "Master Planner",
+  "Roles/Master": "Master",
 
   "Units/Belongs to": "Belongs to group",
   "Units/column amount": "column amount",
@@ -312,6 +318,8 @@
   "UnitModal/Info4": "Shifts",
   "UnitModal/Info5": "Stop types",
   "UnitModal/Hide unit": "Hide unit",
+  "UnitModal/Follows master plan": "Plannable",
+  "UnitModal/Tooltip master plan": "Enable this to link the unit to a production plan",
 
   "UnitCellModal/Info1": "1. Choose a period",
   "UnitCellModal/Info2": "2. Report data",

@@ -298,10 +298,18 @@ const HomeClient = (props: Props) => {
       setIsSavingPanels(true);
 
       const newPanels = Object.entries(editedPanels)
-        .filter(([_, updates]) => (updates as any)._new)
+        .filter(
+          ([_, updates]) => (updates as any)._new && !(updates as any)._deleted,
+        )
         .map(([id, updates]) => {
           const panel = trendingPanels.find((p) => String(p.id) === id);
-          return panel ? { ...panel, ...updates } : null;
+          if (!panel) return null;
+
+          const merged = { ...panel, ...updates };
+          return {
+            ...merged,
+            name: merged.title ?? merged.name,
+          };
         })
         .filter(Boolean);
 
@@ -355,7 +363,7 @@ const HomeClient = (props: Props) => {
           const merged = { ...panel, ...updates };
 
           const body = {
-            name: merged.title ?? merged.name ?? "Unnamed panel",
+            name: merged.title ?? merged.name,
             type: merged.type ?? "Total",
             period: merged.period ?? "AllTime",
             viewMode: merged.viewMode ?? "Value",

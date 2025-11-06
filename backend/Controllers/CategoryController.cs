@@ -615,6 +615,18 @@ namespace backend.Controllers
             var (updatedBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = category.Id,
+                ["Name"] = category.Name,
+                ["SubCategories"] = string.Join(
+                    "<br>",
+                    category
+                        .CategoryToSubCategories.Select(csc => csc.SubCategory)
+                        .Select(sc => $"{sc.Name} (ID: {sc.Id})")
+                ),
+            };
+
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
@@ -793,6 +805,7 @@ namespace backend.Controllers
                     userId,
                     new
                     {
+                        OldValues = oldValues,
                         NewValues = new Dictionary<string, object?>
                         {
                             ["ObjectID"] = category.Id,

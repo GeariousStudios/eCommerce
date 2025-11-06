@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
+import * as Outline from "@heroicons/react/24/outline";
+import * as Solid from "@heroicons/react/24/solid";
 import Input from "../../../common/Input";
 import { useToast } from "../../../toast/ToastProvider";
 import {
@@ -18,6 +19,8 @@ import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "../../../common/DragDrop";
 import { useTranslations } from "next-intl";
 import { unitConstraints } from "@/app/helpers/inputConstraints";
+import CustomTooltip from "@/app/components/common/CustomTooltip";
+import HoverIcon from "@/app/components/common/HoverIcon";
 
 type Props = {
   isOpen: boolean;
@@ -565,7 +568,7 @@ const UnitModal = (props: Props) => {
             ref={modalRef}
             isOpen={props.isOpen}
             onClose={() => props.onClose()}
-            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
                 ? t("Common/Edit") + " " + t("Common/unit")
@@ -627,6 +630,31 @@ const UnitModal = (props: Props) => {
                   pattern="^#([0-9A-Fa-f]{6})$"
                   onModal
                 />
+
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isHidden}
+                    className={switchClass(isHidden)}
+                    onClick={() => setIsHidden((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(isHidden)} />
+                  </button>
+                  {t("UnitModal/Follow master plan")}
+                  <CustomTooltip
+                    content={t("UnitModal/Tooltip master plan")}
+                    showOnTouch
+                  >
+                    <span className="group min-h-4 min-w-4 cursor-help">
+                      <HoverIcon
+                        outline={Outline.InformationCircleIcon}
+                        solid={Solid.InformationCircleIcon}
+                        className="flex"
+                      />
+                    </span>
+                  </CustomTooltip>
+                </div>
               </div>
 
               <div className="mt-8 flex items-center gap-2">

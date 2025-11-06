@@ -96,8 +96,6 @@ const UnitClient = (props: Props) => {
 
   // --- VARIABLES ---
   // --- Other ---
-  // const params = useParams();
-  // const unitId = params?.id;
   const { groupId, unitId } = useParams() as {
     groupId?: string;
     unitId?: string;
@@ -204,6 +202,7 @@ const UnitClient = (props: Props) => {
   const [selectedDate, setSelectedDate] = useState(() => {
     return dateParam || new Date().toISOString().split("T")[0];
   });
+  const [tempDate, setTempDate] = useState(selectedDate);
 
   const [reportDate, setReportDate] = useState<string>("");
   const [reportHour, setReportHour] = useState<string>("");
@@ -216,13 +215,34 @@ const UnitClient = (props: Props) => {
   const isBootstrapping = isLoadingUnits || isLoadingColumns || isLoadingShifts;
   const canShowLock = !isBootstrapping && isHidden && !isInvalid;
   const canShowInvalid = !isBootstrapping && isInvalid && !isHidden;
-  // const isReady = !isBootstrapping && !isHidden && !isInvalid;
   const isReady = !isHidden && !isInvalid;
 
   // --- Other ---
   const { currentTheme } = useTheme();
 
   // --- HELPERS ---
+  const handleDateChange = (val: string) => {
+    if (!val || val === selectedDate) {
+      setTempDate(selectedDate);
+      return;
+    }
+
+    const year = Number(val.split("-")[0]);
+    if (year > 2999 || year < 1000) {
+      setTempDate(selectedDate);
+      return;
+    }
+
+    if (unitCreationDate && val < unitCreationDate) {
+      setTempDate(unitCreationDate);
+      setSelectedDate(unitCreationDate);
+      updateDate(unitCreationDate);
+    } else {
+      setSelectedDate(val);
+      updateDate(val);
+    }
+  };
+
   const overlaps = (
     aStart: number,
     aEnd: number,
@@ -928,17 +948,17 @@ const UnitClient = (props: Props) => {
   };
 
   const updateDate = (newDate: string) => {
-    let clamped = newDate;
     if (unitCreationDate && newDate < unitCreationDate) {
-      clamped = unitCreationDate;
+      return;
     }
 
-    setSelectedDate(clamped);
+    setSelectedDate(newDate);
+    setTempDate(newDate);
     setRefetchData(true);
     setExpandedRows([]);
 
     const current = new URLSearchParams(searchParams.toString());
-    current.set("date", clamped);
+    current.set("date", newDate);
 
     router.replace(`?${current.toString()}`);
   };
@@ -1146,9 +1166,6 @@ const UnitClient = (props: Props) => {
     }
   }, [currentActiveShiftId, shiftsOpen]);
 
-  // if (isBootstrapping) {
-  //   return <Message icon="loading" content="content" fullscreen />;
-  // }
   if (canShowLock) {
     return <Message icon="lock" content="lock" fullscreen />;
   }
@@ -1314,9 +1331,14 @@ const UnitClient = (props: Props) => {
                 <div className="flex max-w-40 min-w-40">
                   <Input
                     type="date"
-                    value={selectedDate}
-                    onChange={(val) => {
-                      updateDate(String(val));
+                    value={tempDate}
+                    onChange={(val) => setTempDate(String(val))}
+                    onBlur={(e) => handleDateChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleDateChange((e.target as HTMLInputElement).value);
+                      }
                     }}
                     notRounded
                     min={unitCreationDate}
@@ -1423,6 +1445,7 @@ const UnitClient = (props: Props) => {
                       value={pendingShiftDate}
                       onChange={(v) => setPendingShiftDate(String(v))}
                       label={t("Common/Date")}
+                      min={unitCreationDate}
                       onModal
                       required
                     />
@@ -1444,7 +1467,8 @@ const UnitClient = (props: Props) => {
                     !pendingShiftId ||
                     !pendingShiftDate ||
                     !pendingShiftTime ||
-                    !props.isReporter
+                    !props.isReporter ||
+                    pendingShiftDate < unitCreationDate
                   }
                 >
                   {t("Unit/Change to shift")}
@@ -1466,7 +1490,7 @@ const UnitClient = (props: Props) => {
                   <tr>
                     {/* --- Standard <th>s --- */}
                     <th
-                      className={`${thClass} sticky left-0 w-[52.5px] cursor-pointer bg-[var(--bg-grid-header)] whitespace-nowrap transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
+                      className={`${thClass} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] cursor-pointer bg-[var(--bg-grid-header)] whitespace-nowrap transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
                       onClick={toggleAllRows}
                       role="button"
                       aria-label={t("Unit/Open or collapse")}
@@ -1481,7 +1505,7 @@ const UnitClient = (props: Props) => {
                       {t("Common/Time")}
                     </th>
                     <th
-                      className={`${thClass} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
+                      className={`${thClass} w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
                     >
                       {t("Common/Shift")}
                     </th>

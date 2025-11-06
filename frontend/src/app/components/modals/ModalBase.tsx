@@ -157,11 +157,11 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
                       <button
                         type="button"
                         onClick={requestClose}
-                        className="xs:h-[32px] xs:min-h-[32px] xs:w-[32px] xs:min-w-[32px] h-[24px] min-h-[24px] w-[24px] min-w-[24px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
+                        className="xs:h-[30px] xs:min-h-[30px] xs:w-[30px] xs:min-w-[30px] h-[22px] min-h-[22px] w-[22px] min-w-[22px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
                       >
                         <XMarkIcon />
                       </button>
-                      <hr className="xs:mt-16 absolute mt-12 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
+                      <hr className="xs:mt-16 absolute mt-14 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
                     </div>
                   </div>
                 )}

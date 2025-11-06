@@ -9,6 +9,7 @@ namespace backend.Data
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options) { }
 
+        // Core.
         public DbSet<User> Users { get; set; }
         public DbSet<UserPreferences> UserPreferences { get; set; }
         public DbSet<UserFavourite> UserFavourites { get; set; }
@@ -28,6 +29,12 @@ namespace backend.Data
         public DbSet<AuditTrail> AuditTrails { get; set; }
         public DbSet<StopType> StopTypes { get; set; }
 
+        // Core (Master Plan).
+        public DbSet<MasterPlan> MasterPlans { get; set; }
+        public DbSet<MasterPlanElement> MasterPlanElements { get; set; }
+        public DbSet<ProductionOrder> ProductionOrders { get; set; }
+        public DbSet<PreparationBatch> PreparationBatches { get; set; }
+
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
         public DbSet<UnitToCategory> UnitToCategories { get; set; }
@@ -37,6 +44,11 @@ namespace backend.Data
         public DbSet<ShiftToShiftTeam> ShiftToShiftTeams { get; set; }
         public DbSet<ShiftToShiftTeamSchedule> ShiftToShiftTeamSchedules { get; set; }
         public DbSet<TrendingPanelToUnit> TrendingPanelToUnits { get; set; }
+
+        // Many-to-many (Master Plan).
+        public DbSet<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; }
+        public DbSet<MasterPlanElementToProductionOrder> MasterPlanElementToProductionOrders { get; set; }
+        public DbSet<MasterPlanElementToPreparationBatch> MasterPlanElementToPreparationBatches { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -249,6 +261,57 @@ namespace backend.Data
                 .HasOne(tpu => tpu.Unit)
                 .WithMany(u => u.TrendingPanelToUnits)
                 .HasForeignKey(tpu => tpu.UnitId);
+
+            // MasterPlan <-> MasterPlanElement many-to-many relationship.
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanElement>()
+                .HasKey(mpe => new { mpe.MasterPlanId, mpe.MasterPlanElementId });
+
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanElement>()
+                .HasOne(mpe => mpe.MasterPlan)
+                .WithMany(mp => mp.MasterPlanToMasterPlanElements)
+                .HasForeignKey(mpe => mpe.MasterPlanId);
+
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanElement>()
+                .HasOne(mpe => mpe.MasterPlanElement)
+                .WithMany()
+                .HasForeignKey(mpe => mpe.MasterPlanElementId);
+
+            // MasterPlanElement <-> ProductionOrder many-to-many relationship.
+            modelBuilder
+                .Entity<MasterPlanElementToProductionOrder>()
+                .HasKey(meo => new { meo.MasterPlanElementId, meo.ProductionOrderId });
+
+            modelBuilder
+                .Entity<MasterPlanElementToProductionOrder>()
+                .HasOne(meo => meo.MasterPlanElement)
+                .WithMany(mpe => mpe.MasterPlanElementToProductionOrders)
+                .HasForeignKey(meo => meo.MasterPlanElementId);
+
+            modelBuilder
+                .Entity<MasterPlanElementToProductionOrder>()
+                .HasOne(meo => meo.ProductionOrder)
+                .WithMany()
+                .HasForeignKey(meo => meo.ProductionOrderId);
+
+            // MasterPlanElement <-> PreparationBatch many-to-many relationship.
+            modelBuilder
+                .Entity<MasterPlanElementToPreparationBatch>()
+                .HasKey(mepb => new { mepb.MasterPlanElementId, mepb.PreparationBatchId });
+
+            modelBuilder
+                .Entity<MasterPlanElementToPreparationBatch>()
+                .HasOne(mepb => mepb.MasterPlanElement)
+                .WithMany(mpe => mpe.MasterPlanElementToPreparationBatches)
+                .HasForeignKey(mepb => mepb.MasterPlanElementId);
+
+            modelBuilder
+                .Entity<MasterPlanElementToPreparationBatch>()
+                .HasOne(mepb => mepb.PreparationBatch)
+                .WithMany()
+                .HasForeignKey(mepb => mepb.PreparationBatchId);
         }
 
         public override int SaveChanges()

@@ -155,6 +155,12 @@ namespace backend.Controllers
             var reporterCount = await _context.Users.CountAsync(u =>
                 u.Roles.HasFlag(UserRoles.Reporter)
             );
+            var plannerCount = await _context.Users.CountAsync(u =>
+                u.Roles.HasFlag(UserRoles.Planner)
+            );
+            var masterPlannerCount = await _context.Users.CountAsync(u =>
+                u.Roles.HasFlag(UserRoles.MasterPlanner)
+            );
 
             var result = new
             {
@@ -179,6 +185,8 @@ namespace backend.Controllers
                     adminCount = adminCount,
                     developerCount = developerCount,
                     reporterCount = reporterCount,
+                    plannerCount = plannerCount,
+                    masterPlannerCount = masterPlannerCount,
                     status = status,
                 },
             };

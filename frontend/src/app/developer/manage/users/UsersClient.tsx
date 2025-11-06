@@ -94,6 +94,26 @@ const UsersClient = (props: Props) => {
     { initialSortBy: "roles", initialSortOrder: "asc" },
   );
 
+  // --- HELPERS --- <-- Unique.
+  const formatRole = (role: string) => {
+    switch (role) {
+      case "Admin":
+        return t("Roles/Admin");
+      case "Developer":
+        return t("Roles/Developer");
+      case "Reporter":
+        return t("Roles/Reporter");
+      case "Planner":
+        return t("Roles/Planner");
+      case "MasterPlanner":
+        return t("Roles/MasterPlanner");
+      case "Master":
+        return t("Roles/Master");
+      default:
+        return role;
+    }
+  };
+
   const { notify } = useToast();
 
   // --- TOGGLE MODAL(S) ---
@@ -165,9 +185,9 @@ const UsersClient = (props: Props) => {
             {item.roles.map((role, i) => (
               <span
                 key={i}
-                className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)] text-[var(--text-one)]" : role === "Developer" ? "bg-[var(--badge-two)] text-[var(--text-two)]" : role === "Reporter" ? "bg-[var(--badge-three)] text-[var(--text-three)]" : role === "Master" ? "bg-[var(--badge-four)] text-[var(--text-four)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
+                className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)] text-[var(--text-one)]" : role === "Developer" ? "bg-[var(--badge-two)] text-[var(--text-two)]" : role === "Reporter" ? "bg-[var(--badge-three)] text-[var(--text-three)]" : role === "Planner" ? "bg-[var(--badge-four)] text-[var(--text-four)]" : role === "MasterPlanner" ? "bg-[var(--badge-five)] text-[var(--text-five)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
               >
-                {role}
+                {formatRole(role)}
               </span>
             ))}
           </div>
@@ -243,9 +263,9 @@ const UsersClient = (props: Props) => {
           {item.roles.map((role, i) => (
             <span
               key={i}
-              className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)]" : role === "Developer" ? "bg-[var(--badge-two)]" : role === "Reporter" ? "bg-[var(--badge-three)]" : role === "Master" ? "bg-[var(--badge-four)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
+              className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)] text-[var(--text-one)]" : role === "Developer" ? "bg-[var(--badge-two)] text-[var(--text-two)]" : role === "Reporter" ? "bg-[var(--badge-three)] text-[var(--text-three)]" : role === "Planner" ? "bg-[var(--badge-four)] text-[var(--text-four)]" : role === "MasterPlanner" ? "bg-[var(--badge-five)] text-[var(--text-five)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
             >
-              {role}
+              {formatRole(role)}
             </span>
           ))}
         </div>
@@ -306,6 +326,28 @@ const UsersClient = (props: Props) => {
       });
     },
 
+    showPlanners: filters.roles?.includes("Planner") ?? false,
+    setShowPlanners: (val: boolean) => {
+      setFilters((prev) => {
+        const prevRoles = prev.roles ?? [];
+        const roles = val
+          ? Array.from(new Set([...prevRoles, "Planner"]))
+          : prevRoles.filter((r) => r !== "Planner");
+        return { ...prev, roles };
+      });
+    },
+
+    showMasterPlanners: filters.roles?.includes("MasterPlanner") ?? false,
+    setShowMasterPlanners: (val: boolean) => {
+      setFilters((prev) => {
+        const prevRoles = prev.roles ?? [];
+        const roles = val
+          ? Array.from(new Set([...prevRoles, "MasterPlanner"]))
+          : prevRoles.filter((r) => r !== "MasterPlanner");
+        return { ...prev, roles };
+      });
+    },
+
     showLocked: filters.isLocked === true,
     setShowLocked: (val: boolean) => {
       setFilters((prev) => ({ ...prev, isLocked: val ? true : undefined }));
@@ -324,22 +366,34 @@ const UsersClient = (props: Props) => {
       breakpoint: "ml",
       options: [
         {
-          label: "Admin",
+          label: t("Roles/Admin"),
           isSelected: filterControls.showAdmins,
           setSelected: filterControls.setShowAdmins,
           count: counts?.adminCount,
         },
         {
-          label: "Developer",
+          label: t("Roles/Developer"),
           isSelected: filterControls.showDevelopers,
           setSelected: filterControls.setShowDevelopers,
           count: counts?.developerCount,
         },
         {
-          label: "Reporter",
+          label: t("Roles/Reporter"),
           isSelected: filterControls.showReporters,
           setSelected: filterControls.setShowReporters,
           count: counts?.reporterCount,
+        },
+        {
+          label: t("Roles/Planner"),
+          isSelected: filterControls.showPlanners,
+          setSelected: filterControls.setShowPlanners,
+          count: counts?.plannerCount,
+        },
+        {
+          label: t("Roles/MasterPlanner"),
+          isSelected: filterControls.showMasterPlanners,
+          setSelected: filterControls.setShowMasterPlanners,
+          count: counts?.masterPlannerCount,
         },
       ],
     },

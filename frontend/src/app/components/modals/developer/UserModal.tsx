@@ -423,7 +423,7 @@ const UserModal = (props: Props) => {
                   {...userConstraints.email}
                 />
 
-                <div className="sm:grid-cols-2 grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <Input
                     id="firstName"
                     label={t("Users/First name")}
@@ -456,12 +456,14 @@ const UserModal = (props: Props) => {
                 <MultiDropdown
                   addSpacer
                   scrollContainer={getScrollEl}
-                  customSpace={6.5} // <-- 9 = 4 options, 11 = 5 options.
+                  customSpace={11} // <-- 6.5 = 3 options, 9 = 4 options, 11 = 5 options.
                   label={t("Users/Permissions")}
                   options={[
-                    { label: "Admin", value: "Admin" },
-                    { label: "Developer", value: "Developer" },
-                    { label: "Reporter", value: "Reporter" },
+                    { label: t("Roles/Admin"), value: "Admin" },
+                    { label: t("Roles/Developer"), value: "Developer" },
+                    { label: t("Roles/Reporter"), value: "Reporter" },
+                    { label: t("Roles/Planner"), value: "Planner" },
+                    { label: t("Roles/MasterPlanner"), value: "MasterPlanner" },
                   ]}
                   value={newUserRoles}
                   onChange={setNewUserRoles}

@@ -34,6 +34,7 @@ namespace backend.Models
         public List<UnitCell> UnitCells { get; set; } = new();
         public List<Report> Reports { get; set; } = new();
 
-        public MasterPlan MasterPlan { get; set; } = null!;
+        public int? MasterPlanId { get; set; }
+        public MasterPlan? MasterPlan { get; set; }
     }
 }

@@ -215,6 +215,12 @@
   "Users/unlocked users": "upplåsta konton",
   "Users/Locked": "Låst",
   "Users/Unlocked": "Upplåst",
+  "Roles/Admin": "Administratör",
+  "Roles/Developer": "Utvecklare",
+  "Roles/Reporter": "Rapportör",
+  "Roles/Planner": "Planerare",
+  "Roles/MasterPlanner": "Huvudplanerare",
+  "Roles/Master": "Master",
 
   "Units/Belongs to": "Tillhör grupp",
   "Units/column amount": "antal kolumner",
@@ -313,6 +319,8 @@
   "UnitModal/Info4": "Skift",
   "UnitModal/Info5": "Stopptyper",
   "UnitModal/Hide unit": "Dölj enhet",
+  "UnitModal/Follow master plan": "Planeringsbar",
+  "UnitModal/Tooltip master plan": "Aktivera detta för att koppla enheten till ett tillverkningsschema",
 
   "UnitCellModal/Info1": "1. Välj tidpunkt",
   "UnitCellModal/Info2": "2. Rapportera data",
