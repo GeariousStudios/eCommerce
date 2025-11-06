@@ -175,7 +175,7 @@ using (var scope = app.Services.CreateScope())
             TypeName = newsTypeTwo.Name,
             Headline = "Välkommen hit!",
             Content =
-                "<div><p>Den här webbapplikationen är ett exempel på mina färdigheter inom frontend- och backendutveckling.</p><p>Klicka runt och upptäck!</p><p><br></p><p><strong>I dagsläget kan du göra följande:</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Logga in/ut</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra inställningar kopplat till ditt konto</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra tema</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra språk</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Administrera nyheter här på startsidan</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Markera favoriter i navbaren</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Hantera användare</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa grupper (t.ex. Fyllning)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kategorier + underkategorier (t.ex. Innerpåstillverkning -&gt; Maskindel 1A)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kolumner (t.ex. Antal producerade)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa lag (t.ex. Skift 1)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa skift (t.ex. 3-skift) och knyta lag till skiftet</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa enheter (t.ex. Lina I) och knyta grupp, kategorier, kolumner och skift till enheten</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Gå in på din enhet och rapportera</li></ol><p><br></p><p><strong>Detta är lite av vad som finns i loopen:</strong></p><ol><li data-list=ordered><span class=ql-ui contenteditable=false></span>Fortsätta jobba på rapporteringsvyn!</li><li data-list=ordered><span class=ql-ui contenteditable=false></span>Klickbara breadcrumbs (fler navigeringsvyer)</li><li data-list=ordered><span class=ql-ui contenteditable=false></span>Påbörja pulsvyn</li></ol></div>",
+                "<div><p>Den här webbapplikationen är ett exempel på mina färdigheter inom frontend- och backendutveckling.</p><p>Klicka runt och upptäck!</p><p><br></p><p><strong>I dagsläget kan du göra följande:</strong></p><ol><li data-list=bullet><span class=ql-ui contenteditable=false></span>Logga in/ut</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra inställningar kopplat till ditt konto</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra tema</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Ändra språk</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Administrera nyheter här på startsidan</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Markera favoriter i navbaren</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Hantera användare</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa grupper (t.ex. Fyllning)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kategorier + underkategorier (t.ex. Innerpåstillverkning -&gt; Maskindel 1A)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa kolumner (t.ex. Antal producerade)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa lag (t.ex. Skift 1)</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa skift (t.ex. 3-skift) och knyta lag till skiftet</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Skapa enheter (t.ex. Lina I) och knyta grupp, kategorier, kolumner och skift till enheten</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Gå in på din enhet och rapportera</li><li data-list=bullet><span class=ql-ui contenteditable=false></span>Se utförda handlingar i revisionsloggen</li></ol><p><br></p><p><strong>Detta är lite av vad som finns i loopen:</strong></p><ol><li data-list=ordered><span class=ql-ui contenteditable=false></span>Fortsätta jobba på rapporteringsvyn!</li><li data-list=ordered><span class=ql-ui contenteditable=false></span>Klickbara breadcrumbs (fler navigeringsvyer)</li><li data-list=ordered><span class=ql-ui contenteditable=false></span>Påbörja pulsvyn</li></ol></div>",
             CreationDate = DateTime.UtcNow,
             CreatedBy = "System",
             UpdateDate = DateTime.UtcNow,
@@ -188,7 +188,13 @@ using (var scope = app.Services.CreateScope())
             FirstName = "John",
             LastName = "Smith",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword("master"),
-            Roles = UserRoles.Developer | UserRoles.Admin | UserRoles.Reporter | UserRoles.Master,
+            Roles =
+                UserRoles.Developer
+                | UserRoles.Admin
+                | UserRoles.Reporter
+                | UserRoles.Planner
+                | UserRoles.MasterPlanner
+                | UserRoles.Master,
             UserPreferences = new UserPreferences { Theme = "dark" },
             CreationDate = DateTime.UtcNow,
         };
@@ -218,6 +224,8 @@ using (var scope = app.Services.CreateScope())
         {
             Name = "Antal producerade",
             DataType = UnitColumnDataType.Number,
+            Compare = true,
+            ComparisonText = "Antal/h",
             CreationDate = DateTime.UtcNow,
             CreatedBy = "System",
             UpdateDate = DateTime.UtcNow,
@@ -228,6 +236,7 @@ using (var scope = app.Services.CreateScope())
         {
             Name = "Kommentar",
             DataType = UnitColumnDataType.Text,
+            LargeColumn = true,
             CreationDate = DateTime.UtcNow,
             CreatedBy = "System",
             UpdateDate = DateTime.UtcNow,
@@ -237,14 +246,14 @@ using (var scope = app.Services.CreateScope())
         db.UnitColumns.AddRange(columnOne, columnTwo);
         await db.SaveChangesAsync();
 
-        var subCategory1 = new SubCategory { Name = "Maskindel 1A" };
-        var subCategory2 = new SubCategory { Name = "Maskindel 2B" };
+        var subCategory1 = new SubCategory { Name = "Bemanning" };
+        var subCategory2 = new SubCategory { Name = "Utbildning" };
         db.SubCategories.AddRange(subCategory1, subCategory2);
         await db.SaveChangesAsync();
 
         var category = new Category
         {
-            Name = "Innerpåstillverkning",
+            Name = "Personal",
             CategoryToSubCategories = new List<CategoryToSubCategory>
             {
                 new CategoryToSubCategory { SubCategoryId = subCategory1.Id, Order = 0 },
@@ -394,7 +403,7 @@ using (var scope = app.Services.CreateScope())
 
         var unitGroup = new UnitGroup
         {
-            Name = "Fyllning",
+            Name = "Produktion",
             Units = new List<Unit>(),
             CreationDate = DateTime.UtcNow,
             CreatedBy = "System",
@@ -406,7 +415,7 @@ using (var scope = app.Services.CreateScope())
 
         var unit = new Unit
         {
-            Name = "Lina I",
+            Name = "Tillverkning",
             IsHidden = false,
             UnitGroupId = unitGroup.Id,
             UnitGroup = unitGroup,

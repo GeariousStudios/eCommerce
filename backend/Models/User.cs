@@ -52,7 +52,9 @@ namespace backend.Models
         Admin = 1,
         Developer = 2,
         Reporter = 4,
-        Master = 8,
+        Planner = 8,
+        MasterPlanner = 16,
+        Master = 32,
     }
 
     public class UserPreferences
