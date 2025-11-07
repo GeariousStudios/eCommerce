@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 
-// --- developer/manage/UsersClient.tsx ---
+// --- developer/manage/users/UsersClient.tsx ---
 export type UserItem = {
   id: number;
   username: string;
@@ -21,7 +21,7 @@ export type UserFilters = {
   isLocked?: boolean;
 };
 
-// --- admin/manage/units/CategoriesClient.tsx ---
+// --- admin/manage/units/categories/CategoriesClient.tsx ---
 export type CategoryItem = {
   id: number;
   name: string;
@@ -48,7 +48,7 @@ export type CategoryFilters = {
   hasSubCategories?: boolean;
 };
 
-// --- admin/manage/units/UnitColumnsClient.tsx ---
+// --- admin/manage/units/unit-columns/UnitColumnsClient.tsx ---
 export type UnitColumnDataType = "Number" | "Text" | "Boolean";
 export const getDataTypeOptions = (t: (key: string) => string) => [
   {
@@ -86,7 +86,7 @@ export type UnitColumnFilters = {
   unitIds?: number[];
 };
 
-// --- admin/manage/units/UnitGroupsClient.tsx ---
+// --- admin/manage/units/unit-groups/UnitGroupsClient.tsx ---
 export type UnitGroupItem = {
   id: number;
   name: string;
@@ -110,7 +110,7 @@ export type UnitGroupFilters = {
   unitIds?: number[];
 };
 
-// --- admin/manage/UnitsClient.tsx ---
+// --- admin/manage/units/UnitsClient.tsx ---
 export type UnitItem = {
   id: number;
   name: string;
@@ -120,6 +120,8 @@ export type UnitItem = {
   shiftIds: number[];
   stopTypeIds: number[];
   isHidden?: boolean;
+  isPlannable?: boolean;
+  masterPlanName: string;
   lightColorHex: string;
   darkColorHex: string;
   lightTextColorHex: string;
@@ -137,10 +139,12 @@ export type UnitFilters = {
   categoryIds?: number[];
   shiftIds?: number[];
   stopTypeIds?: number[];
+  isPlannable?: boolean;
+  masterPlanIds?: number[];
   isHidden?: boolean;
 };
 
-// --- admin/manage/NewsTypesClient.tsx ---
+// --- admin/manage/news/NewsTypesClient.tsx ---
 export type NewsTypeItem = {
   id: number;
   name: string;
@@ -153,7 +157,7 @@ export type NewsTypeItem = {
 
 export type NewsTypeFilters = {};
 
-// --- admin/manage/ShiftsClient.tsx ---
+// --- admin/manage/shifts/ShiftsClient.tsx ---
 export type ShiftItem = {
   id: number;
   name: string;
@@ -191,7 +195,7 @@ export type ShiftFilters = {
   isHidden?: boolean;
 };
 
-// --- admin/manage/ShiftTeamsClient.tsx ---
+// --- admin/manage/shifts/shift-teams/ShiftTeamsClient.tsx ---
 export type ShiftTeamItem = {
   id: number;
   name: string;
@@ -220,7 +224,7 @@ export type ShiftTeamFilters = {
   isHidden?: boolean;
 };
 
-// --- admin/manage/stops/stop-types/StopTypesClient.tsx ---
+// --- admin/manage/planned-stops/stop-types/StopTypesClient.tsx ---
 export type StopTypeItem = {
   id: number;
   name: string;
@@ -245,6 +249,32 @@ export type StopTypeItem = {
 };
 
 export type StopTypeFilters = {
+  unitIds?: number[];
+  isHidden?: boolean;
+};
+
+
+// --- admin/manage/units/master-plans/MasterPlansClient.tsx ---
+export type MasterPlanItem = {
+  id: number;
+  name: string;
+  units: {
+    id: number;
+    name: string;
+    lightColorHex: string;
+    darkColorHex: string;
+    lightTextColorHex: string;
+    darkTextColorHex: string;
+  }[];
+  isHidden?: boolean;
+
+  creationDate: string;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
+};
+
+export type MasterPlanFilters = {
   unitIds?: number[];
   isHidden?: boolean;
 };

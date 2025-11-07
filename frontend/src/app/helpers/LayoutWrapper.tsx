@@ -108,6 +108,10 @@ const LayoutWrapper = (props: Props) => {
         label: t("Common/Columns"),
         clickable: false,
       },
+      "master-plans": {
+        label: t("Common/Master plans"),
+        clickable: false,
+      },
 
       news: { label: t("Common/News"), clickable: false },
       "news-types": { label: t("Common/News types"), clickable: false },

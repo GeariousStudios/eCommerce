@@ -6,7 +6,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export type SortOrder = "asc" | "desc";
 
-// --- report/manage/ShiftsClient.tsx ---
+// --- admin/manage/shifts/shift-teams/ShiftsClient.tsx ---
 export const fetchContent = async ({
   page,
   pageSize,

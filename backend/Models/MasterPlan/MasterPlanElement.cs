@@ -1,20 +1,12 @@
-using System.ComponentModel.DataAnnotations;
-using backend.Models.ManyToMany;
-
 namespace backend.Models
 {
     public class MasterPlanElement
     {
         public int Id { get; set; }
 
-        // Details.
-        public string? BatchNumber { get; set; }
-        public DateTime? ScheduledStart { get; set; }
+        public int MasterPlanId { get; set; }
+        public MasterPlan MasterPlan { get; set; } = null!;
 
-        // Relations.
-        public List<MasterPlanElementToProductionOrder> MasterPlanElementToProductionOrders { get; set; } =
-            new();
-        public List<MasterPlanElementToPreparationBatch> MasterPlanElementToPreparationBatches { get; set; } =
-            new();
+        public List<MasterPlanElementValue> Values { get; set; } = new();
     }
 }

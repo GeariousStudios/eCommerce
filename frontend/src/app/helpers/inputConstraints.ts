@@ -57,3 +57,8 @@ export const stopTypeConstraints = {
   name: { maxLength: 32 },
   colorHex: { pattern: /^#([0-9A-Fa-f]{6})$/ },
 };
+
+// --- MasterPlanModal ---
+export const masterPlanConstraints = {
+  name: { maxLength: 32 },
+};

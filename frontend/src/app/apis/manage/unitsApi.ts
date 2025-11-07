@@ -6,7 +6,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export type SortOrder = "asc" | "desc";
 
-// --- report/manage/UnitsClient.tsx ---
+// --- admin/manage/units/UnitsClient.tsx ---
 export const fetchContent = async ({
   page,
   pageSize,
@@ -62,6 +62,12 @@ export const fetchContent = async ({
   if (filters?.stopTypeIds) {
     for (const id of filters.stopTypeIds) {
       params.append("stopTypeIds", id.toString());
+    }
+  }
+
+  if (filters?.masterPlanIds) {
+    for (const id of filters.masterPlanIds) {
+      params.append("masterPlanIds", id.toString());
     }
   }
   // --- FILTERS STOP ---
@@ -221,6 +227,29 @@ export type StopTypeOption = {
 
 export const fetchStopTypes = async (): Promise<StopTypeOption[]> => {
   const response = await fetch(`${apiUrl}/stop-type`, {
+    headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
+};
+
+export type MasterPlanOption = {
+  id: number;
+  name: string;
+};
+
+export const fetchMasterPlans = async (): Promise<MasterPlanOption[]> => {
+  const response = await fetch(`${apiUrl}/master-plan`, {
     headers: {
       "X-User-Language": localStorage.getItem("language") || "sv",
       "Content-Type": "application/json",

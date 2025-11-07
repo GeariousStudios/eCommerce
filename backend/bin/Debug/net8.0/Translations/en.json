@@ -115,6 +115,11 @@
   "StopType/Deleted": "Type deleted!",
   "StopType/NameTaken": "A type with this name already exists!",
 
+  "MasterPlan/Unknown": "Unknown master plan",
+  "MasterPlan/NotFound": "Master plan could not be found in the database",
+  "MasterPlan/Deleted": "Master plan deleted!",
+  "MasterPlan/NameTaken": "A master plan with this name already exists!",
+
   "AuditTrail/All": "All",
   "AuditTrail/Category": "Category",
   "AuditTrail/Categories": "Categories",
@@ -216,10 +221,15 @@
   "AuditTrail/IsLocked": "Locked",
   "AuditTrail/StopType": "Stop type",
   "AuditTrail/StopTypes": "Stop types",
+  "AuditTrail/MasterPlan": "Master plan",
+  "AuditTrail/MasterPlans": "Master plans",
+  "AuditTrail/IsPlannable": "Plannable",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",
   "AuditTrail/Developer": "Developer",
   "AuditTrail/Reporter": "Reporter",
+  "AuditTrail/Planner": "Planner",
+  "AuditTrail/MasterPlanner": "Master Planner",
   "AuditTrail/Master": "Master"
 }

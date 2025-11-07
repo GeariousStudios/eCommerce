@@ -110,11 +110,6 @@ const StopTypesClient = (props: Props) => {
       .catch((err) => notify("error", t("Modal/Unknown error")));
   }, []);
 
-  const nameCounts1 = units.reduce<Record<string, number>>((acc, unit) => {
-    acc[unit.name] = (acc[unit.name] ?? 0) + 1;
-    return acc;
-  }, {});
-
   // --- TOGGLE MODAL(S) ---
   // --- Delete ---
   const toggleDeleteItemModal = (itemIds: number[] = []) => {

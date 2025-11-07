@@ -257,7 +257,8 @@ const ShiftModal = (props: Props) => {
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        setShiftTeams(result.items);
+        const visibleItems = result.items.filter((x: any) => !x.isHidden);
+        setShiftTeams(visibleItems);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -574,6 +575,8 @@ const ShiftModal = (props: Props) => {
       .map((wt) => ({
         ...wt,
         dayOfWeek: toDotNetDay(wt.dayOfWeek),
+        start: wt.start.length === 5 ? `${wt.start}:00` : wt.start,
+        end: wt.end.length === 5 ? `${wt.end}:00` : wt.end,
       }));
 
   const clamp = (v: number, min: number, max: number) =>

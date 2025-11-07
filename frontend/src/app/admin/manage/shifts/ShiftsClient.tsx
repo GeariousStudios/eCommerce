@@ -112,11 +112,6 @@ const ShiftsClient = (props: Props) => {
       .catch((err) => notify("error", t("Modal/Unknown error")));
   }, []);
 
-  const nameCounts1 = units.reduce<Record<string, number>>((acc, unit) => {
-    acc[unit.name] = (acc[unit.name] ?? 0) + 1;
-    return acc;
-  }, {});
-
   // --- FETCH SHIFT TEAMS INITIALIZATION (Unique) ---
   const [shiftTeams, setShiftTeams] = useState<ShiftTeamOption[]>([]);
   useEffect(() => {

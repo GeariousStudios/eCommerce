@@ -61,6 +61,7 @@ namespace backend.Controllers
             [FromQuery] int[]? categoryIds = null,
             [FromQuery] int[]? shiftIds = null,
             [FromQuery] int[]? stopTypeIds = null,
+            [FromQuery] int[]? masterPlanIds = null,
             [FromQuery] bool? isHidden = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
@@ -76,7 +77,8 @@ namespace backend.Controllers
                 .Include(u => u.UnitToShifts)
                 .ThenInclude(us => us.Shift)
                 .Include(u => u.UnitToStopTypes)
-                .ThenInclude(ust => ust.StopType);
+                .ThenInclude(ust => ust.StopType)
+                .Include(u => u.MasterPlan);
 
             if (isHidden.HasValue)
             {
@@ -114,6 +116,11 @@ namespace backend.Controllers
                 );
             }
 
+            if (masterPlanIds?.Any() == true)
+            {
+                query = query.Where(u => masterPlanIds.Contains(u.MasterPlanId ?? 0));
+            }
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var lowered = search.ToLower();
@@ -131,6 +138,13 @@ namespace backend.Controllers
                 "unitgroupname" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.UnitGroup.Name).ThenBy(u => u.Name.ToLower())
                     : query.OrderBy(u => u.UnitGroup.Name).ThenBy(u => u.Name.ToLower()),
+                "masterplanname" => sortOrder == "desc"
+                    ? query
+                        .OrderByDescending(u => u.MasterPlan == null ? "" : u.MasterPlan.Name)
+                        .ThenBy(u => u.Name.ToLower())
+                    : query
+                        .OrderBy(u => u.MasterPlan == null ? "" : u.MasterPlan.Name)
+                        .ThenBy(u => u.Name.ToLower()),
                 "unitcolumncount" => sortOrder == "desc"
                     ? query
                         .OrderByDescending(u => u.UnitToUnitColumns.Count)
@@ -234,6 +248,9 @@ namespace backend.Controllers
                         .Select(x => x.StopTypeId)
                         .ToList(),
                     ActiveShiftId = u.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
+                    IsPlannable = u.IsPlannable,
+                    MasterPlanId = u.MasterPlanId,
+                    MasterPlanName = u.MasterPlan?.Name,
 
                     // Meta data.
                     CreationDate = u.CreationDate,
@@ -269,6 +286,7 @@ namespace backend.Controllers
                 .ThenInclude(us => us.Shift)
                 .Include(u => u.UnitToStopTypes)
                 .ThenInclude(ust => ust.StopType)
+                .Include(u => u.MasterPlan)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unit == null)
@@ -277,6 +295,7 @@ namespace backend.Controllers
             }
 
             var unknownGroup = await _t.GetAsync("UnitGroup/Unknown", lang);
+            var unknownMasterPlan = await _t.GetAsync("MasterPlan/Unknown", lang);
 
             var result = new UnitDto
             {
@@ -307,6 +326,9 @@ namespace backend.Controllers
                     .Select(x => x.StopTypeId)
                     .ToList(),
                 ActiveShiftId = unit.UnitToShifts.FirstOrDefault(s => s.IsActive)?.ShiftId,
+                IsPlannable = unit.IsPlannable,
+                MasterPlanId = unit.MasterPlanId,
+                MasterPlanName = unit.MasterPlan?.Name ?? unknownMasterPlan,
 
                 // Meta data.
                 CreationDate = unit.CreationDate,
@@ -344,6 +366,7 @@ namespace backend.Controllers
                 .ThenInclude(us => us.Shift)
                 .Include(u => u.UnitToStopTypes)
                 .ThenInclude(ust => ust.StopType)
+                .Include(u => u.MasterPlan)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unit == null)
@@ -403,6 +426,12 @@ namespace backend.Controllers
                     ["Categories"] = categoriesList,
                     ["Shifts"] = shiftsList,
                     ["StopTypes"] = stopTypesList,
+                    ["IsPlannable"] = unit.IsPlannable
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["MasterPlan"] = unit.MasterPlanId.HasValue
+                        ? $"{unit.MasterPlan?.Name} (ID: {unit.MasterPlanId.Value})"
+                        : "—",
                     ["IsHidden"] = unit.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 }
             );
@@ -485,6 +514,7 @@ namespace backend.Controllers
                 UnitGroup = unitGroup,
                 LightColorHex = dto.LightColorHex,
                 DarkColorHex = dto.DarkColorHex,
+                IsPlannable = dto.IsPlannable,
 
                 // Meta data.
                 CreationDate = now,
@@ -492,6 +522,23 @@ namespace backend.Controllers
                 UpdateDate = now,
                 UpdatedBy = createdBy,
             };
+
+            if (dto.IsPlannable && dto.MasterPlanId.HasValue)
+            {
+                var masterPlan = await _context.MasterPlans.FindAsync(dto.MasterPlanId.Value);
+                if (masterPlan == null)
+                    return NotFound(
+                        new { message = await _t.GetAsync("MasterPlan/NotFound", lang) }
+                    );
+
+                unit.MasterPlanId = masterPlan.Id;
+                unit.MasterPlan = masterPlan;
+            }
+            else
+            {
+                unit.MasterPlanId = null;
+                unit.MasterPlan = null;
+            }
 
             var systemShiftIdsDict = await GetAllSystemShiftIdsAsync();
 
@@ -651,6 +698,12 @@ namespace backend.Controllers
                     ["Categories"] = categoriesList,
                     ["Shifts"] = shiftsList,
                     ["StopTypes"] = stopTypesList,
+                    ["IsPlannable"] = unit.IsPlannable
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["MasterPlan"] = unit.MasterPlanId.HasValue
+                        ? $"{unit.MasterPlan?.Name} (ID: {unit.MasterPlanId.Value})"
+                        : "—",
                     ["IsHidden"] = unit.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
                 }
             );
@@ -786,6 +839,10 @@ namespace backend.Controllers
                 ["Categories"] = oldCategories,
                 ["Shifts"] = oldShifts,
                 ["StopTypes"] = oldStopTypes,
+                ["IsPlannable"] = unit.IsPlannable ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                ["MasterPlan"] = unit.MasterPlanId.HasValue
+                    ? $"{unit.MasterPlan?.Name} (ID: {unit.MasterPlanId.Value})"
+                    : "—",
                 ["IsHidden"] = unit.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
@@ -794,6 +851,24 @@ namespace backend.Controllers
             unit.UnitGroup = unitGroup;
             unit.LightColorHex = dto.LightColorHex;
             unit.DarkColorHex = dto.DarkColorHex;
+            unit.IsPlannable = dto.IsPlannable;
+
+            if (dto.IsPlannable && dto.MasterPlanId.HasValue)
+            {
+                var masterPlan = await _context.MasterPlans.FindAsync(dto.MasterPlanId.Value);
+                if (masterPlan == null)
+                    return NotFound(
+                        new { message = await _t.GetAsync("MasterPlan/NotFound", lang) }
+                    );
+
+                unit.MasterPlanId = masterPlan.Id;
+                unit.MasterPlan = masterPlan;
+            }
+            else
+            {
+                unit.MasterPlanId = null;
+                unit.MasterPlan = null;
+            }
 
             var oldUnitColumnLinks = await _context
                 .UnitToUnitColumns.Where(l => l.UnitId == unit.Id)
@@ -971,6 +1046,10 @@ namespace backend.Controllers
                 ["Categories"] = newCategories,
                 ["Shifts"] = newShifts,
                 ["StopTypes"] = newStopTypes,
+                ["IsPlannable"] = unit.IsPlannable ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                ["MasterPlan"] = unit.MasterPlanId.HasValue
+                    ? $"{unit.MasterPlan?.Name} (ID: {unit.MasterPlanId.Value})"
+                    : "—",
                 ["IsHidden"] = unit.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 

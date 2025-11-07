@@ -54,6 +54,11 @@ type StopTypeOptions = {
   name: string;
 };
 
+type MasterPlanOptions = {
+  id: number;
+  name: string;
+};
+
 const UnitModal = (props: Props) => {
   const t = useTranslations();
 
@@ -78,6 +83,9 @@ const UnitModal = (props: Props) => {
   const [categories, setCategories] = useState<CategoryOptions[]>([]);
   const [shifts, setShifts] = useState<ShiftOptions[]>([]);
   const [stopTypes, setStopTypes] = useState<StopTypeOptions[]>([]);
+  const [isPlannable, setIsPlannable] = useState(false);
+  const [masterPlan, setMasterPlan] = useState("");
+  const [masterPlans, setMasterPlans] = useState<MasterPlanOptions[]>([]);
 
   const [originalName, setOriginalName] = useState("");
   const [originalUnitGroup, setOriginalUnitGroup] = useState("");
@@ -90,6 +98,8 @@ const UnitModal = (props: Props) => {
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
   const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
+  const [originalIsPlannable, setOriginalIsPlannable] = useState(false);
+  const [originalMasterPlan, setOriginalMasterPlan] = useState("");
   const [isDirty, setIsDirty] = useState(false);
 
   const [isAnyDragging, setIsAnyDragging] = useState(false);
@@ -109,6 +119,7 @@ const UnitModal = (props: Props) => {
     fetchCategories();
     fetchShifts();
     fetchStopTypes();
+    fetchMasterPlans();
 
     if (props.itemId !== null && props.itemId !== undefined) {
       fetchUnit();
@@ -139,6 +150,12 @@ const UnitModal = (props: Props) => {
 
       setStopTypeIds([]);
       setOriginalStopTypeIds([]);
+
+      setIsPlannable(false);
+      setOriginalIsPlannable(false);
+
+      setMasterPlan("");
+      setOriginalMasterPlan("");
     }
   }, [props.isOpen, props.itemId]);
 
@@ -165,6 +182,8 @@ const UnitModal = (props: Props) => {
           categoryIds,
           shiftIds,
           stopTypeIds,
+          isPlannable,
+          masterPlanId: parseInt(masterPlan),
         }),
       });
 
@@ -308,7 +327,8 @@ const UnitModal = (props: Props) => {
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        setShifts(result.items);
+        const visibleItems = result.items.filter((x: any) => !x.isHidden);
+        setShifts(visibleItems);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -334,7 +354,32 @@ const UnitModal = (props: Props) => {
       if (!response.ok) {
         notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
-        setStopTypes(result.items);
+        const visibleItems = result.items.filter((x: any) => !x.isHidden);
+        setStopTypes(visibleItems);
+      }
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  // --- Fetch master plans ---
+  const fetchMasterPlans = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/master-plan`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      } else {
+        const visibleItems = result.items.filter((x: any) => !x.isHidden);
+        setMasterPlans(visibleItems);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -391,6 +436,12 @@ const UnitModal = (props: Props) => {
 
     setStopTypeIds(result.stopTypeIds ?? []);
     setOriginalStopTypeIds(result.stopTypeIds ?? []);
+
+    setIsPlannable(result.isPlannable ?? false);
+    setOriginalIsPlannable(result.isPlannable ?? false);
+
+    setMasterPlan(String(result.masterPlanId ?? ""));
+    setOriginalMasterPlan(String(result.masterPlanId ?? ""));
   };
 
   // --- Update unit ---
@@ -415,6 +466,8 @@ const UnitModal = (props: Props) => {
           categoryIds,
           shiftIds,
           stopTypeIds,
+          isPlannable,
+          masterPlanId: parseInt(masterPlan),
         }),
       });
 
@@ -519,7 +572,9 @@ const UnitModal = (props: Props) => {
           JSON.stringify(originalUnitColumnIds) ||
         JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
         JSON.stringify(shiftIds) !== JSON.stringify(originalShiftIds) ||
-        JSON.stringify(stopTypeIds) !== JSON.stringify(originalStopTypeIds);
+        JSON.stringify(stopTypeIds) !== JSON.stringify(originalStopTypeIds) ||
+        isPlannable !== false ||
+        masterPlan !== "";
 
       setIsDirty(dirty);
       return;
@@ -534,7 +589,10 @@ const UnitModal = (props: Props) => {
       JSON.stringify(unitColumnIds) !== JSON.stringify(originalUnitColumnIds) ||
       JSON.stringify(categoryIds) !== JSON.stringify(originalCategoryIds) ||
       JSON.stringify(shiftIds) !== JSON.stringify(originalShiftIds) ||
-      JSON.stringify(stopTypeIds) !== JSON.stringify(originalStopTypeIds);
+      JSON.stringify(stopTypeIds) !== JSON.stringify(originalStopTypeIds) ||
+      isPlannable !== originalIsPlannable ||
+      masterPlan !== originalMasterPlan;
+
     setIsDirty(dirty);
   }, [
     name,
@@ -546,6 +604,8 @@ const UnitModal = (props: Props) => {
     categoryIds,
     shiftIds,
     stopTypeIds,
+    isPlannable,
+    masterPlan,
     originalName,
     originalUnitGroup,
     originalIsHidden,
@@ -555,6 +615,8 @@ const UnitModal = (props: Props) => {
     originalCategoryIds,
     originalShiftIds,
     originalStopTypeIds,
+    originalIsPlannable,
+    originalMasterPlan,
   ]);
 
   return (
@@ -635,11 +697,11 @@ const UnitModal = (props: Props) => {
                   <button
                     type="button"
                     role="switch"
-                    aria-checked={isHidden}
-                    className={switchClass(isHidden)}
-                    onClick={() => setIsHidden((prev) => !prev)}
+                    aria-checked={isPlannable}
+                    className={switchClass(isPlannable)}
+                    onClick={() => setIsPlannable((prev) => !prev)}
                   >
-                    <div className={switchKnobClass(isHidden)} />
+                    <div className={switchKnobClass(isPlannable)} />
                   </button>
                   {t("UnitModal/Follow master plan")}
                   <CustomTooltip
@@ -656,6 +718,22 @@ const UnitModal = (props: Props) => {
                   </CustomTooltip>
                 </div>
               </div>
+              {isPlannable && (
+                <SingleDropdown
+                  id="masterPlan"
+                  label={t("Common/Master plan")}
+                  value={masterPlan}
+                  onChange={(val) => {
+                    setMasterPlan(String(val));
+                  }}
+                  onModal
+                  required
+                  options={masterPlans.map((mp) => ({
+                    label: mp.name,
+                    value: String(mp.id),
+                  }))}
+                />
+              )}
 
               <div className="mt-8 flex items-center gap-2">
                 <hr className="w-12 text-[var(--border-tertiary)]" />

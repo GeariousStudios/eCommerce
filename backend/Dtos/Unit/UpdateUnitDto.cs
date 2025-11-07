@@ -25,11 +25,13 @@ namespace backend.Dtos.Unit
             ErrorMessage = "[7|Common/Color format] Validation/is invalid"
         )]
         public string DarkColorHex { get; set; } = "#e0e0e0";
-        public bool IsHidden { get; set; }
 
         public List<int> UnitColumnIds { get; set; } = new();
         public List<int> CategoryIds { get; set; } = new();
         public List<int> ShiftIds { get; set; } = new();
         public List<int> StopTypeIds { get; set; } = new();
+        public bool IsHidden { get; set; }
+        public bool IsPlannable { get; set; }
+        public int? MasterPlanId { get; set; }
     }
 }

@@ -6,7 +6,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export type SortOrder = "asc" | "desc";
 
-// --- report/manage/CategoriesClient.tsx ---
+// --- admin/manage/units/categories/CategoriesClient.tsx ---
 export const fetchContent = async ({
   page,
   pageSize,

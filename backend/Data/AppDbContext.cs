@@ -28,12 +28,10 @@ namespace backend.Data
         public DbSet<TrendingPanel> TrendingPanels { get; set; }
         public DbSet<AuditTrail> AuditTrails { get; set; }
         public DbSet<StopType> StopTypes { get; set; }
-
-        // Core (Master Plan).
         public DbSet<MasterPlan> MasterPlans { get; set; }
         public DbSet<MasterPlanElement> MasterPlanElements { get; set; }
-        public DbSet<ProductionOrder> ProductionOrders { get; set; }
-        public DbSet<PreparationBatch> PreparationBatches { get; set; }
+        public DbSet<MasterPlanElementValue> MasterPlanElementValues { get; set; }
+        public DbSet<MasterPlanField> MasterPlanFields { get; set; }
 
         // Many-to-many.
         public DbSet<UnitToUnitColumn> UnitToUnitColumns { get; set; }
@@ -44,11 +42,6 @@ namespace backend.Data
         public DbSet<ShiftToShiftTeam> ShiftToShiftTeams { get; set; }
         public DbSet<ShiftToShiftTeamSchedule> ShiftToShiftTeamSchedules { get; set; }
         public DbSet<TrendingPanelToUnit> TrendingPanelToUnits { get; set; }
-
-        // Many-to-many (Master Plan).
-        public DbSet<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; }
-        public DbSet<MasterPlanElementToProductionOrder> MasterPlanElementToProductionOrders { get; set; }
-        public DbSet<MasterPlanElementToPreparationBatch> MasterPlanElementToPreparationBatches { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -262,56 +255,37 @@ namespace backend.Data
                 .WithMany(u => u.TrendingPanelToUnits)
                 .HasForeignKey(tpu => tpu.UnitId);
 
-            // MasterPlan <-> MasterPlanElement many-to-many relationship.
+            // MasterPlan -> Fields 1-to-many relationship.
             modelBuilder
-                .Entity<MasterPlanToMasterPlanElement>()
-                .HasKey(mpe => new { mpe.MasterPlanId, mpe.MasterPlanElementId });
+                .Entity<MasterPlan>()
+                .HasMany(mp => mp.Fields)
+                .WithOne(f => f.MasterPlan)
+                .HasForeignKey(f => f.MasterPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // MasterPlan -> Elements 1-to-many relationship.
             modelBuilder
-                .Entity<MasterPlanToMasterPlanElement>()
-                .HasOne(mpe => mpe.MasterPlan)
-                .WithMany(mp => mp.MasterPlanToMasterPlanElements)
-                .HasForeignKey(mpe => mpe.MasterPlanId);
+                .Entity<MasterPlan>()
+                .HasMany(mp => mp.Elements)
+                .WithOne(e => e.MasterPlan)
+                .HasForeignKey(e => e.MasterPlanId)
+                .OnDelete(DeleteBehavior.Cascade);
 
+            // MasterPlanElement -> Values 1-to-many relationship.
             modelBuilder
-                .Entity<MasterPlanToMasterPlanElement>()
-                .HasOne(mpe => mpe.MasterPlanElement)
-                .WithMany()
-                .HasForeignKey(mpe => mpe.MasterPlanElementId);
+                .Entity<MasterPlanElement>()
+                .HasMany(e => e.Values)
+                .WithOne(v => v.MasterPlanElement)
+                .HasForeignKey(v => v.MasterPlanElementId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // MasterPlanElement <-> ProductionOrder many-to-many relationship.
+            // MasterPlanField -> MasterPlanElementValues 1-to-many relationship.
             modelBuilder
-                .Entity<MasterPlanElementToProductionOrder>()
-                .HasKey(meo => new { meo.MasterPlanElementId, meo.ProductionOrderId });
-
-            modelBuilder
-                .Entity<MasterPlanElementToProductionOrder>()
-                .HasOne(meo => meo.MasterPlanElement)
-                .WithMany(mpe => mpe.MasterPlanElementToProductionOrders)
-                .HasForeignKey(meo => meo.MasterPlanElementId);
-
-            modelBuilder
-                .Entity<MasterPlanElementToProductionOrder>()
-                .HasOne(meo => meo.ProductionOrder)
-                .WithMany()
-                .HasForeignKey(meo => meo.ProductionOrderId);
-
-            // MasterPlanElement <-> PreparationBatch many-to-many relationship.
-            modelBuilder
-                .Entity<MasterPlanElementToPreparationBatch>()
-                .HasKey(mepb => new { mepb.MasterPlanElementId, mepb.PreparationBatchId });
-
-            modelBuilder
-                .Entity<MasterPlanElementToPreparationBatch>()
-                .HasOne(mepb => mepb.MasterPlanElement)
-                .WithMany(mpe => mpe.MasterPlanElementToPreparationBatches)
-                .HasForeignKey(mepb => mepb.MasterPlanElementId);
-
-            modelBuilder
-                .Entity<MasterPlanElementToPreparationBatch>()
-                .HasOne(mepb => mepb.PreparationBatch)
-                .WithMany()
-                .HasForeignKey(mepb => mepb.PreparationBatchId);
+                .Entity<MasterPlanField>()
+                .HasMany<MasterPlanElementValue>()
+                .WithOne(v => v.MasterPlanField)
+                .HasForeignKey(v => v.MasterPlanFieldId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public override int SaveChanges()

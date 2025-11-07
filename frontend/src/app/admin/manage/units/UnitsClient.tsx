@@ -10,12 +10,14 @@ import {
   fetchCategories,
   fetchUnitGroups,
   fetchShifts,
+  fetchStopTypes,
+  fetchMasterPlans,
   UnitColumnOption,
   CategoryOption,
   UnitGroupOption,
   ShiftOption,
   StopTypeOption,
-  fetchStopTypes,
+  MasterPlanOption,
 } from "@/app/apis/manage/unitsApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
 import UnitModal from "@/app/components/modals/admin/units/UnitModal"; // <-- Unique.
@@ -116,6 +118,7 @@ const UnitsClient = (props: Props) => {
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [shifts, setShifts] = useState<ShiftOption[]>([]);
   const [stopTypes, setStopTypes] = useState<StopTypeOption[]>([]);
+  const [masterPlans, setMasterPlans] = useState<MasterPlanOption[]>([]);
   useEffect(() => {
     fetchUnitGroups()
       .then(setUnitGroups)
@@ -135,6 +138,10 @@ const UnitsClient = (props: Props) => {
 
     fetchStopTypes()
       .then(setStopTypes)
+      .catch((err) => notify("error", t("Modal/Unknown error")));
+
+    fetchMasterPlans()
+      .then(setMasterPlans)
       .catch((err) => notify("error", t("Modal/Unknown error")));
   }, []);
 
@@ -192,9 +199,21 @@ const UnitsClient = (props: Props) => {
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
-              {t("Units/Belongs to")}:
+              {t("Units/Belongs to group")}:
             </span>
             <span className="-mt-2">{item.unitGroupName}</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("Units/Belongs to master plan")}:
+            </span>
+            <>
+              {item.masterPlanName === null ? (
+                <span className="-mt-2">-</span>
+              ) : (
+                <span className="-mt-2">{item.masterPlanName}</span>
+              )}
+            </>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Columns")}:</span>
@@ -383,12 +402,21 @@ const UnitsClient = (props: Props) => {
     },
     {
       key: "unitGroupName",
-      label: t("Units/Belongs to"),
+      label: t("Units/Belongs to group"),
       sortingItem: "unitgroupname",
       labelAsc: t("Common/group") + " Ö-A",
       labelDesc: t("Common/group") + " A-Ö",
       getValue: (item: UnitItem) => item.unitGroupName,
       responsivePriority: 2,
+    },
+    {
+      key: "masterPlanName",
+      label: t("Units/Belongs to master plan"),
+      sortingItem: "masterplanname",
+      labelAsc: t("Common/master plan") + " Ö-A",
+      labelDesc: t("Common/master plan") + " A-Ö",
+      getValue: (item: UnitItem) => item.masterPlanName,
+      responsivePriority: 3,
     },
     {
       key: "unitColumns",
@@ -415,7 +443,7 @@ const UnitsClient = (props: Props) => {
           })}
         </div>
       ),
-      responsivePriority: 3,
+      responsivePriority: 4,
     },
     {
       key: "categories",
@@ -442,7 +470,7 @@ const UnitsClient = (props: Props) => {
           })}
         </div>
       ),
-      responsivePriority: 4,
+      responsivePriority: 5,
     },
     {
       key: "shifts",
@@ -607,6 +635,16 @@ const UnitsClient = (props: Props) => {
           : (prev.stopTypeIds ?? []).filter((id) => id !== stopTypeId),
       }));
     },
+
+    selectedMasterPlans: filters.masterPlanIds ?? [],
+    setMasterPlanSelected: (masterPlanId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        masterPlanIds: val
+          ? [...(prev.masterPlanIds ?? []), masterPlanId]
+          : (prev.masterPlanIds ?? []).filter((id) => id !== masterPlanId),
+      }));
+    },
   };
 
   // --- Filter List (Unique)
@@ -630,7 +668,7 @@ const UnitsClient = (props: Props) => {
       ],
     },
     {
-      label: t("Units/Belongs to"),
+      label: t("Units/Belongs to group"),
       breakpoint: "lg",
       options: unitGroups.map((group) => ({
         label: group.name,
@@ -647,8 +685,19 @@ const UnitsClient = (props: Props) => {
       })),
     },
     {
-      label: t("Common/Columns"),
+      label: t("Units/Belongs to master plan"),
       breakpoint: "xl",
+      options: masterPlans.map((masterPlan) => ({
+        label: masterPlan.name,
+        isSelected: filterControls.selectedMasterPlans.includes(masterPlan.id),
+        setSelected: (val: boolean) =>
+          filterControls.setMasterPlanSelected(masterPlan.id, val),
+        count: counts?.masterPlanCount?.[masterPlan.id],
+      })),
+    },
+    {
+      label: t("Common/Columns"),
+      breakpoint: "2xl",
       options: unitColumns.map((col) => ({
         label: col.name,
         isSelected: filterControls.selectedUnitColumns.includes(col.id),
@@ -679,7 +728,7 @@ const UnitsClient = (props: Props) => {
         count: counts?.shiftCount?.[shift.id],
       })),
     },
-     {
+    {
       label: t("Common/Stop types"),
       breakpoint: "2xl",
       options: stopTypes.map((stopType) => ({

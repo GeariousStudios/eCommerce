@@ -110,6 +110,10 @@
   "Common/news types": "nyhetstyper",
   "Common/News type": "Nyhetstyp",
   "Common/news type": "nyhetstyp",
+  "Common/Master plans": "Huvudplaner",
+  "Common/master plans": "huvudplaner",
+  "Common/Master plan": "Huvudplan",
+  "Common/master plan": "huvudplan",
 
   "Message/Loading": "Läser in...",
   "Message/Auth": "Autentiserar...",
@@ -124,6 +128,7 @@
 
   "Navbar/Home": "Startsida",
   "Navbar/Report": "Rapportering",
+  "Navbar/Planning": "Planering",
   "Navbar/Pulse boards": "Pulstavlor",
   "Navbar/Your dashboard": "Din dashboard",
   "Navbar/Main menu": "Huvudmeny",
@@ -222,7 +227,8 @@
   "Roles/MasterPlanner": "Huvudplanerare",
   "Roles/Master": "Master",
 
-  "Units/Belongs to": "Tillhör grupp",
+  "Units/Belongs to group": "Tillhör grupp",
+  "Units/Belongs to master plan": "Tillhör huvudplan",
   "Units/column amount": "antal kolumner",
   "Units/category amount": "antal kategorier",
   "Units/shift amount": "antal skift",
@@ -320,7 +326,7 @@
   "UnitModal/Info5": "Stopptyper",
   "UnitModal/Hide unit": "Dölj enhet",
   "UnitModal/Follow master plan": "Planeringsbar",
-  "UnitModal/Tooltip master plan": "Aktivera detta för att koppla enheten till ett tillverkningsschema",
+  "UnitModal/Tooltip master plan": "Aktivera för att koppla enheten till en huvudplan",
 
   "UnitCellModal/Info1": "1. Välj tidpunkt",
   "UnitCellModal/Info2": "2. Rapportera data",
@@ -355,6 +361,10 @@
   "StopTypeModal/Info1": "Uppgifter om typen",
   "StopTypeModal/Info2": "",
   "StopTypeModal/Hide stop type": "Dölj stoptyp",
+
+  "MasterPlanModal/Info1": "Uppgifter om huvudplanen",
+  "MasterPlanModal/Info2": "",
+  "MasterPlanModal/Hide master plan": "Dölj huvudplan",
 
   "Shifts/None": "Inget",
   "Shifts/Unmanned": "Obemannad",
@@ -433,6 +443,14 @@
   "StopTypes/Confirm1": "Tar du bort en stopptyp så tar du bort möjligheten att kunna trenda kopplad data.",
   "StopTypes/Confirm2": "Om stopptypen har mycket kopplad data så är det bättre att dölja det.",
   "StopTypes/Confirm3": "Vill du ta bort ändå?",
+
+  "MasterPlans/Hidden master plans": "Dolda huvudplaner",
+  "MasterPlans/hidden master plans": "dolda huvudplaner",
+  "MasterPlans/Visible master plans": "Synliga huvudplaner",
+  "MasterPlans/visible master plans": "synliga huvudplaner",
+  "MasterPlans/Confirm1": "Borttagning av huvudplan bedöms vara kritiskt och bör undvikas.",
+  "MasterPlans/Confirm2": "Om huvudplanen ej längre behövs så är det bättre att dölja den.",
+  "MasterPlans/Confirm3": "Vill du ta bort ändå?",
 
   "AuditTrail/Show all": "Visa allt",
   "AuditTrail/Entity": "Objekt",

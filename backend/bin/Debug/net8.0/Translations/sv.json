@@ -115,6 +115,11 @@
   "StopType/Deleted": "Typ borttagen!",
   "StopType/NameTaken": "En typ med detta namn finns redan!",
 
+  "MasterPlan/Unknown": "Okänd huvudplan",
+  "MasterPlan/NotFound": "Huvudplanen kunde inte hittas i databasen",
+  "MasterPlan/Deleted": "Huvudplan borttagen!",
+  "MasterPlan/NameTaken": "En huvudplan med detta namn finns redan!",
+
   "AuditTrail/All": "Alla",
   "AuditTrail/Category": "Kategori",
   "AuditTrail/Categories": "Kategorier",
@@ -215,10 +220,15 @@
   "AuditTrail/IsLocked": "Låst",
   "AuditTrail/StopType": "Stopptyp",
   "AuditTrail/StopTypes": "Stopptyper",
+  "AuditTrail/MasterPlan": "Huvudplan",
+  "AuditTrail/MasterPlans": "Huvudplaner",
+  "AuditTrail/IsPlannable": "Planeringsbar",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",
   "AuditTrail/Developer": "Developer",
   "AuditTrail/Reporter": "Reporter",
+  "AuditTrail/Planner": "Planner",
+  "AuditTrail/MasterPlanner": "Master Planner",
   "AuditTrail/Master": "Master"
 }

@@ -6,7 +6,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export type SortOrder = "asc" | "desc";
 
-// --- report/manage/UnitGroupsClient.tsx ---
+// --- admin/manage/units/unit-groups/UnitGroupsClient.tsx ---
 export const fetchContent = async ({
   page,
   pageSize,
@@ -73,15 +73,6 @@ export const deleteContent = async (id: number): Promise<void> => {
   }
 
   if (!response.ok) {
-    // const t = useTranslations();
-    // let errorMessage = t("Api/Failed to delete") + t("Common/group");
-    // try {
-    //   const errorData = await response.json();
-    //   errorMessage = errorData.message || errorMessage;
-    // } catch {
-    //   errorMessage = await response.text();
-    // }
-    // throw new Error(errorMessage);
     let message = "Unknown error";
     try {
       const data = await response.json();

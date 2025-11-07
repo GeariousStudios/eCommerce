@@ -257,6 +257,12 @@ const Navbar = (props: Props) => {
         icon: "WrenchIcon",
       },
       {
+        href: "/admin/manage/units/master-plans/",
+        // label: t("Common/Manage") + " / " + t("Common/Columns"),
+        label: t("Common/Master plans"),
+        icon: "WrenchIcon",
+      },
+      {
         href: "/admin/manage/news/news-types/",
         // label: t("Common/Manage") + " / " + t("Common/Types"),
         label: t("Common/News types"),
@@ -656,6 +662,20 @@ const Navbar = (props: Props) => {
                                       (f) =>
                                         f.href ===
                                         "/admin/manage/units/unit-columns/",
+                                    ),
+                                  },
+                                  {
+                                    title: t("Navbar/Planning"),
+                                    href: "/admin/manage/units/master-plans/",
+                                    label: t("Common/Master plans"),
+
+                                    onToggleFavourite: isLoggedIn
+                                      ? onToggleFavourite
+                                      : undefined,
+                                    isFavourite: favourites.some(
+                                      (f) =>
+                                        f.href ===
+                                        "/admin/manage/units/master-plans/",
                                     ),
                                   },
                                 ],

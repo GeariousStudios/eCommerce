@@ -264,6 +264,7 @@ namespace backend.Controllers
                     // "UserPreferences",
                     "ShiftChange",
                     "StopType",
+                    "MasterPlan",
                 };
 
                 actions = new[] { "All", "Create", "Update", "Delete" };

@@ -110,8 +110,8 @@ namespace backend.Controllers
             // Filters.
             var visibilityCount = new Dictionary<string, int>
             {
-                ["Visible"] = await _context.Shifts.CountAsync(s => !s.IsHidden),
-                ["Hidden"] = await _context.Shifts.CountAsync(s => s.IsHidden),
+                ["Visible"] = await _context.StopTypes.CountAsync(s => !s.IsHidden),
+                ["Hidden"] = await _context.StopTypes.CountAsync(s => s.IsHidden),
             };
 
             var unitCount = await query
@@ -155,7 +155,7 @@ namespace backend.Controllers
             {
                 totalCount,
                 items = stopTypes,
-                counts = new { },
+                counts = new { visibilityCount, unitCount },
             };
 
             return Ok(result);
@@ -406,13 +406,6 @@ namespace backend.Controllers
             // Meta data.
             stopType.UpdateDate = now;
             stopType.UpdatedBy = updatedBy;
-
-            var relatedNews = await _context.News.Where(n => n.TypeId == stopType.Id).ToListAsync();
-
-            foreach (var stop in relatedNews)
-            {
-                stop.TypeName = dto.Name;
-            }
 
             await _context.SaveChangesAsync();
 

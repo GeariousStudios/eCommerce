@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using backend.Models.ManyToMany;
 
 namespace backend.Models
 {
@@ -11,13 +10,13 @@ namespace backend.Models
         public string Name { get; set; } = string.Empty;
         public bool IsHidden { get; set; }
 
+        public List<MasterPlanField> Fields { get; set; } = new();
+        public List<MasterPlanElement> Elements { get; set; } = new();
+
         // Meta data.
         public DateTime CreationDate { get; set; }
         public DateTime UpdateDate { get; set; }
         public string CreatedBy { get; set; } = string.Empty;
         public string UpdatedBy { get; set; } = string.Empty;
-
-        public List<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; } =
-            new();
     }
 }

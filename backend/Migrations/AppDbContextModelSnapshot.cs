@@ -104,60 +104,6 @@ namespace eCommerce.Migrations
                     b.ToTable("CategoryToSubCategories");
                 });
 
-            modelBuilder.Entity("backend.Models.ManyToMany.MasterPlanElementToPreparationBatch", b =>
-                {
-                    b.Property<int>("MasterPlanElementId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("PreparationBatchId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("MasterPlanElementId", "PreparationBatchId");
-
-                    b.HasIndex("PreparationBatchId");
-
-                    b.ToTable("MasterPlanElementToPreparationBatches");
-                });
-
-            modelBuilder.Entity("backend.Models.ManyToMany.MasterPlanElementToProductionOrder", b =>
-                {
-                    b.Property<int>("MasterPlanElementId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("ProductionOrderId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("MasterPlanElementId", "ProductionOrderId");
-
-                    b.HasIndex("ProductionOrderId");
-
-                    b.ToTable("MasterPlanElementToProductionOrders");
-                });
-
-            modelBuilder.Entity("backend.Models.ManyToMany.MasterPlanToMasterPlanElement", b =>
-                {
-                    b.Property<int>("MasterPlanId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MasterPlanElementId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Id")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("MasterPlanId", "MasterPlanElementId");
-
-                    b.HasIndex("MasterPlanElementId");
-
-                    b.ToTable("MasterPlanToMasterPlanElements");
-                });
-
             modelBuilder.Entity("backend.Models.ManyToMany.ShiftToShiftTeam", b =>
                 {
                     b.Property<int>("ShiftId")
@@ -345,15 +291,59 @@ namespace eCommerce.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("BatchNumber")
-                        .HasColumnType("TEXT");
+                    b.Property<int>("MasterPlanId")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("ScheduledStart")
+                    b.HasKey("Id");
+
+                    b.HasIndex("MasterPlanId");
+
+                    b.ToTable("MasterPlanElements");
+                });
+
+            modelBuilder.Entity("backend.Models.MasterPlanElementValue", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MasterPlanElementId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MasterPlanFieldId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Value")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("MasterPlanElements");
+                    b.HasIndex("MasterPlanElementId");
+
+                    b.HasIndex("MasterPlanFieldId");
+
+                    b.ToTable("MasterPlanElementValues");
+                });
+
+            modelBuilder.Entity("backend.Models.MasterPlanField", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MasterPlanId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MasterPlanId");
+
+                    b.ToTable("MasterPlanFields");
                 });
 
             modelBuilder.Entity("backend.Models.News", b =>
@@ -427,79 +417,6 @@ namespace eCommerce.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("NewsTypes");
-                });
-
-            modelBuilder.Entity("backend.Models.PreparationBatch", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("BatchNumber")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Comment")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Material")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MaterialDescription")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OUM")
-                        .HasColumnType("TEXT");
-
-                    b.Property<double?>("OrderQuantity")
-                        .HasColumnType("REAL");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("PreparationBatches");
-                });
-
-            modelBuilder.Entity("backend.Models.ProductionOrder", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Comment")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DestinationCountry")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Material")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MaterialDescription")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("MaterialPlanAsm")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OUM")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("OrderNumber")
-                        .HasColumnType("TEXT");
-
-                    b.Property<double?>("OrderQuantity")
-                        .HasColumnType("REAL");
-
-                    b.Property<string>("PM")
-                        .HasColumnType("TEXT");
-
-                    b.Property<double?>("QuantityPlan")
-                        .HasColumnType("REAL");
-
-                    b.Property<string>("SequenceNumber")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProductionOrders");
                 });
 
             modelBuilder.Entity("backend.Models.Report", b =>
@@ -829,6 +746,9 @@ namespace eCommerce.Migrations
                     b.Property<bool>("IsHidden")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsPlannable")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("LightColorHex")
                         .IsRequired()
                         .HasMaxLength(7)
@@ -1154,63 +1074,6 @@ namespace eCommerce.Migrations
                     b.Navigation("SubCategory");
                 });
 
-            modelBuilder.Entity("backend.Models.ManyToMany.MasterPlanElementToPreparationBatch", b =>
-                {
-                    b.HasOne("backend.Models.MasterPlanElement", "MasterPlanElement")
-                        .WithMany("MasterPlanElementToPreparationBatches")
-                        .HasForeignKey("MasterPlanElementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.PreparationBatch", "PreparationBatch")
-                        .WithMany()
-                        .HasForeignKey("PreparationBatchId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MasterPlanElement");
-
-                    b.Navigation("PreparationBatch");
-                });
-
-            modelBuilder.Entity("backend.Models.ManyToMany.MasterPlanElementToProductionOrder", b =>
-                {
-                    b.HasOne("backend.Models.MasterPlanElement", "MasterPlanElement")
-                        .WithMany("MasterPlanElementToProductionOrders")
-                        .HasForeignKey("MasterPlanElementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.ProductionOrder", "ProductionOrder")
-                        .WithMany()
-                        .HasForeignKey("ProductionOrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MasterPlanElement");
-
-                    b.Navigation("ProductionOrder");
-                });
-
-            modelBuilder.Entity("backend.Models.ManyToMany.MasterPlanToMasterPlanElement", b =>
-                {
-                    b.HasOne("backend.Models.MasterPlanElement", "MasterPlanElement")
-                        .WithMany()
-                        .HasForeignKey("MasterPlanElementId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("backend.Models.MasterPlan", "MasterPlan")
-                        .WithMany("MasterPlanToMasterPlanElements")
-                        .HasForeignKey("MasterPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MasterPlan");
-
-                    b.Navigation("MasterPlanElement");
-                });
-
             modelBuilder.Entity("backend.Models.ManyToMany.ShiftToShiftTeam", b =>
                 {
                     b.HasOne("backend.Models.Shift", "Shift")
@@ -1344,6 +1207,47 @@ namespace eCommerce.Migrations
                     b.Navigation("UnitColumn");
                 });
 
+            modelBuilder.Entity("backend.Models.MasterPlanElement", b =>
+                {
+                    b.HasOne("backend.Models.MasterPlan", "MasterPlan")
+                        .WithMany("Elements")
+                        .HasForeignKey("MasterPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MasterPlan");
+                });
+
+            modelBuilder.Entity("backend.Models.MasterPlanElementValue", b =>
+                {
+                    b.HasOne("backend.Models.MasterPlanElement", "MasterPlanElement")
+                        .WithMany("Values")
+                        .HasForeignKey("MasterPlanElementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Models.MasterPlanField", "MasterPlanField")
+                        .WithMany()
+                        .HasForeignKey("MasterPlanFieldId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MasterPlanElement");
+
+                    b.Navigation("MasterPlanField");
+                });
+
+            modelBuilder.Entity("backend.Models.MasterPlanField", b =>
+                {
+                    b.HasOne("backend.Models.MasterPlan", "MasterPlan")
+                        .WithMany("Fields")
+                        .HasForeignKey("MasterPlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MasterPlan");
+                });
+
             modelBuilder.Entity("backend.Models.Report", b =>
                 {
                     b.HasOne("backend.Models.Unit", "Unit")
@@ -1439,14 +1343,14 @@ namespace eCommerce.Migrations
 
             modelBuilder.Entity("backend.Models.MasterPlan", b =>
                 {
-                    b.Navigation("MasterPlanToMasterPlanElements");
+                    b.Navigation("Elements");
+
+                    b.Navigation("Fields");
                 });
 
             modelBuilder.Entity("backend.Models.MasterPlanElement", b =>
                 {
-                    b.Navigation("MasterPlanElementToPreparationBatches");
-
-                    b.Navigation("MasterPlanElementToProductionOrders");
+                    b.Navigation("Values");
                 });
 
             modelBuilder.Entity("backend.Models.Shift", b =>

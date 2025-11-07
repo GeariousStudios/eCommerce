@@ -19,6 +19,10 @@ namespace backend.Dtos.Unit
         public string LightTextColorHex { get; set; } = "#ffffff";
         public string DarkTextColorHex { get; set; } = "#000000";
 
+        public bool IsPlannable { get; set; }
+        public int? MasterPlanId { get; set; }
+        public string? MasterPlanName { get; set; }
+
         // Meta data.
         public DateTime CreationDate { get; set; }
         public DateTime UpdateDate { get; set; }
