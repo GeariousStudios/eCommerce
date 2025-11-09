@@ -203,6 +203,7 @@ const CategoryModal = (props: Props) => {
             updatedExistingSubCategories,
             subCategoryIdsToDelete,
             orderedSubCategoryIds: subCategoryIds,
+            tempSubCategoryNames,
           }),
         },
       );
@@ -559,7 +560,8 @@ const CategoryModal = (props: Props) => {
                       createSubCategory();
                     }
                   }}
-                  placeholder={t("CategoryModal/Placeholder text")}
+                  // placeholder={t("CategoryModal/Placeholder text")}
+                  label={t("Common/Add") + " " + t("Common/sub category") + "..."}
                   {...categoryConstraints.subCategoryName}
                 />
 

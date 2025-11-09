@@ -1012,14 +1012,14 @@ const AuditTrailClient = (props: Props) => {
                     ...
                   </span>
                 ) : (
-                  <button
+                 <button
                     key={index}
                     onClick={() => setCurrentPage(Number(page))}
                     className={`${
                       currentPage === page
                         ? "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"
                         : "hover:text-[var(--accent-color)]"
-                    } flex max-w-7 min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-[var(--fast)]`}
+                    } flex min-w-7 cursor-pointer justify-center rounded-full px-[0.6rem] text-lg transition-colors duration-[var(--fast)]`}
                   >
                     {page}
                   </button>

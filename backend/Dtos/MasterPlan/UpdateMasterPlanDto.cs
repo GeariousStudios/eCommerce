@@ -7,9 +7,18 @@ namespace backend.Dtos.MasterPlan
         [Required(ErrorMessage = "[1|Common/a name] Validation/Please enter")]
         [MaxLength(32, ErrorMessage = "[2|Common/Name|32] Validation/cannot exceed")]
         public string Name { get; set; } = string.Empty;
-        public bool IsHidden { get; set; }
 
-        public List<UpdateMasterPlanFieldDto> Fields { get; set; } = new();
-        public List<UpdateMasterPlanElementDto> Elements { get; set; } = new();
+        [Required(ErrorMessage = "[3|Unit/a group] Validation/Please select")]
+        public int UnitGroupId { get; set; }
+        public bool IsHidden { get; set; }
+        public int[]? Units { get; set; }
+        public int[]? MasterPlanFieldIds { get; set; }
+        public int[]? MasterPlanFieldIdsToDelete { get; set; }
+        public int[]? MasterPlanElementIds { get; set; }
+        public string[]? NewMasterPlanFieldNames { get; set; }
+        public List<UpdateMasterPlanFieldDto>? UpdatedExistingMasterPlanFields { get; set; }
+        public string[]? NewMasterPlanElementNames { get; set; }
+        public int[]? OrderedMasterPlanFieldIds { get; set; }
+        public int[]? OrderedMasterPlanElementIds { get; set; }
     }
 }

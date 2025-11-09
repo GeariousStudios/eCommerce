@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import useAuthStatus from "./useAuthStatus";
+import { useAuth } from "../context/AuthContext";
 
 const useUserPrefs = () => {
   // --- VARIABLES ---
   // --- States ---
-  const { isLoggedIn } = useAuthStatus();
+  const { isLoggedIn } = useAuth();
   const [userTheme, setUserTheme] = useState<string | null>(null);
   const [userLanguage, setUserLanguage] = useState<string | null>(null);
   const [isGridView, setIsGridView] = useState<boolean | null>(null);

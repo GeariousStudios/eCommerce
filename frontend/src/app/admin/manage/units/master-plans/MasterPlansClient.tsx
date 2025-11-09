@@ -7,7 +7,11 @@ import {
   deleteContent,
   fetchContent,
   fetchUnits,
+  fetchUnitGroups,
+  fetchMasterPlanFields,
   UnitOption,
+  UnitGroupOption,
+  MasterPlanFieldOption,
 } from "@/app/apis/manage/masterPlansApi"; // <-- Unique.
 import ManageBase from "@/app/components/manage/ManageBase";
 import MasterPlanModal from "@/app/components/modals/admin/units/MasterPlanModal"; // <-- Unique.
@@ -102,12 +106,24 @@ const MasterPlansClient = (props: Props) => {
 
   const { notify } = useToast();
 
-  // --- FETCH UNITS INITIALIZATION (Unique) ---
+  // --- FETCH UNITS & FIELDS INITIALIZATION (Unique) ---
+  const [unitGroups, setUnitGroups] = useState<UnitGroupOption[]>([]);
   const [units, setUnits] = useState<UnitOption[]>([]);
+  const [masterPlanFields, setMasterPlanFields] = useState<
+    MasterPlanFieldOption[]
+  >([]);
   useEffect(() => {
+    fetchUnitGroups()
+      .then(setUnitGroups)
+      .catch((err) => notify("error", t("Modal/Unknown error")));
+
     fetchUnits()
       .then(setUnits)
-      .catch((err) => notify("error", t("Modal/Unknown error")));
+      .catch(() => notify("error", t("Modal/Unknown error")));
+
+    fetchMasterPlanFields()
+      .then(setMasterPlanFields)
+      .catch(() => notify("error", t("Modal/Unknown error")));
   }, []);
 
   // --- TOGGLE MODAL(S) ---
@@ -128,6 +144,7 @@ const MasterPlansClient = (props: Props) => {
     try {
       await deleteContent(id);
       await fetchItems();
+      window.dispatchEvent(new Event("master-plan-list-updated"));
       notify("success", t("Common/Master plan") + t("Manage/deleted1"), 4000); // <-- Unique.
     } catch (err: any) {
       notify("error", err?.message || t("Modal/Unknown error"));
@@ -147,6 +164,31 @@ const MasterPlansClient = (props: Props) => {
             <div className="flex items-center gap-4 text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
             </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("Units/Belongs to group")}:
+            </span>
+            <span className="-mt-2">{item.unitGroupName}</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <span className="w-full font-semibold">
+              {t("Common/Master plan fields")}:
+            </span>
+            <>
+              {item.fields.length === 0 ? (
+                <span className="-mt-2">-</span>
+              ) : (
+                item.fields.map((field, i) => (
+                  <span
+                    key={i}
+                    className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                  >
+                    {field.name}
+                  </span>
+                ))
+              )}
+            </>
           </div>
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">
@@ -227,6 +269,37 @@ const MasterPlansClient = (props: Props) => {
       responsivePriority: 0,
     },
     {
+      key: "unitGroupName",
+      label: t("Units/Belongs to group"),
+      sortingItem: "unitgroupname",
+      labelAsc: t("Common/group") + " Ö-A",
+      labelDesc: t("Common/group") + " A-Ö",
+      getValue: (item: MasterPlanItem) => item.unitGroupName,
+      responsivePriority: 2,
+    },
+    {
+      key: "fields",
+      label: t("Common/Master plan fields"),
+      sortingItem: "fieldcount",
+      labelAsc:
+        t("MasterPlans/master plan field amount") + t("Manage/ascending"),
+      labelDesc:
+        t("MasterPlans/master plan field amount") + t("Manage/descending"),
+      getValue: (item: MasterPlanItem) => (
+        <div className="flex flex-wrap gap-2">
+          {item.fields.map((field, i) => (
+            <span
+              key={i}
+              className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+            >
+              {field.name}
+            </span>
+          ))}
+        </div>
+      ),
+      responsivePriority: 3,
+    },
+    {
       key: "units",
       label: t("Manage/Used by units"),
       sortingItem: "unitcount",
@@ -259,14 +332,14 @@ const MasterPlansClient = (props: Props) => {
           })}
         </div>
       ),
-      responsivePriority: 2,
+      responsivePriority: 4,
     },
     {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
-      labelAsc: t("Shifts/hidden shifts"),
-      labelDesc: t("Shifts/visible shifts"),
+      labelAsc: t("MasterPlans/hidden master plans"),
+      labelDesc: t("MasterPlans/visible master plans"),
       classNameAddition: "w-[100px] min-w-[100px]",
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: MasterPlanItem) => (
@@ -298,6 +371,19 @@ const MasterPlansClient = (props: Props) => {
       }));
     },
 
+    selectedUnitGroups: filters.unitGroupIds ?? [],
+    toggleUnitGroup: (groupId: number) => {
+      setFilters((prev) => {
+        const groups = new Set(prev.unitGroupIds ?? []);
+        if (groups.has(groupId)) {
+          groups.delete(groupId);
+        } else {
+          groups.add(groupId);
+        }
+        return { ...prev, unitGroupIds: Array.from(groups) };
+      });
+    },
+
     selectedUnits: filters.unitIds ?? [],
     setUnitSelected: (unitId: number, val: boolean) => {
       setFilters((prev) => ({
@@ -305,6 +391,16 @@ const MasterPlansClient = (props: Props) => {
         unitIds: val
           ? [...(prev.unitIds ?? []), unitId]
           : (prev.unitIds ?? []).filter((id) => id !== unitId),
+      }));
+    },
+
+    selectedFields: filters.masterPlanFieldIds ?? [],
+    setFieldSelected: (fieldId: number, val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        masterPlanFieldIds: val
+          ? [...(prev.masterPlanFieldIds ?? []), fieldId]
+          : (prev.masterPlanFieldIds ?? []).filter((id) => id !== fieldId),
       }));
     },
   };
@@ -330,6 +426,34 @@ const MasterPlansClient = (props: Props) => {
       ],
     },
     {
+      label: t("Units/Belongs to group"),
+      breakpoint: "lg",
+      options: unitGroups.map((group) => ({
+        label: group.name,
+        isSelected: filterControls.selectedUnitGroups.includes(group.id),
+        setSelected: (val: boolean) => {
+          setFilters((prev) => ({
+            ...prev,
+            unitGroupIds: val
+              ? [...(prev.unitGroupIds ?? []), group.id]
+              : (prev.unitGroupIds ?? []).filter((id) => id !== group.id),
+          }));
+        },
+        count: counts?.unitGroupCount?.[group.name],
+      })),
+    },
+    {
+      label: t("Common/Master plan fields"),
+      breakpoint: "lg",
+      options: masterPlanFields.map((field) => ({
+        label: field.name,
+        isSelected: filterControls.selectedFields.includes(field.id),
+        setSelected: (val: boolean) =>
+          filterControls.setFieldSelected(field.id, val),
+        count: counts?.fieldCount?.[field.id],
+      })),
+    },
+    {
       label: t("Manage/Used by units"),
       breakpoint: "xl",
       options: units.map((unit) => {
@@ -340,7 +464,8 @@ const MasterPlansClient = (props: Props) => {
           isSelected: filterControls.selectedUnits.includes(unit.id),
           setSelected: (val: boolean) =>
             filterControls.setUnitSelected(unit.id, val),
-          count: counts?.unitCount?.[unit.id],
+          // count: counts?.unitCount?.[unit.id],
+          count: counts?.unitCount?.[(unit.masterPlanId ?? unit.id) as number],
         };
       }),
     },
@@ -395,6 +520,7 @@ const MasterPlansClient = (props: Props) => {
         itemId={editingItemId}
         onItemUpdated={() => {
           fetchItems();
+          fetchMasterPlanFields().then(setMasterPlanFields);
         }}
       />
 
@@ -409,6 +535,7 @@ const MasterPlansClient = (props: Props) => {
             await finishDeleteContent(id);
           }
 
+          fetchMasterPlanFields().then(setMasterPlanFields);
           setIsDeleteModalOpen(false);
           setDeletingItemIds([]);
           setSelectedItems([]);

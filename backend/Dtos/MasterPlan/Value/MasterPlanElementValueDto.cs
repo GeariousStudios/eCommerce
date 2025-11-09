@@ -6,6 +6,7 @@ namespace backend.Dtos.MasterPlan
     {
         public int Id { get; set; }
         public int MasterPlanFieldId { get; set; }
+        public string? MasterPlanFieldName { get; set; }
         public string? Value { get; set; }
     }
 }

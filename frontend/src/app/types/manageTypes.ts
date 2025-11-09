@@ -253,11 +253,11 @@ export type StopTypeFilters = {
   isHidden?: boolean;
 };
 
-
 // --- admin/manage/units/master-plans/MasterPlansClient.tsx ---
 export type MasterPlanItem = {
   id: number;
   name: string;
+  unitGroupName: string;
   units: {
     id: number;
     name: string;
@@ -265,6 +265,10 @@ export type MasterPlanItem = {
     darkColorHex: string;
     lightTextColorHex: string;
     darkTextColorHex: string;
+  }[];
+  fields: {
+    id: number;
+    name: string;
   }[];
   isHidden?: boolean;
 
@@ -276,5 +280,7 @@ export type MasterPlanItem = {
 
 export type MasterPlanFilters = {
   unitIds?: number[];
+  unitGroupIds?: number[];
+  masterPlanFieldIds?: number[];
   isHidden?: boolean;
 };

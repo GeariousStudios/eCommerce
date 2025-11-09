@@ -1,3 +1,4 @@
+using backend.Dtos.MasterPlan;
 using backend.Dtos.Unit;
 
 namespace backend.Dtos.UnitGroup
@@ -7,6 +8,7 @@ namespace backend.Dtos.UnitGroup
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public List<UnitDto> Units { get; set; } = new();
+        public List<MasterPlanDto> MasterPlans { get; set; } = new();
 
         // Meta data.
         public DateTime CreationDate { get; set; }

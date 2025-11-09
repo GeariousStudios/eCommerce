@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import useUserPrefs from "./useUserPrefs";
+import { useUserPrefsContext } from "../context/UserPrefsContext";
 
 const useLanguage = () => {
   const [currentLanguage, setCurrentLanguage] = useState<string | null>(null);
 
-  const { userLanguage, updateUserLanguage } = useUserPrefs();
+  const { userLanguage, updateUserLanguage } = useUserPrefsContext();
 
   useEffect(() => {
     const updateLanguage = () => {

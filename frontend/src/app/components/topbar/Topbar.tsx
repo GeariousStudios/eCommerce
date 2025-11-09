@@ -23,7 +23,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "../toast/ToastProvider";
-import useAuthStatus from "@/app/hooks/useAuthStatus";
+import { useAuth } from "@/app/context/AuthContext";
 import Message from "../common/Message";
 import MenuDropdown from "../common/MenuDropdown/MenuDropdown";
 import TopbarLink from "./TopbarLink";
@@ -73,7 +73,7 @@ const Topbar = (props: Props) => {
     isLoggedIn,
     isAuthReady,
     fetchAuthData,
-  } = useAuthStatus();
+  } = useAuth();
   const { toggleTheme, currentTheme } = useTheme();
   const { toggleLanguage, currentLanguage } = useLanguage();
 

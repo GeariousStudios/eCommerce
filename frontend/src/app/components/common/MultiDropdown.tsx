@@ -140,7 +140,10 @@ const MultiDropdown = ({
         className={`${value.length > 0 || isOpen ? `-top-4 ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} font-semibold text-[var(--accent-color)]` : "top-[60%] -translate-y-[65%] bg-transparent"} ${smallDropdown ? "text-sm" : ""} pointer-events-none absolute left-2 z-2 px-1.5 transition-[translate,top] duration-[var(--slow)] select-none`}
       >
         {label}
-        {required && <span className="ml-1 text-red-700">*</span>}
+        {required && <span className="pr-2" />}
+        {required && (
+          <span className="absolute -ml-1.25 text-xl text-red-700">*</span>
+        )}
       </label>
 
       {isOpen && (

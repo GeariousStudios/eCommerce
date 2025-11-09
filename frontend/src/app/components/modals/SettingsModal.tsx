@@ -16,7 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import useTheme from "@/app/hooks/useTheme";
 import SingleDropdown from "../common/SingleDropdown";
 import { useToast } from "../toast/ToastProvider";
-import useAuthStatus from "@/app/hooks/useAuthStatus";
+import { useAuth } from "@/app/context/AuthContext";
 import {
   buttonSecondaryClass,
   iconButtonPrimaryClass,
@@ -62,7 +62,7 @@ const SettingsModal = (props: Props) => {
     isLoggedIn,
     userId,
     fetchAuthData,
-  } = useAuthStatus();
+  } = useAuth();
 
   /* --- BACKEND --- */
   // --- Handle logout ---

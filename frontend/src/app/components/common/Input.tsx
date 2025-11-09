@@ -31,6 +31,8 @@ type InputProps = {
   max?: string | number;
   focusOnMount?: boolean;
   compact?: boolean;
+  showAsterixOnPlaceholder?: boolean;
+  showAsterix?: boolean;
 };
 
 const Input = ({
@@ -62,6 +64,8 @@ const Input = ({
   max,
   focusOnMount = false,
   compact = false,
+  showAsterixOnPlaceholder = false,
+  showAsterix = false,
 }: InputProps & { icon?: ReactNode }) => {
   const { currentTheme } = useTheme();
 
@@ -89,6 +93,13 @@ const Input = ({
       <div
         className={`${isCheckbox || isRadio ? "flex items-center justify-center" : "w-full"} ${currentTheme === "dark" ? "dark-calendar" : ""} relative`}
       >
+        {!value && showAsterixOnPlaceholder && placeholder && (
+          <span className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2">
+            <span className="invisible">{placeholder}</span>
+            <span className="text-xl text-red-700"> *</span>
+          </span>
+        )}
+
         <input
           inputMode={inputMode}
           maxLength={maxLength}
@@ -142,7 +153,14 @@ const Input = ({
             }
           }}
           onInput={(e) => {
-            const value = (e.target as HTMLInputElement).value;
+            const input = e.target as HTMLInputElement;
+            let value = input.value;
+
+            if ((isDate || isDateTime) && /^\d{5,}/.test(value)) {
+              value = value.replace(/^(\d{4})\d+/, "$1");
+              input.value = value;
+            }
+
             if ((isDate || isDateTime) && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
               onBlur?.(e as any);
             }
@@ -168,6 +186,7 @@ const Input = ({
           max={type === "number" ? 999999 : max}
           tabIndex={isDisabled ? -1 : (tabIndex ?? 0)}
         />
+
         {icon && (
           <div className="pointer-events-none absolute top-1/2 left-4 flex h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
             {icon}
@@ -198,7 +217,10 @@ const Input = ({
               className={`${isDate || isTime || isDateTime ? "top-0" : "top-[60%]"} ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-[var(--slow)] select-none`}
             >
               {label}
-              {required && <span className="ml-1 text-red-700">*</span>}
+              {(required || showAsterix) && <span className="pr-2" />}
+              {(required || showAsterix) && (
+                <span className="absolute -ml-1.25 text-xl text-red-700">*</span>
+              )}
             </label>
           ) : (
             <label

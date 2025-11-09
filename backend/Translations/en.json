@@ -68,7 +68,6 @@
   "SubCategory/SomeNotFound": "One or more sub categories could not be found",
   "SubCategory/ExistsInCategory": "Sub category {0} already exists in this category!",
   "SubCategory/NameTaken": "A sub category with the same name already exists!",
-  "SubCategory/DuplicateName": "Another sub category already has the name \"{0}\".",
 
   "Report/NotFound": "Report could not be found in the database",
   "Report/Deleted": "Report deleted!",
@@ -119,6 +118,20 @@
   "MasterPlan/NotFound": "Master plan could not be found in the database",
   "MasterPlan/Deleted": "Master plan deleted!",
   "MasterPlan/NameTaken": "A master plan with this name already exists!",
+  "MasterPlan/NameTakenInGroup": "A master plan with this name already exists in the same group!",
+  "MasterPlan/InUse": "Cannot delete a master plan that is in use",
+  "MasterPlan/AtLeastOneFieldRequired": "At least one field is required to create a master plan",
+  "MasterPlan/CheckedOutByAnotherUser": "Master plan is checked out by another user",
+
+  "MasterPlanField/NotFound": "Field could not be found in the database",
+  "MasterPlanField/Deleted": "Field deleted!",
+  "MasterPlanField/SomeNotFound": "One or more fields could not be found",
+  "MasterPlanField/ExistsInMasterPlan": "Field {0} already exists in this master plan!",
+  "MasterPlanField/NameTaken": "A field with the same name already exists!",
+
+  "MasterPlanElement/NotFound": "Element could not be found in the database",
+  "MasterPlanElement/Updated": "Element updated!",
+  "MasterPlanElement/Deleted": "Element deleted!",
 
   "AuditTrail/All": "All",
   "AuditTrail/Category": "Category",
@@ -224,6 +237,7 @@
   "AuditTrail/MasterPlan": "Master plan",
   "AuditTrail/MasterPlans": "Master plans",
   "AuditTrail/IsPlannable": "Plannable",
+  "AuditTrail/MasterPlanFields": "Fields",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

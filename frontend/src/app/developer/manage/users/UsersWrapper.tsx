@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Message from "../../../components/common/Message";
-import useAuthStatus from "../../../hooks/useAuthStatus";
+import { useAuth } from "@/app/context/AuthContext";
 
 const UsersClient = dynamic(() => import("./UsersClient"), {
   ssr: false,
@@ -13,19 +13,14 @@ const UsersClient = dynamic(() => import("./UsersClient"), {
       </div>
 
       <div className="block md:hidden">
-        <Message
-          icon="loading"
-          content="loading"
-          fullscreen
-          withinContainer
-        />
+        <Message icon="loading" content="loading" fullscreen withinContainer />
       </div>
     </>
   ),
 });
 
 const UsersWrapper = () => {
-  const { isAuthReady, isDev, isConnected } = useAuthStatus();
+  const { isAuthReady, isDev, isConnected } = useAuth();
 
   if (!isAuthReady) {
     return (
@@ -35,7 +30,12 @@ const UsersWrapper = () => {
         </div>
 
         <div className="block md:hidden">
-          <Message icon="loading" content="loading" fullscreen withinContainer />
+          <Message
+            icon="loading"
+            content="loading"
+            fullscreen
+            withinContainer
+          />
         </div>
       </>
     );

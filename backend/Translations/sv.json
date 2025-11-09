@@ -68,7 +68,6 @@
   "SubCategory/SomeNotFound": "En eller flera underkategorier kunde inte hittas",
   "SubCategory/ExistsInCategory": "Underkategori {0} finns redan i denna kategori!",
   "SubCategory/NameTaken": "En underkategori med samma namn finns redan",
-  "SubCategory/DuplicateName": "En annan underkategori har redan namnet \"{0}\".",
 
   "Report/NotFound": "Rapporten kunde inte hittas i databasen",
   "Report/Deleted": "Post borttagen!",
@@ -119,6 +118,20 @@
   "MasterPlan/NotFound": "Huvudplanen kunde inte hittas i databasen",
   "MasterPlan/Deleted": "Huvudplan borttagen!",
   "MasterPlan/NameTaken": "En huvudplan med detta namn finns redan!",
+  "MasterPlan/NameTakenInGroup": "En huvudplan med detta namn finns redan i samma grupp!",
+  "MasterPlan/InUse": "Kan inte ta bort en huvudplan som används",
+  "MasterPlan/AtLeastOneFieldRequired": "Minst ett fält måste läggas till i huvudplanen",
+  "MasterPlan/CheckedOutByAnotherUser": "Huvudplanen är utcheckad av en annan användare",
+
+  "MasterPlanField/NotFound": "Fältet kunde inte hittas i databasen",
+  "MasterPlanField/Deleted": "Fältet borttagen!",
+  "MasterPlanField/SomeNotFound": "Ett eller flera fält kunde inte hittas",
+  "MasterPlanField/ExistsInMasterPlan": "Fält {0} finns redan i denna huvudplan!",
+  "MasterPlanField/NameTaken": "Ett fält med samma namn finns redan",
+
+  "MasterPlanElement/NotFound": "Element kunde inte hittas i databasen",
+  "MasterPlanElement/Updated": "Element uppdaterat!",
+  "MasterPlanElement/Deleted": "Element borttaget!",
 
   "AuditTrail/All": "Alla",
   "AuditTrail/Category": "Kategori",
@@ -223,6 +236,7 @@
   "AuditTrail/MasterPlan": "Huvudplan",
   "AuditTrail/MasterPlans": "Huvudplaner",
   "AuditTrail/IsPlannable": "Planeringsbar",
+  "AuditTrail/MasterPlanFields": "Fält",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

@@ -57,9 +57,9 @@ import {
   TrashIcon as SolidTrashIcon,
 } from "@heroicons/react/24/solid";
 import SideMenu from "../sideMenu/SideMenu";
-import useUserPrefs from "@/app/hooks/useUserPrefs";
 import HoverIcon from "../common/HoverIcon";
 import { useTranslations } from "next-intl";
+import { useUserPrefsContext } from "@/app/context/UserPrefsContext";
 
 // --- PROPS ---
 export type ManageBaseProps<TItem> = {
@@ -194,7 +194,7 @@ const ManageBase = <TItem extends { id: number }>({
   }
 
   // --- UPDATE GRID/TABLE PREFERENCE ---
-  const { isLoadingUserPrefs, isGridView, updateIsGridView } = useUserPrefs();
+  const { isLoadingUserPrefs, isGridView, updateIsGridView } = useUserPrefsContext();
   useEffect(() => {
     if (window.innerWidth < 640) {
       setIsGrid(true);
@@ -950,7 +950,7 @@ const ManageBase = <TItem extends { id: number }>({
                         setSelectedItems([]);
                         pagination.setCurrentPage(Number(page));
                       }}
-                      className={`${pagination.currentPage === page ? "bg-[var(--accent-color)] text-[var(--text-main-reverse)]" : "hover:text-[var(--accent-color)]"} ${pagination.currentPage === page && page >= 100 ? "px-5" : ""} flex max-w-7 min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-[var(--fast)]`}
+                      className={`${pagination.currentPage === page ? "bg-[var(--accent-color)] text-[var(--text-main-reverse)]" : "hover:text-[var(--accent-color)]"} ${pagination.currentPage === page && page >= 100 ? "px-5" : ""} flex min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-[var(--fast)]`}
                     >
                       {page}
                     </button>

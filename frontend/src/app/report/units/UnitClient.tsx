@@ -1299,7 +1299,7 @@ const UnitClient = (props: Props) => {
 
             <div className="ml-auto flex max-w-max flex-wrap items-center gap-4">
               <CustomTooltip
-                content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Unit/Update page")}`}
+                content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Common/Update page")}`}
                 veryLongDelay
                 showOnTouch
               >
@@ -1309,7 +1309,7 @@ const UnitClient = (props: Props) => {
                     setIsManualRefresh(true);
                     setRefetchData(true);
                   }}
-                  aria-label={t("Unit/Update page")}
+                  aria-label={t("Common/Update page")}
                   disabled={isManualRefresh && refetchData}
                 >
                   <Outline.ArrowPathIcon

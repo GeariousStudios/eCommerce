@@ -2,9 +2,9 @@
 
 import dynamic from "next/dynamic";
 import Message from "../../components/common/Message";
-import useAuthStatus from "../../hooks/useAuthStatus";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/app/context/AuthContext";
 
 const UnitClient = dynamic(() => import("./UnitClient"), {
   ssr: false,
@@ -22,7 +22,7 @@ const UnitClient = dynamic(() => import("./UnitClient"), {
 });
 
 const UnitWrapper = () => {
-  const { isAuthReady, isConnected, isLoggedIn, isReporter } = useAuthStatus();
+  const { isAuthReady, isConnected, isLoggedIn, isReporter } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const dateParam = searchParams.get("date");

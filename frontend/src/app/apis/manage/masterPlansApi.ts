@@ -35,8 +35,18 @@ export const fetchContent = async ({
     params.append("isHidden", String(filters.isHidden));
   }
 
+  if (filters?.unitGroupIds) {
+    for (const id of filters.unitGroupIds) {
+      params.append("unitGroupIds", id.toString());
+    }
+  }
+
   filters?.unitIds?.forEach((id) => {
     params.append("unitIds", id.toString());
+  });
+
+  filters?.masterPlanFieldIds?.forEach((id) => {
+    params.append("fieldIds", id.toString());
   });
   // --- FILTERS STOP ---
 
@@ -88,6 +98,57 @@ export const deleteContent = async (id: number): Promise<void> => {
   }
 };
 
+export type UnitGroupOption = {
+  id: number;
+  name: string;
+};
+
+export const fetchUnitGroups = async (): Promise<UnitGroupOption[]> => {
+  const response = await fetch(`${apiUrl}/unit-group`, {
+    headers: {
+      "X-User-Language": localStorage.getItem("language") || "sv",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return result.items ?? [];
+};
+
+export type MasterPlanFieldOption = {
+  id: number;
+  name: string;
+};
+
+export const fetchMasterPlanFields = async (): Promise<
+  MasterPlanFieldOption[]
+> => {
+  const response = await fetch(
+    `${apiUrl}/master-plan-field?sortBy=name&sortOrder=asc`,
+    {
+      headers: {
+        "X-User-Language": localStorage.getItem("language") || "sv",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+  }
+
+  const result = await response.json();
+
+  return Array.isArray(result) ? result : [];
+};
+
 export type UnitOption = {
   id: number;
   name: string;
@@ -96,6 +157,7 @@ export type UnitOption = {
   darkColorHex: string;
   lightTextColorHex: string;
   darkTextColorHex: string;
+  masterPlanId?: number;
 };
 
 export const fetchUnits = async (): Promise<UnitOption[]> => {

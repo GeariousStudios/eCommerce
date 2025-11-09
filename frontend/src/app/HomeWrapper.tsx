@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Message from "./components/common/Message";
-import useAuthStatus from "./hooks/useAuthStatus";
+import { useAuth } from "./context/AuthContext";
 
 const HomeClient = dynamic(() => import("./HomeClient"), {
   ssr: false,
@@ -20,7 +20,7 @@ const HomeClient = dynamic(() => import("./HomeClient"), {
 });
 
 const HomeWrapper = () => {
-  const { isAuthReady, isLoggedIn, isAdmin, isConnected } = useAuthStatus();
+  const { isAuthReady, isLoggedIn, isAdmin, isConnected } = useAuth();
 
   if (!isAuthReady) {
     return (
@@ -30,7 +30,12 @@ const HomeWrapper = () => {
         </div>
 
         <div className="block md:hidden">
-          <Message icon="loading" content="loading" fullscreen withinContainer />
+          <Message
+            icon="loading"
+            content="loading"
+            fullscreen
+            withinContainer
+          />
         </div>
       </>
     );

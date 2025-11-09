@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Message from "../../../components/common/Message";
-import useAuthStatus from "../../../hooks/useAuthStatus";
+import { useAuth } from "@/app/context/AuthContext";
 
 const UnitsClient = dynamic(() => import("./UnitsClient"), {
   ssr: false,
@@ -20,7 +20,7 @@ const UnitsClient = dynamic(() => import("./UnitsClient"), {
 });
 
 const UnitsWrapper = () => {
-  const { isAuthReady, isAdmin, isConnected } = useAuthStatus();
+  const { isAuthReady, isAdmin, isConnected } = useAuth();
 
   if (!isAuthReady) {
     return (

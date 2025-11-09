@@ -207,21 +207,42 @@ export const ThCell = ({
   sortOrder,
   onSort,
   classNameAddition,
+  sortable = true,
 }: {
-  sortingItem: string;
+  sortingItem?: string;
   label: string;
   labelAsc?: string;
   labelDesc?: string;
-  sortBy: string;
-  sortOrder: "asc" | "desc";
-  onSort: (field: string) => void;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  onSort?: (field: string) => void;
   classNameAddition?: string;
+  sortable?: boolean;
 }) => {
   const t = useTranslations();
+
+  const baseClass =
+    "pl-4 p-2 min-w-48 h-[40px] border-1 border-t-0 border-[var(--border-secondary)] border-b-[var(--border-main)] text-left transition-[background] duration-[var(--fast)]";
+
+  const hoverClass = sortable
+    ? "cursor-pointer hover:bg-[var(--bg-grid-header-hover)]"
+    : "cursor-default";
+
+  if (!sortable) {
+    return (
+      <th className={`${baseClass} ${hoverClass} ${classNameAddition ?? ""}`}>
+        <div className="flex gap-2">
+          <span className="w-full truncate overflow-hidden text-ellipsis">
+            {label}
+          </span>
+        </div>
+      </th>
+    );
+  }
+
   const getSortIcon = (field: string) => {
-    if (sortBy !== field) {
+    if (!sortBy || sortBy !== field)
       return <ChevronUpDownIcon className="h-6 w-6" />;
-    }
     return sortOrder === "asc" ? (
       <ChevronUpIcon className="h-6 w-6" />
     ) : (
@@ -234,18 +255,20 @@ export const ThCell = ({
       content={
         sortBy === sortingItem
           ? sortOrder === "asc"
-            ? t("Manage/Sort") + labelAsc
-            : t("Manage/Sort") + labelDesc
-          : t("Manage/Sort") + labelDesc
+            ? t("Manage/Sort") + (labelAsc ?? "")
+            : t("Manage/Sort") + (labelDesc ?? "")
+          : t("Manage/Sort") + (labelDesc ?? "")
       }
       longDelay
       showOnTouch
     >
       <th
-        className={`${thClass} ${classNameAddition ? classNameAddition : ""}`}
-        onClick={() => onSort(sortingItem)}
+        className={`${baseClass} ${hoverClass} ${classNameAddition ?? ""}`}
+        onClick={() => {
+          if (sortingItem && onSort) onSort(sortingItem);
+        }}
         onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
+          if ((e.key === "Enter" || e.key === " ") && sortingItem && onSort) {
             e.preventDefault();
             onSort(sortingItem);
           }
@@ -259,11 +282,11 @@ export const ThCell = ({
             : "none"
         }
       >
-        <div className="relative flex gap-2">
+        <div className="flex gap-2">
           <span className="w-full truncate overflow-hidden text-ellipsis">
             {label}
           </span>
-          <span className="flex">{getSortIcon(sortingItem)}</span>
+          <span className="flex">{getSortIcon(sortingItem ?? "")}</span>
         </div>
       </th>
     </CustomTooltip>

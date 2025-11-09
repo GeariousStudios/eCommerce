@@ -216,6 +216,11 @@ namespace backend.Controllers
                 .GroupBy(ust => ust.StopTypeId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
+            var masterPlanCount = _context
+                .Units.AsEnumerable()
+                .GroupBy(u => u.MasterPlanId ?? 0)
+                .ToDictionary(g => g.Key, g => g.Count());
+
             var result = new
             {
                 totalCount,
@@ -266,6 +271,7 @@ namespace backend.Controllers
                     categoryCount = categoryCount,
                     shiftCount = shiftCount,
                     stopTypeCount = stopTypeCount,
+                    masterPlanCount = masterPlanCount,
                 },
             };
 

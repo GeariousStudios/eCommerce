@@ -7,7 +7,7 @@ import useTheme from "../../hooks/useTheme";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Message from "../common/Message";
-import useAuthStatus from "@/app/hooks/useAuthStatus";
+import { useAuth } from "@/app/context/AuthContext";
 import CustomTooltip from "../common/CustomTooltip";
 import { useToast } from "../toast/ToastProvider";
 import { iconButtonPrimaryClass } from "@/app/styles/buttonClasses";
@@ -55,12 +55,14 @@ const Navbar = (props: Props) => {
   // --- States ---
   const [units, setUnits] = useState<SubmenuGroup[]>([]);
   const [unitItems, setUnitItems] = useState<SubmenuItem[]>([]);
+  const [masterPlanItems, setMasterPlanItems] = useState<SubmenuItem[]>([]);
   const [unitsLoaded, setUnitsLoaded] = useState(false);
+  const [masterPlansLoaded, setMasterPlansLoaded] = useState(false);
   const [isAnyDragging, setIsAnyDragging] = useState(false);
 
   // --- Other ---
   const { isAuthReady, isDev, isAdmin, isReporter, isLoggedIn } =
-    useAuthStatus();
+    useAuth();
   const { currentTheme } = useTheme();
   const { notify } = useToast();
   const isDesktop = useIsDesktop();
@@ -125,7 +127,7 @@ const Navbar = (props: Props) => {
           ...items.map((item, index) => ({
             ...item,
             title: index === 0 ? groupName : undefined,
-            icon: "CubeIcon",
+            icon: "ChatBubbleBottomCenterTextIcon",
             onToggleFavourite,
           })),
         ],
@@ -151,6 +153,81 @@ const Navbar = (props: Props) => {
     }
   };
 
+  // --- Fetch master plans ---
+  const fetchMasterPlans = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/master-plan?sortBy=name&sortOrder=asc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      // --- Fail ---
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+        return;
+      }
+
+      const visibleMasterPlans = result.items;
+
+      // --- Success ---
+      const grouped: Record<string, SubmenuItem[]> = visibleMasterPlans.reduce(
+        (acc: Record<string, SubmenuItem[]>, masterPlan: any) => {
+          const groupName = masterPlan.unitGroupName;
+
+          if (!acc[groupName]) {
+            acc[groupName] = [];
+          }
+
+          acc[groupName].push({
+            label: masterPlan.name,
+            href: `/plan/master-plans/${masterPlan.unitGroupId}/${masterPlan.id}`,
+            isHidden: masterPlan.isHidden,
+          });
+
+          return acc;
+        },
+        {},
+      );
+
+      const itemsWithTitles: SubmenuItem[] = Object.entries(grouped).flatMap(
+        ([groupName, items]) => [
+          ...items.map((item, index) => ({
+            ...item,
+            title: index === 0 ? groupName : undefined,
+            icon: "CalendarIcon",
+            onToggleFavourite,
+          })),
+        ],
+      );
+
+      setMasterPlanItems(itemsWithTitles);
+      setMasterPlansLoaded(true);
+
+      const isMasterPlanHref = (href: string) =>
+        href.startsWith("/plan/master-plans/");
+
+      const stale = favourites.filter((f) => {
+        const match = f.href.match(/\/plan\/master-plans\/\d+\/(\d+)/);
+        const unitId = match ? parseInt(match[1]) : null;
+        const exists = result.items.some((u: any) => u.id === unitId);
+        return isMasterPlanHref(f.href) && !exists;
+      });
+
+      if (stale.length > 0) {
+        stale.forEach((f) => removeUserFavourite(f.href));
+      }
+    } catch (err) {
+    } finally {
+    }
+  };
+
   // --- INITIALLY FETCH UNITS ---
   useEffect(() => {
     if (!isAuthReady) {
@@ -158,12 +235,20 @@ const Navbar = (props: Props) => {
     }
 
     fetchUnits();
+    fetchMasterPlans();
 
-    const handleUpdate = () => fetchUnits();
-    window.addEventListener("unit-list-updated", handleUpdate);
+    const handleUnitUpdate = () => fetchUnits();
+    window.addEventListener("unit-list-updated", handleUnitUpdate);
+
+    const handleMasterPlanUpdate = () => fetchMasterPlans();
+    window.addEventListener("master-plan-list-updated", handleMasterPlanUpdate);
 
     return () => {
-      window.removeEventListener("unit-list-updated", handleUpdate);
+      window.removeEventListener("unit-list-updated", handleUnitUpdate);
+      window.removeEventListener(
+        "master-plan-list-updated",
+        handleMasterPlanUpdate,
+      );
     };
   }, [isAuthReady]);
 
@@ -296,10 +381,16 @@ const Navbar = (props: Props) => {
     const dynamicUnits = unitItems.map((u) => ({
       href: u.href,
       label: u.overrideLabel ?? u.label,
-      icon: u.icon ?? "CubeIcon",
+      icon: u.icon ?? "ChatBubbleBottomCenterTextIcon",
     }));
 
-    const all = [...staticEntries, ...dynamicUnits];
+    const dynamicMasterPlans = masterPlanItems.map((u) => ({
+      href: u.href,
+      label: u.overrideLabel ?? u.label,
+      icon: u.icon ?? "CalendarIcon",
+    }));
+
+    const all = [...staticEntries, ...dynamicUnits, ...dynamicMasterPlans];
 
     const map = new Map<string, { label: string; icon?: string }>();
     all.forEach((item) =>
@@ -311,7 +402,7 @@ const Navbar = (props: Props) => {
     return map;
   };
 
-  const menuLookup = useMemo(() => getMenuLookup(), [unitItems, t]);
+  const menuLookup = useMemo(() => getMenuLookup(), [unitItems, masterPlanItems, t]);
 
   const validFavourites = favourites.filter((f) => menuLookup.has(f.href));
 
@@ -328,6 +419,16 @@ const Navbar = (props: Props) => {
         onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
       })),
     [unitItems, favourites],
+  );
+
+  const masterPlanItemsResolved = useMemo(
+    () =>
+      masterPlanItems.map((it) => ({
+        ...it,
+        isFavourite: favourites.some((f) => f.href === it.href),
+        onToggleFavourite: isLoggedIn ? onToggleFavourite : undefined,
+      })),
+    [masterPlanItems, favourites],
   );
 
   // useEffect(() => {
@@ -552,14 +653,6 @@ const Navbar = (props: Props) => {
                         iconHover={Solid.ChatBubbleBottomCenterTextIcon}
                         hasScrollbar={props.hasScrollbar}
                         menus={[
-                          // ...(unitItemsResolved.length > 0
-                          //   ? [
-                          //       {
-                          //         label: t("Common/Units"),
-                          //         items: unitItemsResolved,
-                          //       },
-                          //     ]
-                          //   : []),
                           ...(unitItemsResolved.filter((u) => !u.isHidden)
                             .length > 0
                             ? [
@@ -567,6 +660,27 @@ const Navbar = (props: Props) => {
                                   label: t("Common/Units"),
                                   items: unitItemsResolved.filter(
                                     (u) => !u.isHidden,
+                                  ),
+                                },
+                              ]
+                            : []),
+                        ]}
+                      />
+
+                      <NavbarSubmenu
+                        label={t("Navbar/Plan")}
+                        icon={Outline.CalendarIcon}
+                        iconHover={Solid.CalendarIcon}
+                        hasScrollbar={props.hasScrollbar}
+                        menus={[
+                          ...(masterPlanItemsResolved.filter(
+                            (mp) => !mp.isHidden,
+                          ).length > 0
+                            ? [
+                                {
+                                  label: t("Common/Master plans"),
+                                  items: masterPlanItemsResolved.filter(
+                                    (mp) => !mp.isHidden,
                                   ),
                                 },
                               ]
@@ -665,7 +779,7 @@ const Navbar = (props: Props) => {
                                     ),
                                   },
                                   {
-                                    title: t("Navbar/Planning"),
+                                    title: t("Navbar/Plan"),
                                     href: "/admin/manage/units/master-plans/",
                                     label: t("Common/Master plans"),
 

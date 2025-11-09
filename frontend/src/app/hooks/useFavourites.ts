@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import useAuthStatus from "./useAuthStatus";
+import { useAuth } from "../context/AuthContext";
 import { useToast } from "../components/toast/ToastProvider";
 import { useTranslations } from "next-intl";
 
@@ -13,7 +13,7 @@ const useFavourites = () => {
 
   // --- VARIABLES ---
   // --- States ---
-  const { isLoggedIn } = useAuthStatus();
+  const { isLoggedIn } = useAuth();
   const [favourites, setFavourites] = useState<FavouriteItem[]>([]);
   const [isLoadingFavourites, setIsLoadingFavourites] = useState(false);
 

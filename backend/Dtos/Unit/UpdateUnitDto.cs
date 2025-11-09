@@ -6,7 +6,7 @@ namespace backend.Dtos.Unit
     public class UpdateUnitDto
     {
         [Required(ErrorMessage = "[1|Common/a name] Validation/Please enter")]
-        [MaxLength(16, ErrorMessage = "[2|Common/Name] Validation/cannot exceed")]
+        [MaxLength(16, ErrorMessage = "[2|Common/Name|16] Validation/cannot exceed")]
         public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "[3|Unit/a group] Validation/Please select")]

@@ -1,24 +1,42 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
+import {
+  PencilIcon,
+  PencilSquareIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline";
 import Input from "../../../common/Input";
 import { useToast } from "../../../toast/ToastProvider";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
+  roundedButtonClass,
   switchClass,
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
 import { masterPlanConstraints } from "@/app/helpers/inputConstraints";
+import { XMarkIcon } from "@heroicons/react/20/solid";
+import DragDrop from "@/app/components/common/DragDrop";
+import SingleDropdown from "@/app/components/common/SingleDropdown";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   itemId?: number | null;
   onItemUpdated: () => void;
+};
+
+type UnitGroupOptions = {
+  id: number;
+  name: string;
+};
+
+type MasterPlanFieldDto = {
+  id: number;
+  name: string;
 };
 
 const MasterPlanModal = (props: Props) => {
@@ -29,14 +47,33 @@ const MasterPlanModal = (props: Props) => {
   const formRef = useRef<HTMLFormElement>(null);
   const modalRef = useRef<ModalBaseHandle>(null);
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
+  const updatedMasterPlanFieldsRef = useRef<MasterPlanFieldDto[]>([]);
 
   // --- States ---
   const [name, setName] = useState("");
+  const [unitGroup, setUnitGroup] = useState("");
+  const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
   const [isHidden, setIsHidden] = useState(false);
+  const [masterPlanFieldIds, setMasterPlanFieldIds] = useState<number[]>([]);
+  const [newMasterPlanField, setNewMasterPlanField] = useState("");
 
   const [originalName, setOriginalName] = useState("");
+  const [originalUnitGroup, setOriginalUnitGroup] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
+  const [originalMasterPlanFieldIds, setOriginalMasterPlanFieldIds] = useState<
+    number[]
+  >([]);
+  const [masterPlanFieldIdsToDelete, setMasterPlanFieldIdsToDelete] = useState<
+    number[]
+  >([]);
   const [isDirty, setIsDirty] = useState(false);
+
+  const [isAnyDragging, setIsAnyDragging] = useState(false);
+
+  const [editingMasterPlanFieldId, setEditingMasterPlanFieldId] = useState<
+    number | null
+  >(null);
+  const [editingName, setEditingName] = useState("");
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -48,21 +85,38 @@ const MasterPlanModal = (props: Props) => {
       return;
     }
 
-    if (props.itemId !== null && props.itemId !== undefined) {
+    fetchUnitGroups();
+
+    if (props.isOpen && props.itemId !== null && props.itemId !== undefined) {
+      fetchAllMasterPlanFields();
       fetchMasterPlan();
     } else {
       setName("");
       setOriginalName("");
 
+      setUnitGroup("");
+      setOriginalUnitGroup("");
+
       setIsHidden(false);
       setOriginalIsHidden(false);
+
+      setMasterPlanFieldIds([]);
+      setOriginalMasterPlanFieldIds([]);
+
+      setNewMasterPlanField("");
     }
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add master plan ---
-  const addMasterPlan = async (event: FormEvent) => {
+  // --- Create master plan ---
+  const createMasterPlan = async (event: FormEvent) => {
     event.preventDefault();
+
+    const newMasterPlanFieldNames = updatedMasterPlanFieldsRef.current
+      .filter((mpf) => masterPlanFieldIds.includes(mpf.id) && mpf.id < 0)
+      .map((mpf) => mpf.name.trim());
+
+    const newMasterPlanFieldIds = masterPlanFieldIds.filter((id) => id > 0);
 
     try {
       const response = await fetch(`${apiUrl}/master-plan/create`, {
@@ -74,7 +128,13 @@ const MasterPlanModal = (props: Props) => {
         },
         body: JSON.stringify({
           name,
+          unitGroupId: parseInt(unitGroup),
           isHidden,
+          masterPlanFieldIds: newMasterPlanFieldIds,
+          newMasterPlanFieldNames,
+          masterPlanFieldIdsToDelete,
+          orderedMasterPlanFieldIds: masterPlanFieldIds,
+          tempMasterPlanFieldNames,
         }),
       });
 
@@ -118,15 +178,50 @@ const MasterPlanModal = (props: Props) => {
         return;
       }
 
+      (result.fields ?? []).forEach((mpf: any) => {
+        const existing = updatedMasterPlanFieldsRef.current.find(
+          (f) => f.name.trim() === mpf.name.trim() && f.id < 0,
+        );
+
+        if (existing) {
+          existing.id = mpf.id;
+        }
+      });
+
+      setMasterPlanFieldIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
+      window.dispatchEvent(new Event("master-plan-list-updated"));
       notify("success", t("Common/Master plan") + t("Modal/created"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
   };
 
-  // --- Fetch master plan ---
+  // --- Fetch unit groups ---
+  const fetchUnitGroups = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/unit-group`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      } else {
+        setUnitGroups(result.items);
+      }
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  // --- Fetch master plan & master plan fields ---
   const fetchMasterPlan = async () => {
     try {
       const response = await fetch(
@@ -156,13 +251,55 @@ const MasterPlanModal = (props: Props) => {
     setName(result.name ?? "");
     setOriginalName(result.name ?? "");
 
+    setUnitGroup(String(result.unitGroupId ?? ""));
+    setOriginalUnitGroup(String(result.unitGroupId ?? ""));
+
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
+
+    const ids = Array.isArray(result.fields)
+      ? result.fields.map((mpf: any) => mpf.id)
+      : [];
+
+    setMasterPlanFieldIds(ids);
+    setOriginalMasterPlanFieldIds(ids);
+  };
+
+  const fetchAllMasterPlanFields = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/master-plan-field`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      } else {
+        updatedMasterPlanFieldsRef.current = result;
+      }
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
   };
 
   // --- Update master plan ---
   const updateMasterPlan = async (event: FormEvent) => {
     event.preventDefault();
+
+    const newMasterPlanFieldNames = updatedMasterPlanFieldsRef.current
+      .filter((mpf) => masterPlanFieldIds.includes(mpf.id) && mpf.id < 0)
+      .map((mpf) => mpf.name.trim());
+
+    const newMasterPlanFieldIds = masterPlanFieldIds.filter((id) => id > 0);
+
+    const updatedExistingMasterPlanFields = updatedMasterPlanFieldsRef.current
+      .filter((mpf) => newMasterPlanFieldIds.includes(mpf.id) && mpf.id > 0)
+      .map((mpf) => ({ id: mpf.id, name: mpf.name.trim() }));
 
     try {
       const response = await fetch(
@@ -176,7 +313,14 @@ const MasterPlanModal = (props: Props) => {
           },
           body: JSON.stringify({
             name,
+            unitGroupId: parseInt(unitGroup),
             isHidden,
+            masterPlanFieldIds: newMasterPlanFieldIds,
+            newMasterPlanFieldNames,
+            updatedExistingMasterPlanFields,
+            masterPlanFieldIdsToDelete,
+            orderedMasterPlanFieldIds: masterPlanFieldIds,
+            tempMasterPlanFieldNames,
           }),
         },
       );
@@ -221,8 +365,20 @@ const MasterPlanModal = (props: Props) => {
         return;
       }
 
+      (result.fields ?? []).forEach((mpf: any) => {
+        const existing = updatedMasterPlanFieldsRef.current.find(
+          (s) => s.name.toLowerCase() === mpf.name.toLowerCase() && s.id < 0,
+        );
+
+        if (existing) {
+          existing.id = mpf.id;
+        }
+      });
+
+      setMasterPlanFieldIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
+      window.dispatchEvent(new Event("master-plan-list-updated"));
       notify("success", t("Common/Master plan") + t("Modal/updated"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -233,19 +389,191 @@ const MasterPlanModal = (props: Props) => {
     formRef.current?.requestSubmit();
   };
 
+  const createMasterPlanField = () => {
+    const trimmed = newMasterPlanField.trim();
+
+    if (!trimmed) {
+      notify("error", t("MasterPlanModal/Error1"));
+      return;
+    }
+
+    const match = updatedMasterPlanFieldsRef.current.find(
+      (mpf) => mpf.name.trim().toLowerCase() === trimmed.toLowerCase(),
+    );
+
+    if (match) {
+      if (masterPlanFieldIds.includes(match.id)) {
+        notify("error", t("MasterPlanModal/Error2"));
+        return;
+      }
+
+      setMasterPlanFieldIds((prev) => [...prev, match.id]);
+      setNewMasterPlanField("");
+      return;
+    }
+
+    const tempId = -(Math.floor(Math.random() * 1000000) + 1);
+
+    const tempMasterPlanField: MasterPlanFieldDto = {
+      id: tempId,
+      name: trimmed,
+    };
+
+    updatedMasterPlanFieldsRef.current = [
+      ...updatedMasterPlanFieldsRef.current,
+      tempMasterPlanField,
+    ];
+    setMasterPlanFieldIds((prev) => [...prev, tempId]);
+    setNewMasterPlanField("");
+  };
+
+  const deleteMasterPlanField = async (masterPlanFieldId: number) => {
+    setMasterPlanFieldIds((prev) =>
+      prev.filter((id) => id !== masterPlanFieldId),
+    );
+
+    if (masterPlanFieldId > 0) {
+      setMasterPlanFieldIdsToDelete((prev) => [...prev, masterPlanFieldId]);
+    } else {
+      updatedMasterPlanFieldsRef.current =
+        updatedMasterPlanFieldsRef.current.filter(
+          (mpf) => mpf.id !== masterPlanFieldId,
+        );
+    }
+  };
+
+  // --- COMPONENTS ---
+  // --- MasterPlanFieldChip ---
+  const MasterPlanFieldChip = ({
+    id,
+    label,
+    onDelete,
+    onRename,
+    isDragging = false,
+    dragging = false,
+  }: {
+    id: number;
+    label: string;
+    onDelete: () => void;
+    onRename: (newName: string) => void;
+    isDragging?: boolean;
+    dragging?: boolean;
+  }) => {
+    const isEditing = editingMasterPlanFieldId === id;
+
+    return (
+      <div
+        className={`${roundedButtonClass} flex w-auto items-center gap-2 !bg-[var(--bg-modal-link)] px-4 transition-transform duration-[var(--fast)]`}
+        style={{
+          cursor: isEditing ? "text" : isDragging ? "grabbing" : "grab",
+        }}
+      >
+        {isEditing ? (
+          <input
+            autoFocus
+            value={editingName}
+            onChange={(e) => setEditingName(e.target.value)}
+            onBlur={() => {
+              const trimmed = editingName.trim();
+              if (trimmed) onRename(trimmed);
+              setEditingMasterPlanFieldId(null);
+              setEditingName("");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const trimmed = editingName.trim();
+                if (trimmed) onRename(trimmed);
+                setEditingMasterPlanFieldId(null);
+                setEditingName("");
+              } else if (e.key === "Escape") {
+                setEditingMasterPlanFieldId(null);
+                setEditingName("");
+              }
+            }}
+            {...masterPlanConstraints.masterPlanFieldName}
+            className="w-32 border-b border-[var(--border-primary)] bg-transparent outline-none"
+          />
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditingMasterPlanFieldId(id);
+                setEditingName(label);
+              }}
+              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+              style={{ cursor: "pointer" }}
+            >
+              <PencilIcon className="h-5 w-5" />
+            </button>
+
+            <span className="truncate font-semibold select-none">{label}</span>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+              style={{ cursor: "pointer" }}
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </>
+        )}
+      </div>
+    );
+  };
+
   // --- SET/UNSET IS DIRTY ---
+  const areArraysEqual = function <T>(a: T[], b: T[]): boolean {
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    const sortedA = [...a].sort();
+    const sortedB = [...b].sort();
+    return sortedA.every((val, index) => val === sortedB[index]);
+  };
+
   useEffect(() => {
     if (props.itemId === null || props.itemId === undefined) {
-      const dirty = name !== "" || isHidden !== false;
+      const dirty =
+        name !== "" ||
+        unitGroup !== "" ||
+        isHidden !== false ||
+        masterPlanFieldIds.length > 0;
 
       setIsDirty(dirty);
       return;
     }
 
-    const dirty = name !== originalName || isHidden !== originalIsHidden;
+    const dirty =
+      name !== originalName ||
+      unitGroup !== originalUnitGroup ||
+      isHidden !== originalIsHidden ||
+      !areArraysEqual(masterPlanFieldIds, originalMasterPlanFieldIds);
 
     setIsDirty(dirty);
-  }, [props.itemId, name, isHidden, originalName, originalIsHidden]);
+  }, [
+    props.itemId,
+    name,
+    unitGroup,
+    isHidden,
+    masterPlanFieldIds,
+    originalName,
+    originalUnitGroup,
+    originalIsHidden,
+    originalMasterPlanFieldIds,
+  ]);
+
+  // --- HELPERS ---
+  const tempMasterPlanFieldNames: Record<number, string> = {};
+  updatedMasterPlanFieldsRef.current
+    .filter((mpf) => mpf.id < 0)
+    .forEach((mpf) => (tempMasterPlanFieldNames[mpf.id] = mpf.name.trim()));
 
   return (
     <>
@@ -253,13 +581,16 @@ const MasterPlanModal = (props: Props) => {
         <form
           ref={formRef}
           onSubmit={(e) =>
-            props.itemId ? updateMasterPlan(e) : addMasterPlan(e)
+            props.itemId ? updateMasterPlan(e) : createMasterPlan(e)
           }
         >
           <ModalBase
             ref={modalRef}
             isOpen={props.isOpen}
-            onClose={() => props.onClose()}
+            onClose={() => {
+              setMasterPlanFieldIdsToDelete([]);
+              props.onClose();
+            }}
             icon={props.itemId ? PencilSquareIcon : PlusIcon}
             label={
               props.itemId
@@ -279,19 +610,124 @@ const MasterPlanModal = (props: Props) => {
               </div>
 
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
-                <div className="xs:col-span-2">
-                  <Input
-                    label={t("Common/Name")}
-                    value={name}
-                    onChange={(val) => {
-                      setName(String(val));
-                    }}
-                    onModal
-                    required
-                    {...masterPlanConstraints.name}
-                  />
-                </div>
+                <Input
+                  label={t("Common/Name")}
+                  value={name}
+                  onChange={(val) => setName(String(val))}
+                  onModal
+                  required
+                  {...masterPlanConstraints.name}
+                />
+
+                <SingleDropdown
+                  id="unitGroup"
+                  label={t("Common/Group")}
+                  value={unitGroup}
+                  onChange={(val) => {
+                    setUnitGroup(String(val));
+                  }}
+                  onModal
+                  required
+                  options={unitGroups.map((ug) => ({
+                    label: ug.name,
+                    value: String(ug.id),
+                  }))}
+                />
               </div>
+
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("MasterPlanModal/Info2")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <div className="flex gap-4">
+                <Input
+                  value={newMasterPlanField}
+                  onChange={(val) => setNewMasterPlanField(String(val))}
+                  onModal
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      createMasterPlanField();
+                    }
+                  }}
+                  // placeholder={t("MasterPlanModal/Placeholder text")}
+                  // showAsterixOnPlaceholder
+                  label={t("Common/Add") + " " + t("Common/master plan field") + "..."}
+                  showAsterix
+                  {...masterPlanConstraints.masterPlanFieldName}
+                />
+
+                <button
+                  type="button"
+                  onClick={createMasterPlanField}
+                  className={`${buttonPrimaryClass}`}
+                >
+                  <PlusIcon />
+                </button>
+              </div>
+
+              {masterPlanFieldIds.length > 0 && (
+                <>
+                  <DragDrop
+                    items={masterPlanFieldIds}
+                    getId={(id) => String(id)}
+                    onReorder={(newIds) => setMasterPlanFieldIds(newIds)}
+                    onDraggingChange={setIsAnyDragging}
+                    renderItem={(id, isDragging) => {
+                      const label =
+                        updatedMasterPlanFieldsRef.current.find(
+                          (mpf) => mpf.id === id,
+                        )?.name ?? `#${id}`;
+
+                      return (
+                        <MasterPlanFieldChip
+                          id={id}
+                          label={label}
+                          isDragging={isDragging}
+                          dragging={isAnyDragging}
+                          onDelete={() => deleteMasterPlanField(id)}
+                          onRename={(newName) => {
+                            const trimmed = newName.trim();
+
+                            if (!trimmed) return;
+
+                            const duplicate =
+                              updatedMasterPlanFieldsRef.current.some(
+                                (mpf) =>
+                                  mpf.id !== id &&
+                                  mpf.name.trim().toLowerCase() ===
+                                    trimmed.toLowerCase(),
+                              );
+
+                            if (duplicate) {
+                              notify("error", t("MasterPlanModal/Error2"));
+                              return;
+                            }
+
+                            updatedMasterPlanFieldsRef.current =
+                              updatedMasterPlanFieldsRef.current.map((mpf) =>
+                                mpf.id === id ? { ...mpf, name: trimmed } : mpf,
+                              );
+
+                            setIsDirty(true);
+                          }}
+                        />
+                      );
+                    }}
+                  />
+
+                  <span className="text-sm text-[var(--text-secondary)] italic">
+                    {t("Modal/Drag and drop2") +
+                      t("Common/master plan field") +
+                      t("Modal/Drag and drop3")}
+                  </span>
+                </>
+              )}
+              <span className="mb-4" />
 
               <div className="flex items-center gap-2">
                 <hr className="w-12 text-[var(--border-tertiary)]" />

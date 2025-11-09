@@ -162,13 +162,15 @@ namespace backend.Controllers
             {
                 if (allRules.Any(r => r.EntityName == null && r.Action == null))
                 {
-                    var list = await query.Take(500).ToListAsync();
+                    // var list = await query.Take(500).ToListAsync();
+                    var list = await query.ToListAsync();
                     await TranslateDetailsAsync(list, lang);
                     await TranslateEntitiesAndActionsAsync(list, lang);
                     return Ok(list);
                 }
 
-                var items = await query.Take(500).ToListAsync();
+                // var items = await query.Take(500).ToListAsync();
+                var items = await query.ToListAsync();
                 items = items
                     .Where(a =>
                         allRules.Any(r =>
@@ -183,7 +185,8 @@ namespace backend.Controllers
                 return Ok(items);
             }
 
-            var trails = await query.Take(500).ToListAsync();
+            // var trails = await query.Take(500).ToListAsync();
+            var trails = await query.ToListAsync();
 
             foreach (var trail in trails)
             {

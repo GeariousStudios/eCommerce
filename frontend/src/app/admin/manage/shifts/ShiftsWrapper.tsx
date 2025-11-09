@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Message from "../../../components/common/Message";
-import useAuthStatus from "../../../hooks/useAuthStatus";
+import { useAuth } from "@/app/context/AuthContext";
 
 const ShiftsClient = dynamic(() => import("./ShiftsClient"), {
   ssr: false,
@@ -20,7 +20,7 @@ const ShiftsClient = dynamic(() => import("./ShiftsClient"), {
 });
 
 const ShiftsWrapper = () => {
-  const { isAuthReady, isAdmin, isConnected } = useAuthStatus();
+  const { isAuthReady, isAdmin, isConnected } = useAuth();
 
   if (!isAuthReady) {
     return (

@@ -1,4 +1,5 @@
 using backend.Data;
+using backend.Dtos.MasterPlan;
 using backend.Dtos.Unit;
 using backend.Dtos.UnitGroup;
 using backend.Models;
@@ -57,16 +58,24 @@ namespace backend.Controllers
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
             [FromQuery] int[]? unitIds = null,
+            [FromQuery] int[]? masterPlanIds = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
-            IQueryable<UnitGroup> query = _context.UnitGroups.Include(u => u.Units);
+            IQueryable<UnitGroup> query = _context
+                .UnitGroups.Include(u => u.Units)
+                .Include(u => u.MasterPlans);
 
             if (unitIds?.Any() == true)
             {
                 query = query.Where(ug => ug.Units.Any(u => unitIds.Contains(u.Id)));
+            }
+
+            if (masterPlanIds?.Any() == true)
+            {
+                query = query.Where(ug => ug.MasterPlans.Any(mp => masterPlanIds.Contains(mp.Id)));
             }
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -83,6 +92,11 @@ namespace backend.Controllers
                 "unitcount" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Units.Count()).ThenBy(u => u.Name.ToLower())
                     : query.OrderBy(u => u.Units.Count()).ThenBy(u => u.Name.ToLower()),
+                "masterplancount" => sortOrder == "desc"
+                    ? query
+                        .OrderByDescending(u => u.MasterPlans.Count())
+                        .ThenBy(u => u.Name.ToLower())
+                    : query.OrderBy(u => u.MasterPlans.Count()).ThenBy(u => u.Name.ToLower()),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.Id)
                     : query.OrderBy(u => u.Id),
@@ -99,6 +113,12 @@ namespace backend.Controllers
                 .Select(ug => new { UnitId = ug.Key, Count = ug.Count() })
                 .ToDictionaryAsync(x => x.UnitId, x => x.Count);
 
+            var masterPlanCount = await _context
+                .UnitGroups.SelectMany(ug => ug.MasterPlans)
+                .GroupBy(mp => mp.Id)
+                .Select(ug => new { MasterPlanId = ug.Key, Count = ug.Count() })
+                .ToDictionaryAsync(x => x.MasterPlanId, x => x.Count);
+
             var unitGroups = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -108,6 +128,9 @@ namespace backend.Controllers
                     Name = u.Name,
                     Units = u
                         .Units.Select(unit => new UnitDto { Id = unit.Id, Name = unit.Name })
+                        .ToList(),
+                    MasterPlans = u
+                        .MasterPlans.Select(mp => new MasterPlanDto { Id = mp.Id, Name = mp.Name })
                         .ToList(),
 
                     // Meta data.
@@ -122,7 +145,7 @@ namespace backend.Controllers
             {
                 totalCount,
                 items = unitGroups,
-                counts = new { unitCount = unitCount },
+                counts = new { unitCount = unitCount, masterPlanCount = masterPlanCount },
             };
 
             return Ok(result);
@@ -167,6 +190,7 @@ namespace backend.Controllers
             var (deletedBy, userId) = userInfo.Value;
             var unitGroup = await _context
                 .UnitGroups.Include(u => u.Units)
+                .Include(u => u.MasterPlans)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (unitGroup == null)
@@ -174,7 +198,7 @@ namespace backend.Controllers
                 return NotFound(new { message = await _t.GetAsync("UnitGroup/NotFound", lang) });
             }
 
-            if (unitGroup.Units.Any())
+            if (unitGroup.Units.Any() || unitGroup.MasterPlans.Any())
             {
                 return BadRequest(new { message = await _t.GetAsync("UnitGroup/InUse", lang) });
             }

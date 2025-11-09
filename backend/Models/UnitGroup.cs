@@ -9,6 +9,7 @@ namespace backend.Models
         [MaxLength(16)]
         public string Name { get; set; } = string.Empty;
         public List<Unit> Units { get; set; } = new();
+        public List<MasterPlan> MasterPlans { get; set; } = new();
 
         // Meta data.
         public DateTime CreationDate { get; set; }

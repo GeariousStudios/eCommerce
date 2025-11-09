@@ -47,15 +47,45 @@ const LayoutWrapper = (props: Props) => {
   const parts = pathname.split("/").filter(Boolean);
   const isUnitsPath =
     parts.length >= 3 && parts[0] === "report" && parts[1] === "units";
+  const isMasterPlansPath =
+    parts.length >= 3 && parts[0] === "plan" && parts[1] === "master-plans";
   const [breadcrumbsLoading, setBreadcrumbsLoading] = useState(false);
 
-  // --- IF UNIT, GET UNIT/GROUP INFO ---
+  // --- IF UNIT OR MASTER PLAN, GET UNIT/MASTER PLAN/GROUP INFO ---
   useEffect(() => {
     if (parts.length >= 3 && parts[0] === "report" && parts[1] === "units") {
       const groupId = parts[2];
       const unitId = parts[3];
 
       fetch(`${apiUrl}/unit/fetch/${unitId}`)
+        .then((res) => res.json())
+        .then((unit) => {
+          if (unit?.name) {
+            setUnitName(unit.name);
+          }
+
+          if (unit?.unitGroupId) {
+            setUnitGroupId(String(unit.unitGroupId));
+
+            fetch(`${apiUrl}/unit-group/fetch/${unit.unitGroupId}`)
+              .then((res) => res.json())
+              .then((group) => {
+                if (group?.name) {
+                  setUnitGroupName(group.name);
+                }
+              })
+              .catch(() => {});
+          }
+        });
+    } else if (
+      parts.length >= 3 &&
+      parts[0] === "plan" &&
+      parts[1] === "master-plans"
+    ) {
+      const groupId = parts[2];
+      const masterPlanId = parts[3];
+
+      fetch(`${apiUrl}/master-plan/fetch/${masterPlanId}`)
         .then((res) => res.json())
         .then((unit) => {
           if (unit?.name) {
@@ -95,6 +125,10 @@ const LayoutWrapper = (props: Props) => {
       report: { label: t("Navbar/Report"), clickable: false },
       unit: { label: t("Common/Units"), clickable: false },
 
+      // --- Plan ---
+      plan: { label: t("Navbar/Plan"), clickable: false },
+      "master-plans": { label: t("Common/Master plans"), clickable: false },
+
       // --- Admin ---
       admin: { label: t("Common/Admin"), clickable: false },
 
@@ -106,10 +140,6 @@ const LayoutWrapper = (props: Props) => {
       categories: { label: t("Common/Categories"), clickable: false },
       "unit-columns": {
         label: t("Common/Columns"),
-        clickable: false,
-      },
-      "master-plans": {
-        label: t("Common/Master plans"),
         clickable: false,
       },
 
@@ -151,6 +181,9 @@ const LayoutWrapper = (props: Props) => {
     const localIsUnitsPath =
       filteredParts[0] === "report" && filteredParts[1] === "units";
 
+    const localIsMasterPlansPath =
+      filteredParts[0] === "plan" && filteredParts[1] === "master-plans";
+
     for (let index = 0; index < filteredParts.length; index++) {
       const part = filteredParts[index];
       const key = part.toLowerCase();
@@ -160,17 +193,27 @@ const LayoutWrapper = (props: Props) => {
       // --- Special cases ---
       const isUnitsSpecialKnown =
         (localIsUnitsPath && index === 2 && (unitGroupName || unitGroupId)) ||
-        (isUnitsPath && index === 3 && unitName);
+        (localIsUnitsPath && index === 3 && unitName);
+
+      const isMasterPlansSpecialKnown =
+        (localIsMasterPlansPath &&
+          index === 2 &&
+          (unitGroupName || unitGroupId)) ||
+        (localIsMasterPlansPath && index === 3 && unitName);
 
       // --- Don't continue if invalid segment ---
-      if (!translation && !isUnitsSpecialKnown) {
+      if (!translation && !isUnitsSpecialKnown && !isMasterPlansSpecialKnown) {
         break;
       }
 
       const label =
-        localIsUnitsPath && index === 2 && (unitGroupName || unitGroupId)
+        (localIsUnitsPath || localIsMasterPlansPath) &&
+        index === 2 &&
+        (unitGroupName || unitGroupId)
           ? (unitGroupName ?? unitGroupId!)
-          : localIsUnitsPath && index === 3 && unitName
+          : (localIsUnitsPath || localIsMasterPlansPath) &&
+              index === 3 &&
+              unitName
             ? unitName!
             : (translation?.label ??
               part.charAt(0).toUpperCase() + part.slice(1));
@@ -182,7 +225,9 @@ const LayoutWrapper = (props: Props) => {
       const href =
         localIsUnitsPath && index === 1
           ? "/report/units"
-          : "/" + filteredParts.slice(0, index + 1).join("/");
+          : localIsMasterPlansPath && index === 1
+            ? "/plan/master-plans"
+            : "/" + filteredParts.slice(0, index + 1).join("/");
 
       crumbs.push({ label, href, clickable, isActive: isLast });
     }
@@ -212,7 +257,12 @@ const LayoutWrapper = (props: Props) => {
       localParts[0] === "report" &&
       localParts[1] === "units";
 
-    if (!localIsUnitsPath) {
+    const localIsMasterPlansPath =
+      localParts.length >= 3 &&
+      localParts[0] === "plan" &&
+      localParts[1] === "master-plans";
+
+    if (!localIsUnitsPath && !localIsMasterPlansPath) {
       const next = createBreadcrumbs(pathname, {
         unitName,
         unitGroupId,
@@ -229,7 +279,7 @@ const LayoutWrapper = (props: Props) => {
     }
 
     const groupId = localParts[2];
-    const unitId = localParts[3];
+    const entityId = localParts[3];
 
     const fetchGroup = groupId
       ? fetch(`${apiUrl}/unit-group/fetch/${groupId}`)
@@ -237,19 +287,23 @@ const LayoutWrapper = (props: Props) => {
           .catch(() => null)
       : Promise.resolve(null);
 
-    const fetchUnit = unitId
-      ? fetch(`${apiUrl}/unit/fetch/${unitId}`)
+    const fetchEntity = entityId
+      ? fetch(
+          localIsUnitsPath
+            ? `${apiUrl}/unit/fetch/${entityId}`
+            : `${apiUrl}/master-plan/fetch/${entityId}`,
+        )
           .then((r) => (r.ok ? r.json() : null))
           .catch(() => null)
       : Promise.resolve(null);
 
-    Promise.all([fetchGroup, fetchUnit]).then(([group, unit]) => {
+    Promise.all([fetchGroup, fetchEntity]).then(([group, entity]) => {
       if (!isMounted) {
         return;
       }
 
       const names = {
-        unitName: unit?.name ?? null,
+        unitName: entity?.name ?? null,
         unitGroupId: groupId ?? null,
         unitGroupName: group?.name ?? null,
       };
@@ -282,7 +336,7 @@ const LayoutWrapper = (props: Props) => {
         setNavbarHidden={setNavbarHidden}
         breadcrumbsLoading={breadcrumbsLoading}
       />
-      <div className="flex">
+      <div className="flex min-h-screen">
         <div
           className={`${hasScrollbar && !navbarHidden ? "md:ml-67" : !hasScrollbar && !navbarHidden ? "md:ml-64" : ""} w-full overflow-hidden p-4 pt-22 duration-[var(--medium)]`}
         >

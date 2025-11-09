@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using backend;
 using backend.Data;
+using backend.Hubs;
 using backend.Models;
 using backend.Models.ManyToMany;
 using backend.Services;
@@ -82,6 +83,7 @@ builder.Services.AddCors(options =>
                 ) // Change to live url after dev.
                 .AllowAnyHeader()
                 .AllowAnyMethod()
+                .AllowCredentials()
     );
 });
 
@@ -89,6 +91,8 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<AuditTrailService>();
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -110,6 +114,8 @@ app.UseAuthorization();
 app.UseMiddleware<SessionValidationMiddleware>();
 
 app.MapControllers();
+
+app.MapHub<MasterPlanHub>("/hubs/master-plan");
 
 /* --- Create user --- */
 using (var scope = app.Services.CreateScope())

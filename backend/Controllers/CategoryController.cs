@@ -316,7 +316,9 @@ namespace backend.Controllers
 
             var (deletedBy, userId) = userInfo.Value;
             var category = await _context
-                .Categories.Include(c => c.UnitToCategories)
+                .Categories.Include(c => c.CategoryToSubCategories)
+                .ThenInclude(csc => csc.SubCategory)
+                .Include(c => c.UnitToCategories)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (category == null)
@@ -344,6 +346,9 @@ namespace backend.Controllers
 
             var subCategoriesToDelete = subCategoriesToCheck
                 .Where(sc => sc.CategoryToSubCategories.Count == 1)
+                .OrderBy(sc =>
+                    sc.CategoryToSubCategories.First(csc => csc.CategoryId == category.Id).Order
+                )
                 .ToList();
 
             // Audit trail.
@@ -556,9 +561,9 @@ namespace backend.Controllers
                         ["Name"] = category.Name,
                         ["SubCategories"] = string.Join(
                             "<br>",
-                            _context
-                                .SubCategories.Where(sc => finalSubCategoryIds.Contains(sc.Id))
-                                .Select(sc => $"{sc.Name} (ID: {sc.Id})")
+                            category
+                                .CategoryToSubCategories.OrderBy(csc => csc.Order)
+                                .Select(csc => $"{csc.SubCategory.Name} (ID: {csc.SubCategory.Id})")
                         ),
                     }
                 );
@@ -622,8 +627,8 @@ namespace backend.Controllers
                 ["SubCategories"] = string.Join(
                     "<br>",
                     category
-                        .CategoryToSubCategories.Select(csc => csc.SubCategory)
-                        .Select(sc => $"{sc.Name} (ID: {sc.Id})")
+                        .CategoryToSubCategories.OrderBy(csc => csc.Order)
+                        .Select(csc => $"{csc.SubCategory.Name} (ID: {csc.SubCategory.Id})")
                 ),
             };
 
@@ -812,9 +817,11 @@ namespace backend.Controllers
                             ["Name"] = category.Name,
                             ["SubCategories"] = string.Join(
                                 "<br>",
-                                _context
-                                    .SubCategories.Where(sc => finalSubCategoryIds.Contains(sc.Id))
-                                    .Select(sc => $"{sc.Name} (ID: {sc.Id})")
+                                category
+                                    .CategoryToSubCategories.OrderBy(csc => csc.Order)
+                                    .Select(csc =>
+                                        $"{csc.SubCategory.Name} (ID: {csc.SubCategory.Id})"
+                                    )
                             ),
                         },
                     }

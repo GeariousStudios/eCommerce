@@ -42,6 +42,8 @@ namespace backend.Data
         public DbSet<ShiftToShiftTeam> ShiftToShiftTeams { get; set; }
         public DbSet<ShiftToShiftTeamSchedule> ShiftToShiftTeamSchedules { get; set; }
         public DbSet<TrendingPanelToUnit> TrendingPanelToUnits { get; set; }
+        public DbSet<MasterPlanToMasterPlanField> MasterPlanToMasterPlanFields { get; set; }
+        public DbSet<MasterPlanToMasterPlanElement> MasterPlanToMasterPlanElements { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -255,22 +257,6 @@ namespace backend.Data
                 .WithMany(u => u.TrendingPanelToUnits)
                 .HasForeignKey(tpu => tpu.UnitId);
 
-            // MasterPlan -> Fields 1-to-many relationship.
-            modelBuilder
-                .Entity<MasterPlan>()
-                .HasMany(mp => mp.Fields)
-                .WithOne(f => f.MasterPlan)
-                .HasForeignKey(f => f.MasterPlanId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // MasterPlan -> Elements 1-to-many relationship.
-            modelBuilder
-                .Entity<MasterPlan>()
-                .HasMany(mp => mp.Elements)
-                .WithOne(e => e.MasterPlan)
-                .HasForeignKey(e => e.MasterPlanId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             // MasterPlanElement -> Values 1-to-many relationship.
             modelBuilder
                 .Entity<MasterPlanElement>()
@@ -286,6 +272,40 @@ namespace backend.Data
                 .WithOne(v => v.MasterPlanField)
                 .HasForeignKey(v => v.MasterPlanFieldId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // MasterPlan <-> MasterPlanField many-to-many relationship.
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanField>()
+                .HasKey(mpf => new { mpf.MasterPlanId, mpf.MasterPlanFieldId });
+
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanField>()
+                .HasOne(mpf => mpf.MasterPlan)
+                .WithMany(mp => mp.MasterPlanToMasterPlanFields)
+                .HasForeignKey(mpf => mpf.MasterPlanId);
+
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanField>()
+                .HasOne(mpf => mpf.MasterPlanField)
+                .WithMany(f => f.MasterPlanToMasterPlanFields)
+                .HasForeignKey(mpf => mpf.MasterPlanFieldId);
+
+            // MasterPlan <-> MasterPlanElement many-to-many relationship.
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanElement>()
+                .HasKey(mpe => new { mpe.MasterPlanId, mpe.MasterPlanElementId });
+
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanElement>()
+                .HasOne(mpe => mpe.MasterPlan)
+                .WithMany(mp => mp.MasterPlanToMasterPlanElements)
+                .HasForeignKey(mpe => mpe.MasterPlanId);
+
+            modelBuilder
+                .Entity<MasterPlanToMasterPlanElement>()
+                .HasOne(mpe => mpe.MasterPlanElement)
+                .WithMany(e => e.MasterPlanToMasterPlanElements)
+                .HasForeignKey(mpe => mpe.MasterPlanElementId);
         }
 
         public override int SaveChanges()

@@ -8,6 +8,8 @@ import LayoutWrapper from "@/app/helpers/LayoutWrapper";
 import StorageProvider from "@/app/helpers/StorageProvider";
 import { ToastProvider } from "@/app/components/toast/ToastProvider";
 import DynamicIntlProvider from "./helpers/DynamicIntlProvider";
+import { AuthProvider } from "./context/AuthContext";
+import { UserPrefsProvider } from "./context/UserPrefsContext";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const locale = useLocale();
@@ -59,13 +61,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <DynamicIntlProvider>
-            <StorageProvider>
-              <ToastProvider>
-                <LayoutWrapper>{children}</LayoutWrapper>
-              </ToastProvider>
-            </StorageProvider>
-          </DynamicIntlProvider>
+          <AuthProvider>
+          <UserPrefsProvider>
+            <DynamicIntlProvider>
+              <StorageProvider>
+                <ToastProvider>
+                  <LayoutWrapper>{children}</LayoutWrapper>
+                </ToastProvider>
+              </StorageProvider>
+            </DynamicIntlProvider>
+          </UserPrefsProvider>
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

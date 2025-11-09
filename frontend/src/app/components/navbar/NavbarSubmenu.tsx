@@ -1,4 +1,4 @@
-import useAuthStatus from "@/app/hooks/useAuthStatus";
+import { useAuth } from "@/app/context/AuthContext";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -64,7 +64,7 @@ const NavbarSubmenu = (props: Props) => {
   const [hasScrollbar, setHasScrollbar] = useState(false);
 
   // --- Other ---
-  const { isLoggedIn, isAdmin, isDev } = useAuthStatus();
+  const { isLoggedIn, isAdmin, isDev } = useAuth();
   const pathname = usePathname();
   const strip = (s: string) => s.replace(/\/+$/, "") || "/";
   const isSubmenuItemActive = props.menus

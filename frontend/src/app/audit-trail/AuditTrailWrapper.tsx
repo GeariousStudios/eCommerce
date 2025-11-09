@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Message from "../components/common/Message";
-import useAuthStatus from "../hooks/useAuthStatus";
+import { useAuth } from "../context/AuthContext";
 
 const AuditTrailClient = dynamic(() => import("./AuditTrailClient"), {
   ssr: false,
@@ -21,7 +21,7 @@ const AuditTrailClient = dynamic(() => import("./AuditTrailClient"), {
 
 const AuditTrailWrapper = () => {
   const { isAuthReady, isConnected, isLoggedIn, isReporter, isAdmin, isDev } =
-    useAuthStatus();
+    useAuth();
 
   if (!isAuthReady) {
     return (
