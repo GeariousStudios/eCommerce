@@ -2,52 +2,122 @@ import { FocusTrap } from "focus-trap-react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import {
   buttonDeletePrimaryClass,
+  buttonPrimaryClass,
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
+import ModalBase from "./ModalBase";
+import { ReactNode, useState } from "react";
+import { request } from "http";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  confirmOnDelete?: boolean;
+  confirmDeleteMessage?: string | ReactNode;
+  nestedModal?: boolean;
+  customDeleteMessage?: string | ReactNode;
 };
 
 const DeleteModal = (props: Props) => {
+  const t = useTranslations();
+
+  // --- VARIABLES ---
+  // --- States ---
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const requestDelete = () => {
+    if (props.confirmOnDelete) {
+      setShowConfirmModal(true);
+    } else {
+      props.onConfirm();
+    }
+  };
+
+  const handleConfirmClose = () => {
+    setShowConfirmModal(false);
+    props.onConfirm();
+    props.onClose();
+  };
+
+  const handleConfirmCancel = () => {
+    setShowConfirmModal(false);
+  };
+
   return (
     <>
       {props.isOpen && (
-        <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
-          <FocusTrap
-            focusTrapOptions={{
-              initialFocus: false,
-              allowOutsideClick: true,
-              escapeDeactivates: false,
-            }}
-          >
-            <div className="relative top-1/2 left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl min-w-[90vw] -translate-1/2 flex-col overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4 md:min-w-auto">
-              <h2 className="mb-4 flex items-center text-2xl font-semibold">
-                <TrashIcon className="mr-2 h-6 w-6 text-[var(--button-delete)]" />
-                Är du säker?
-              </h2>
-              <p>Ett borttaget objekt går ej att få tillbaka.</p>
-              <div className="mt-8 flex justify-between gap-4">
-                <button
-                  type="button"
-                  onClick={props.onClose}
-                  className={`${buttonSecondaryClass} grow`}
-                >
-                  Ångra
-                </button>
-                <button
-                  type="button"
-                  onClick={props.onConfirm}
-                  className={`${buttonDeletePrimaryClass} grow-2`}
-                >
-                  Ta bort
-                </button>
+        <ModalBase
+          isOpen={props.isOpen}
+          onClose={() => props.onClose()}
+          icon={TrashIcon}
+          label={t("DeleteModal/Label")}
+          disableClickOutside={showConfirmModal || props.nestedModal}
+          nestedModal={props.nestedModal}
+          smallModal
+        >
+          <ModalBase.Content>
+            <p>
+              {props.customDeleteMessage
+                ? props.customDeleteMessage
+                : t("DeleteModal/Message")}
+            </p>
+          </ModalBase.Content>
+
+          <ModalBase.Footer>
+            <button
+              type="button"
+              onClick={requestDelete}
+              className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+            >
+              {t("DeleteModal/Delete")}
+            </button>
+            <button
+              type="button"
+              onClick={props.onClose}
+              className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
+            >
+              {t("Modal/Abort")}
+            </button>
+          </ModalBase.Footer>
+        </ModalBase>
+      )}
+
+      {showConfirmModal && (
+        <FocusTrap
+          focusTrapOptions={{
+            initialFocus: false,
+            allowOutsideClick: true,
+            escapeDeactivates: false,
+          }}
+        >
+          <div className="fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/75">
+            <div className="relative top-1/2">
+              <div className="relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-md -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]">
+                <p className="mb-6 text-[var(--text-main)]">
+                  {props.confirmDeleteMessage ?? t("DeleteModal/Confirm")}
+                </p>
+                <div className="grid grid-cols-3 gap-4">
+                  <button
+                    type="button"
+                    onClick={handleConfirmClose}
+                    className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                  >
+                    {t("DeleteModal/Delete anyway")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmCancel}
+                    className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
+                  >
+                    {t("Modal/Abort")}
+                  </button>
+                </div>
               </div>
             </div>
-          </FocusTrap>
-        </div>
+          </div>
+        </FocusTrap>
       )}
     </>
   );

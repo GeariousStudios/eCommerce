@@ -1,4 +1,4 @@
-import HomeWrapper from "./HomeWrapper";
+import HomeWrapper from "@/app/HomeWrapper";
 
 const Home = () => {
   return <HomeWrapper />;

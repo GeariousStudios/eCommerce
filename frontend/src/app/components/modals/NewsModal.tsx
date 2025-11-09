@@ -1,18 +1,19 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
-import SingleDropdown from "../dropdowns/SingleDropdown";
-import { FocusTrap } from "focus-trap-react";
+import { FormEvent, use, useEffect, useRef, useState } from "react";
+import SingleDropdown from "../common/SingleDropdown";
 import RichTextEditor, {
   RichTextEditorRef,
 } from "../richTextEditor/RichTextEditor";
 import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
-import Input from "../input/Input";
+import Input from "../common/Input";
 import {
   buttonPrimaryClass,
   buttonSecondaryClass,
 } from "@/app/styles/buttonClasses";
 import { useToast } from "../toast/ToastProvider";
+import ModalBase, { ModalBaseHandle } from "./ModalBase";
+import { useTranslations } from "next-intl";
 
 type Props = {
   isOpen: boolean;
@@ -21,43 +22,67 @@ type Props = {
   onNewsUpdated: () => void;
 };
 
+type NewsTypeOptions = {
+  id: number;
+  name: string;
+};
+
 const NewsModal = (props: Props) => {
+  const t = useTranslations();
+
   // --- VARIABLES ---
   // --- Refs ---
   const editorRef = useRef<RichTextEditorRef>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
+  const hasSetInitialContent = useRef(false);
 
   // --- States ---
   const [date, setDate] = useState("");
-  const [type, setType] = useState("");
+  const [typeId, setTypeId] = useState<string | number>("");
+  const [typeName, setTypeName] = useState<string | number>("");
   const [headline, setHeadline] = useState("");
   const [content, setContent] = useState("");
   const [author, setAuthor] = useState("");
   const [authorId, setAuthorId] = useState("");
-  const [hasPreloadedEditor, setHasPreloadedEditor] = useState(false);
+  const [newsTypes, setNewsTypes] = useState<NewsTypeOptions[]>([]);
 
+  const [originalDate, setOriginalDate] = useState("");
+  const [originalTypeId, setOriginalTypeId] = useState<string | number>("");
+  const [originalHeadline, setOriginalHeadline] = useState("");
+  const [originalContent, setOriginalContent] = useState("");
+  const [isDirty, setIsDirty] = useState(false);
+
+  const [isEditorReady, setIsEditorReady] = useState(false);
   // --- Other ---
   const token = localStorage.getItem("token");
   const { notify } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    if (!hasPreloadedEditor) {
-      setHasPreloadedEditor(true);
+    if (!props.isOpen) {
+      return;
     }
-  }, []);
 
-  useEffect(() => {
-    if (!props.isOpen) return;
+    fetchNewsTypes();
 
     if (props.newsId !== null && props.newsId !== undefined) {
       fetchNewsItem(props.newsId);
     } else {
       setDate("");
-      setType("");
+      setOriginalDate("");
+
+      setTypeId("");
+      setOriginalTypeId("");
+
       setHeadline("");
+      setOriginalHeadline("");
+
       setContent("");
+      setOriginalContent("");
       editorRef.current?.setContent("");
+      hasSetInitialContent.current = false;
     }
   }, [props.isOpen, props.newsId]);
 
@@ -72,23 +97,55 @@ const NewsModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/news/create`, {
         method: "POST",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ date, type, headline, content: currentContent }),
+        body: JSON.stringify({
+          date,
+          typeId,
+          headline,
+          content: currentContent,
+        }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         props.onClose();
         props.onNewsUpdated();
-        notify("success", "Nyhet skapad!", 4000);
+        notify("success", t("NewsModal/News item") + t("Modal/created"), 4000);
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  // --- Fetch news types ---
+  const fetchNewsTypes = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/news-type?&sortBy=name&sortOrder=asc`,
+        {
+          headers: {
+            "X-User-Language": localStorage.getItem("language") || "sv",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      } else {
+        setNewsTypes(result.items);
+      }
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -96,18 +153,22 @@ const NewsModal = (props: Props) => {
   const fetchNewsItem = async (id: number) => {
     try {
       const response = await fetch(`${apiUrl}/news/fetch/${id}`, {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+        },
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
       } else {
         fillNewsItemData(result);
+        hasSetInitialContent.current = false;
       }
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -120,11 +181,31 @@ const NewsModal = (props: Props) => {
       : "";
 
     setDate(formattedDate);
-    setType(result.type ?? "");
+    setOriginalDate(formattedDate);
+
+    setTypeId(result.typeId ?? "");
+    setOriginalTypeId(result.typeId ?? "");
+
+    const matchedType = newsTypes.find((t) => t.id === result.typeId);
+    setTypeName(
+      matchedType?.name ?? result.typeName ?? t("NewsModal/Unknown type"),
+    );
+
     setHeadline(result.headline ?? "");
+    setOriginalHeadline(result.headline ?? "");
+
     setContent(result.content ?? "");
+    setOriginalContent(result.content ?? "");
+
     setAuthor(result.author ?? "");
     setAuthorId(result.authorId);
+
+    if (editorRef.current && isEditorReady) {
+      try {
+        editorRef.current.setContent(result.content ?? "");
+        hasSetInitialContent.current = false;
+      } catch (e) {}
+    }
   };
 
   // --- Update news item ---
@@ -137,24 +218,30 @@ const NewsModal = (props: Props) => {
       const response = await fetch(`${apiUrl}/news/update/${id}`, {
         method: "PUT",
         headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ date, type, headline, content: currentContent }),
+        body: JSON.stringify({
+          date,
+          typeId,
+          headline,
+          content: currentContent,
+        }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        notify("error", result.message);
+        notify("error", result?.message ?? t("Modal/Unknown error"));
         return;
       }
 
       props.onClose();
       props.onNewsUpdated();
-      notify("success", "Nyhet uppdaterad!", 4000);
+      notify("success", t("NewsModal/News item") + t("Modal/updated"), 4000);
     } catch (err) {
-      notify("error", String(err));
+      notify("error", t("Modal/Unknown error"));
     }
   };
 
@@ -171,99 +258,163 @@ const NewsModal = (props: Props) => {
     }, 0);
   };
 
+  // --- SET/UNSET IS DIRTY ---
+  useEffect(() => {
+    if (!editorRef.current || !isEditorReady) {
+      return;
+    }
+
+    const dirty =
+      date !== originalDate ||
+      typeId !== originalTypeId ||
+      headline !== originalHeadline ||
+      (content !== originalContent &&
+        !(content === "<p><br></p>" && originalContent === ""));
+    setIsDirty(dirty);
+  }, [
+    date,
+    typeId,
+    headline,
+    content,
+    originalDate,
+    originalTypeId,
+    originalHeadline,
+    originalContent,
+  ]);
+
+  useEffect(() => {
+    if (
+      !editorRef.current ||
+      !isEditorReady ||
+      !content ||
+      hasSetInitialContent.current
+    ) {
+      return;
+    }
+
+    try {
+      editorRef.current.setContent(content);
+      hasSetInitialContent.current = true;
+    } catch (e) {}
+  }, [isEditorReady, content]);
+
   return (
     <>
-      {hasPreloadedEditor && (
+      {!isEditorReady && (
         <div style={{ display: "none" }}>
-          <RichTextEditor ref={editorRef} value="" name="editor-preload" />
+          <RichTextEditor
+            ref={editorRef}
+            value=""
+            name="editor-preload"
+            onReady={() => setIsEditorReady(true)}
+            onChange={() => {}}
+          />
         </div>
       )}
 
       {props.isOpen && (
-        <div className="fixed inset-0 z-[var(--z-overlay)] h-svh w-screen bg-black/50">
-          <FocusTrap
-            focusTrapOptions={{
-              initialFocus: false,
-              allowOutsideClick: true,
-              escapeDeactivates: false,
-            }}
+        <form
+          ref={formRef}
+          onSubmit={(e) =>
+            props.newsId ? updateNews(e, props.newsId) : addNews(e)
+          }
+        >
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => props.onClose()}
+            icon={props.newsId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.newsId
+                ? t("Common/Edit") + " " + t("NewsModal/news item")
+                : t("Common/Add") + " " + t("NewsModal/news item")
+            }
+            confirmOnClose
+            isDirty={isDirty}
           >
-            <div className="relative top-1/2">
-              <div id="portal-root" />
-              <form
-                ref={formRef}
-                className="relative left-1/2 z-[var(--z-modal)] flex max-h-[90svh] w-[90vw] max-w-3xl -translate-1/2 flex-col gap-8 overflow-y-auto rounded border-1 border-[var(--border-main)] bg-[var(--bg-modal)] p-4"
-                onSubmit={(e) =>
-                  props.newsId ? updateNews(e, props.newsId) : addNews(e)
-                }
-              >
-                <h2 className="mb-4 flex items-center text-2xl font-semibold">
-                  <span className="mr-2 h-6 w-6 text-[var(--accent-color)]">
-                    {props.newsId ? <PencilSquareIcon /> : <PlusIcon />}
-                  </span>
-                  <span>
-                    {props.newsId ? "Redigera nyhet" : "Lägg till nyhet"}
-                  </span>
-                </h2>
+            <ModalBase.Content>
+              <div className="mt-2 mb-8 grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <Input
+                    id="date"
+                    type="date"
+                    label={t("Common/Date")}
+                    value={date}
+                    onChange={(val) => setDate(String(val))}
+                    onModal
+                    required
+                  />
 
-                <Input
-                  id="date"
-                  type="date"
-                  label={"Datum"}
-                  value={date}
-                  onChange={(val) => setDate(String(val))}
-                  onModal={true}
-                  required
-                />
-
-                <SingleDropdown
-                  label="Nyhetstyp"
-                  value={type}
-                  onChange={setType}
-                  options={[
-                    { value: "Release", label: "Release" },
-                    { value: "Hotfix", label: "Hotfix" },
-                  ]}
-                  onModal={true}
-                  required
-                />
+                  <SingleDropdown
+                    label={t("Common/News type")}
+                    value={typeId}
+                    onChange={setTypeId}
+                    options={[
+                      ...(newsTypes.some((t) => t.id === typeId) || !typeId
+                        ? []
+                        : [
+                            {
+                              value: typeId,
+                              label: typeName || t("NewsModal/Unknown type"),
+                            },
+                          ]),
+                      ...newsTypes.map((t) => ({
+                        label: t.name,
+                        value: t.id,
+                      })),
+                    ]}
+                    onModal
+                    required
+                  />
+                </div>
 
                 <Input
                   id="headline"
-                  label={"Rubrik"}
+                  label={t("NewsModal/Headline")}
                   value={headline}
                   onChange={(val) => setHeadline(String(val))}
-                  onModal={true}
+                  onModal
                   required
                 />
 
-                <RichTextEditor
+                {/* <RichTextEditor
                   ref={editorRef}
                   value={content}
                   name="content"
+                  onReady={() => {
+                    setIsEditorReady(true);
+                  }}
+                  onChange={(val) => setContent(val)}
+                  required
+                /> */}
+                <RichTextEditor
+                  ref={editorRef}
+                  name="content"
+                  onReady={() => setIsEditorReady(true)}
+                  onChange={(val) => setContent(val)}
                   required
                 />
+              </div>
+            </ModalBase.Content>
 
-                <div className="flex justify-between gap-4">
-                  <button
-                    type="button"
-                    onClick={props.onClose}
-                    className={`${buttonSecondaryClass} grow`}
-                  >
-                    Ångra
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleSaveClick}
-                    className={`${buttonPrimaryClass} grow-2`}
-                  >
-                    {props.newsId ? "Uppdatera" : "Lägg till"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </FocusTrap>
-        </div>
+            <ModalBase.Footer>
+              <button
+                type="button"
+                onClick={handleSaveClick}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+              >
+                {props.newsId ? t("Modal/Update") : t("Common/Add")}
+              </button>
+              <button
+                type="button"
+                onClick={() => modalRef.current?.requestClose()}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
+              >
+                {t("Modal/Abort")}
+              </button>
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
       )}
     </>
   );

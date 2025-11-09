@@ -1,0 +1,19 @@
+using backend.Dtos.MasterPlan;
+using backend.Dtos.Unit;
+
+namespace backend.Dtos.UnitGroup
+{
+    public class UnitGroupDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public List<UnitDto> Units { get; set; } = new();
+        public List<MasterPlanDto> MasterPlans { get; set; } = new();
+
+        // Meta data.
+        public DateTime CreationDate { get; set; }
+        public DateTime UpdateDate { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
+        public string UpdatedBy { get; set; } = string.Empty;
+    }
+}

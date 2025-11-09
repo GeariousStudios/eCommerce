@@ -1,6 +1,7 @@
 using backend.Data;
 using backend.Dtos.User;
 using backend.Models;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,42 @@ namespace backend.Controllers
     public class UserManagementController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly UserService _userService;
+        private readonly ITranslationService _t;
+        private readonly AuditTrailService _audit;
 
-        public UserManagementController(AppDbContext context)
+        public UserManagementController(
+            AppDbContext context,
+            UserService userService,
+            ITranslationService t,
+            AuditTrailService audit
+        )
         {
             _context = context;
+            _userService = userService;
+            _t = t;
+            _audit = audit;
+        }
+
+        private async Task<string> GetLangAsync()
+        {
+            var username = User.Identity?.Name;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var lang = await _context
+                    .Users.Where(u => u.Username == username)
+                    .Select(u => u.UserPreferences!.Language)
+                    .FirstOrDefaultAsync();
+
+                if (!string.IsNullOrWhiteSpace(lang))
+                    return lang!;
+            }
+
+            var headerLang = Request.Headers["X-User-Language"].ToString();
+            if (headerLang == "sv" || headerLang == "en")
+                return headerLang;
+
+            return "sv";
         }
 
         [HttpGet]
@@ -62,27 +95,20 @@ namespace backend.Controllers
                 );
             }
 
-            var filteredAdminCount = await query.CountAsync(u => u.Roles.HasFlag(UserRoles.Admin));
-            var filteredDeveloperCount = await query.CountAsync(u =>
-                u.Roles.HasFlag(UserRoles.Developer)
-            );
-            var filteredLockedCount = await query.CountAsync(u => u.IsLocked);
-            var filteredUnlockedCount = await query.CountAsync(u => !u.IsLocked);
-
             query = sortBy.ToLower() switch
             {
                 "username" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.Username)
-                    : query.OrderBy(u => u.Username),
-                "firstName" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.FirstName)
-                    : query.OrderBy(u => u.FirstName),
-                "lastName" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.LastName)
-                    : query.OrderBy(u => u.LastName),
+                    ? query.OrderByDescending(u => u.Username.ToLower())
+                    : query.OrderBy(u => u.Username.ToLower()),
+                "firstname" => sortOrder == "desc"
+                    ? query.OrderByDescending(u => u.FirstName.ToLower())
+                    : query.OrderBy(u => u.FirstName.ToLower()),
+                "lastname" => sortOrder == "desc"
+                    ? query.OrderByDescending(u => u.LastName.ToLower())
+                    : query.OrderBy(u => u.LastName.ToLower()),
                 "email" => sortOrder == "desc"
-                    ? query.OrderByDescending(u => u.Email)
-                    : query.OrderBy(u => u.Email),
+                    ? query.OrderByDescending(u => u.Email.ToLower())
+                    : query.OrderBy(u => u.Email.ToLower()),
                 "islocked" => sortOrder == "desc"
                     ? query.OrderByDescending(u => u.IsLocked)
                     : query.OrderBy(u => u.IsLocked),
@@ -91,7 +117,7 @@ namespace backend.Controllers
                     : query.OrderBy(u => u.Id),
             };
 
-            int totalCount = await query.CountAsync();
+            var totalCount = await query.CountAsync();
 
             List<User> users;
 
@@ -115,14 +141,26 @@ namespace backend.Controllers
                 users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             }
 
-            var totalAdminCount = await _context.Users.CountAsync(u =>
-                u.Roles.HasFlag(UserRoles.Admin)
-            );
-            var totalDeveloperCount = await _context.Users.CountAsync(u =>
+            // Filters.
+            var status = new Dictionary<string, int>
+            {
+                ["Unlocked"] = await _context.Users.CountAsync(u => !u.IsLocked),
+                ["Locked"] = await _context.Users.CountAsync(u => u.IsLocked),
+            };
+
+            var adminCount = await _context.Users.CountAsync(u => u.Roles.HasFlag(UserRoles.Admin));
+            var developerCount = await _context.Users.CountAsync(u =>
                 u.Roles.HasFlag(UserRoles.Developer)
             );
-            var totalLockedCount = await _context.Users.CountAsync(u => u.IsLocked);
-            var totalUnlockedCount = await _context.Users.CountAsync(u => !u.IsLocked);
+            var reporterCount = await _context.Users.CountAsync(u =>
+                u.Roles.HasFlag(UserRoles.Reporter)
+            );
+            var plannerCount = await _context.Users.CountAsync(u =>
+                u.Roles.HasFlag(UserRoles.Planner)
+            );
+            var masterPlannerCount = await _context.Users.CountAsync(u =>
+                u.Roles.HasFlag(UserRoles.MasterPlanner)
+            );
 
             var result = new
             {
@@ -144,16 +182,12 @@ namespace backend.Controllers
                 }),
                 counts = new
                 {
-                    admins = totalAdminCount,
-                    developers = totalDeveloperCount,
-                    locked = totalLockedCount,
-                    unlocked = totalUnlockedCount,
-
-                    // Filtered.
-                    filteredAdmins = filteredAdminCount,
-                    filteredDevelopers = filteredDeveloperCount,
-                    filteredLocked = filteredLockedCount,
-                    filteredUnlocked = filteredUnlockedCount,
+                    adminCount = adminCount,
+                    developerCount = developerCount,
+                    reporterCount = reporterCount,
+                    plannerCount = plannerCount,
+                    masterPlannerCount = masterPlannerCount,
+                    status = status,
                 },
             };
 
@@ -163,11 +197,12 @@ namespace backend.Controllers
         [HttpGet("fetch/{id}")]
         public async Task<IActionResult> GetUser(int id)
         {
+            var lang = await GetLangAsync();
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
             var result = new UserDto
@@ -192,27 +227,60 @@ namespace backend.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
+            var lang = await GetLangAsync();
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+            var (deletedBy, userId) = userInfo.Value;
             var user = await _context.Users.FindAsync(id);
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
             if (user.IsOnline)
             {
-                return BadRequest(new { message = "Kan inte ta bort ett konto som är online!" });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Users/CannotDeleteOnline", lang) }
+                );
             }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "UserManagement",
+                user.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = user.Id,
+                    ["Username"] = user.Username,
+                    ["FirstName"] = user.FirstName,
+                    ["LastName"] = user.LastName,
+                    ["Email"] = user.Email,
+                    ["Roles"] = user.GetRoleStrings(),
+                    ["IsLocked"] = user.IsLocked ? new[] { "Common/Yes" } : new[] { "Common/No" },
+                }
+            );
 
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Användare borttagen!" });
+            return Ok(new { message = await _t.GetAsync("Users/Deleted", lang) });
         }
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateUser(CreateUserDto dto)
         {
+            var lang = await GetLangAsync();
             if (!ModelState.IsValid)
             {
                 var errors = ModelState
@@ -222,7 +290,18 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
+            }
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
             }
 
             var existingUser = await _context.Users.FirstOrDefaultAsync(u =>
@@ -231,7 +310,7 @@ namespace backend.Controllers
 
             if (existingUser != null)
             {
-                return BadRequest(new { message = "Användarnamnet är upptaget" });
+                return BadRequest(new { message = await _t.GetAsync("Users/UsernameTaken", lang) });
             }
 
             // Parse from string to enum.
@@ -244,9 +323,19 @@ namespace backend.Controllers
                 }
                 else
                 {
-                    return BadRequest(new { message = $"Ogiltig roll: {role}" });
+                    return BadRequest(
+                        new
+                        {
+                            message = string.Format(
+                                await _t.GetAsync("Users/InvalidRole", lang),
+                                role
+                            ),
+                        }
+                    );
                 }
             }
+
+            var (createdBy, userId) = userInfo.Value;
 
             var user = new User
             {
@@ -277,17 +366,55 @@ namespace backend.Controllers
                 LastLogin = user.LastLogin,
             };
 
+            // Audit trail.
+            try
+            {
+                await _audit.LogAsync(
+                    "Create",
+                    "UserManagement",
+                    user.Id,
+                    createdBy,
+                    userId,
+                    new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = user.Id,
+                        ["Username"] = user.Username,
+                        ["FirstName"] = user.FirstName,
+                        ["LastName"] = user.LastName,
+                        ["Email"] = user.Email,
+                        ["Roles"] = user.GetRoleStrings(),
+                        ["IsLocked"] = user.IsLocked
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                    }
+                );
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AUDIT] Delete failed: {ex.Message}");
+            }
+
             return Ok(result);
         }
 
         [HttpPut("update/{id}")]
         public async Task<IActionResult> UpdateUser(int id, UpdateUserDto dto)
         {
+            var lang = await GetLangAsync();
             var user = await _context.Users.FindAsync(id);
+
+            var userInfo = await _userService.GetUserInfoAsync();
+
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
 
             if (user == null)
             {
-                return NotFound(new { message = "Användaren kunde inte hittas i databasen" });
+                return NotFound(new { message = await _t.GetAsync("Users/NotFound", lang) });
             }
 
             if (!ModelState.IsValid)
@@ -299,7 +426,9 @@ namespace backend.Controllers
                         kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
                     );
 
-                return BadRequest(new { message = "Valideringsfel", errors });
+                return BadRequest(
+                    new { message = await _t.GetAsync("Common/ValidationError", lang), errors }
+                );
             }
 
             var existingUser = await _context.Users.FirstOrDefaultAsync(u =>
@@ -308,7 +437,7 @@ namespace backend.Controllers
 
             if (existingUser != null)
             {
-                return BadRequest(new { message = "Användarnamnet är upptaget" });
+                return BadRequest(new { message = await _t.GetAsync("Users/UsernameTaken", lang) });
             }
 
             // Parse from string to enum.
@@ -321,7 +450,15 @@ namespace backend.Controllers
                 }
                 else
                 {
-                    return BadRequest(new { message = $"Ogiltig roll: {role}" });
+                    return BadRequest(
+                        new
+                        {
+                            message = string.Format(
+                                await _t.GetAsync("Users/InvalidRole", lang),
+                                role
+                            ),
+                        }
+                    );
                 }
             }
 
@@ -330,24 +467,50 @@ namespace backend.Controllers
                 if (user.Username != dto.Username)
                 {
                     return BadRequest(
-                        new { message = "Kan inte byta användarnamn på ett konto som är online!" }
+                        new
+                        {
+                            message = await _t.GetAsync("Users/CannotChangeUsernameOnline", lang),
+                        }
                     );
                 }
 
                 if (!string.IsNullOrWhiteSpace(dto.Password))
                 {
                     return BadRequest(
-                        new { message = "Kan inte byta lösenord på ett konto som är online!" }
+                        new
+                        {
+                            message = await _t.GetAsync("Users/CannotChangePasswordOnline", lang),
+                        }
                     );
                 }
 
                 if (user.Roles != userRoles)
                 {
                     return BadRequest(
-                        new { message = "Kan inte ändra roller på ett konto som är online!" }
+                        new { message = await _t.GetAsync("Users/CannotChangeRolesOnline", lang) }
                     );
                 }
             }
+
+            if (!string.IsNullOrWhiteSpace(dto.Password) && dto.Password.Length < 8)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("Users/PasswordTooShort", lang) }
+                );
+            }
+
+            var (updatedBy, userId) = userInfo.Value;
+
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = user.Id,
+                ["Username"] = user.Username,
+                ["FirstName"] = user.FirstName,
+                ["LastName"] = user.LastName,
+                ["Email"] = user.Email,
+                ["Roles"] = user.GetRoleStrings(),
+                ["IsLocked"] = user.IsLocked ? new[] { "Common/Yes" } : new[] { "Common/No" },
+            };
 
             user.Username = dto.Username;
             user.FirstName = dto.FirstName;
@@ -360,6 +523,8 @@ namespace backend.Controllers
             {
                 user.Password = dto.Password;
             }
+
+            await _context.SaveChangesAsync();
 
             var result = new UserDto
             {
@@ -375,8 +540,54 @@ namespace backend.Controllers
                 LastLogin = user.LastLogin,
             };
 
-            await _context.SaveChangesAsync();
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "UserManagement",
+                user.Id,
+                updatedBy,
+                userId,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = user.Id,
+                        ["Username"] = user.Username,
+                        ["FirstName"] = user.FirstName,
+                        ["LastName"] = user.LastName,
+                        ["Email"] = user.Email,
+                        ["Roles"] = user.GetRoleStrings(),
+                        ["IsLocked"] = user.IsLocked
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                    },
+                }
+            );
+
             return Ok(result);
+        }
+
+        [HttpGet("list")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetUserList()
+        {
+            var users = await _context
+                .Users.OrderBy(u => u.Username)
+                .Select(u => new
+                {
+                    label = string.IsNullOrWhiteSpace(u.FirstName)
+                    && string.IsNullOrWhiteSpace(u.LastName)
+                        ? u.Username
+                        : $"{u.FirstName} {u.LastName}".Trim() + $" ({u.Username})",
+                    value = u.Username,
+                    username = u.Username,
+                    firstName = u.FirstName,
+                    lastName = u.LastName,
+                })
+                .ToListAsync();
+
+            return Ok(users);
         }
     }
 

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
-import useUserPrefs from "./useUserPrefs";
+import { useUserPrefsContext } from "../context/UserPrefsContext";
 
 const useTheme = () => {
   const [currentTheme, setCurrentTheme] = useState<string | null>(null);
 
-  const { userTheme, updateUserTheme } = useUserPrefs();
+  const { userTheme, updateUserTheme } = useUserPrefsContext();
 
   useEffect(() => {
     const updateTheme = () => {

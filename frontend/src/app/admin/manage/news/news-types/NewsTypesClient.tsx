@@ -1,0 +1,238 @@
+"use client";
+
+import { useToast } from "../../../../components/toast/ToastProvider";
+import useManage from "@/app/hooks/useManage";
+import { NewsTypeFilters, NewsTypeItem } from "@/app/types/manageTypes"; // <-- Unique.
+import { deleteContent, fetchContent } from "@/app/apis/manage/newsTypesApi"; // <-- Unique.
+import ManageBase from "@/app/components/manage/ManageBase";
+import NewsTypeModal from "@/app/components/modals/admin/news/NewsTypeModal"; // <-- Unique.
+import DeleteModal from "@/app/components/modals/DeleteModal";
+import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
+import { useTranslations } from "next-intl";
+import useTheme from "@/app/hooks/useTheme";
+
+type Props = {
+  isConnected: boolean | null;
+};
+
+const NewsTypesClient = (props: Props) => {
+  const t = useTranslations();
+
+  // <-- Unique.
+  // --- VARIABLES ---
+  const {
+    // --- Items ---
+    items,
+    setItems,
+    selectedItems,
+    setSelectedItems,
+
+    editingItemId,
+    setEditingItemId,
+    isEditModalOpen,
+    setIsEditModalOpen,
+
+    deletingItemIds,
+    setDeletingItemIds,
+    isDeleteModalOpen,
+    setIsDeleteModalOpen,
+
+    // --- Loading ---
+    isLoading,
+    setIsLoading,
+
+    // --- Pagination ---
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    setTotalItems,
+
+    // --- Sorting ---
+    sortBy,
+    sortOrder,
+    handleSort,
+
+    // --- Search & Filtering ---
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilters,
+    counts,
+    setCounts,
+    isGrid,
+    setIsGrid,
+
+    // --- Other ---
+    fetchItems,
+  } = useManage<NewsTypeItem, NewsTypeFilters>(
+    async (params) => {
+      // <-- Unique.
+      try {
+        const result = await fetchContent(params);
+        return {
+          items: result.items,
+          total: result.total,
+          counts: result.counts,
+        };
+      } catch (err: any) {
+        notify(
+          "error",
+          err.message || t("Manage/Failed to fetch") + t("Common/news types"),
+        ); // <-- Unique.
+        return {
+          items: [],
+          total: 0,
+          counts: {},
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    { initialSortBy: "name", initialSortOrder: "asc" },
+  );
+
+  const { notify } = useToast();
+
+  // --- TOGGLE MODAL(S) ---
+  // --- Delete ---
+  const toggleDeleteItemModal = (itemIds: number[] = []) => {
+    setDeletingItemIds(itemIds);
+    setIsDeleteModalOpen((prev) => !prev);
+  };
+
+  // --- Edit ---
+  const toggleEditItemModal = (itemId: number | null = null) => {
+    setEditingItemId(itemId);
+    setIsEditModalOpen((prev) => !prev);
+  };
+
+  // --- Delete item(s)
+  const finishDeleteContent = async (id: number) => {
+    try {
+      await deleteContent(id);
+      await fetchItems();
+      notify("success", t("Common/News type") + t("Manage/deleted1"), 4000); // <-- Unique.
+    } catch (err: any) {
+      notify("error", err?.message || t("Modal/Unknown error"));
+    }
+  };
+
+  // --- Theme ---
+  const { currentTheme } = useTheme();
+
+  // --- Grid Items (Unique) ---
+  const gridItems = () => [
+    {
+      key: "name",
+      getValue: (item: NewsTypeItem) => (
+        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+          <div className="flex flex-col">
+            <span className="flex items-center justify-between text-2xl font-bold">
+              <span className="flex items-center">{item.name}</span>
+            </span>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "creationDate, createdBy",
+      getValue: (item: NewsTypeItem) => (
+        <p className="flex flex-col">
+          <span className="font-semibold">{t("Common/Created")}</span>
+          {utcIsoToLocalDateTime(item.creationDate)} {t("Common/by")}{" "}
+          {item.createdBy}
+        </p>
+      ),
+    },
+    {
+      key: "updateDate, updatedBy",
+      getValue: (item: NewsTypeItem) => (
+        <p className="flex flex-col">
+          <span className="font-semibold">{t("Common/Updated")}</span>
+          {utcIsoToLocalDateTime(item.updateDate)} {t("Common/by")}{" "}
+          {item.updatedBy}
+        </p>
+      ),
+    },
+  ];
+
+  // --- Table Items (Unique) ---
+  const tableItems = () => [
+    {
+      key: "name",
+      label: t("Common/Name"),
+      sortingItem: "name",
+      labelAsc: t("Common/name") + " Ö-A",
+      labelDesc: t("Common/name") + " A-Ö",
+      getValue: (item: NewsTypeItem) => item.name,
+      responsivePriority: 0,
+    },
+  ];
+
+  return (
+    <>
+      <ManageBase<NewsTypeItem> // <-- Unique.
+        itemName={t("Common/news type")} // <-- Unique.
+        items={items}
+        selectedItems={selectedItems}
+        setSelectedItems={setSelectedItems}
+        toggleEditItemModal={toggleEditItemModal}
+        toggleDeleteItemModal={toggleDeleteItemModal}
+        isLoading={isLoading}
+        isConnected={props.isConnected === true}
+        selectMessage="Manage/Select1" // <-- Unique.
+        editLimitMessage="Manage/Edit limit1" // <-- Unique.
+        isGrid={isGrid}
+        setIsGrid={setIsGrid}
+        gridItems={gridItems()}
+        tableItems={tableItems()}
+        showCheckbox
+        showInfoButton={false}
+        getIsDisabled={() => false} // <-- Unique.
+        pagination={{
+          currentPage,
+          setCurrentPage,
+          itemsPerPage,
+          setItemsPerPage,
+          totalItems: totalItems ?? 0,
+        }}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        onSort={handleSort}
+        searchTerm={searchTerm}
+        onSearchChange={(val) => setSearchTerm(val)}
+      />
+
+      {/* --- MODALS --- */}
+      <NewsTypeModal // <-- Unique.
+        isOpen={isEditModalOpen}
+        onClose={toggleEditItemModal}
+        itemId={editingItemId}
+        onItemUpdated={() => {
+          fetchItems();
+        }}
+      />
+
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          toggleDeleteItemModal();
+          setDeletingItemIds([]);
+        }}
+        onConfirm={async () => {
+          for (const id of deletingItemIds) {
+            await finishDeleteContent(id);
+          }
+
+          setIsDeleteModalOpen(false);
+          setDeletingItemIds([]);
+          setSelectedItems([]);
+        }}
+      />
+    </>
+  );
+};
+
+export default NewsTypesClient; // <-- Unique.

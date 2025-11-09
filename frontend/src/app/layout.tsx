@@ -1,16 +1,20 @@
+// app/layout.tsx
 import { ReactNode } from "react";
-import "./styles/tailwind.css";
-import "./styles/globals.scss";
-import "./styles/variables.css";
-import LayoutWrapper from "./components/helpers/LayoutWrapper";
-import StorageProvider from "./components/helpers/StorageProvider";
-import { ToastProvider } from "./components/toast/ToastProvider";
+import { NextIntlClientProvider, useLocale, useMessages } from "next-intl";
+import "@/app/styles/tailwind.css";
+import "@/app/styles/globals.scss";
+import "@/app/styles/variables.css";
+import LayoutWrapper from "@/app/helpers/LayoutWrapper";
+import StorageProvider from "@/app/helpers/StorageProvider";
+import { ToastProvider } from "@/app/components/toast/ToastProvider";
+import DynamicIntlProvider from "./helpers/DynamicIntlProvider";
+import { AuthProvider } from "./context/AuthContext";
+import { UserPrefsProvider } from "./context/UserPrefsContext";
 
-type Props = {
-  children: ReactNode;
-};
+export default function RootLayout({ children }: { children: ReactNode }) {
+  const locale = useLocale();
+  const messages = useMessages();
 
-const RootLayout = (props: Props) => {
   const setInitialTheme = `
     (function() {
       try {
@@ -18,30 +22,58 @@ const RootLayout = (props: Props) => {
         if (theme) {
           document.documentElement.setAttribute("data-theme", theme);
         } else {
-          document.documentElement.setAttribute("data-theme", dark);
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      } catch(e) {}
+    })();
+  `;
+
+  const setInitialLanguage = `
+    (function() {
+      try {
+        const language = localStorage.getItem("language");
+        if (language) {
+          document.documentElement.setAttribute("data-language", language);
+        } else {
+          document.documentElement.setAttribute("data-language", "sv");
         }
       } catch(e) {}
     })();
   `;
 
   return (
-    <html lang="en" data-theme="dark" suppressHydrationWarning>
+    <html
+      lang={locale}
+      data-language="sv"
+      data-theme="dark"
+      suppressHydrationWarning
+    >
       <head>
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,400..700;1,400..700&display=swap"
         />
-        <script dangerouslySetInnerHTML={{ __html: setInitialTheme }} />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: setInitialTheme + setInitialLanguage,
+          }}
+        />
       </head>
       <body>
-        <StorageProvider>
-          <ToastProvider>
-            <LayoutWrapper>{props.children}</LayoutWrapper>
-          </ToastProvider>
-        </StorageProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AuthProvider>
+          <UserPrefsProvider>
+            <DynamicIntlProvider>
+              <StorageProvider>
+                <ToastProvider>
+                  <LayoutWrapper>{children}</LayoutWrapper>
+                </ToastProvider>
+              </StorageProvider>
+            </DynamicIntlProvider>
+          </UserPrefsProvider>
+          </AuthProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
-};
-
-export default RootLayout;
+}

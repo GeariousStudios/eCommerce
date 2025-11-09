@@ -1,0 +1,1082 @@
+"use client";
+
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
+import Input from "../../../common/Input";
+import { useToast } from "../../../toast/ToastProvider";
+import {
+  buttonAddPrimaryClass,
+  buttonDeletePrimaryClass,
+  buttonPrimaryClass,
+  buttonSecondaryClass,
+  iconButtonPrimaryClass,
+  roundedButtonClass,
+  switchClass,
+  switchKnobClass,
+} from "@/app/styles/buttonClasses";
+import ModalBase, { ModalBaseHandle } from "../../ModalBase";
+import { useTranslations } from "next-intl";
+import {
+  shiftConstraints,
+  shiftTeamConstraints,
+} from "@/app/helpers/inputConstraints";
+import { XMarkIcon } from "@heroicons/react/20/solid";
+import MultiDropdown from "@/app/components/common/MultiDropdown";
+import DragDrop from "@/app/components/common/DragDrop";
+import SingleDropdown from "@/app/components/common/SingleDropdown";
+
+type Props = {
+  isOpen: boolean;
+  onClose: () => void;
+  itemId?: number | null;
+  onItemUpdated: () => void;
+};
+
+type ShiftTeamOptions = {
+  id: number;
+  name: string;
+  displayName: string;
+  startTime: string;
+  endTime: string;
+};
+
+type WeeklyTime = {
+  teamId: number;
+  weekIndex: number;
+  dayOfWeek: number;
+  start: string;
+  end: string;
+};
+
+const ShiftModal = (props: Props) => {
+  const t = useTranslations();
+
+  // --- VARIABLES ---
+  // --- Refs ---
+  const formRef = useRef<HTMLFormElement>(null);
+  const modalRef = useRef<ModalBaseHandle>(null);
+  const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
+
+  // --- States ---
+  const [name, setName] = useState("");
+  const [isHidden, setIsHidden] = useState(false);
+  const [lightColorHex, setLightColorHex] = useState("#212121");
+  const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
+  const [shiftTeamIds, setShiftTeamIds] = useState<number[]>([]);
+  const [shiftTeams, setShiftTeams] = useState<ShiftTeamOptions[]>([]);
+  const [weeklyTimes, setWeeklyTimes] = useState<WeeklyTime[]>([]);
+  const [cycleLengthWeeks, setCycleLengthWeeks] = useState(1);
+  const [anchorWeekStart, setAnchorWeekStart] = useState<string>("");
+  const [shiftTeamDisplayNames, setShiftTeamDisplayNames] = useState<
+    Record<number, string>
+  >({});
+
+  const [selectionByTeam, setSelectionByTeam] = useState<
+    Record<number, { weekIndex: number; dayOfWeek: number }>
+  >({});
+
+  const [originalName, setOriginalName] = useState("");
+  const [originalIsHidden, setOriginalIsHidden] = useState(false);
+  const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
+  const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
+  const [originalShiftTeamIds, setOriginalShiftTeamIds] = useState<number[]>(
+    [],
+  );
+  const [originalWeeklyTimes, setOriginalWeeklyTimes] = useState<WeeklyTime[]>(
+    [],
+  );
+  const [originalCycleLengthWeeks, setOriginalCycleLengthWeeks] = useState(1);
+  const [originalAnchorWeekStart, setOriginalAnchorWeekStart] =
+    useState<string>("");
+  const [originalShiftTeamDisplayNames, setOriginalShiftTeamDisplayNames] =
+    useState<Record<number, string>>({});
+
+  const [isDirty, setIsDirty] = useState(false);
+
+  const [isAnyDragging, setIsAnyDragging] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // --- Other ---
+  const token = localStorage.getItem("token");
+  const { notify } = useToast();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const dayOptions = useMemo(
+    () => [
+      { label: t("Common/Monday"), value: 0 },
+      { label: t("Common/Tuesday"), value: 1 },
+      { label: t("Common/Wednesday"), value: 2 },
+      { label: t("Common/Thursday"), value: 3 },
+      { label: t("Common/Friday"), value: 4 },
+      { label: t("Common/Saturday"), value: 5 },
+      { label: t("Common/Sunday"), value: 6 },
+    ],
+    [t],
+  );
+
+  useEffect(() => {
+    if (!props.isOpen) {
+      return;
+    }
+
+    fetchShiftTeams();
+
+    if (props.itemId !== null && props.itemId !== undefined) {
+      fetchShift();
+    } else {
+      setName("");
+      setOriginalName("");
+
+      setIsHidden(false);
+      setOriginalIsHidden(false);
+
+      setLightColorHex("#212121");
+      setOriginalLightColorHex("#212121");
+
+      setDarkColorHex("#e0e0e0");
+      setOriginalDarkColorHex("#e0e0e0");
+
+      setShiftTeamIds([]);
+      setOriginalShiftTeamIds([]);
+
+      setWeeklyTimes([]);
+      setOriginalWeeklyTimes([]);
+
+      setCycleLengthWeeks(1);
+      setOriginalCycleLengthWeeks(1);
+
+      setAnchorWeekStart("");
+      setOriginalAnchorWeekStart("");
+
+      setSelectionByTeam({});
+
+      setShiftTeamDisplayNames({});
+      setOriginalShiftTeamDisplayNames({});
+    }
+  }, [props.isOpen, props.itemId]);
+
+  // --- BACKEND ---
+  // --- Add shift ---
+  const addShift = async (event: FormEvent) => {
+    event.preventDefault();
+
+    const msg = runLocalValidation();
+    if (msg) {
+      setValidationError(msg);
+      notify("error", msg);
+      return;
+    }
+
+    try {
+      const weeklyTimesToSend = buildWeeklyTimesToSend();
+      const response = await fetch(`${apiUrl}/shift/create`, {
+        method: "POST",
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          isHidden,
+          lightColorHex,
+          darkColorHex,
+          shiftTeamIds,
+          weeklyTimes: weeklyTimesToSend,
+          shiftTeamDisplayNames: Object.fromEntries(
+            Object.entries(shiftTeamDisplayNames).map(([k, v]) => [
+              Number(k),
+              v && v.trim() !== "" ? v : null,
+            ]),
+          ),
+          cycleLengthWeeks,
+          anchorWeekStart: anchorWeekStart || null,
+        }),
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.errors) {
+          let firstError: string | null = null;
+          let lowestOrder = Number.MAX_SAFE_INTEGER;
+
+          for (const field in result.errors) {
+            const fieldErrors = result.errors[field];
+
+            for (const msg of fieldErrors) {
+              const match = msg.match(/\[(\d+)\]/);
+              const order = match ? parseInt(match[1], 10) : 99;
+
+              if (order < lowestOrder) {
+                lowestOrder = order;
+                firstError = msg.replace(/\[\d+\]\s*/, "");
+              }
+            }
+          }
+          if (firstError) {
+            notify("error", firstError);
+          }
+          return;
+        }
+
+        if (result.message) {
+          notify("error", result.message);
+          return;
+        }
+
+        notify("error", t("Modal/Unknown error"));
+        return;
+      }
+
+      props.onClose();
+      props.onItemUpdated();
+      notify("success", t("Common/Shift") + t("Modal/created"), 4000);
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  // --- Fetch shift teams ---
+  const fetchShiftTeams = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/shift-team`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      } else {
+        const visibleItems = result.items.filter((x: any) => !x.isHidden);
+        setShiftTeams(visibleItems);
+      }
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  // --- Fetch shift ---
+  const fetchShift = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/shift/fetch/${props.itemId}`, {
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notify("error", result?.message ?? t("Modal/Unknown error"));
+      } else {
+        fillShiftData(result);
+      }
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  const buildInitialSelection = (
+    ids: number[],
+    weekly: WeeklyTime[],
+  ): Record<number, { weekIndex: number; dayOfWeek: number }> => {
+    const sel: Record<number, { weekIndex: number; dayOfWeek: number }> = {};
+    ids.forEach((id) => {
+      const first = weekly.find((w) => w.teamId === id);
+      sel[id] = first
+        ? { weekIndex: first.weekIndex, dayOfWeek: first.dayOfWeek }
+        : { weekIndex: 0, dayOfWeek: 0 };
+    });
+    return sel;
+  };
+
+  const fillShiftData = (result: any) => {
+    setName(result.name ?? "");
+    setOriginalName(result.name ?? "");
+
+    setIsHidden(result.isHidden ?? false);
+    setOriginalIsHidden(result.isHidden ?? false);
+
+    setLightColorHex(result.lightColorHex ?? "#212121");
+    setOriginalLightColorHex(result.lightColorHex ?? "#212121");
+
+    setDarkColorHex(result.darkColorHex ?? "#e0e0e0");
+    setOriginalDarkColorHex(result.darkColorHex ?? "#e0e0e0");
+
+    setShiftTeamIds(result.shiftTeamIds ?? []);
+    setOriginalShiftTeamIds(result.shiftTeamIds ?? []);
+
+    const weekly = (result.weeklyTimes ?? []).map((wt: any) => ({
+      teamId: wt.teamId,
+      weekIndex: wt.weekIndex,
+      dayOfWeek: fromDotNetDay(wt.dayOfWeek),
+      start: toHHMM(wt.start),
+      end: toHHMM(wt.end),
+    }));
+    setWeeklyTimes(weekly);
+    setOriginalWeeklyTimes(weekly);
+
+    setCycleLengthWeeks(result.cycleLengthWeeks ?? 1);
+    setOriginalCycleLengthWeeks(result.cycleLengthWeeks ?? 1);
+
+    setAnchorWeekStart(result.anchorWeekStart ?? "");
+    setOriginalAnchorWeekStart(result.anchorWeekStart ?? "");
+
+    const ids: number[] = result.shiftTeamIds ?? [];
+    const displayMap: Record<number, string> = {};
+    ids.forEach((id) => {
+      const fromBackend = result.shiftTeamDisplayNames?.[id];
+      displayMap[id] = fromBackend ?? "";
+    });
+
+    setShiftTeamDisplayNames(displayMap);
+    setOriginalShiftTeamDisplayNames(displayMap);
+
+    setSelectionByTeam(buildInitialSelection(ids, weekly));
+  };
+
+  // --- Update shift ---
+  const updateShift = async (event: FormEvent) => {
+    event.preventDefault();
+
+    const msg = runLocalValidation();
+    if (msg) {
+      setValidationError(msg);
+      notify("error", msg);
+      return;
+    }
+
+    try {
+      const weeklyTimesToSend = buildWeeklyTimesToSend();
+      const response = await fetch(`${apiUrl}/shift/update/${props.itemId}`, {
+        method: "PUT",
+        headers: {
+          "X-User-Language": localStorage.getItem("language") || "sv",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          isHidden,
+          lightColorHex,
+          darkColorHex,
+          shiftTeamIds,
+          weeklyTimes: weeklyTimesToSend,
+          shiftTeamDisplayNames: Object.fromEntries(
+            Object.entries(shiftTeamDisplayNames).map(([k, v]) => [
+              Number(k),
+              v ?? null,
+            ]),
+          ),
+          cycleLengthWeeks,
+          anchorWeekStart: anchorWeekStart || null,
+        }),
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        return;
+      }
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        if (result.errors) {
+          let firstError: string | null = null;
+          let lowestOrder = Number.MAX_SAFE_INTEGER;
+
+          for (const field in result.errors) {
+            const fieldErrors = result.errors[field];
+
+            for (const msg of fieldErrors) {
+              const match = msg.match(/\[(\d+)\]/);
+              const order = match ? parseInt(match[1], 10) : 99;
+
+              if (order < lowestOrder) {
+                lowestOrder = order;
+                firstError = msg.replace(/\[\d+\]\s*/, "");
+              }
+            }
+          }
+          if (firstError) {
+            notify("error", firstError);
+          }
+          return;
+        }
+
+        if (result.message) {
+          notify("error", result.message);
+          return;
+        }
+
+        notify("error", t("Modal/Unknown error"));
+        return;
+      }
+
+      props.onClose();
+      props.onItemUpdated();
+      notify("success", t("Common/Shift") + t("Modal/updated"), 4000);
+    } catch (err) {
+      notify("error", t("Modal/Unknown error"));
+    }
+  };
+
+  const handleSaveClick = () => {
+    formRef.current?.requestSubmit();
+  };
+
+  // --- SET/UNSET IS DIRTY ---
+  useEffect(() => {
+    if (props.itemId === null || props.itemId === undefined) {
+      const dirty =
+        name !== "" ||
+        isHidden !== false ||
+        lightColorHex !== "#212121" ||
+        darkColorHex !== "#e0e0e0" ||
+        JSON.stringify(shiftTeamIds) !== JSON.stringify([]) ||
+        JSON.stringify(weeklyTimes) !== JSON.stringify([]) ||
+        JSON.stringify(shiftTeamDisplayNames) !== JSON.stringify({}) ||
+        anchorWeekStart !== "";
+
+      setIsDirty(dirty);
+      return;
+    }
+
+    const dirty =
+      name !== originalName ||
+      isHidden !== originalIsHidden ||
+      lightColorHex !== originalLightColorHex ||
+      darkColorHex !== originalDarkColorHex ||
+      JSON.stringify(shiftTeamIds) !== JSON.stringify(originalShiftTeamIds) ||
+      JSON.stringify(weeklyTimes) !== JSON.stringify(originalWeeklyTimes) ||
+      cycleLengthWeeks !== originalCycleLengthWeeks ||
+      anchorWeekStart !== originalAnchorWeekStart ||
+      JSON.stringify(shiftTeamDisplayNames) !==
+        JSON.stringify(originalShiftTeamDisplayNames);
+
+    setIsDirty(dirty);
+  }, [
+    props.itemId,
+    name,
+    isHidden,
+    lightColorHex,
+    darkColorHex,
+    shiftTeamIds,
+    weeklyTimes,
+    cycleLengthWeeks,
+    anchorWeekStart,
+    shiftTeamDisplayNames,
+    originalName,
+    originalIsHidden,
+    originalLightColorHex,
+    originalDarkColorHex,
+    originalShiftTeamIds,
+    originalWeeklyTimes,
+    originalCycleLengthWeeks,
+    originalAnchorWeekStart,
+    originalShiftTeamDisplayNames,
+  ]);
+
+  // --- HELPERS ---
+  useEffect(() => {
+    setValidationError(runLocalValidation());
+  }, [
+    name,
+    cycleLengthWeeks,
+    shiftTeamIds,
+    weeklyTimes,
+    shiftTeamDisplayNames,
+  ]);
+
+  const runLocalValidation = (): string | null => {
+    return hasOverlap();
+  };
+
+  const hasOverlap = (): string | null => {
+    if (!weeklyTimes.length) return null;
+
+    const toMinutes = (hhmm: string) => {
+      if (!hhmm || hhmm.length < 4) return NaN;
+      const [h, m] = hhmm.split(":").map(Number);
+      return h * 60 + (m || 0);
+    };
+
+    const groups = new Map<string, WeeklyTime[]>();
+    for (const wt of weeklyTimes) {
+      const key = `${wt.weekIndex}-${wt.dayOfWeek}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(wt);
+    }
+
+    for (const list of groups.values()) {
+      const sorted = [...list].sort((a, b) => (a.start > b.start ? 1 : -1));
+      for (let i = 0; i < sorted.length; i++) {
+        const a = sorted[i];
+        const aStart = toMinutes(a.start);
+        const aEnd = toMinutes(a.end);
+
+        if (isNaN(aStart) || isNaN(aEnd)) {
+          return t("ShiftModal/Times invalid");
+        }
+        if (aEnd <= aStart) {
+          return t("ShiftModal/Start before end");
+        }
+        if (i < sorted.length - 1) {
+          const b = sorted[i + 1];
+          if (toMinutes(b.start) < aEnd) {
+            return t("ShiftModal/TimesOverlap");
+          }
+        }
+      }
+    }
+    return null;
+  };
+
+  const toDotNetDay = (uiDay: number) => (uiDay + 1) % 7;
+  const fromDotNetDay = (dn: number | string) => {
+    if (typeof dn === "number") return (dn + 6) % 7;
+    const map: Record<string, number> = {
+      Sunday: 6,
+      Monday: 0,
+      Tuesday: 1,
+      Wednesday: 2,
+      Thursday: 3,
+      Friday: 4,
+      Saturday: 5,
+    };
+    return map[dn] ?? 0;
+  };
+
+  const toHHMM = (s: string) =>
+    typeof s === "string" && s.length >= 5 ? s.slice(0, 5) : s;
+
+  const buildWeeklyTimesToSend = () =>
+    weeklyTimes
+      .filter(
+        (wt) =>
+          Number.isInteger(wt.teamId) &&
+          Number.isInteger(wt.weekIndex) &&
+          Number.isInteger(wt.dayOfWeek) &&
+          wt.start &&
+          wt.end,
+      )
+      .map((wt) => ({
+        ...wt,
+        dayOfWeek: toDotNetDay(wt.dayOfWeek),
+        start: wt.start.length === 5 ? `${wt.start}:00` : wt.start,
+        end: wt.end.length === 5 ? `${wt.end}:00` : wt.end,
+      }));
+
+  const clamp = (v: number, min: number, max: number) =>
+    Math.max(min, Math.min(max, v));
+
+  useEffect(() => {
+    setSelectionByTeam((prev) => {
+      const next: Record<number, { weekIndex: number; dayOfWeek: number }> = {};
+      shiftTeamIds.forEach((id: number) => {
+        const existing = prev[id] ?? { weekIndex: 0, dayOfWeek: 0 };
+        next[id] = {
+          weekIndex: clamp(
+            existing.weekIndex,
+            0,
+            Math.max(0, cycleLengthWeeks - 1),
+          ),
+          dayOfWeek: existing.dayOfWeek,
+        };
+      });
+      return next;
+    });
+
+    setWeeklyTimes((prev) =>
+      prev.filter((wt) => wt.weekIndex < cycleLengthWeeks),
+    );
+  }, [cycleLengthWeeks, shiftTeamIds]);
+
+  const setSelection = (
+    teamId: number,
+    patch: Partial<{ weekIndex: number; dayOfWeek: number }>,
+  ) => {
+    setSelectionByTeam((prev) => ({
+      ...prev,
+      [teamId]: {
+        weekIndex: patch.weekIndex ?? prev[teamId]?.weekIndex ?? 0,
+        dayOfWeek: patch.dayOfWeek ?? prev[teamId]?.dayOfWeek ?? 0,
+      },
+    }));
+  };
+
+  const getIndexFor = (teamId: number, weekIndex: number, dayOfWeek: number) =>
+    weeklyTimes.findIndex(
+      (wt) =>
+        wt.teamId === teamId &&
+        wt.weekIndex === weekIndex &&
+        wt.dayOfWeek === dayOfWeek,
+    );
+
+  const toMonday = (dateStr: string): string => {
+    if (!dateStr) {
+      return "";
+    }
+
+    const d = new Date(dateStr);
+    const day = d.getDay();
+    const diff = (day + 6) % 7;
+    d.setDate(d.getDate() - diff);
+    return d.toISOString().slice(0, 10);
+  };
+
+  return (
+    <>
+      {props.isOpen && (
+        <form
+          ref={formRef}
+          onSubmit={(e) => (props.itemId ? updateShift(e) : addShift(e))}
+        >
+          <ModalBase
+            ref={modalRef}
+            isOpen={props.isOpen}
+            onClose={() => props.onClose()}
+            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            label={
+              props.itemId
+                ? t("Common/Edit") + " " + t("Common/shift")
+                : t("Common/Add") + " " + t("Common/shift")
+            }
+            confirmOnClose
+            isDirty={isDirty}
+          >
+            <ModalBase.Content>
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("ShiftModal/Info1")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
+                <div className="xs:col-span-2">
+                  <Input
+                    label={t("Common/Name")}
+                    value={name}
+                    onChange={(val) => {
+                      setName(String(val));
+                    }}
+                    onModal
+                    required
+                    {...shiftConstraints.name}
+                  />
+                </div>
+
+                <Input
+                  label={t("Common/Light color")}
+                  type="color"
+                  value={lightColorHex}
+                  onChange={(val) => setLightColorHex(String(val))}
+                  pattern="^#([0-9A-Fa-f]{6})$"
+                  onModal
+                />
+
+                <Input
+                  label={t("Common/Dark color")}
+                  type="color"
+                  value={darkColorHex}
+                  onChange={(val) => setDarkColorHex(String(val))}
+                  pattern="^#([0-9A-Fa-f]{6})$"
+                  onModal
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("ShiftModal/Info2")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
+                <SingleDropdown
+                  addSpacer={shiftTeamIds.length === 0}
+                  scrollContainer={getScrollEl}
+                  label={t("ShiftModal/Cycle length (weeks)")}
+                  value={String(cycleLengthWeeks)}
+                  options={Array.from({ length: 52 }, (_, i) => ({
+                    label: String(i + 1),
+                    value: String(i + 1),
+                  }))}
+                  onChange={(v) =>
+                    setCycleLengthWeeks(clamp(Number(v || 1), 1, 52))
+                  }
+                  onModal
+                  required
+                />
+
+                <Input
+                  id={props.itemId ? "disabled" : undefined}
+                  type="date"
+                  label={t("ShiftModal/Anchor week start")}
+                  value={anchorWeekStart}
+                  onChange={(val) =>
+                    setAnchorWeekStart(toMonday(String(val ?? "")))
+                  }
+                  onModal
+                  required
+                />
+              </div>
+
+              <MultiDropdown
+                addSpacer={shiftTeamIds.length === 0 && shiftTeams.length > 3}
+                scrollContainer={getScrollEl}
+                label={t("Common/Shift teams")}
+                value={shiftTeamIds.map(String)}
+                onChange={(vals: string[]) => {
+                  const ids = vals.map(Number);
+                  setShiftTeamIds(ids);
+
+                  setWeeklyTimes((prev) =>
+                    prev.filter((wt) => ids.includes(wt.teamId)),
+                  );
+
+                  setShiftTeamDisplayNames((prev) => {
+                    const next = { ...prev };
+                    ids.forEach((id) => {
+                      if (!(id in next)) next[id] = "";
+                    });
+                    Object.keys(next).forEach((k) => {
+                      if (!ids.includes(Number(k))) delete next[Number(k)];
+                    });
+                    return next;
+                  });
+
+                  setSelectionByTeam((prev) => {
+                    const next: Record<
+                      number,
+                      { weekIndex: number; dayOfWeek: number }
+                    > = {};
+                    ids.forEach((id) => {
+                      next[id] = prev[id] ?? { weekIndex: 0, dayOfWeek: 0 };
+                    });
+                    return next;
+                  });
+                }}
+                options={shiftTeams.map((t) => ({
+                  label: t.name,
+                  value: String(t.id),
+                }))}
+                onModal
+              />
+
+              {shiftTeamIds.length > 0 && (
+                <div className="flex flex-col gap-6">
+                  <DragDrop
+                    items={shiftTeamIds}
+                    getId={(id) => String(id)}
+                    onReorder={(newList) => setShiftTeamIds(newList)}
+                    onDraggingChange={setIsAnyDragging}
+                    containerClassName="grid grid-cols-1 sm:grid-cols-2 gap-6"
+                    renderItem={(id, isDragging) => {
+                      const team = shiftTeams.find((t) => t.id === id);
+                      if (!team) {
+                        return null;
+                      }
+                      const sel = selectionByTeam[id] ?? {
+                        weekIndex: 0,
+                        dayOfWeek: 0,
+                      };
+                      const idx = getIndexFor(id, sel.weekIndex, sel.dayOfWeek);
+                      const wt = idx >= 0 ? weeklyTimes[idx] : null;
+
+                      const intervals: Array<{ wt: WeeklyTime; i: number }> =
+                        weeklyTimes
+                          .map((wt, i) => ({ wt, i }))
+                          .filter(
+                            (x) =>
+                              x.wt.teamId === id &&
+                              x.wt.weekIndex === sel.weekIndex &&
+                              x.wt.dayOfWeek === sel.dayOfWeek,
+                          )
+                          .sort((a, b) => (a.wt.start > b.wt.start ? 1 : -1));
+
+                      return (
+                        <div
+                          key={id}
+                          className="flex flex-col gap-8 rounded-2xl bg-[var(--bg-navbar)] p-4"
+                        >
+                          <div className="flex items-center justify-between gap-8">
+                            <span className="font-semibold">{team.name}</span>
+                            <button
+                              type="button"
+                              disabled={isDragging}
+                              className={`${iconButtonPrimaryClass}`}
+                              onClick={() => {
+                                setShiftTeamIds((prev) =>
+                                  prev.filter((v) => v !== id),
+                                );
+                                setWeeklyTimes((prev) =>
+                                  prev.filter((wt) => wt.teamId !== id),
+                                );
+                                setShiftTeamDisplayNames((prev) => {
+                                  const n = { ...prev };
+                                  delete n[id];
+                                  return n;
+                                });
+                                setSelectionByTeam((prev) => {
+                                  const n = { ...prev };
+                                  delete n[id];
+                                  return n;
+                                });
+                              }}
+                              aria-label={t("Common/Remove") + " " + team.name}
+                            >
+                              <XMarkIcon className="h-6 min-h-6 w-6 min-w-6" />
+                            </button>
+                          </div>
+
+                          <Input
+                            type="text"
+                            label={t("ShiftModal/Display name")}
+                            value={shiftTeamDisplayNames[id] ?? ""}
+                            onChange={(val) =>
+                              setShiftTeamDisplayNames((p) => ({
+                                ...p,
+                                [id]: String(val ?? ""),
+                              }))
+                            }
+                            aria-label={`${team.name} display name`}
+                            inChip
+                            {...shiftTeamConstraints.name}
+                          />
+
+                          <div className="grid grid-cols-2 gap-6">
+                            <SingleDropdown
+                              label={t("Common/Week")}
+                              value={String(sel.weekIndex)}
+                              options={Array.from(
+                                { length: cycleLengthWeeks },
+                                (_, i) => ({
+                                  label: String(i + 1),
+                                  value: String(i),
+                                }),
+                              )}
+                              onChange={(v) =>
+                                setSelection(id, {
+                                  weekIndex: clamp(
+                                    Number(v ?? 0),
+                                    0,
+                                    Math.max(0, cycleLengthWeeks - 1),
+                                  ),
+                                })
+                              }
+                              inChip
+                            />
+                            <SingleDropdown
+                              label={t("Common/Day")}
+                              value={String(sel.dayOfWeek)}
+                              options={dayOptions.map((d) => ({
+                                label: d.label,
+                                value: String(d.value),
+                              }))}
+                              onChange={(val) =>
+                                setSelection(id, {
+                                  dayOfWeek: Number(val ?? 0),
+                                })
+                              }
+                              inChip
+                            />
+
+                            {intervals.length > 0 ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className={`${buttonAddPrimaryClass} col-span-2`}
+                                  onClick={() => {
+                                    const last = [...intervals]
+                                      .sort((a, b) =>
+                                        a.wt.end > b.wt.end ? 1 : -1,
+                                      )
+                                      .at(-1)?.wt;
+                                    const start = last ? last.end : "08:00";
+                                    const end =
+                                      start === "23:59" ? "23:59" : "23:59";
+                                    setWeeklyTimes((prev) => [
+                                      ...prev,
+                                      {
+                                        teamId: id,
+                                        weekIndex: sel.weekIndex,
+                                        dayOfWeek: sel.dayOfWeek,
+                                        start,
+                                        end,
+                                      },
+                                    ]);
+                                  }}
+                                >
+                                  {t("ShiftModal/Add interval")}
+                                </button>
+
+                                {intervals.map(({ wt, i }) => (
+                                  <div
+                                    key={i}
+                                    className="col-span-2 grid grid-cols-2 gap-6"
+                                  >
+                                    <Input
+                                      type="time"
+                                      label={t("Common/Start")}
+                                      value={wt.start}
+                                      onChange={(val) =>
+                                        setWeeklyTimes((prev) =>
+                                          prev.map((p, idx) =>
+                                            idx === i
+                                              ? {
+                                                  ...p,
+                                                  start: String(val ?? ""),
+                                                }
+                                              : p,
+                                          ),
+                                        )
+                                      }
+                                      inChip
+                                      required
+                                    />
+                                    <div className="flex flex-col gap-6">
+                                      <Input
+                                        type="time"
+                                        label={t("Common/Stop")}
+                                        value={wt.end}
+                                        onChange={(val) =>
+                                          setWeeklyTimes((prev) =>
+                                            prev.map((p, idx) =>
+                                              idx === i
+                                                ? {
+                                                    ...p,
+                                                    end: String(val ?? ""),
+                                                  }
+                                                : p,
+                                            ),
+                                          )
+                                        }
+                                        inChip
+                                        required
+                                      />
+                                    </div>
+                                    <button
+                                      type="button"
+                                      className={`${buttonDeletePrimaryClass} col-span-2`}
+                                      onClick={() =>
+                                        setWeeklyTimes((prev) =>
+                                          prev.filter((_, idx) => idx !== i),
+                                        )
+                                      }
+                                    >
+                                      {t("Common/Remove")}
+                                    </button>
+                                  </div>
+                                ))}
+                              </>
+                            ) : (
+                              <button
+                                type="button"
+                                className={`${buttonAddPrimaryClass} col-span-2`}
+                                onClick={() =>
+                                  setWeeklyTimes((prev) => [
+                                    ...prev,
+                                    {
+                                      teamId: id,
+                                      weekIndex: sel.weekIndex,
+                                      dayOfWeek: sel.dayOfWeek,
+                                      start: "08:00",
+                                      end: "16:00",
+                                    },
+                                  ])
+                                }
+                              >
+                                {t("ShiftModal/Add interval")}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }}
+                  />
+                  <span className="text-sm text-[var(--text-secondary)] italic">
+                    {t("Modal/Drag and drop2") +
+                      t("Common/shift team") +
+                      t("Modal/Drag and drop3")}
+                  </span>
+                </div>
+              )}
+
+              <div className="mt-8 flex items-center gap-2">
+                <hr className="w-12 text-[var(--border-tertiary)]" />
+                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  {t("Common/Status")}
+                </h3>
+                <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <div className="mb-8 flex justify-between gap-6">
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={isHidden}
+                    className={switchClass(isHidden)}
+                    onClick={() => setIsHidden((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(isHidden)} />
+                  </button>
+                  <span className="mb-0.5">{t("ShiftModal/Hide shift")}</span>
+                </div>
+              </div>
+            </ModalBase.Content>
+
+            <ModalBase.Footer>
+              <button
+                type="button"
+                onClick={handleSaveClick}
+                className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={!!validationError}
+              >
+                {props.itemId ? t("Modal/Save") : t("Common/Add")}
+              </button>
+              {validationError && (
+                <div
+                  className="xs:hidden col-span-3 -mt-3 flex text-sm font-semibold text-[var(--note-error)]"
+                  dangerouslySetInnerHTML={{ __html: validationError }}
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => modalRef.current?.requestClose()}
+                className={`${buttonSecondaryClass} xs:col-span-1 col-span-3`}
+              >
+                {t("Modal/Abort")}
+              </button>
+
+              {validationError && (
+                <div
+                  className="xs:flex col-span-3 -mt-3 hidden text-sm font-semibold text-[var(--note-error)]"
+                  dangerouslySetInnerHTML={{ __html: validationError }}
+                />
+              )}
+            </ModalBase.Footer>
+          </ModalBase>
+        </form>
+      )}
+    </>
+  );
+};
+
+export default ShiftModal;
