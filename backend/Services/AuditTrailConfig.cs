@@ -24,6 +24,7 @@ namespace backend.Services
                 ("ShiftChange", null),
                 ("StopType", null),
                 ("MasterPlan", null),
+                ("MasterPlanElement", null),
             },
 
             // Developers can see all actions.
@@ -31,6 +32,9 @@ namespace backend.Services
 
             // Reporters can only see actions related to reports and unit cells.
             ["Reporter"] = new() { ("Report", null), ("UnitCell", null) },
+
+            // Master planners can only see actions related to master plans.
+            ["MasterPlanner"] = new() { ("MasterPlan", null), ("MasterPlanElement", null) },
         };
     }
 }

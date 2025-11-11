@@ -274,6 +274,7 @@ export type MasterPlanItem = {
     isHidden: boolean;
   }[];
   isHidden?: boolean;
+  allowRemovingElements?: boolean;
 
   creationDate: string;
   updateDate: string;
@@ -286,6 +287,7 @@ export type MasterPlanFilters = {
   unitGroupIds?: number[];
   masterPlanFieldIds?: number[];
   isHidden?: boolean;
+  allowRemovingElements?: boolean;
 };
 
 export type MasterPlanFieldDataType = "Number" | "Text" | "Boolean";
@@ -304,4 +306,8 @@ export const getMasterPlanFieldDataTypeOptions = (
   //   label: t("Common/Boolean"),
   //   value: "Boolean" as MasterPlanFieldDataType,
   // },
+  {
+    label: t("Common/Date"),
+    value: "Date" as MasterPlanFieldDataType,
+  },
 ];

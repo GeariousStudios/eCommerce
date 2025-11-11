@@ -64,12 +64,15 @@ const MasterPlanModal = (props: Props) => {
   const [unitGroup, setUnitGroup] = useState("");
   const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
   const [isHidden, setIsHidden] = useState(false);
+  const [allowRemovingElements, setAllowRemovingElements] = useState(false);
   const [masterPlanFieldIds, setMasterPlanFieldIds] = useState<number[]>([]);
   const [newMasterPlanField, setNewMasterPlanField] = useState("");
 
   const [originalName, setOriginalName] = useState("");
   const [originalUnitGroup, setOriginalUnitGroup] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
+  const [originalAllowRemovingElements, setOriginalAllowRemovingElements] =
+    useState(false);
   const [originalMasterPlanFieldIds, setOriginalMasterPlanFieldIds] = useState<
     number[]
   >([]);
@@ -107,11 +110,14 @@ const MasterPlanModal = (props: Props) => {
       setIsHidden(false);
       setOriginalIsHidden(false);
 
+      setAllowRemovingElements(false);
+      setOriginalAllowRemovingElements(false);
+
       setMasterPlanFieldIds([]);
       setOriginalMasterPlanFieldIds([]);
-
-      setNewMasterPlanField("");
     }
+
+    setNewMasterPlanField("");
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
@@ -142,6 +148,7 @@ const MasterPlanModal = (props: Props) => {
           name,
           unitGroupId: parseInt(unitGroup),
           isHidden,
+          allowRemovingElements,
           masterPlanFieldIds: newMasterPlanFieldIds,
           newMasterPlanFields,
           masterPlanFieldIdsToDelete,
@@ -269,6 +276,9 @@ const MasterPlanModal = (props: Props) => {
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
 
+    setAllowRemovingElements(result.allowRemovingElements ?? false);
+    setOriginalAllowRemovingElements(result.allowRemovingElements ?? false);
+
     const ids = Array.isArray(result.fields)
       ? result.fields.map((mpf: any) => mpf.id)
       : [];
@@ -349,6 +359,7 @@ const MasterPlanModal = (props: Props) => {
             name,
             unitGroupId: parseInt(unitGroup),
             isHidden,
+            allowRemovingElements,
             masterPlanFieldIds,
             newMasterPlanFields,
             updatedExistingMasterPlanFields,
@@ -570,6 +581,7 @@ const MasterPlanModal = (props: Props) => {
           isOpen={menuOpen}
           onClose={() => {
             setMenuOpen(false);
+
             onRename(id, localNameField);
           }}
           triggerRef={triggerRef}
@@ -685,6 +697,7 @@ const MasterPlanModal = (props: Props) => {
         name !== "" ||
         unitGroup !== "" ||
         isHidden !== false ||
+        allowRemovingElements !== false ||
         masterPlanFieldIds.length > 0;
 
       setIsDirty(dirty);
@@ -695,6 +708,7 @@ const MasterPlanModal = (props: Props) => {
       name !== originalName ||
       unitGroup !== originalUnitGroup ||
       isHidden !== originalIsHidden ||
+      allowRemovingElements !== originalAllowRemovingElements ||
       !areArraysEqual(masterPlanFieldIds, originalMasterPlanFieldIds);
 
     setIsDirty(dirty);
@@ -703,10 +717,12 @@ const MasterPlanModal = (props: Props) => {
     name,
     unitGroup,
     isHidden,
+    allowRemovingElements,
     masterPlanFieldIds,
     originalName,
     originalUnitGroup,
     originalIsHidden,
+    originalAllowRemovingElements,
     originalMasterPlanFieldIds,
   ]);
 
@@ -883,6 +899,23 @@ const MasterPlanModal = (props: Props) => {
                   {t("Common/Status")}
                 </h3>
                 <hr className="w-full text-[var(--border-tertiary)]" />
+              </div>
+
+              <div className="flex justify-between gap-6">
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={allowRemovingElements}
+                    className={switchClass(allowRemovingElements)}
+                    onClick={() => setAllowRemovingElements((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(allowRemovingElements)} />
+                  </button>
+                  <span className="mb-0.5">
+                    {t("MasterPlanModal/Allow removing elements")}
+                  </span>
+                </div>
               </div>
 
               <div className="mb-8 flex justify-between gap-6">

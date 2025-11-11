@@ -4,6 +4,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import { FocusTrap } from "focus-trap-react";
+import { motion, useDragControls } from "framer-motion";
 import { get } from "http";
 import { useTranslations } from "next-intl";
 import {
@@ -56,6 +57,8 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
   // --- VARIABLES ---
   // --- Refs ---
   const innerRef = useRef<HTMLDivElement>(null);
+  const constraintsRef = useRef(null);
+  const dragControls = useDragControls();
 
   // --- States ---
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -123,7 +126,10 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
   return (
     <>
       {props.isOpen && (
-        <div className="fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/50">
+        <div
+          ref={constraintsRef}
+          className="fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/50"
+        >
           <FocusTrap
             focusTrapOptions={{
               initialFocus: false,
@@ -133,16 +139,33 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
           >
             <div className="relative top-1/2">
               {/* <div id="portal-root" /> */}
-              <div
+              <motion.div
                 ref={innerRef}
                 role="dialog"
                 aria-hidden={!props.isOpen}
                 aria-modal="true"
                 className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} ${props.smallModal ? "max-w-lg" : "max-w-3xl"} relative left-1/2 z-[calc(var(--z-modal))] flex max-h-[90svh] w-[90vw] -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+                drag
+                dragControls={dragControls}
+                dragListener={false}
+                dragMomentum={false}
+                dragElastic={0}
+                dragConstraints={constraintsRef}
               >
                 {/* --- Header (not scrollable) --- */}
                 {!props.disableCloseButton && (
-                  <div className="p-4">
+                  <div
+                    className="cursor-move p-4"
+                    onPointerDown={(e) => {
+                      document.body.style.userSelect = "none";
+                      dragControls.start(e);
+                      const handleUp = () => {
+                        document.body.style.userSelect = "";
+                        window.removeEventListener("pointerup", handleUp);
+                      };
+                      window.addEventListener("pointerup", handleUp);
+                    }}
+                  >
                     <div
                       className={`${props.smallGap ? "gap-8" : "gap-12"} relative flex items-center justify-between`}
                     >
@@ -167,10 +190,8 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
                 )}
 
                 {/* --- Body (scrollable) --- */}
-                <div className="flex min-h-0 flex-col">
-                  {props.children}
-                </div>
-              </div>
+                <div className="flex min-h-0 flex-col">{props.children}</div>
+              </motion.div>
             </div>
             {/* </div> */}
           </FocusTrap>

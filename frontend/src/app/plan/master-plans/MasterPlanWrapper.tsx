@@ -22,9 +22,9 @@ const MasterPlanClient = dynamic(() => import("./MasterPlanClient"), {
 });
 
 const MasterPlanWrapper = () => {
-  const { isAuthReady, isConnected, isLoggedIn, isReporter } = useAuth();
+  const { isAuthReady, isConnected, isLoggedIn, isMasterPlanner } =
+  useAuth();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const dateParam = searchParams.get("date");
   const [isInvalidDate, setIsInvalidDate] = useState(false);
 
@@ -79,7 +79,7 @@ const MasterPlanWrapper = () => {
       isConnected={isConnected}
       isAuthReady={isAuthReady}
       isLoggedIn={isLoggedIn}
-      isReporter={isReporter}
+      isMasterPlanner={isMasterPlanner}
     />
   );
 };

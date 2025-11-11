@@ -157,7 +157,7 @@ const MasterPlansClient = (props: Props) => {
   // --- Grid Items (Unique) ---
   const gridItems = () => [
     {
-      key: "name, units, isHidden",
+      key: "name, units, isHidden, fields, unitGroupName, allowRemovingElements",
       getValue: (item: MasterPlanItem) => (
         <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
           <div className="flex flex-col">
@@ -334,6 +334,23 @@ const MasterPlansClient = (props: Props) => {
       ),
       responsivePriority: 4,
     },
+     {
+      key: "allowRemovingElements",
+      label: t("MasterPlans/Allow removing elements"),
+      sortingItem: "allowremovingelementscount",
+      labelAsc: t("MasterPlans/allowed master plans"),
+      labelDesc: t("MasterPlans/disallowed master plans"),
+      classNameAddition: "w-[248px] min-w-[248px]",
+      childClassNameAddition: "w-[88px] min-w-[88px]",
+      getValue: (item: MasterPlanItem) => (
+        <span
+          className={`${badgeClass} ${item.allowRemovingElements ? "bg-[var(--unlocked)]" : "bg-[var(--locked)]"} w-full text-[var(--text-main-reverse)]`}
+        >
+          {item.allowRemovingElements ? t("Manage/Allowed") : t("Manage/Disallowed")}
+        </span>
+      ),
+      responsivePriority: 5,
+    },
     {
       key: "isHidden",
       label: t("Common/Status"),
@@ -368,6 +385,22 @@ const MasterPlansClient = (props: Props) => {
       setFilters((prev) => ({
         ...prev,
         isHidden: val ? true : undefined,
+      }));
+    },
+
+    showAllowed: filters.allowRemovingElements === true,
+    setShowAllowed: (val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        allowRemovingElements: val ? true : undefined,
+      }));
+    },
+
+    showDisallowed: filters.allowRemovingElements === false,
+    setShowDisallowed: (val: boolean) => {
+      setFilters((prev) => ({
+        ...prev,
+        allowRemovingElements: val ? false : undefined,
       }));
     },
 
@@ -468,6 +501,24 @@ const MasterPlansClient = (props: Props) => {
           count: counts?.unitCount?.[(unit.masterPlanId ?? unit.id) as number],
         };
       }),
+    },
+     {
+      label: t("MasterPlans/Allow removing elements"),
+      breakpoint: "2xl",
+      options: [
+        {
+          label: t("MasterPlans/Allowed master plans"),
+          isSelected: filterControls.showAllowed,
+          setSelected: filterControls.setShowAllowed,
+          count: counts?.allowRemovingElementsCount?.["Allowed"] ?? 0,
+        },
+        {
+          label: t("MasterPlans/Disallowed master plans"),
+          isSelected: filterControls.showDisallowed,
+          setSelected: filterControls.setShowDisallowed,
+          count: counts?.allowRemovingElementsCount?.["Disallowed"] ?? 0,
+        },
+      ],
     },
   ];
 

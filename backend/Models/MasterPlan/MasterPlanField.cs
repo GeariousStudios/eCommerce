@@ -27,6 +27,7 @@ namespace backend.Models
         Number,
         Text,
         Boolean,
+        Date,
     }
 
     public enum MasterPlanFieldAlignment

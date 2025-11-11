@@ -1,3 +1,4 @@
+using backend.Dtos.MasterPlan.Element;
 using backend.Dtos.Unit;
 
 namespace backend.Dtos.MasterPlan
@@ -11,5 +12,7 @@ namespace backend.Dtos.MasterPlan
         public bool CurrentElement { get; set; }
         public bool NextElement { get; set; }
         public int? Order { get; set; }
+
+        public UpdateMasterPlanElementGroupListDto? GroupList { get; set; }
     }
 }

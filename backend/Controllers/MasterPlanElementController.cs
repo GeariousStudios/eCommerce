@@ -62,7 +62,6 @@ namespace backend.Controllers
         {
             var lang = await GetLangAsync();
             var userInfo = await _userService.GetUserInfoAsync();
-
             if (userInfo == null)
             {
                 return Unauthorized(
@@ -88,8 +87,6 @@ namespace backend.Controllers
                 StruckElement = dto.StruckElement,
                 CurrentElement = dto.CurrentElement,
                 NextElement = dto.NextElement,
-
-                // Meta data.
                 CreationDate = now,
                 CreatedBy = createdBy,
                 UpdateDate = now,
@@ -99,21 +96,62 @@ namespace backend.Controllers
             _context.MasterPlanElements.Add(newElement);
             await _context.SaveChangesAsync();
 
-            var order = masterPlan.MasterPlanToMasterPlanElements.Any()
-                ? masterPlan.MasterPlanToMasterPlanElements.Max(e => e.Order) + 1
-                : 0;
+            var insertOrder = dto.Order.HasValue
+                ? dto.Order.Value
+                : (
+                    masterPlan.MasterPlanToMasterPlanElements.Any()
+                        ? masterPlan.MasterPlanToMasterPlanElements.Max(e => e.Order) + 1
+                        : 0
+                );
+
+            var linksToShift = await _context
+                .MasterPlanToMasterPlanElements.Where(l =>
+                    l.MasterPlanId == masterPlan.Id && l.Order >= insertOrder
+                )
+                .OrderByDescending(l => l.Order)
+                .ToListAsync();
+
+            foreach (var link in linksToShift)
+            {
+                link.Order = link.Order + 1;
+            }
 
             var newLink = new MasterPlanToMasterPlanElement
             {
                 MasterPlanId = masterPlan.Id,
                 MasterPlanElementId = newElement.Id,
-                Order = order,
+                Order = insertOrder,
             };
-
             _context.MasterPlanToMasterPlanElements.Add(newLink);
+
+            if (dto.Values != null)
+            {
+                foreach (var v in dto.Values)
+                {
+                    _context.MasterPlanElementValues.Add(
+                        new MasterPlanElementValue
+                        {
+                            MasterPlanElementId = newElement.Id,
+                            MasterPlanFieldId = v.MasterPlanFieldId,
+                            Value = v.Value,
+                            CreationDate = now,
+                            CreatedBy = createdBy,
+                            UpdateDate = now,
+                            UpdatedBy = createdBy,
+                        }
+                    );
+                }
+            }
+
             await _context.SaveChangesAsync();
 
-            // Audit trail.
+            await _context.Entry(newElement).Collection(e => e.Values).LoadAsync();
+            await _context
+                .Entry(newElement)
+                .Collection(e => e.MasterPlanToMasterPlanElements)
+                .LoadAsync();
+
+            // Audit-trail.
             await _audit.LogAsync(
                 "Create",
                 "MasterPlanElement",
@@ -123,20 +161,29 @@ namespace backend.Controllers
                 new Dictionary<string, object?>
                 {
                     ["ObjectID"] = newElement.Id,
-                    ["MasterPlanID"] = masterPlan.Id,
-                    ["Order"] = order,
+                    ["BelongsToMasterPlan"] = $"{masterPlan?.Name} (ID: {masterPlanId})",
+                    ["GroupID"] = newElement.GroupId,
+                    ["Order"] = newLink.Order,
+                    ["IsStruck"] = newElement.StruckElement
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["Data"] = newElement
+                        .Values.Select(v => new Dictionary<string, object?>
+                        {
+                            ["MasterPlanField"] =
+                                $"{v.MasterPlanField?.Name} (ID: {v.MasterPlanFieldId})",
+                            ["Value"] = v.Value ?? "—",
+                        })
+                        .ToList(),
                 }
             );
 
             return Ok(new { id = newElement.Id });
         }
 
-        [HttpPut("update/{elementId}/values")]
+        [HttpDelete("delete/{elementId}")]
         [Authorize(Roles = "MasterPlanner")]
-        public async Task<IActionResult> UpdateElementValues(
-            int elementId,
-            [FromBody] UpdateMasterPlanElementDto dto
-        )
+        public async Task<IActionResult> DeleteElement(int elementId)
         {
             var lang = await GetLangAsync();
             var userInfo = await _userService.GetUserInfoAsync();
@@ -148,9 +195,12 @@ namespace backend.Controllers
                 );
             }
 
-            var (updatedBy, userId) = userInfo.Value;
+            var (deletedBy, userId) = userInfo.Value;
             var element = await _context
                 .MasterPlanElements.Include(e => e.Values)
+                .ThenInclude(v => v.MasterPlanField)
+                .Include(e => e.MasterPlanToMasterPlanElements)
+                .ThenInclude(link => link.MasterPlan)
                 .FirstOrDefaultAsync(e => e.Id == elementId);
 
             if (element == null)
@@ -160,21 +210,128 @@ namespace backend.Controllers
                 );
             }
 
+            var masterPlan = element.MasterPlanToMasterPlanElements.FirstOrDefault()?.MasterPlan;
+            var masterPlanId = masterPlan?.Id ?? 0;
+
+            if (masterPlan != null && !masterPlan.AllowRemovingElements)
+            {
+                return BadRequest(
+                    new
+                    {
+                        message = await _t.GetAsync(
+                            "MasterPlanElement/AllowRemovingElementsFirst",
+                            lang
+                        ),
+                    }
+                );
+            }
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Delete",
+                "MasterPlanElement",
+                element.Id,
+                deletedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = element.Id,
+                    ["BelongsToMasterPlan"] = $"{masterPlan?.Name} (ID: {masterPlanId})",
+                    ["GroupID"] = element.GroupId,
+                    ["Order"] = element
+                        .MasterPlanToMasterPlanElements.Where(link =>
+                            link.MasterPlanId == masterPlanId
+                        )
+                        .Select(link => link.Order)
+                        .FirstOrDefault(),
+                    ["IsStruck"] = element.StruckElement
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["Data"] = element
+                        .Values.Select(v => new Dictionary<string, object?>
+                        {
+                            ["MasterPlanField"] =
+                                $"{v.MasterPlanField?.Name} (ID: {v.MasterPlanFieldId})",
+                            ["Value"] = v.Value != null ? v.Value : "—",
+                        })
+                        .ToList(),
+                }
+            );
+
+            _context.MasterPlanElementValues.RemoveRange(element.Values);
+            _context.MasterPlanToMasterPlanElements.RemoveRange(
+                element.MasterPlanToMasterPlanElements
+            );
+            _context.MasterPlanElements.Remove(element);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = await _t.GetAsync("MasterPlanElement/Deleted", lang) });
+        }
+
+        [HttpPut("update/{elementId}")]
+        [Authorize(Roles = "MasterPlanner")]
+        public async Task<IActionResult> UpdateElement(
+            int elementId,
+            [FromBody] UpdateMasterPlanElementDto dto
+        )
+        {
+            var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+            if (userInfo == null)
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+
+            var (updatedBy, userId) = userInfo.Value;
+            var element = await _context
+                .MasterPlanElements.Include(e => e.Values)
+                .ThenInclude(v => v.MasterPlanField)
+                .Include(e => e.MasterPlanToMasterPlanElements)
+                .ThenInclude(link => link.MasterPlan)
+                .FirstOrDefaultAsync(e => e.Id == elementId);
+
+            if (element == null)
+                return NotFound(
+                    new { message = await _t.GetAsync("MasterPlanElement/NotFound", lang) }
+                );
+
+            var masterPlan = element.MasterPlanToMasterPlanElements.FirstOrDefault()?.MasterPlan;
             var now = DateTime.UtcNow;
 
-            if (dto.Values == null || !dto.Values.Any())
+            var oldValues = new Dictionary<string, object?>
             {
-                element.GroupId = dto.GroupId;
-                element.StruckElement = dto.StruckElement;
-                element.CurrentElement = dto.CurrentElement;
-                element.NextElement = dto.NextElement;
-                element.UpdateDate = DateTime.UtcNow;
-                element.UpdatedBy = updatedBy;
+                ["ObjectID"] = element.Id,
+                ["BelongsToMasterPlan"] = $"{masterPlan?.Name} (ID: {masterPlan?.Id})",
+                ["GroupID"] = element.GroupId,
+                ["Order"] = element.MasterPlanToMasterPlanElements.FirstOrDefault()?.Order,
+                ["IsStruck"] = element.StruckElement
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
+                ["Data"] = element
+                    .Values.Select(v => new Dictionary<string, object?>
+                    {
+                        ["MasterPlanField"] =
+                            $"{v.MasterPlanField?.Name} (ID: {v.MasterPlanFieldId})",
+                        ["Value"] = v.Value ?? "—",
+                    })
+                    .ToList(),
+            };
 
-                await _context.SaveChangesAsync();
+            var groupBefore = element.GroupId;
+            var struckBefore = element.StruckElement;
+            var currentBefore = element.CurrentElement;
+            var nextBefore = element.NextElement;
 
-                return Ok(new { message = await _t.GetAsync("MasterPlanElement/Updated", lang) });
-            }
+            var valueChanged =
+                dto.Values != null
+                && dto.Values.Any(v =>
+                {
+                    var oldVal = element
+                        .Values.FirstOrDefault(ev => ev.MasterPlanFieldId == v.MasterPlanFieldId)
+                        ?.Value;
+                    return oldVal != v.Value;
+                });
 
             if (dto.Values != null)
             {
@@ -183,7 +340,6 @@ namespace backend.Controllers
                     var existingValue = element.Values.FirstOrDefault(v =>
                         v.MasterPlanFieldId == valueDto.MasterPlanFieldId
                     );
-
                     if (existingValue == null)
                     {
                         _context.MasterPlanElementValues.Add(
@@ -208,218 +364,98 @@ namespace backend.Controllers
                 }
             }
 
-            element.GroupId = dto.GroupId;
+            element.GroupId = dto.GroupId ?? element.GroupId;
             element.StruckElement = dto.StruckElement;
             element.CurrentElement = dto.CurrentElement;
             element.NextElement = dto.NextElement;
             element.UpdateDate = now;
             element.UpdatedBy = updatedBy;
 
-            await _context.SaveChangesAsync();
-
-            // Audit trail.
-            await _audit.LogAsync(
-                "Update",
-                "MasterPlanElement",
-                element.Id,
-                updatedBy,
-                userId,
-                new Dictionary<string, object?>
-                {
-                    ["ObjectID"] = element.Id,
-                    ["UpdatedFields"] =
-                        dto.Values != null
-                            ? string.Join(", ", dto.Values.Select(v => v.MasterPlanFieldId))
-                            : "",
-                }
-            );
-
-            return Ok(new { message = await _t.GetAsync("MasterPlanElement/Updated", lang) });
-        }
-
-        [HttpPut("update/{elementId}")]
-        [Authorize(Roles = "MasterPlanner")]
-        public async Task<IActionResult> UpdateElementMeta(
-            int elementId,
-            [FromBody] UpdateMasterPlanElementDto dto
-        )
-        {
-            var lang = await GetLangAsync();
-            var userInfo = await _userService.GetUserInfoAsync();
-
-            if (userInfo == null)
-                return Unauthorized(
-                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
-                );
-
-            var (updatedBy, userId) = userInfo.Value;
-            var element = await _context
-                .MasterPlanElements.Include(e => e.MasterPlanToMasterPlanElements)
-                .FirstOrDefaultAsync(e => e.Id == elementId);
-
-            if (element == null)
-                return NotFound(
-                    new { message = await _t.GetAsync("MasterPlanElement/NotFound", lang) }
-                );
-
-            element.GroupId = dto.GroupId;
-            element.StruckElement = dto.StruckElement;
-            element.CurrentElement = dto.CurrentElement;
-            element.NextElement = dto.NextElement;
-            element.UpdateDate = DateTime.UtcNow;
-            element.UpdatedBy = updatedBy;
-
             if (dto.Order.HasValue)
             {
-                var link = await _context.MasterPlanToMasterPlanElements.FirstOrDefaultAsync(l =>
-                    l.MasterPlanElementId == element.Id
-                );
-
+                var link = element.MasterPlanToMasterPlanElements.FirstOrDefault();
                 if (link != null)
-                {
                     link.Order = dto.Order.Value;
+            }
+
+            if (dto.GroupList != null)
+            {
+                foreach (var item in dto.GroupList.Elements)
+                {
+                    var link = await _context
+                        .MasterPlanToMasterPlanElements.Include(x => x.MasterPlanElement)
+                        .FirstOrDefaultAsync(x =>
+                            x.MasterPlanElementId == item.ElementId
+                            && x.MasterPlanId == masterPlan!.Id
+                        );
+                    if (link == null)
+                        continue;
+
+                    link.Order = item.Order;
+                    link.MasterPlanElement.GroupId = item.GroupId;
+                    link.MasterPlanElement.UpdateDate = now;
+                    link.MasterPlanElement.UpdatedBy = updatedBy;
                 }
             }
 
             await _context.SaveChangesAsync();
 
-            // Audit trail.
-            await _audit.LogAsync(
-                "Update",
-                "MasterPlanElement",
-                element.Id,
-                updatedBy,
-                userId,
-                new Dictionary<string, object?>
-                {
-                    ["GroupId"] = dto.GroupId,
-                    ["StruckElement"] = dto.StruckElement,
-                    ["CurrentElement"] = dto.CurrentElement,
-                    ["NextElement"] = dto.NextElement,
-                    ["Order"] = dto.Order,
-                }
-            );
+            var newValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = element.Id,
+                ["BelongsToMasterPlan"] = $"{masterPlan?.Name} (ID: {masterPlan?.Id})",
+                ["GroupID"] = element.GroupId,
+                ["Order"] = element.MasterPlanToMasterPlanElements.FirstOrDefault()?.Order,
+                ["IsStruck"] = element.StruckElement
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
+                ["Data"] = element
+                    .Values.Select(v => new Dictionary<string, object?>
+                    {
+                        ["MasterPlanField"] =
+                            $"{v.MasterPlanField?.Name} (ID: {v.MasterPlanFieldId})",
+                        ["Value"] = v.Value ?? "—",
+                    })
+                    .ToList(),
+            };
+
+            var oldOrder = oldValues["Order"];
+            var newOrder = newValues["Order"];
+            var orderChanged = oldOrder == null || !Equals(oldOrder, newOrder);
+
+            var groupChanged = groupBefore != element.GroupId;
+            var struckChanged = struckBefore != element.StruckElement;
+            var currentChanged = currentBefore != element.CurrentElement;
+            var nextChanged = nextBefore != element.NextElement;
+
+            var otherChanges =
+                groupChanged || struckChanged || currentChanged || nextChanged || valueChanged;
+
+            if (orderChanged)
+            {
+                await _audit.LogAsync(
+                    "Move",
+                    "MasterPlanElement",
+                    element.Id,
+                    updatedBy,
+                    userId,
+                    new { OldValues = oldValues, NewValues = newValues }
+                );
+            }
+
+            if (otherChanges)
+            {
+                await _audit.LogAsync(
+                    "Update",
+                    "MasterPlanElement",
+                    element.Id,
+                    updatedBy,
+                    userId,
+                    new { OldValues = oldValues, NewValues = newValues }
+                );
+            }
 
             return Ok(new { message = await _t.GetAsync("MasterPlanElement/Updated", lang) });
-        }
-
-        [HttpDelete("delete/{elementId}")]
-        [Authorize(Roles = "MasterPlanner")]
-        public async Task<IActionResult> DeleteElement(int elementId)
-        {
-            var lang = await GetLangAsync();
-            var userInfo = await _userService.GetUserInfoAsync();
-
-            if (userInfo == null)
-            {
-                return Unauthorized(
-                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
-                );
-            }
-
-            var (deletedBy, userId) = userInfo.Value;
-            var element = await _context
-                .MasterPlanElements.Include(e => e.Values)
-                .Include(e => e.MasterPlanToMasterPlanElements)
-                .ThenInclude(link => link.MasterPlan)
-                .FirstOrDefaultAsync(e => e.Id == elementId);
-
-            if (element == null)
-            {
-                return NotFound(
-                    new { message = await _t.GetAsync("MasterPlanElement/NotFound", lang) }
-                );
-            }
-
-            var masterPlan = element.MasterPlanToMasterPlanElements.FirstOrDefault()?.MasterPlan;
-            var masterPlanId = masterPlan?.Id ?? 0;
-
-            // Audit trail.
-            await _audit.LogAsync(
-                "Delete",
-                "MasterPlanElement",
-                element.Id,
-                deletedBy,
-                userId,
-                new Dictionary<string, object?>
-                {
-                    ["ObjectID"] = element.Id,
-                    ["MasterPlanID"] = masterPlanId,
-                    ["ValueCount"] = element.Values.Count,
-                }
-            );
-
-            _context.MasterPlanElementValues.RemoveRange(element.Values);
-            _context.MasterPlanToMasterPlanElements.RemoveRange(
-                element.MasterPlanToMasterPlanElements
-            );
-            _context.MasterPlanElements.Remove(element);
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = await _t.GetAsync("MasterPlanElement/Deleted", lang) });
-        }
-
-        [HttpPut("update-group-order/{masterPlanId}")]
-        [Authorize(Roles = "MasterPlanner")]
-        public async Task<IActionResult> UpdateGroupOrder(
-            int masterPlanId,
-            [FromBody] UpdateMasterPlanElementGroupListDto dto
-        )
-        {
-            var lang = await GetLangAsync();
-            var userInfo = await _userService.GetUserInfoAsync();
-            if (userInfo == null)
-            {
-                return Unauthorized(
-                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
-                );
-            }
-
-            var (updatedBy, userId) = userInfo.Value;
-            var now = DateTime.UtcNow;
-
-            var links = await _context
-                .MasterPlanToMasterPlanElements.Include(x => x.MasterPlanElement)
-                .Where(x => x.MasterPlanId == masterPlanId)
-                .ToListAsync();
-
-            foreach (var item in dto.Elements)
-            {
-                var link = links.FirstOrDefault(x => x.MasterPlanElementId == item.ElementId);
-                if (link == null)
-                    continue;
-
-                link.Order = item.Order;
-                link.MasterPlanElement.GroupId = item.GroupId;
-                link.MasterPlanElement.UpdateDate = now;
-                link.MasterPlanElement.UpdatedBy = updatedBy;
-            }
-
-            var reordered = links.OrderBy(l => l.Order).ToList();
-
-            for (int i = 0; i < reordered.Count; i++)
-            {
-                reordered[i].Order = i;
-            }
-
-            await _context.SaveChangesAsync();
-
-            // Audit trail.
-            await _audit.LogAsync(
-                "Update",
-                "MasterPlanElement",
-                0,
-                updatedBy,
-                userId,
-                new Dictionary<string, object?>
-                {
-                    ["Action"] = "GroupOrderUpdated",
-                    ["UpdatedCount"] = dto.Elements.Count,
-                }
-            );
-
-            return Ok(new { message = await _t.GetAsync("MasterPlanElement/OrderUpdated", lang) });
         }
     }
 }

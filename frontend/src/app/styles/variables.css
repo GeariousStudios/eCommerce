@@ -140,6 +140,7 @@
   /* --- OTHER --- */
   --locked: var(--note-error);
   --unlocked: var(--note-success);
+  --edit-mode: var(--note-success);
 }
 
 [data-theme="light"] {
@@ -224,6 +225,7 @@
   /* --- OTHER --- */
   --locked: var(--note-error);
   --unlocked: var(--note-success);
+  --edit-mode: var(--note-success);
 }
 
 /* --- SCROLLBAR --- */

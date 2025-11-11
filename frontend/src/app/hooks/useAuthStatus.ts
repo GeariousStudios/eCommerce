@@ -133,6 +133,8 @@ const useAuthStatus = () => {
     isAdmin: userRoles.includes("Admin"),
     isDev: userRoles.includes("Developer"),
     isReporter: userRoles.includes("Reporter"),
+    isPlanner: userRoles.includes("Planner"),
+    isMasterPlanner: userRoles.includes("MasterPlanner"),
     isConnected,
     isAuthReady,
     username,

@@ -11,6 +11,7 @@ namespace backend.Dtos.MasterPlan
         public List<UnitDto> Units { get; set; } = new();
         public List<MasterPlanFieldDto> Fields { get; set; } = new();
         public List<MasterPlanElementDto> Elements { get; set; } = new();
+        public bool AllowRemovingElements { get; set; }
         public bool IsHidden { get; set; }
 
         // Meta data.

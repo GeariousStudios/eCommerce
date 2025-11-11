@@ -35,6 +35,13 @@ export const fetchContent = async ({
     params.append("isHidden", String(filters.isHidden));
   }
 
+  if (filters?.allowRemovingElements !== undefined) {
+    params.append(
+      "allowRemovingElements",
+      String(filters.allowRemovingElements),
+    );
+  }
+
   if (filters?.unitGroupIds) {
     for (const id of filters.unitGroupIds) {
       params.append("unitGroupIds", id.toString());

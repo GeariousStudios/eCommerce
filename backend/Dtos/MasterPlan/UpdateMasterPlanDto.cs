@@ -11,6 +11,7 @@ namespace backend.Dtos.MasterPlan
         [Required(ErrorMessage = "[3|MasterPlan/a group] Validation/Please select")]
         public int UnitGroupId { get; set; }
         public bool IsHidden { get; set; }
+        public bool AllowRemovingElements { get; set; }
         public int[]? Units { get; set; }
         public int[]? MasterPlanFieldIds { get; set; }
         public int[]? MasterPlanFieldIdsToDelete { get; set; }

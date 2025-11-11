@@ -12,6 +12,7 @@ namespace backend.Models
         public bool IsHidden { get; set; }
         public int UnitGroupId { get; set; }
         public required UnitGroup UnitGroup { get; set; }
+        public bool AllowRemovingElements { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }

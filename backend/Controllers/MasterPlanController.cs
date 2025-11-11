@@ -1,4 +1,5 @@
 using System.Net.Mail;
+using System.Text.Json;
 using backend.Data;
 using backend.Dtos.MasterPlan;
 using backend.Dtos.Unit;
@@ -67,6 +68,7 @@ namespace backend.Controllers
             [FromQuery] int[]? unitIds = null,
             [FromQuery] int[]? fieldIds = null,
             [FromQuery] bool? isHidden = null,
+            [FromQuery] bool? allowRemovingElements = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
@@ -84,6 +86,11 @@ namespace backend.Controllers
             if (isHidden.HasValue)
             {
                 query = query.Where(mp => mp.IsHidden == isHidden.Value);
+            }
+
+            if (allowRemovingElements.HasValue)
+            {
+                query = query.Where(mp => mp.AllowRemovingElements == allowRemovingElements.Value);
             }
 
             if (unitGroupIds?.Any() == true)
@@ -130,6 +137,9 @@ namespace backend.Controllers
                 "visibilitycount" => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.IsHidden)
                     : query.OrderBy(mp => mp.IsHidden),
+                "allowremovingelements" => sortOrder == "desc"
+                    ? query.OrderByDescending(mp => mp.AllowRemovingElements)
+                    : query.OrderBy(mp => mp.AllowRemovingElements),
                 _ => sortOrder == "desc"
                     ? query.OrderByDescending(mp => mp.Id)
                     : query.OrderBy(mp => mp.Id),
@@ -142,6 +152,14 @@ namespace backend.Controllers
             {
                 ["Visible"] = await _context.MasterPlans.CountAsync(mp => !mp.IsHidden),
                 ["Hidden"] = await _context.MasterPlans.CountAsync(mp => mp.IsHidden),
+            };
+
+            var allowRemovingElementsCount = new Dictionary<string, int>
+            {
+                ["Allowed"] = await _context.MasterPlans.CountAsync(mp => mp.AllowRemovingElements),
+                ["Disallowed"] = await _context.MasterPlans.CountAsync(mp =>
+                    !mp.AllowRemovingElements
+                ),
             };
 
             var unitGroupCount = _context
@@ -183,6 +201,7 @@ namespace backend.Controllers
                         })
                         .ToList(),
                     IsHidden = t.IsHidden,
+                    AllowRemovingElements = t.AllowRemovingElements,
                     UnitGroupId = t.UnitGroupId,
                     UnitGroupName = t.UnitGroup.Name,
                     Fields = t
@@ -239,6 +258,7 @@ namespace backend.Controllers
                 counts = new
                 {
                     visibilityCount,
+                    allowRemovingElementsCount,
                     unitGroupCount,
                     unitCount,
                     fieldCount,
@@ -283,6 +303,7 @@ namespace backend.Controllers
                     })
                     .ToListAsync(),
                 IsHidden = masterPlan.IsHidden,
+                AllowRemovingElements = masterPlan.AllowRemovingElements,
                 UnitGroupId = masterPlan.UnitGroupId,
                 UnitGroupName = masterPlan.UnitGroup.Name ?? unknownGroup,
                 Fields = masterPlan
@@ -397,14 +418,20 @@ namespace backend.Controllers
                     ["UnitGroup"] = $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
                     ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
                         ? string.Join(
-                            "<br>",
+                            "<br><br>",
                             masterPlan
                                 .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                                 .Select(mpf =>
-                                    $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})"
+                                    $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})<br>"
+                                    + $"&nbsp;&nbsp;&nbsp; AuditTrail/DataType: AuditTrail/{mpf.MasterPlanField.DataType}<br>"
+                                    + $"&nbsp;&nbsp;&nbsp; AuditTrail/Alignment: AuditTrail/{mpf.MasterPlanField.Alignment}<br>"
+                                    + $"&nbsp;&nbsp;&nbsp; AuditTrail/IsHidden: {(mpf.MasterPlanField.IsHidden ? "Common/Yes" : "Common/No")}"
                                 )
                         )
                         : "—",
+                    ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["IsHidden"] = masterPlan.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -573,6 +600,7 @@ namespace backend.Controllers
                 {
                     Name = dto.Name,
                     IsHidden = dto.IsHidden,
+                    AllowRemovingElements = dto.AllowRemovingElements,
                     UnitGroup = unitGroup,
                     MasterPlanToMasterPlanFields = orderedFieldIds
                         .Where(id => finalFieldIds.Contains(id))
@@ -614,6 +642,7 @@ namespace backend.Controllers
                     Id = masterPlan.Id,
                     Name = masterPlan.Name,
                     IsHidden = masterPlan.IsHidden,
+                    AllowRemovingElements = masterPlan.AllowRemovingElements,
                     UnitGroupId = masterPlan.UnitGroupId,
                     Fields = await _context
                         .MasterPlanToMasterPlanFields.Where(mpf =>
@@ -652,14 +681,20 @@ namespace backend.Controllers
                             $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
                         ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
                             ? string.Join(
-                                "<br>",
+                                "<br><br>",
                                 masterPlan
                                     .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                                     .Select(mpf =>
-                                        $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})"
+                                        $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})<br>"
+                                        + $"&nbsp;&nbsp;&nbsp; AuditTrail/DataType: AuditTrail/{mpf.MasterPlanField.DataType}<br>"
+                                        + $"&nbsp;&nbsp;&nbsp; AuditTrail/Alignment: AuditTrail/{mpf.MasterPlanField.Alignment}<br>"
+                                        + $"&nbsp;&nbsp;&nbsp; AuditTrail/IsHidden: {(mpf.MasterPlanField.IsHidden ? "Common/Yes" : "Common/No")}"
                                     )
                             )
                             : "—",
+                        ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
                         ["IsHidden"] = masterPlan.IsHidden
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },
@@ -754,14 +789,20 @@ namespace backend.Controllers
                 ["UnitGroup"] = $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
                 ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
                     ? string.Join(
-                        "<br>",
+                        "<br><br>",
                         masterPlan
                             .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                             .Select(mpf =>
-                                $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})"
+                                $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})<br>"
+                                + $"&nbsp;&nbsp;&nbsp; AuditTrail/DataType: AuditTrail/{mpf.MasterPlanField.DataType}<br>"
+                                + $"&nbsp;&nbsp;&nbsp; AuditTrail/Alignment: AuditTrail/{mpf.MasterPlanField.Alignment}<br>"
+                                + $"&nbsp;&nbsp;&nbsp; AuditTrail/IsHidden: {(mpf.MasterPlanField.IsHidden ? "Common/Yes" : "Common/No")}"
                             )
                     )
                     : "—",
+                ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
                 ["IsHidden"] = masterPlan.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
@@ -932,6 +973,7 @@ namespace backend.Controllers
 
                 masterPlan.Name = dto.Name;
                 masterPlan.IsHidden = dto.IsHidden;
+                masterPlan.AllowRemovingElements = dto.AllowRemovingElements;
                 masterPlan.UnitGroup = unitGroup;
                 masterPlan.UpdateDate = now;
                 masterPlan.UpdatedBy = updatedBy;
@@ -944,6 +986,7 @@ namespace backend.Controllers
                     Id = masterPlan.Id,
                     Name = masterPlan.Name,
                     IsHidden = masterPlan.IsHidden,
+                    AllowRemovingElements = masterPlan.AllowRemovingElements,
                     UnitGroupId = masterPlan.UnitGroupId,
                     Fields = masterPlan
                         .MasterPlanToMasterPlanFields.OrderBy(x => x.Order)
@@ -988,14 +1031,20 @@ namespace backend.Controllers
                                 $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
                             ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
                                 ? string.Join(
-                                    "<br>",
+                                    "<br><br>",
                                     masterPlan
                                         .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                                         .Select(mpf =>
-                                            $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})"
+                                            $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})<br>"
+                                            + $"&nbsp;&nbsp;&nbsp; AuditTrail/DataType: AuditTrail/{mpf.MasterPlanField.DataType}<br>"
+                                            + $"&nbsp;&nbsp;&nbsp; AuditTrail/Alignment: AuditTrail/{mpf.MasterPlanField.Alignment}<br>"
+                                            + $"&nbsp;&nbsp;&nbsp; AuditTrail/IsHidden: {(mpf.MasterPlanField.IsHidden ? "Common/Yes" : "Common/No")}"
                                         )
                                 )
                                 : "—",
+                            ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
+                                ? new[] { "Common/Yes" }
+                                : new[] { "Common/No" },
                             ["IsHidden"] = masterPlan.IsHidden
                                 ? new[] { "Common/Yes" }
                                 : new[] { "Common/No" },
@@ -1015,7 +1064,11 @@ namespace backend.Controllers
 
         [HttpPost("check/{id}")]
         [Authorize(Roles = "MasterPlanner")]
-        public async Task<IActionResult> Check(int id, [FromQuery] bool force = false)
+        public async Task<IActionResult> Check(
+            int id,
+            [FromQuery] bool force = false,
+            [FromQuery] bool cancelled = false
+        )
         {
             var lang = await GetLangAsync();
             var userInfo = await _userService.GetUserInfoAsync();
@@ -1070,7 +1123,15 @@ namespace backend.Controllers
                         );
                     }
 
-                    return Ok(new { message = "MasterPlan/Checked in", isCheckedOut = false });
+                    return Ok(
+                        new
+                        {
+                            message = cancelled
+                                ? "MasterPlan/No changes made"
+                                : "MasterPlan/Checked in",
+                            isCheckedOut = false,
+                        }
+                    );
                 }
 
                 // Another user has checked out.
