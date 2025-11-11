@@ -191,10 +191,14 @@ namespace backend.Controllers
                         {
                             Id = mpf.MasterPlanField.Id,
                             Name = mpf.MasterPlanField.Name,
+                            DataType = mpf.MasterPlanField.DataType,
+                            Alignment = mpf.MasterPlanField.Alignment,
+                            IsHidden = mpf.MasterPlanField.IsHidden,
                         })
                         .ToList(),
                     Elements = t
                         .MasterPlanToMasterPlanElements.OrderBy(mpe => mpe.Order)
+                        .ThenBy(mpe => mpe.Order)
                         .Select(mpe => new MasterPlanElementDto
                         {
                             Id = mpe.MasterPlanElement.Id,
@@ -287,6 +291,9 @@ namespace backend.Controllers
                     {
                         Id = mpf.MasterPlanField.Id,
                         Name = mpf.MasterPlanField.Name,
+                        DataType = mpf.MasterPlanField.DataType,
+                        Alignment = mpf.MasterPlanField.Alignment,
+                        IsHidden = mpf.MasterPlanField.IsHidden,
                     })
                     .ToList(),
                 Elements = masterPlan
@@ -467,7 +474,7 @@ namespace backend.Controllers
 
             if (
                 (dto.MasterPlanFieldIds == null || !dto.MasterPlanFieldIds.Any())
-                && (dto.NewMasterPlanFieldNames == null || !dto.NewMasterPlanFieldNames.Any())
+                && (dto.NewMasterPlanFields == null || !dto.NewMasterPlanFields.Any())
             )
             {
                 var msg = await _t.GetAsync("MasterPlan/AtLeastOneFieldRequired", lang);
@@ -510,18 +517,19 @@ namespace backend.Controllers
                 }
 
                 var newFields = new List<MasterPlanField>();
-                if (dto.NewMasterPlanFieldNames?.Any() == true)
+                if (dto.NewMasterPlanFields?.Any() == true)
                 {
-                    foreach (
-                        var name in dto.NewMasterPlanFieldNames.Where(n =>
-                            !string.IsNullOrWhiteSpace(n)
-                        )
-                    )
+                    foreach (var fieldDto in dto.NewMasterPlanFields)
                     {
-                        var trimmed = name.Trim();
+                        if (string.IsNullOrWhiteSpace(fieldDto.Name))
+                            continue;
+
                         var newField = new MasterPlanField
                         {
-                            Name = trimmed,
+                            Name = fieldDto.Name.Trim(),
+                            DataType = fieldDto.DataType,
+                            Alignment = fieldDto.Alignment,
+                            IsHidden = fieldDto.IsHidden,
 
                             // Meta data.
                             CreationDate = now,
@@ -529,6 +537,7 @@ namespace backend.Controllers
                             UpdateDate = now,
                             UpdatedBy = createdBy,
                         };
+
                         newFields.Add(newField);
                     }
 
@@ -615,6 +624,9 @@ namespace backend.Controllers
                         {
                             Id = mpf.MasterPlanField.Id,
                             Name = mpf.MasterPlanField.Name,
+                            IsHidden = mpf.MasterPlanField.IsHidden,
+                            DataType = mpf.MasterPlanField.DataType,
+                            Alignment = mpf.MasterPlanField.Alignment,
                         })
                         .ToListAsync(),
 
@@ -716,7 +728,7 @@ namespace backend.Controllers
 
             if (
                 (dto.MasterPlanFieldIds == null || !dto.MasterPlanFieldIds.Any())
-                && (dto.NewMasterPlanFieldNames == null || !dto.NewMasterPlanFieldNames.Any())
+                && (dto.NewMasterPlanFields == null || !dto.NewMasterPlanFields.Any())
             )
             {
                 var msg = await _t.GetAsync("MasterPlan/AtLeastOneFieldRequired", lang);
@@ -778,22 +790,19 @@ namespace backend.Controllers
 
                 var newFields = new List<MasterPlanField>();
 
-                if (dto.NewMasterPlanFieldNames?.Any() == true)
+                if (dto.NewMasterPlanFields?.Any() == true)
                 {
-                    foreach (
-                        var name in dto.NewMasterPlanFieldNames.Where(n =>
-                            !string.IsNullOrWhiteSpace(n)
-                        )
-                    )
+                    foreach (var fieldDto in dto.NewMasterPlanFields)
                     {
-                        var trimmed = name.Trim();
+                        if (string.IsNullOrWhiteSpace(fieldDto.Name))
+                            continue;
 
                         var duplicate = await _context
                             .MasterPlanFields.Include(mpf => mpf.MasterPlanToMasterPlanFields)
-                            .Where(mpf => mpf.Name.ToLower() == trimmed.ToLower())
                             .AnyAsync(mpf =>
-                                mpf.MasterPlanToMasterPlanFields.Any(cmpf =>
-                                    cmpf.MasterPlanId == masterPlan.Id
+                                mpf.Name.ToLower() == fieldDto.Name.Trim().ToLower()
+                                && mpf.MasterPlanToMasterPlanFields.Any(link =>
+                                    link.MasterPlanId == masterPlan.Id
                                 )
                             );
 
@@ -803,12 +812,17 @@ namespace backend.Controllers
                                 "MasterPlanField/ExistsInMasterPlan",
                                 lang
                             );
-                            return BadRequest(new { message = string.Format(template, trimmed) });
+                            return BadRequest(
+                                new { message = string.Format(template, fieldDto.Name) }
+                            );
                         }
 
                         var newField = new MasterPlanField
                         {
-                            Name = trimmed,
+                            Name = fieldDto.Name.Trim(),
+                            DataType = fieldDto.DataType,
+                            Alignment = fieldDto.Alignment,
+                            IsHidden = fieldDto.IsHidden,
 
                             // Meta data.
                             CreationDate = now,
@@ -835,10 +849,14 @@ namespace backend.Controllers
                         var field = await _context.MasterPlanFields.FirstOrDefaultAsync(f =>
                             f.Id == updatedField.Id
                         );
+
                         if (field == null)
+                        {
                             continue;
+                        }
 
                         var trimmed = updatedField.Name.Trim();
+
                         if (field.Name != trimmed)
                         {
                             var exists = await _context.MasterPlanFields.AnyAsync(f =>
@@ -854,9 +872,15 @@ namespace backend.Controllers
                             }
 
                             field.Name = trimmed;
-                            field.UpdateDate = now;
-                            field.UpdatedBy = updatedBy;
                         }
+
+                        field.DataType = updatedField.DataType;
+                        field.Alignment = updatedField.Alignment;
+                        field.IsHidden = updatedField.IsHidden;
+
+                        // Meta data.
+                        field.UpdateDate = now;
+                        field.UpdatedBy = updatedBy;
                     }
                 }
 
@@ -929,6 +953,15 @@ namespace backend.Controllers
                             Name = _context
                                 .MasterPlanFields.First(mpf => mpf.Id == mpmpf.MasterPlanFieldId)
                                 .Name,
+                            DataType = _context
+                                .MasterPlanFields.First(mpf => mpf.Id == mpmpf.MasterPlanFieldId)
+                                .DataType,
+                            Alignment = _context
+                                .MasterPlanFields.First(mpf => mpf.Id == mpmpf.MasterPlanFieldId)
+                                .Alignment,
+                            IsHidden = _context
+                                .MasterPlanFields.First(mpf => mpf.Id == mpmpf.MasterPlanFieldId)
+                                .IsHidden,
                         })
                         .ToList(),
 

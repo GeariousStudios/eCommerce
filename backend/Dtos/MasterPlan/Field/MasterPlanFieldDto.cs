@@ -1,4 +1,5 @@
 using backend.Dtos.Unit;
+using backend.Models;
 
 namespace backend.Dtos.MasterPlan
 {
@@ -6,6 +7,9 @@ namespace backend.Dtos.MasterPlan
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public bool IsHidden { get; set; }
+        public MasterPlanFieldDataType DataType { get; set; }
+        public MasterPlanFieldAlignment Alignment { get; set; }
         public List<int> MasterPlanIds { get; set; } = new();
 
         // Meta data.

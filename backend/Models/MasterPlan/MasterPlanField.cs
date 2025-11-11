@@ -9,6 +9,9 @@ namespace backend.Models
 
         [MaxLength(32)]
         public string Name { get; set; } = string.Empty;
+        public bool IsHidden { get; set; }
+        public MasterPlanFieldDataType DataType { get; set; }
+        public MasterPlanFieldAlignment Alignment { get; set; }
 
         // Meta data.
         public DateTime CreationDate { get; set; }
@@ -17,5 +20,19 @@ namespace backend.Models
         public string UpdatedBy { get; set; } = string.Empty;
 
         public List<MasterPlanToMasterPlanField> MasterPlanToMasterPlanFields { get; set; } = new();
+    }
+
+    public enum MasterPlanFieldDataType
+    {
+        Number,
+        Text,
+        Boolean,
+    }
+
+    public enum MasterPlanFieldAlignment
+    {
+        Left,
+        Center,
+        Right,
     }
 }

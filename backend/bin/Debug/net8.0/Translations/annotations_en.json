@@ -26,5 +26,9 @@
   "UnitColumn/a comparison text": "a comparison text",
   "UnitColumn/Comparison text": "Comparison text",
 
-  "Report/a start time": "a start time"
+  "Report/a start time": "a start time",
+
+  "MasterPlan/a group": "a group",
+
+  "MasterPlanField/a data type": "a data type"
 }

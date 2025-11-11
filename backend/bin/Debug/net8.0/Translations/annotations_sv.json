@@ -26,5 +26,9 @@
   "UnitColumn/a comparison text": "en jämförelsetext",
   "UnitColumn/Comparison text": "Jämförelsetext",
 
-  "Report/a start time": "en starttid"
+  "Report/a start time": "en starttid",
+
+  "MasterPlan/a group": "en grupp",
+
+  "MasterPlanField/a data type": "en datatyp"
 }

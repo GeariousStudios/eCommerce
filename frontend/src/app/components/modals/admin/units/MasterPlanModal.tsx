@@ -9,18 +9,25 @@ import {
 import Input from "../../../common/Input";
 import { useToast } from "../../../toast/ToastProvider";
 import {
+  buttonDeletePrimaryClass,
   buttonPrimaryClass,
   buttonSecondaryClass,
+  iconButtonPrimaryClass,
   roundedButtonClass,
   switchClass,
   switchKnobClass,
 } from "@/app/styles/buttonClasses";
+import {
+  getMasterPlanFieldDataTypeOptions,
+  MasterPlanFieldDataType,
+} from "@/app/types/manageTypes";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
 import { masterPlanConstraints } from "@/app/helpers/inputConstraints";
-import { XMarkIcon } from "@heroicons/react/20/solid";
+import { EllipsisVerticalIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "@/app/components/common/DragDrop";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
+import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
 
 type Props = {
   isOpen: boolean;
@@ -37,6 +44,9 @@ type UnitGroupOptions = {
 type MasterPlanFieldDto = {
   id: number;
   name: string;
+  dataType: MasterPlanFieldDataType;
+  alignment: "Left" | "Center" | "Right";
+  isHidden: boolean;
 };
 
 const MasterPlanModal = (props: Props) => {
@@ -70,10 +80,7 @@ const MasterPlanModal = (props: Props) => {
 
   const [isAnyDragging, setIsAnyDragging] = useState(false);
 
-  const [editingMasterPlanFieldId, setEditingMasterPlanFieldId] = useState<
-    number | null
-  >(null);
-  const [editingName, setEditingName] = useState("");
+  const [updateTick, setUpdateTick] = useState(0);
 
   // --- Other ---
   const token = localStorage.getItem("token");
@@ -112,9 +119,14 @@ const MasterPlanModal = (props: Props) => {
   const createMasterPlan = async (event: FormEvent) => {
     event.preventDefault();
 
-    const newMasterPlanFieldNames = updatedMasterPlanFieldsRef.current
+    const newMasterPlanFields = updatedMasterPlanFieldsRef.current
       .filter((mpf) => masterPlanFieldIds.includes(mpf.id) && mpf.id < 0)
-      .map((mpf) => mpf.name.trim());
+      .map((mpf) => ({
+        name: mpf.name.trim(),
+        dataType: mpf.dataType,
+        alignment: mpf.alignment,
+        isHidden: mpf.isHidden,
+      }));
 
     const newMasterPlanFieldIds = masterPlanFieldIds.filter((id) => id > 0);
 
@@ -131,7 +143,7 @@ const MasterPlanModal = (props: Props) => {
           unitGroupId: parseInt(unitGroup),
           isHidden,
           masterPlanFieldIds: newMasterPlanFieldIds,
-          newMasterPlanFieldNames,
+          newMasterPlanFields,
           masterPlanFieldIdsToDelete,
           orderedMasterPlanFieldIds: masterPlanFieldIds,
           tempMasterPlanFieldNames,
@@ -263,6 +275,19 @@ const MasterPlanModal = (props: Props) => {
 
     setMasterPlanFieldIds(ids);
     setOriginalMasterPlanFieldIds(ids);
+
+    if (Array.isArray(result.fields)) {
+      result.fields.forEach((mpf: any) => {
+        const found = updatedMasterPlanFieldsRef.current.find(
+          (f) => f.id === mpf.id,
+        );
+        if (found) {
+          found.alignment = mpf.alignment ?? "Left";
+          found.dataType = mpf.dataType ?? "Text";
+          found.isHidden = mpf.isHidden ?? false;
+        }
+      });
+    }
   };
 
   const fetchAllMasterPlanFields = async () => {
@@ -291,15 +316,24 @@ const MasterPlanModal = (props: Props) => {
   const updateMasterPlan = async (event: FormEvent) => {
     event.preventDefault();
 
-    const newMasterPlanFieldNames = updatedMasterPlanFieldsRef.current
+    const newMasterPlanFields = updatedMasterPlanFieldsRef.current
       .filter((mpf) => masterPlanFieldIds.includes(mpf.id) && mpf.id < 0)
-      .map((mpf) => mpf.name.trim());
-
-    const newMasterPlanFieldIds = masterPlanFieldIds.filter((id) => id > 0);
+      .map((mpf) => ({
+        name: mpf.name.trim(),
+        dataType: mpf.dataType,
+        alignment: mpf.alignment,
+        isHidden: mpf.isHidden,
+      }));
 
     const updatedExistingMasterPlanFields = updatedMasterPlanFieldsRef.current
-      .filter((mpf) => newMasterPlanFieldIds.includes(mpf.id) && mpf.id > 0)
-      .map((mpf) => ({ id: mpf.id, name: mpf.name.trim() }));
+      .filter((mpf) => masterPlanFieldIds.includes(mpf.id) && mpf.id > 0)
+      .map((mpf) => ({
+        id: mpf.id,
+        name: mpf.name.trim(),
+        dataType: mpf.dataType,
+        alignment: mpf.alignment,
+        isHidden: mpf.isHidden,
+      }));
 
     try {
       const response = await fetch(
@@ -315,8 +349,8 @@ const MasterPlanModal = (props: Props) => {
             name,
             unitGroupId: parseInt(unitGroup),
             isHidden,
-            masterPlanFieldIds: newMasterPlanFieldIds,
-            newMasterPlanFieldNames,
+            masterPlanFieldIds,
+            newMasterPlanFields,
             updatedExistingMasterPlanFields,
             masterPlanFieldIdsToDelete,
             orderedMasterPlanFieldIds: masterPlanFieldIds,
@@ -417,6 +451,9 @@ const MasterPlanModal = (props: Props) => {
     const tempMasterPlanField: MasterPlanFieldDto = {
       id: tempId,
       name: trimmed,
+      dataType: "Text",
+      alignment: "Left",
+      isHidden: false,
     };
 
     updatedMasterPlanFieldsRef.current = [
@@ -442,8 +479,6 @@ const MasterPlanModal = (props: Props) => {
     }
   };
 
-  // --- COMPONENTS ---
-  // --- MasterPlanFieldChip ---
   const MasterPlanFieldChip = ({
     id,
     label,
@@ -455,74 +490,180 @@ const MasterPlanModal = (props: Props) => {
     id: number;
     label: string;
     onDelete: () => void;
-    onRename: (newName: string) => void;
+    onRename: (id: number, value: string) => void;
+
     isDragging?: boolean;
     dragging?: boolean;
   }) => {
-    const isEditing = editingMasterPlanFieldId === id;
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [isHiddenField, setIsHiddenField] = useState(false);
+    const [dataTypeField, setDataTypeField] =
+      useState<MasterPlanFieldDataType>("Text");
+    const [localNameField, setLocalNameField] = useState(label);
+    const triggerRef = useRef<HTMLButtonElement>(null);
+    const [alignmentField, setAlignmentField] = useState<
+      "Left" | "Center" | "Right"
+    >("Left");
+
+    useEffect(() => {
+      setLocalNameField(label);
+    }, [label]);
+
+    useEffect(() => {
+      const found = updatedMasterPlanFieldsRef.current.find(
+        (mpf) => mpf.id === id,
+      );
+      if (found) {
+        setIsHiddenField(found.isHidden);
+        setDataTypeField(found.dataType);
+        setAlignmentField(found.alignment);
+      }
+    }, [id]);
+
+    const handleHiddenChange = (value: boolean) => {
+      setIsHiddenField(value);
+      updatedMasterPlanFieldsRef.current =
+        updatedMasterPlanFieldsRef.current.map((mpf) =>
+          mpf.id === id ? { ...mpf, isHidden: value } : mpf,
+        );
+      setIsDirty(true);
+    };
+
+    const handleDataTypeChange = (value: MasterPlanFieldDataType) => {
+      setDataTypeField(value);
+      updatedMasterPlanFieldsRef.current =
+        updatedMasterPlanFieldsRef.current.map((mpf) =>
+          mpf.id === id ? { ...mpf, dataType: value } : mpf,
+        );
+      setIsDirty(true);
+    };
+
+    const handleAlignmentChange = (value: "Left" | "Center" | "Right") => {
+      setAlignmentField(value);
+      updatedMasterPlanFieldsRef.current =
+        updatedMasterPlanFieldsRef.current.map((mpf) =>
+          mpf.id === id ? { ...mpf, alignment: value } : mpf,
+        );
+      setIsDirty(true);
+    };
 
     return (
       <div
-        className={`${roundedButtonClass} flex w-auto items-center gap-2 !bg-[var(--bg-modal-link)] px-4 transition-transform duration-[var(--fast)]`}
-        style={{
-          cursor: isEditing ? "text" : isDragging ? "grabbing" : "grab",
-        }}
+        className={`${roundedButtonClass} relative flex w-auto items-center gap-2 !bg-[var(--bg-modal-link)] px-4 transition-transform duration-[var(--fast)]`}
+        style={{ cursor: isDragging ? "grabbing" : "grab" }}
       >
-        {isEditing ? (
-          <input
-            autoFocus
-            value={editingName}
-            onChange={(e) => setEditingName(e.target.value)}
-            onBlur={() => {
-              const trimmed = editingName.trim();
-              if (trimmed) onRename(trimmed);
-              setEditingMasterPlanFieldId(null);
-              setEditingName("");
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const trimmed = editingName.trim();
-                if (trimmed) onRename(trimmed);
-                setEditingMasterPlanFieldId(null);
-                setEditingName("");
-              } else if (e.key === "Escape") {
-                setEditingMasterPlanFieldId(null);
-                setEditingName("");
-              }
-            }}
-            {...masterPlanConstraints.masterPlanFieldName}
-            className="w-32 border-b border-[var(--border-primary)] bg-transparent outline-none"
-          />
-        ) : (
-          <>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditingMasterPlanFieldId(id);
-                setEditingName(label);
+        <span className="truncate font-semibold select-none">{label}</span>
+
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setMenuOpen((prev) => !prev);
+          }}
+          className={`${iconButtonPrimaryClass}`}
+        >
+          <EllipsisVerticalIcon className="h-5 w-5" />
+        </button>
+
+        <MenuDropdown
+          isOpen={menuOpen}
+          onClose={() => {
+            setMenuOpen(false);
+            onRename(id, localNameField);
+          }}
+          triggerRef={triggerRef}
+          // closeOnScroll
+          onModal
+        >
+          <div className="flex flex-col gap-6">
+            <span className="text-lg font-semibold">{localNameField}</span>
+
+            <Input
+              id={`rename-${id}`}
+              label={t("Common/Name")}
+              value={localNameField}
+              onChange={(value) => setLocalNameField(value as string)}
+              onBlur={() => {
+                if (localNameField.trim() === "") {
+                  setLocalNameField(label);
+                }
               }}
-              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
-              style={{ cursor: "pointer" }}
-            >
-              <PencilIcon className="h-5 w-5" />
-            </button>
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  const trimmed = localNameField.trim();
 
-            <span className="truncate font-semibold select-none">{label}</span>
+                  if (!trimmed) {
+                    setLocalNameField(label);
+                    return;
+                  }
+
+                  onRename(id, trimmed);
+                }
+              }}
+              onModal
+              {...masterPlanConstraints.masterPlanFieldName}
+            />
+
+            <SingleDropdown
+              id={`datatype-${id}`}
+              label={t("MasterPlanModal/Data type")}
+              value={dataTypeField}
+              onChange={(val) =>
+                handleDataTypeChange(val as MasterPlanFieldDataType)
+              }
+              options={getMasterPlanFieldDataTypeOptions(t).map((opt) => ({
+                label: opt.label,
+                value: opt.value,
+              }))}
+              onModal
+            />
+
+            <SingleDropdown
+              id={`alignment-${id}`}
+              label={t("MasterPlanModal/Alignment")}
+              value={alignmentField}
+              onChange={(val) =>
+                handleAlignmentChange(val as "Left" | "Center" | "Right")
+              }
+              options={[
+                { label: t("Common/Left"), value: "Left" },
+                { label: t("Common/Center"), value: "Center" },
+                { label: t("Common/Right"), value: "Right" },
+              ]}
+              onModal
+            />
+
+            <div className="mb-6 flex justify-between gap-6">
+              <div className="flex items-center gap-2 truncate">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isHiddenField}
+                  className={switchClass(isHiddenField)}
+                  onClick={() => handleHiddenChange(!isHiddenField)}
+                >
+                  <div className={switchKnobClass(isHiddenField)} />
+                </button>
+                <span className="mb-0.5">
+                  {t("MasterPlanModal/Hide master plan field")}
+                </span>
+              </div>
+            </div>
 
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={() => {
+                setMenuOpen(false);
                 onDelete();
               }}
-              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
-              style={{ cursor: "pointer" }}
+              className={buttonDeletePrimaryClass}
             >
-              <XMarkIcon className="h-6 w-6" />
+              {t("MasterPlanModal/Delete field")}
             </button>
-          </>
-        )}
+          </div>
+        </MenuDropdown>
       </div>
     );
   };
@@ -656,7 +797,12 @@ const MasterPlanModal = (props: Props) => {
                   }}
                   // placeholder={t("MasterPlanModal/Placeholder text")}
                   // showAsterixOnPlaceholder
-                  label={t("Common/Add") + " " + t("Common/master plan field") + "..."}
+                  label={
+                    t("Common/Add") +
+                    " " +
+                    t("Common/master plan field") +
+                    "..."
+                  }
                   showAsterix
                   {...masterPlanConstraints.masterPlanFieldName}
                 />
@@ -685,12 +831,13 @@ const MasterPlanModal = (props: Props) => {
 
                       return (
                         <MasterPlanFieldChip
+                          key={id + updateTick}
                           id={id}
                           label={label}
                           isDragging={isDragging}
                           dragging={isAnyDragging}
                           onDelete={() => deleteMasterPlanField(id)}
-                          onRename={(newName) => {
+                          onRename={(id, newName) => {
                             const trimmed = newName.trim();
 
                             if (!trimmed) return;
@@ -714,6 +861,7 @@ const MasterPlanModal = (props: Props) => {
                               );
 
                             setIsDirty(true);
+                            setUpdateTick((prev) => prev + 1);
                           }}
                         />
                       );
