@@ -1,56 +1,83 @@
 import { FocusTrap } from "focus-trap-react";
 import { ReactNode, RefObject, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 type Props = {
   children: ReactNode;
   isOpen: boolean;
   onClose: () => void;
   triggerRef?: RefObject<HTMLElement | null>;
+  closeOnScroll?: boolean;
+  onModal?: boolean;
 };
 
 const MenuDropdown = (props: Props) => {
   const innerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState<string | undefined>("16rem");
   const [entered, setEntered] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
 
-  const updateWidth = () => {
-    const element = innerRef.current;
+  const updateWidthAndPosition = () => {
+    if (!props.triggerRef?.current) return;
 
-    if (!element) {
-      return;
-    }
+    const rect = props.triggerRef.current.getBoundingClientRect();
+    const desiredWidth = 256;
+    const leftPos = rect.right - desiredWidth;
 
-    const rect = element.getBoundingClientRect();
-    const maxWidthRight = window.innerWidth - rect.left;
-    const maxWidthLeft = rect.right - 80;
-    const availableWidth = Math.min(maxWidthRight, maxWidthLeft, 256);
-    setWidth(`${availableWidth}px`);
+    const adjustedWidth = leftPos < 8 ? rect.right - 8 : desiredWidth;
+
+    setWidth(`${adjustedWidth}px`);
+    setPosition({
+      top: rect.bottom + window.scrollY + 4,
+      left: rect.right - adjustedWidth + window.scrollX,
+    });
   };
 
   useEffect(() => {
-    if (!props.isOpen || !innerRef.current) {
+    if (!props.isOpen) {
       return;
     }
 
-    const raf = requestAnimationFrame(updateWidth);
-
-    return () => cancelAnimationFrame(raf);
-  }, [props.isOpen]);
-
-  useEffect(() => {
-    const resizeObserver = new ResizeObserver(updateWidth);
-
-    if (innerRef.current) {
-      resizeObserver.observe(innerRef.current);
+    const triggerEl = props.triggerRef?.current;
+    if (!triggerEl) {
+      return;
     }
 
-    window.addEventListener("resize", updateWidth);
+    updateWidthAndPosition();
+
+    const scrollContainer = triggerEl.closest(".modal-body");
+    if (scrollContainer) {
+      scrollContainer.addEventListener(
+        "scroll",
+        props.closeOnScroll ? props.onClose : updateWidthAndPosition,
+      );
+    }
+
+    window.addEventListener("resize", updateWidthAndPosition);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry.isIntersecting) {
+          props.onClose();
+        }
+      },
+      {
+        root: scrollContainer || null,
+        threshold: 0,
+      },
+    );
+
+    observer.observe(triggerEl);
 
     return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener("resize", updateWidth);
+      if (scrollContainer) {
+        scrollContainer.removeEventListener("scroll", updateWidthAndPosition);
+      }
+      window.removeEventListener("resize", updateWidthAndPosition);
+      observer.disconnect();
     };
-  }, []);
+  }, [props.isOpen]);
 
   useEffect(() => {
     if (!props.isOpen) {
@@ -58,12 +85,18 @@ const MenuDropdown = (props: Props) => {
       return;
     }
 
-    setEntered(false);
-    const id = requestAnimationFrame(() => {
-      setEntered(true);
-    });
+    updateWidthAndPosition();
 
-    return () => cancelAnimationFrame(id);
+    const timeout = setTimeout(() => {
+      updateWidthAndPosition();
+    }, 0);
+
+    const id = requestAnimationFrame(() => setEntered(true));
+
+    return () => {
+      clearTimeout(timeout);
+      cancelAnimationFrame(id);
+    };
   }, [props.isOpen]);
 
   useEffect(() => {
@@ -71,7 +104,7 @@ const MenuDropdown = (props: Props) => {
       return;
     }
 
-    updateWidth();
+    updateWidthAndPosition();
 
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       const menuElement = innerRef.current;
@@ -97,7 +130,7 @@ const MenuDropdown = (props: Props) => {
     };
   }, [props.isOpen, props.onClose]);
 
-  return (
+  const dropdown = (
     <FocusTrap
       active={props.isOpen}
       focusTrapOptions={{
@@ -109,15 +142,22 @@ const MenuDropdown = (props: Props) => {
     >
       <div
         ref={innerRef}
+        {...(props.onModal ? { "data-inside-modal": "true" } : {})}
         role="dialog"
         aria-hidden={!props.isOpen}
-        className={`${props.isOpen ? "visible" : "invisible"} ${props.isOpen && entered ? "opacity-100" : "opacity-0"} max-h-[462.5px] absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 break-words shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
-        style={{ width }}
+        className={`${props.isOpen ? "visible" : "invisible"} ${props.isOpen && entered ? "opacity-100" : "opacity-0"} absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex max-h-[462.5px] flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 break-words shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+        style={{
+          width,
+          top: position.top,
+          left: position.left,
+        }}
       >
         {props.children}
       </div>
     </FocusTrap>
   );
+
+  return props.isOpen ? createPortal(dropdown, document.body) : null;
 };
 
 export default MenuDropdown;

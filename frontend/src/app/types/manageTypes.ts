@@ -50,7 +50,7 @@ export type CategoryFilters = {
 
 // --- admin/manage/units/unit-columns/UnitColumnsClient.tsx ---
 export type UnitColumnDataType = "Number" | "Text" | "Boolean";
-export const getDataTypeOptions = (t: (key: string) => string) => [
+export const getUnitColumnDataTypeOptions = (t: (key: string) => string) => [
   {
     label: t("Common/Number"),
     value: "Number" as UnitColumnDataType,
@@ -269,6 +269,9 @@ export type MasterPlanItem = {
   fields: {
     id: number;
     name: string;
+    dataType: MasterPlanFieldDataType;
+    alignment: "Left" | "Center" | "Right";
+    isHidden: boolean;
   }[];
   isHidden?: boolean;
 
@@ -284,3 +287,21 @@ export type MasterPlanFilters = {
   masterPlanFieldIds?: number[];
   isHidden?: boolean;
 };
+
+export type MasterPlanFieldDataType = "Number" | "Text" | "Boolean";
+export const getMasterPlanFieldDataTypeOptions = (
+  t: (key: string) => string,
+) => [
+  {
+    label: t("Common/Number"),
+    value: "Number" as MasterPlanFieldDataType,
+  },
+  {
+    label: t("Common/Text"),
+    value: "Text" as MasterPlanFieldDataType,
+  },
+  // {
+  //   label: t("Common/Boolean"),
+  //   value: "Boolean" as MasterPlanFieldDataType,
+  // },
+];

@@ -61,7 +61,14 @@ namespace backend.Controllers
         {
             var fields = await _context
                 .MasterPlanFields.OrderBy(f => f.Name)
-                .Select(f => new MasterPlanFieldDto { Id = f.Id, Name = f.Name })
+                .Select(f => new MasterPlanFieldDto
+                {
+                    Id = f.Id,
+                    Name = f.Name,
+                    DataType = f.DataType,
+                    Alignment = f.Alignment,
+                    IsHidden = f.IsHidden,
+                })
                 .ToListAsync();
 
             return Ok(fields);
@@ -121,6 +128,9 @@ namespace backend.Controllers
             var field = new MasterPlanField
             {
                 Name = dto.Name,
+                DataType = dto.DataType,
+                Alignment = dto.Alignment,
+                IsHidden = dto.IsHidden,
                 MasterPlanToMasterPlanFields =
                     dto.MasterPlanIds != null
                         ? dto
@@ -145,6 +155,9 @@ namespace backend.Controllers
             {
                 Id = field.Id,
                 Name = field.Name,
+                DataType = field.DataType,
+                Alignment = field.Alignment,
+                IsHidden = field.IsHidden,
                 MasterPlanIds = field
                     .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
                     .ToList(),
@@ -212,6 +225,9 @@ namespace backend.Controllers
             }
 
             field.Name = dto.Name;
+            field.DataType = dto.DataType;
+            field.Alignment = dto.Alignment;
+            field.IsHidden = dto.IsHidden;
 
             _context.MasterPlanToMasterPlanFields.RemoveRange(field.MasterPlanToMasterPlanFields);
 
@@ -236,6 +252,9 @@ namespace backend.Controllers
             {
                 Id = field.Id,
                 Name = field.Name,
+                DataType = field.DataType,
+                Alignment = field.Alignment,
+                IsHidden = field.IsHidden,
                 MasterPlanIds = field
                     .MasterPlanToMasterPlanFields.Select(m => m.MasterPlanId)
                     .ToList(),

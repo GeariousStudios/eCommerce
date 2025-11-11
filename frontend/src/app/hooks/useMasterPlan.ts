@@ -32,6 +32,8 @@ export const useMasterPlan = (
   const skipNextInfoRef = useRef(false);
 
   // --- States ---
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isManualRefresh, setIsManualRefresh] = useState(false);
   const [refetchData, setRefetchData] = useState(false);
@@ -40,7 +42,14 @@ export const useMasterPlan = (
   >([]);
 
   const [fieldOptions, setFieldOptions] = useState<
-    { id: number; label: string; value: string }[]
+    {
+      id: number;
+      label: string;
+      value: string;
+      dataType?: string;
+      alignment?: "Left" | "Center" | "Right";
+      isHidden?: boolean;
+    }[]
   >([]);
 
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
@@ -82,22 +91,26 @@ export const useMasterPlan = (
         if (!response.ok) return;
 
         const data = await response.json();
-        const sorted = [...(data.elements ?? [])].sort((a, b) => {
-          const aGroup = a.groupId ?? 0;
-          const bGroup = b.groupId ?? 0;
-          if (aGroup !== bGroup) return bGroup - aGroup;
-          const aOrder = a.order ?? 0;
-          const bOrder = b.order ?? 0;
-          return aOrder - bOrder;
-        });
+        // const sorted = [...(data.elements ?? [])].sort((a, b) => {
+        //   const aGroup = a.groupId ?? 0;
+        //   const bGroup = b.groupId ?? 0;
+        //   if (aGroup !== bGroup) return bGroup - aGroup;
+        //   const aOrder = a.order ?? 0;
+        //   const bOrder = b.order ?? 0;
+        //   return aOrder - bOrder;
+        // });
 
-        setMasterPlans([{ ...data, elements: sorted }]);
+        // setMasterPlans([{ ...data, elements: sorted }]);
+        setMasterPlans([{ ...data, elements: data.elements ?? [] }]);
         setTotalItems(data.elements?.length ?? 0);
 
         const options =
           data.fields?.map((f: any) => ({
             label: f.name,
             value: f.id.toString(),
+            dataType: f.dataType,
+            alignment: f.alignment,
+            isHidden: f.isHidden ?? false,
             id: f.id,
           })) ?? [];
 
@@ -249,20 +262,34 @@ export const useMasterPlan = (
   };
 
   // --- Toggle strike through ---
-  const toggleStrikeThrough = (planId: string, elementId: string) => {
+  const toggleStrikeThrough = (
+    elementId: string,
+    mode: "element" | "group",
+  ) => {
     setMasterPlans((prev) =>
-      prev.map((plan) =>
-        plan.id !== planId
-          ? plan
-          : {
-              ...plan,
-              elements: plan.elements.map((el: MasterPlanElement) =>
-                el.id === elementId
-                  ? { ...el, struckElement: !el.struckElement }
-                  : el,
-              ),
-            },
-      ),
+      prev.map((plan) => {
+        const target = plan.elements.find(
+          (el) => String(el.id) === String(elementId),
+        );
+        if (!target) return plan;
+
+        const groupId = target.groupId ?? null;
+        const currentlyStruck = !!target.struckElement;
+
+        return {
+          ...plan,
+          elements: plan.elements.map((el) => {
+            const shouldStrike =
+              mode === "group"
+                ? el.groupId === groupId
+                : String(el.id) === String(elementId);
+
+            return shouldStrike
+              ? { ...el, struckElement: !currentlyStruck }
+              : el;
+          }),
+        };
+      }),
     );
   };
 
@@ -272,8 +299,6 @@ export const useMasterPlan = (
 
     const plan = masterPlans[0];
     try {
-      setIsLoading(true);
-
       for (const el of plan.elements) {
         if (isNaN(Number(el.id))) {
           const createDto = {
@@ -364,13 +389,36 @@ export const useMasterPlan = (
         );
 
         if (!metaRes.ok) continue;
+
+        const groupOrderDto = {
+          elements: plan.elements.map((el, order) => ({
+            elementId: Number(el.id),
+            groupId: el.groupId ?? null,
+            order,
+          })),
+        };
+
+        const groupOrderRes = await fetch(
+          `${apiUrl}/master-plan-elements/update-group-order/${plan.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "X-User-Language": localStorage.getItem("language") || "sv",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(groupOrderDto),
+          },
+        );
+
+        if (!groupOrderRes.ok) continue;
       }
 
       setIsEditing(false);
       setRefetchData(true);
       await handleCheck(true);
     } finally {
-      setIsLoading(false);
+      setIsCheckingIn(false);
     }
   };
 
@@ -387,7 +435,6 @@ export const useMasterPlan = (
     try {
       skipNextInfoRef.current = true;
 
-      setIsLoading(true);
       const response = await fetch(
         `${apiUrl}/master-plan/check/${masterPlanId}?force=${force}`,
         {
@@ -425,7 +472,8 @@ export const useMasterPlan = (
         setCheckedOutBy(status.checkedOutBy || null);
       }
     } finally {
-      setIsLoading(false);
+      setIsCheckingOut(false);
+      setIsCheckingIn(false);
     }
   };
 
@@ -507,7 +555,7 @@ export const useMasterPlan = (
     };
   }, [apiUrl, masterPlanId]);
 
-  // --- Move element ---
+  // --- Move element & group ---
   const moveElement = (
     planId: string,
     elementId: string,
@@ -515,31 +563,120 @@ export const useMasterPlan = (
   ) => {
     setMasterPlans((prev) =>
       prev.map((plan) => {
-        if (plan.id !== planId) return plan;
-        const elements: MasterPlanElement[] = [...plan.elements];
-        const index = elements.findIndex((el) => el.id === elementId);
+        if (String(plan.id) !== String(planId)) return plan;
+
+        const elements = [...plan.elements];
+        const index = elements.findIndex(
+          (el) => String(el.id) === String(elementId),
+        );
         if (index === -1) return plan;
+
         const targetIndex = direction === "up" ? index - 1 : index + 1;
         if (targetIndex < 0 || targetIndex >= elements.length) return plan;
-        const [moved] = elements.splice(index, 1);
-        elements.splice(targetIndex, 0, moved);
-        return { ...plan, elements };
+
+        const current = elements[index];
+        const target = elements[targetIndex];
+
+        const reordered = [...elements];
+        reordered.splice(index, 1);
+        reordered.splice(targetIndex, 0, current);
+
+        const currentGroup = current.groupId ?? null;
+        const targetGroup = target.groupId ?? null;
+
+        if (currentGroup !== targetGroup) {
+          reordered[targetIndex] = {
+            ...current,
+            groupId: targetGroup,
+          };
+        }
+
+        return { ...plan, elements: reordered };
+      }),
+    );
+  };
+
+  // --- Move group ---
+  const moveGroup = (
+    planId: string,
+    groupId: number | string | null,
+    direction: "up" | "down",
+  ) => {
+    setMasterPlans((prev) =>
+      prev.map((plan) => {
+        if (String(plan.id) !== String(planId)) return plan;
+        const elements: MasterPlanElement[] = [...plan.elements];
+
+        const groups: (number | string)[] = [];
+        const seenGroups = new Set<string>();
+
+        for (const el of elements) {
+          const key = el.groupId ? `group-${el.groupId}` : `nogroup-${el.id}`;
+          if (!seenGroups.has(key)) {
+            groups.push(el.groupId ?? `nogroup-${el.id}`);
+            seenGroups.add(key);
+          }
+        }
+
+        const index = groups.findIndex((g) => String(g) === String(groupId));
+
+        if (index === -1) return plan;
+
+        const targetIndex = direction === "up" ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= groups.length) return plan;
+
+        const newGroups = [...groups];
+        [newGroups[index], newGroups[targetIndex]] = [
+          newGroups[targetIndex],
+          newGroups[index],
+        ];
+
+        const reordered = [...elements].sort((a, b) => {
+          const aKey = a.groupId ?? `nogroup-${a.id}`;
+          const bKey = b.groupId ?? `nogroup-${b.id}`;
+          return newGroups.indexOf(aKey) - newGroups.indexOf(bKey);
+        });
+
+        return { ...plan, elements: reordered };
       }),
     );
   };
 
   // --- HELPERS ---
-  const allElements: MasterPlanElement[] = masterPlans[0]?.elements ?? [];
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const visibleElements = allElements.slice(
-    startIndex,
-    startIndex + itemsPerPage,
+  const elements = masterPlans[0]?.elements ?? [];
+  const groups: MasterPlanElement[][] = [];
+  const seenGroups = new Set<string>();
+
+  for (const el of elements) {
+    const key = el.groupId ? `group-${el.groupId}` : `nogroup-${el.id}`;
+    if (!seenGroups.has(key)) {
+      const group = elements.filter((e) =>
+        el.groupId ? e.groupId === el.groupId : e.id === el.id,
+      );
+      groups.push(group);
+      seenGroups.add(key);
+    }
+  }
+
+  const groupedElements = groups;
+
+  const startGroupIndex = (currentPage - 1) * itemsPerPage;
+  const visibleGroups = groupedElements.slice(
+    startGroupIndex,
+    startGroupIndex + itemsPerPage,
   );
-  const elementCount = allElements.length;
-  const totalPages = Math.max(1, Math.ceil(elementCount / itemsPerPage));
+
+  const visibleElements = visibleGroups.flat();
+
+  const totalGroups = groupedElements.length;
+  const totalPages = Math.max(1, Math.ceil(totalGroups / itemsPerPage));
 
   return {
     // --- States ---
+    setIsCheckingOut,
+    setIsCheckingIn,
+    isCheckingOut,
+    isCheckingIn,
     isLoading,
     isManualRefresh,
     refetchData,
@@ -551,6 +688,7 @@ export const useMasterPlan = (
     sortOrder,
     hasSearched,
     totalItems,
+    totalGroups,
     currentPage,
     itemsPerPage,
     isEditing,
@@ -578,9 +716,9 @@ export const useMasterPlan = (
     handleAbortChanges,
     handleCheck,
     moveElement,
+    moveGroup,
 
     // --- Helpers ---
-    startIndex,
     visibleElements,
     totalPages,
   };

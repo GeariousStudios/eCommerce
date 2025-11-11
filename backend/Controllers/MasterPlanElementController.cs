@@ -1,5 +1,6 @@
 using backend.Data;
 using backend.Dtos.MasterPlan;
+using backend.Dtos.MasterPlan.Element;
 using backend.Models;
 using backend.Models.ManyToMany;
 using backend.Services;
@@ -357,6 +358,68 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = await _t.GetAsync("MasterPlanElement/Deleted", lang) });
+        }
+
+        [HttpPut("update-group-order/{masterPlanId}")]
+        [Authorize(Roles = "MasterPlanner")]
+        public async Task<IActionResult> UpdateGroupOrder(
+            int masterPlanId,
+            [FromBody] UpdateMasterPlanElementGroupListDto dto
+        )
+        {
+            var lang = await GetLangAsync();
+            var userInfo = await _userService.GetUserInfoAsync();
+            if (userInfo == null)
+            {
+                return Unauthorized(
+                    new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            var (updatedBy, userId) = userInfo.Value;
+            var now = DateTime.UtcNow;
+
+            var links = await _context
+                .MasterPlanToMasterPlanElements.Include(x => x.MasterPlanElement)
+                .Where(x => x.MasterPlanId == masterPlanId)
+                .ToListAsync();
+
+            foreach (var item in dto.Elements)
+            {
+                var link = links.FirstOrDefault(x => x.MasterPlanElementId == item.ElementId);
+                if (link == null)
+                    continue;
+
+                link.Order = item.Order;
+                link.MasterPlanElement.GroupId = item.GroupId;
+                link.MasterPlanElement.UpdateDate = now;
+                link.MasterPlanElement.UpdatedBy = updatedBy;
+            }
+
+            var reordered = links.OrderBy(l => l.Order).ToList();
+
+            for (int i = 0; i < reordered.Count; i++)
+            {
+                reordered[i].Order = i;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "MasterPlanElement",
+                0,
+                updatedBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["Action"] = "GroupOrderUpdated",
+                    ["UpdatedCount"] = dto.Elements.Count,
+                }
+            );
+
+            return Ok(new { message = await _t.GetAsync("MasterPlanElement/OrderUpdated", lang) });
         }
     }
 }

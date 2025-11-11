@@ -28,6 +28,12 @@ export const hyperLinkButtonClass =
 export const roundedButtonClass =
   "h-[40px] w-[40px] flex justify-center items-center cursor-pointer bg-[var(--bg-navbar-link)] rounded-full z-[calc(var(--z-base)+1)]";
 
+export const textPrimaryButtonClass =
+  "cursor-pointer font-semibold text-[var(--accent-color)] transition-[color] duration-[var(--fast)] hover:text-[var(--accent-color-hover)] z-[calc(var(--z-base)+1)]";
+
+export const textSecondaryButtonClass =
+  "cursor-pointer font-semibold transition-[color] duration-[var(--fast)] hover:text-[var(--accent-color-hover)] z-[calc(var(--z-base)+1)]";
+
 export const switchClass = (isTrue: boolean) =>
   `${isTrue ? "bg-[var(--accent-color)]" : "bg-gray-500"} min-h-6 min-w-10 h-6 w-10 cursor-pointer rounded-full px-0.5`;
 

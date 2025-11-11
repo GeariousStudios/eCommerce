@@ -132,6 +132,7 @@
   "MasterPlanElement/NotFound": "Element could not be found in the database",
   "MasterPlanElement/Updated": "Element updated!",
   "MasterPlanElement/Deleted": "Element deleted!",
+  "MasterPlanElement/OrderUpdated": "Order updated!",
 
   "AuditTrail/All": "All",
   "AuditTrail/Category": "Category",

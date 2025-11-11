@@ -33,6 +33,7 @@ type InputProps = {
   compact?: boolean;
   showAsterixOnPlaceholder?: boolean;
   showAsterix?: boolean;
+  classNameAddition?: string;
 };
 
 const Input = ({
@@ -66,6 +67,7 @@ const Input = ({
   compact = false,
   showAsterixOnPlaceholder = false,
   showAsterix = false,
+  classNameAddition,
 }: InputProps & { icon?: ReactNode }) => {
   const { currentTheme } = useTheme();
 
@@ -131,7 +133,9 @@ const Input = ({
               if (clean === "") {
                 onChange?.("");
               } else {
-                const numericValue = Math.min(Number(clean), 999999);
+                const num = Number(clean);
+                const numericValue =
+                  typeof max === "number" ? Math.min(num, max) : num;
                 onChange?.(numericValue.toString());
               }
             } else {
@@ -170,7 +174,7 @@ const Input = ({
           required={required}
           className={`${isDisabled ? "!pointer-events-none opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : `duration-medium flex ${compact ? "h-[24px] border-0! p-0!" : "h-[40px]"} w-full caret-[var(--accent-color)]`} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer ${notRounded ? "border-y-1" : "rounded border-1"} ${!value && (isDate || isTime || isDateTime) ? "is-empty" : ""} ${inChip ? "border-[var(--text-main)]" : "border-[var(--border-tertiary)]"} ${
             isColor ? "cursor-pointer p-1" : "p-2"
-          }`}
+          } ${classNameAddition}`}
           readOnly={readOnly}
           autoComplete={autoComplete}
           onKeyDown={(e) => {
@@ -182,8 +186,8 @@ const Input = ({
             }
             onKeyDown?.(e);
           }}
-          min={type === "number" ? 0 : min}
-          max={type === "number" ? 999999 : max}
+          min={min}
+          max={max}
           tabIndex={isDisabled ? -1 : (tabIndex ?? 0)}
         />
 
@@ -219,7 +223,9 @@ const Input = ({
               {label}
               {(required || showAsterix) && <span className="pr-2" />}
               {(required || showAsterix) && (
-                <span className="absolute -ml-1.25 text-xl text-red-700">*</span>
+                <span className="absolute -ml-1.25 text-xl text-red-700">
+                  *
+                </span>
               )}
             </label>
           ) : (

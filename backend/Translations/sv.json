@@ -132,6 +132,7 @@
   "MasterPlanElement/NotFound": "Element kunde inte hittas i databasen",
   "MasterPlanElement/Updated": "Element uppdaterat!",
   "MasterPlanElement/Deleted": "Element borttaget!",
+  "MasterPlanElement/OrderUpdated": "Ordning uppdaterad!",
 
   "AuditTrail/All": "Alla",
   "AuditTrail/Category": "Kategori",

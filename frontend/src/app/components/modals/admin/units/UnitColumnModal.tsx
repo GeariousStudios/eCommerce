@@ -12,7 +12,7 @@ import {
 } from "@/app/styles/buttonClasses";
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import {
-  getDataTypeOptions,
+  getUnitColumnDataTypeOptions,
   UnitColumnDataType,
 } from "@/app/types/manageTypes";
 import SingleDropdown from "../../../common/SingleDropdown";
@@ -343,7 +343,7 @@ const UnitColumnModal = (props: Props) => {
 
                 <SingleDropdown
                   addSpacer={
-                    getDataTypeOptions(t).length > 0 &&
+                    getUnitColumnDataTypeOptions(t).length > 0 &&
                     dataType !== "Number" &&
                     dataType !== "Text"
                   }
@@ -353,7 +353,7 @@ const UnitColumnModal = (props: Props) => {
                   value={dataType ?? ""}
                   onChange={(val) => setDataType(val as UnitColumnDataType)}
                   onModal
-                  options={getDataTypeOptions(t)}
+                  options={getUnitColumnDataTypeOptions(t)}
                   required
                 />
               </div>

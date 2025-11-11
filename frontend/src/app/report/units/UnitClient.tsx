@@ -1844,7 +1844,9 @@ const UnitClient = (props: Props) => {
                                               e.preventDefault();
                                               saveInlineEdit();
                                             }
-                                          }}
+                                            }}
+                                            min={0}
+                                            max={999999}
                                         />
                                       ) : (
                                         <>
