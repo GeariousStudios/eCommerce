@@ -235,7 +235,7 @@ const ShiftModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift") + t("Modal/created"), 4000);
+      notify("success", t("Common/Shift") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -427,7 +427,7 @@ const ShiftModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Shift") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -1053,7 +1053,7 @@ const ShiftModal = (props: Props) => {
               </button>
               {validationError && (
                 <div
-                  className="xs:hidden text-(--note-error) col-span-3 -mt-3 flex text-sm font-semibold"
+                  className="xs:hidden col-span-3 -mt-3 flex text-sm font-semibold text-(--note-error)"
                   dangerouslySetInnerHTML={{ __html: validationError }}
                 />
               )}
@@ -1067,7 +1067,7 @@ const ShiftModal = (props: Props) => {
 
               {validationError && (
                 <div
-                  className="xs:flex text-(--note-error) col-span-3 -mt-3 hidden text-sm font-semibold"
+                  className="xs:flex col-span-3 -mt-3 hidden text-sm font-semibold text-(--note-error)"
                   dangerouslySetInnerHTML={{ __html: validationError }}
                 />
               )}

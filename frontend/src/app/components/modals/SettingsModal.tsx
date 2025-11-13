@@ -170,7 +170,7 @@ const SettingsModal = (props: Props) => {
         return;
       }
 
-      notify("success", t("SettingsModal/Profile") + t("Modal/updated"), 4000);
+      notify("success", t("SettingsModal/Profile") + t("Modal/updated1"), 4000);
       setEditingField(null);
 
       if (props.onProfileUpdated) {

@@ -126,8 +126,8 @@
   "MasterPlanField/NotFound": "Fältet kunde inte hittas i databasen",
   "MasterPlanField/Deleted": "Fältet borttagen!",
   "MasterPlanField/SomeNotFound": "Ett eller flera fält kunde inte hittas",
-  "MasterPlanField/ExistsInMasterPlan": "Fält {0} finns redan i denna huvudplan!",
   "MasterPlanField/NameTaken": "Ett fält med samma namn finns redan",
+  "MasterPlanField/InUse": "Kan inte ta bort ett fält som används",
 
   "MasterPlanElement/NotFound": "Element kunde inte hittas i databasen",
   "MasterPlanElement/Updated": "Element uppdaterat!",

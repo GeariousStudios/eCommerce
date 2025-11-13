@@ -132,7 +132,7 @@ const ShiftTeamModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift team") + t("Modal/created"), 4000);
+      notify("success", t("Common/Shift team") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -243,7 +243,7 @@ const ShiftTeamModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift team") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Shift team") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }

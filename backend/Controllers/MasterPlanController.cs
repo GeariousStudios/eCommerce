@@ -418,14 +418,11 @@ namespace backend.Controllers
                     ["UnitGroup"] = $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
                     ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
                         ? string.Join(
-                            "<br><br>",
+                            "<br>",
                             masterPlan
                                 .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                                 .Select(mpf =>
-                                    $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})<br>"
-                                    + $"&nbsp;&nbsp;&nbsp; AuditTrail/DataType: AuditTrail/{mpf.MasterPlanField.DataType}<br>"
-                                    + $"&nbsp;&nbsp;&nbsp; AuditTrail/Alignment: AuditTrail/{mpf.MasterPlanField.Alignment}<br>"
-                                    + $"&nbsp;&nbsp;&nbsp; AuditTrail/IsHidden: {(mpf.MasterPlanField.IsHidden ? "Common/Yes" : "Common/No")}"
+                                    $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})"
                                 )
                         )
                         : "—",
@@ -446,16 +443,6 @@ namespace backend.Controllers
             );
 
             _context.MasterPlans.Remove(masterPlan);
-
-            var unusedFields = await _context
-                .MasterPlanFields.Include(f => f.MasterPlanToMasterPlanFields)
-                .Where(f => !f.MasterPlanToMasterPlanFields.Any())
-                .ToListAsync();
-
-            if (unusedFields.Any())
-            {
-                _context.MasterPlanFields.RemoveRange(unusedFields);
-            }
 
             await _context.SaveChangesAsync();
 
@@ -499,15 +486,6 @@ namespace backend.Controllers
                 );
             }
 
-            if (
-                (dto.MasterPlanFieldIds == null || !dto.MasterPlanFieldIds.Any())
-                && (dto.NewMasterPlanFields == null || !dto.NewMasterPlanFields.Any())
-            )
-            {
-                var msg = await _t.GetAsync("MasterPlan/AtLeastOneFieldRequired", lang);
-                return BadRequest(new { message = msg });
-            }
-
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
@@ -517,198 +495,102 @@ namespace backend.Controllers
                 );
             }
 
+            if (dto.MasterPlanFieldIds == null || dto.MasterPlanFieldIds.Length == 0)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("MasterPlan/AtLeastOneFieldRequired", lang) }
+                );
+            }
+
             var (createdBy, userId) = userInfo.Value;
             var now = DateTime.UtcNow;
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var masterPlan = new MasterPlan
             {
-                var finalFieldIds = new List<int>();
-
-                if (dto.MasterPlanFieldIds?.Any() == true)
-                {
-                    var fieldIds = dto.MasterPlanFieldIds!;
-                    var existingFields = await _context
-                        .MasterPlanFields.Where(f => fieldIds.Contains(f.Id))
-                        .ToListAsync();
-
-                    if (existingFields.Count != fieldIds.Length)
-                        return BadRequest(
-                            new
+                Name = dto.Name,
+                IsHidden = dto.IsHidden,
+                AllowRemovingElements = dto.AllowRemovingElements,
+                UnitGroup = unitGroup,
+                MasterPlanToMasterPlanFields = dto
+                    .MasterPlanFieldIds.Select(
+                        (id, index) =>
+                            new MasterPlanToMasterPlanField
                             {
-                                message = await _t.GetAsync("MasterPlanField/SomeNotFound", lang),
+                                MasterPlanFieldId = id,
+                                Order = index,
+                                MasterPlanField = _context.MasterPlanFields.First(m => m.Id == id),
                             }
-                        );
-
-                    finalFieldIds.AddRange(fieldIds);
-                }
-
-                var newFields = new List<MasterPlanField>();
-                if (dto.NewMasterPlanFields?.Any() == true)
-                {
-                    foreach (var fieldDto in dto.NewMasterPlanFields)
-                    {
-                        if (string.IsNullOrWhiteSpace(fieldDto.Name))
-                            continue;
-
-                        var newField = new MasterPlanField
-                        {
-                            Name = fieldDto.Name.Trim(),
-                            DataType = fieldDto.DataType,
-                            Alignment = fieldDto.Alignment,
-                            IsHidden = fieldDto.IsHidden,
-
-                            // Meta data.
-                            CreationDate = now,
-                            CreatedBy = createdBy,
-                            UpdateDate = now,
-                            UpdatedBy = createdBy,
-                        };
-
-                        newFields.Add(newField);
-                    }
-
-                    if (newFields.Any())
-                    {
-                        _context.MasterPlanFields.AddRange(newFields);
-                        await _context.SaveChangesAsync();
-                        finalFieldIds.AddRange(newFields.Select(f => f.Id));
-                    }
-                }
-
-                var orderedFieldIds = new List<int>();
-                foreach (var tempId in dto.OrderedMasterPlanFieldIds ?? Array.Empty<int>())
-                {
-                    if (tempId > 0)
-                    {
-                        orderedFieldIds.Add(tempId);
-                    }
-                    else if (
-                        dto.TempMasterPlanFieldNames != null
-                        && dto.TempMasterPlanFieldNames.TryGetValue(tempId, out var name)
                     )
-                    {
-                        var match = newFields.FirstOrDefault(f =>
-                            f.Name.Equals(name.Trim(), StringComparison.OrdinalIgnoreCase)
-                        );
-                        if (match != null)
-                            orderedFieldIds.Add(match.Id);
-                    }
-                }
+                    .ToList(),
 
-                var masterPlan = new MasterPlan
-                {
-                    Name = dto.Name,
-                    IsHidden = dto.IsHidden,
-                    AllowRemovingElements = dto.AllowRemovingElements,
-                    UnitGroup = unitGroup,
-                    MasterPlanToMasterPlanFields = orderedFieldIds
-                        .Where(id => finalFieldIds.Contains(id))
-                        .Select(
-                            (id, index) =>
-                                new MasterPlanToMasterPlanField
-                                {
-                                    MasterPlanFieldId = id,
-                                    Order = index,
-                                }
-                        )
-                        .ToList(),
+                // Meta data.
+                CreationDate = now,
+                CreatedBy = createdBy,
+                UpdateDate = now,
+                UpdatedBy = createdBy,
+            };
 
-                    // Meta data.
-                    CreationDate = now,
-                    CreatedBy = createdBy,
-                    UpdateDate = now,
-                    UpdatedBy = createdBy,
-                };
+            _context.MasterPlans.Add(masterPlan);
+            await _context.SaveChangesAsync();
 
-                _context.MasterPlans.Add(masterPlan);
-                await _context.SaveChangesAsync();
-
-                var unusedFields = await _context
-                    .MasterPlanFields.Include(f => f.MasterPlanToMasterPlanFields)
-                    .Where(f => !f.MasterPlanToMasterPlanFields.Any())
-                    .ToListAsync();
-
-                if (unusedFields.Any())
-                {
-                    _context.MasterPlanFields.RemoveRange(unusedFields);
-                    await _context.SaveChangesAsync();
-                }
-
-                await transaction.CommitAsync();
-
-                var result = new MasterPlanDto
-                {
-                    Id = masterPlan.Id,
-                    Name = masterPlan.Name,
-                    IsHidden = masterPlan.IsHidden,
-                    AllowRemovingElements = masterPlan.AllowRemovingElements,
-                    UnitGroupId = masterPlan.UnitGroupId,
-                    Fields = await _context
-                        .MasterPlanToMasterPlanFields.Where(mpf =>
-                            mpf.MasterPlanId == masterPlan.Id
-                        )
-                        .OrderBy(mpf => mpf.Order)
-                        .Select(mpf => new MasterPlanFieldDto
-                        {
-                            Id = mpf.MasterPlanField.Id,
-                            Name = mpf.MasterPlanField.Name,
-                            IsHidden = mpf.MasterPlanField.IsHidden,
-                            DataType = mpf.MasterPlanField.DataType,
-                            Alignment = mpf.MasterPlanField.Alignment,
-                        })
-                        .ToListAsync(),
-
-                    // Meta data.
-                    CreationDate = masterPlan.CreationDate,
-                    CreatedBy = masterPlan.CreatedBy,
-                    UpdateDate = masterPlan.UpdateDate,
-                    UpdatedBy = masterPlan.UpdatedBy,
-                };
-
-                // Audit trail.
-                await _audit.LogAsync(
-                    "Create",
-                    "MasterPlan",
-                    masterPlan.Id,
-                    createdBy,
-                    userId,
-                    new Dictionary<string, object?>
-                    {
-                        ["ObjectID"] = masterPlan.Id,
-                        ["Name"] = masterPlan.Name,
-                        ["UnitGroup"] =
-                            $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
-                        ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
-                            ? string.Join(
-                                "<br><br>",
-                                masterPlan
-                                    .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
-                                    .Select(mpf =>
-                                        $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})<br>"
-                                        + $"&nbsp;&nbsp;&nbsp; AuditTrail/DataType: AuditTrail/{mpf.MasterPlanField.DataType}<br>"
-                                        + $"&nbsp;&nbsp;&nbsp; AuditTrail/Alignment: AuditTrail/{mpf.MasterPlanField.Alignment}<br>"
-                                        + $"&nbsp;&nbsp;&nbsp; AuditTrail/IsHidden: {(mpf.MasterPlanField.IsHidden ? "Common/Yes" : "Common/No")}"
-                                    )
-                            )
-                            : "—",
-                        ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
-                            ? new[] { "Common/Yes" }
-                            : new[] { "Common/No" },
-                        ["IsHidden"] = masterPlan.IsHidden
-                            ? new[] { "Common/Yes" }
-                            : new[] { "Common/No" },
-                    }
-                );
-
-                return Ok(result);
-            }
-            catch (Exception ex)
+            var result = new MasterPlanDto
             {
-                await transaction.RollbackAsync();
-                var prefix = await _t.GetAsync("Common/ErrorPrefix", await GetLangAsync());
-                return StatusCode(500, new { message = prefix + ex.Message });
-            }
+                Id = masterPlan.Id,
+                Name = masterPlan.Name,
+                IsHidden = masterPlan.IsHidden,
+                AllowRemovingElements = masterPlan.AllowRemovingElements,
+                UnitGroupId = masterPlan.UnitGroupId,
+                Fields = masterPlan
+                    .MasterPlanToMasterPlanFields.OrderBy(x => x.Order)
+                    .Select(x => new MasterPlanFieldDto
+                    {
+                        Id = x.MasterPlanField.Id,
+                        Name = x.MasterPlanField.Name,
+                        DataType = x.MasterPlanField.DataType,
+                        Alignment = x.MasterPlanField.Alignment,
+                        IsHidden = x.MasterPlanField.IsHidden,
+                    })
+                    .ToList(),
+
+                // Meta data.
+                CreationDate = masterPlan.CreationDate,
+                CreatedBy = masterPlan.CreatedBy,
+                UpdateDate = masterPlan.UpdateDate,
+                UpdatedBy = masterPlan.UpdatedBy,
+            };
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Create",
+                "MasterPlan",
+                masterPlan.Id,
+                createdBy,
+                userId,
+                new Dictionary<string, object?>
+                {
+                    ["ObjectID"] = masterPlan.Id,
+                    ["Name"] = masterPlan.Name,
+                    ["UnitGroup"] = $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
+                    ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
+                        ? string.Join(
+                            "<br>",
+                            masterPlan
+                                .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
+                                .Select(mpf =>
+                                    $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})"
+                                )
+                        )
+                        : "—",
+                    ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                    ["IsHidden"] = masterPlan.IsHidden
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
+                }
+            );
+
+            return Ok(result);
         }
 
         [HttpPut("update/{id}")]
@@ -761,21 +643,19 @@ namespace backend.Controllers
                 );
             }
 
-            if (
-                (dto.MasterPlanFieldIds == null || !dto.MasterPlanFieldIds.Any())
-                && (dto.NewMasterPlanFields == null || !dto.NewMasterPlanFields.Any())
-            )
-            {
-                var msg = await _t.GetAsync("MasterPlan/AtLeastOneFieldRequired", lang);
-                return BadRequest(new { message = msg });
-            }
-
             var userInfo = await _userService.GetUserInfoAsync();
 
             if (userInfo == null)
             {
                 return Unauthorized(
                     new { message = await _t.GetAsync("Common/Unauthorized", lang) }
+                );
+            }
+
+            if (dto.MasterPlanFieldIds == null || dto.MasterPlanFieldIds.Length == 0)
+            {
+                return BadRequest(
+                    new { message = await _t.GetAsync("MasterPlan/AtLeastOneFieldRequired", lang) }
                 );
             }
 
@@ -789,14 +669,11 @@ namespace backend.Controllers
                 ["UnitGroup"] = $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
                 ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
                     ? string.Join(
-                        "<br><br>",
+                        "<br>",
                         masterPlan
                             .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
                             .Select(mpf =>
-                                $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})<br>"
-                                + $"&nbsp;&nbsp;&nbsp; AuditTrail/DataType: AuditTrail/{mpf.MasterPlanField.DataType}<br>"
-                                + $"&nbsp;&nbsp;&nbsp; AuditTrail/Alignment: AuditTrail/{mpf.MasterPlanField.Alignment}<br>"
-                                + $"&nbsp;&nbsp;&nbsp; AuditTrail/IsHidden: {(mpf.MasterPlanField.IsHidden ? "Common/Yes" : "Common/No")}"
+                                $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})"
                             )
                     )
                     : "—",
@@ -806,260 +683,88 @@ namespace backend.Controllers
                 ["IsHidden"] = masterPlan.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            masterPlan.Name = dto.Name;
+            masterPlan.IsHidden = dto.IsHidden;
+            masterPlan.AllowRemovingElements = dto.AllowRemovingElements;
+            masterPlan.MasterPlanToMasterPlanFields = dto
+                .MasterPlanFieldIds.Select(
+                    (id, index) =>
+                        new MasterPlanToMasterPlanField
+                        {
+                            MasterPlanFieldId = id,
+                            Order = index,
+                            MasterPlanField = _context.MasterPlanFields.First(m => m.Id == id),
+                        }
+                )
+                .ToList();
+
+            masterPlan.UnitGroup = unitGroup;
+            masterPlan.UpdateDate = now;
+            masterPlan.UpdatedBy = updatedBy;
+
+            await _context.SaveChangesAsync();
+
+            var result = new MasterPlanDto
             {
-                var finalFieldIds = new List<int>();
-
-                if (dto.MasterPlanFieldIds?.Any() == true)
-                {
-                    var fieldIds = dto.MasterPlanFieldIds!;
-                    var existingFields = await _context
-                        .MasterPlanFields.Where(f => fieldIds.Contains(f.Id))
-                        .ToListAsync();
-
-                    if (existingFields.Count != fieldIds.Length)
-                        return BadRequest(
-                            new
-                            {
-                                message = await _t.GetAsync("MasterPlanField/SomeNotFound", lang),
-                            }
-                        );
-
-                    finalFieldIds.AddRange(fieldIds);
-                }
-
-                var newFields = new List<MasterPlanField>();
-
-                if (dto.NewMasterPlanFields?.Any() == true)
-                {
-                    foreach (var fieldDto in dto.NewMasterPlanFields)
+                Id = masterPlan.Id,
+                Name = masterPlan.Name,
+                IsHidden = masterPlan.IsHidden,
+                AllowRemovingElements = masterPlan.AllowRemovingElements,
+                UnitGroupId = masterPlan.UnitGroupId,
+                Fields = masterPlan
+                    .MasterPlanToMasterPlanFields.OrderBy(x => x.Order)
+                    .Select(x => new MasterPlanFieldDto
                     {
-                        if (string.IsNullOrWhiteSpace(fieldDto.Name))
-                            continue;
+                        Id = x.MasterPlanField.Id,
+                        Name = x.MasterPlanField.Name,
+                        DataType = x.MasterPlanField.DataType,
+                        Alignment = x.MasterPlanField.Alignment,
+                        IsHidden = x.MasterPlanField.IsHidden,
+                    })
+                    .ToList(),
 
-                        var duplicate = await _context
-                            .MasterPlanFields.Include(mpf => mpf.MasterPlanToMasterPlanFields)
-                            .AnyAsync(mpf =>
-                                mpf.Name.ToLower() == fieldDto.Name.Trim().ToLower()
-                                && mpf.MasterPlanToMasterPlanFields.Any(link =>
-                                    link.MasterPlanId == masterPlan.Id
-                                )
-                            );
+                // Meta data.
+                UpdateDate = masterPlan.UpdateDate,
+                UpdatedBy = masterPlan.UpdatedBy,
+            };
 
-                        if (duplicate)
-                        {
-                            var template = await _t.GetAsync(
-                                "MasterPlanField/ExistsInMasterPlan",
-                                lang
-                            );
-                            return BadRequest(
-                                new { message = string.Format(template, fieldDto.Name) }
-                            );
-                        }
-
-                        var newField = new MasterPlanField
-                        {
-                            Name = fieldDto.Name.Trim(),
-                            DataType = fieldDto.DataType,
-                            Alignment = fieldDto.Alignment,
-                            IsHidden = fieldDto.IsHidden,
-
-                            // Meta data.
-                            CreationDate = now,
-                            CreatedBy = updatedBy,
-                            UpdateDate = now,
-                            UpdatedBy = updatedBy,
-                        };
-
-                        newFields.Add(newField);
-                    }
-
-                    if (newFields.Any())
-                    {
-                        _context.MasterPlanFields.AddRange(newFields);
-                        await _context.SaveChangesAsync();
-                        finalFieldIds.AddRange(newFields.Select(f => f.Id));
-                    }
-                }
-
-                if (dto.UpdatedExistingMasterPlanFields?.Any() == true)
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "MasterPlan",
+                masterPlan.Id,
+                updatedBy,
+                userId,
+                new
                 {
-                    foreach (var updatedField in dto.UpdatedExistingMasterPlanFields)
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
                     {
-                        var field = await _context.MasterPlanFields.FirstOrDefaultAsync(f =>
-                            f.Id == updatedField.Id
-                        );
-
-                        if (field == null)
-                        {
-                            continue;
-                        }
-
-                        var trimmed = updatedField.Name.Trim();
-
-                        if (field.Name != trimmed)
-                        {
-                            var exists = await _context.MasterPlanFields.AnyAsync(f =>
-                                f.Id != updatedField.Id && f.Name.ToLower() == trimmed.ToLower()
-                            );
-
-                            if (exists)
-                            {
-                                var template = await _t.GetAsync("MasterPlanField/NameTaken", lang);
-                                return BadRequest(
-                                    new { message = string.Format(template, trimmed) }
-                                );
-                            }
-
-                            field.Name = trimmed;
-                        }
-
-                        field.DataType = updatedField.DataType;
-                        field.Alignment = updatedField.Alignment;
-                        field.IsHidden = updatedField.IsHidden;
-
-                        // Meta data.
-                        field.UpdateDate = now;
-                        field.UpdatedBy = updatedBy;
-                    }
-                }
-
-                if (dto.MasterPlanFieldIdsToDelete?.Any() == true)
-                {
-                    var fieldsToDelete = await _context
-                        .MasterPlanFields.Include(mpf => mpf.MasterPlanToMasterPlanFields)
-                        .Where(mpf =>
-                            dto.MasterPlanFieldIdsToDelete.Contains(mpf.Id)
-                            && mpf.MasterPlanToMasterPlanFields.All(mpmpf =>
-                                mpmpf.MasterPlanId == masterPlan.Id
+                        ["ObjectID"] = masterPlan.Id,
+                        ["Name"] = masterPlan.Name,
+                        ["UnitGroup"] =
+                            $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
+                        ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
+                            ? string.Join(
+                                "<br>",
+                                masterPlan
+                                    .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
+                                    .Select(mpf =>
+                                        $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})"
+                                    )
                             )
-                        )
-                        .ToListAsync();
-
-                    _context.MasterPlanFields.RemoveRange(fieldsToDelete);
+                            : "—",
+                        ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                        ["IsHidden"] = masterPlan.IsHidden
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
+                    },
                 }
+            );
 
-                var orderedFieldIds = new List<int>();
-                var createdIdsQueue = new Queue<int>(newFields.Select(sc => sc.Id));
-                var incomingOrder =
-                    (dto.OrderedMasterPlanFieldIds != null && dto.OrderedMasterPlanFieldIds.Any())
-                        ? dto.OrderedMasterPlanFieldIds.ToList()
-                        : finalFieldIds.ToList();
-
-                foreach (var fieldId in incomingOrder)
-                {
-                    if (fieldId > 0)
-                        orderedFieldIds.Add(fieldId);
-                    else if (createdIdsQueue.Count > 0)
-                        orderedFieldIds.Add(createdIdsQueue.Dequeue());
-                }
-
-                _context.MasterPlanToMasterPlanFields.RemoveRange(
-                    masterPlan.MasterPlanToMasterPlanFields
-                );
-                masterPlan.MasterPlanToMasterPlanFields = orderedFieldIds
-                    .Where(id => finalFieldIds.Contains(id))
-                    .Select(
-                        (id, index) =>
-                            new MasterPlanToMasterPlanField
-                            {
-                                MasterPlanId = masterPlan.Id,
-                                MasterPlanFieldId = id,
-                                Order = index,
-                            }
-                    )
-                    .ToList();
-
-                masterPlan.Name = dto.Name;
-                masterPlan.IsHidden = dto.IsHidden;
-                masterPlan.AllowRemovingElements = dto.AllowRemovingElements;
-                masterPlan.UnitGroup = unitGroup;
-                masterPlan.UpdateDate = now;
-                masterPlan.UpdatedBy = updatedBy;
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                var result = new MasterPlanDto
-                {
-                    Id = masterPlan.Id,
-                    Name = masterPlan.Name,
-                    IsHidden = masterPlan.IsHidden,
-                    AllowRemovingElements = masterPlan.AllowRemovingElements,
-                    UnitGroupId = masterPlan.UnitGroupId,
-                    Fields = masterPlan
-                        .MasterPlanToMasterPlanFields.OrderBy(x => x.Order)
-                        .Select(mpmpf => new MasterPlanFieldDto
-                        {
-                            Id = mpmpf.MasterPlanFieldId,
-                            Name = _context
-                                .MasterPlanFields.First(mpf => mpf.Id == mpmpf.MasterPlanFieldId)
-                                .Name,
-                            DataType = _context
-                                .MasterPlanFields.First(mpf => mpf.Id == mpmpf.MasterPlanFieldId)
-                                .DataType,
-                            Alignment = _context
-                                .MasterPlanFields.First(mpf => mpf.Id == mpmpf.MasterPlanFieldId)
-                                .Alignment,
-                            IsHidden = _context
-                                .MasterPlanFields.First(mpf => mpf.Id == mpmpf.MasterPlanFieldId)
-                                .IsHidden,
-                        })
-                        .ToList(),
-
-                    // Meta data.
-                    UpdateDate = masterPlan.UpdateDate,
-                    UpdatedBy = masterPlan.UpdatedBy,
-                };
-
-                // Audit trail.
-                await _audit.LogAsync(
-                    "Update",
-                    "MasterPlan",
-                    masterPlan.Id,
-                    updatedBy,
-                    userId,
-                    new
-                    {
-                        OldValues = oldValues,
-                        NewValues = new Dictionary<string, object?>
-                        {
-                            ["ObjectID"] = masterPlan.Id,
-                            ["Name"] = masterPlan.Name,
-                            ["UnitGroup"] =
-                                $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
-                            ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
-                                ? string.Join(
-                                    "<br><br>",
-                                    masterPlan
-                                        .MasterPlanToMasterPlanFields.OrderBy(mpf => mpf.Order)
-                                        .Select(mpf =>
-                                            $"{mpf.MasterPlanField.Name} (ID: {mpf.MasterPlanField.Id})<br>"
-                                            + $"&nbsp;&nbsp;&nbsp; AuditTrail/DataType: AuditTrail/{mpf.MasterPlanField.DataType}<br>"
-                                            + $"&nbsp;&nbsp;&nbsp; AuditTrail/Alignment: AuditTrail/{mpf.MasterPlanField.Alignment}<br>"
-                                            + $"&nbsp;&nbsp;&nbsp; AuditTrail/IsHidden: {(mpf.MasterPlanField.IsHidden ? "Common/Yes" : "Common/No")}"
-                                        )
-                                )
-                                : "—",
-                            ["AllowRemovingElements"] = masterPlan.AllowRemovingElements
-                                ? new[] { "Common/Yes" }
-                                : new[] { "Common/No" },
-                            ["IsHidden"] = masterPlan.IsHidden
-                                ? new[] { "Common/Yes" }
-                                : new[] { "Common/No" },
-                        },
-                    }
-                );
-
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                var prefix = await _t.GetAsync("Common/ErrorPrefix", await GetLangAsync());
-                return StatusCode(500, new { message = prefix + ex.Message });
-            }
+            return Ok(result);
         }
 
         [HttpPost("check/{id}")]

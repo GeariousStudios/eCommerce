@@ -15,10 +15,5 @@ namespace backend.Dtos.MasterPlan
         public int[]? Units { get; set; }
         public int[]? MasterPlanFieldIds { get; set; }
         public int[]? MasterPlanElementIds { get; set; }
-        public List<CreateMasterPlanFieldDto>? NewMasterPlanFields { get; set; }
-        public Dictionary<int, string>? TempMasterPlanFieldNames { get; set; }
-        public string[]? NewMasterPlanElementNames { get; set; }
-        public int[]? OrderedMasterPlanFieldIds { get; set; }
-        public int[]? OrderedMasterPlanElementIds { get; set; }
     }
 }

@@ -61,5 +61,9 @@ export const stopTypeConstraints = {
 // --- MasterPlanModal ---
 export const masterPlanConstraints = {
   name: { maxLength: 32 },
-  masterPlanFieldName: { maxLength: 32 },
+};
+
+// --- MasterPlanFieldModal ---
+export const masterPlanFieldConstraints = {
+  name: { maxLength: 32 },
 };

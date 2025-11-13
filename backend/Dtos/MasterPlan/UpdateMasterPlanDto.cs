@@ -14,12 +14,6 @@ namespace backend.Dtos.MasterPlan
         public bool AllowRemovingElements { get; set; }
         public int[]? Units { get; set; }
         public int[]? MasterPlanFieldIds { get; set; }
-        public int[]? MasterPlanFieldIdsToDelete { get; set; }
         public int[]? MasterPlanElementIds { get; set; }
-        public List<CreateMasterPlanFieldDto>? NewMasterPlanFields { get; set; }
-        public List<UpdateMasterPlanFieldDto>? UpdatedExistingMasterPlanFields { get; set; }
-        public string[]? NewMasterPlanElementNames { get; set; }
-        public int[]? OrderedMasterPlanFieldIds { get; set; }
-        public int[]? OrderedMasterPlanElementIds { get; set; }
     }
 }

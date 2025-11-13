@@ -663,7 +663,7 @@ const UnitClient = (props: Props) => {
         return;
       }
 
-      notify("success", t("Unit/Shift change") + t("Modal/updated"));
+      notify("success", t("Unit/Shift change") + t("Modal/updated1"));
       await fetchShiftChanges(date);
       await refreshUnitActive();
     } catch {

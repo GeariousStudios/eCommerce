@@ -126,8 +126,8 @@
   "MasterPlanField/NotFound": "Field could not be found in the database",
   "MasterPlanField/Deleted": "Field deleted!",
   "MasterPlanField/SomeNotFound": "One or more fields could not be found",
-  "MasterPlanField/ExistsInMasterPlan": "Field {0} already exists in this master plan!",
   "MasterPlanField/NameTaken": "A field with the same name already exists!",
+  "MasterPlanField/InUse": "Cannot delete a field that is in use",
 
   "MasterPlanElement/NotFound": "Element could not be found in the database",
   "MasterPlanElement/Updated": "Element updated!",

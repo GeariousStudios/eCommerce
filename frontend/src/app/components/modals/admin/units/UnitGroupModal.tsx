@@ -113,7 +113,7 @@ const UnitGroupModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Group") + t("Modal/created"), 4000);
+      notify("success", t("Common/Group") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -213,7 +213,7 @@ const UnitGroupModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Group") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Group") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }

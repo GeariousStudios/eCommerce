@@ -166,7 +166,7 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Category") + t("Modal/created"), 4000);
+      notify("success", t("Common/Category") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -261,7 +261,7 @@ const CategoryModal = (props: Props) => {
       setSubCategoryIdsToDelete([]);
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Category") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Category") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -399,7 +399,7 @@ const CategoryModal = (props: Props) => {
 
     return (
       <div
-        className={`${roundedButtonClass} !bg-(--bg-modal-link) duration-(--fast) flex w-auto items-center gap-2 px-4 transition-transform`}
+        className={`${roundedButtonClass} flex w-auto items-center gap-2 !bg-(--bg-modal-link) px-4 transition-transform duration-(--fast)`}
         style={{
           cursor: isEditing ? "text" : isDragging ? "grabbing" : "grab",
         }}
@@ -427,7 +427,7 @@ const CategoryModal = (props: Props) => {
               }
             }}
             {...categoryConstraints.subCategoryName}
-            className="border-(--border-primary) w-32 border-b bg-transparent outline-none"
+            className="w-32 border-b border-(--border-primary) bg-transparent outline-none"
           />
         ) : (
           <>
@@ -438,7 +438,7 @@ const CategoryModal = (props: Props) => {
                 setEditingSubCategoryId(id);
                 setEditingName(label);
               }}
-              className="duration-(--fast) hover:text-(--accent-color) text-(--text-secondary) transition-colors"
+              className="text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
               style={{ cursor: "pointer" }}
             >
               <PencilIcon className="h-5 w-5" />
@@ -452,7 +452,7 @@ const CategoryModal = (props: Props) => {
                 e.stopPropagation();
                 onDelete();
               }}
-              className="duration-(--fast) hover:text-(--accent-color) text-(--text-secondary) transition-colors"
+              className="text-(--text-secondary) transition-colors duration-(--fast) hover:text-(--accent-color)"
               style={{ cursor: "pointer" }}
             >
               <XMarkIcon className="h-6 w-6" />

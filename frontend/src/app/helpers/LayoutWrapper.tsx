@@ -128,6 +128,10 @@ const LayoutWrapper = (props: Props) => {
       // --- Plan ---
       plan: { label: t("Navbar/Plan"), clickable: false },
       "master-plans": { label: t("Common/Master plans"), clickable: false },
+      "master-plan-fields": {
+        label: t("Common/Master plan fields"),
+        clickable: false,
+      },
 
       // --- Admin ---
       admin: { label: t("Common/Admin"), clickable: false },
@@ -338,7 +342,7 @@ const LayoutWrapper = (props: Props) => {
       />
       <div className="flex min-h-screen">
         <div
-          className={`${hasScrollbar && !navbarHidden ? "md:ml-67" : !hasScrollbar && !navbarHidden ? "md:ml-64" : ""} duration-(--medium) w-full overflow-hidden p-4 pt-22`}
+          className={`${hasScrollbar && !navbarHidden ? "md:ml-67" : !hasScrollbar && !navbarHidden ? "md:ml-64" : ""} w-full overflow-hidden p-4 pt-22 duration-(--medium)`}
         >
           {props.children}
         </div>

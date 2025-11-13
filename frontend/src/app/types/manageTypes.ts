@@ -269,9 +269,6 @@ export type MasterPlanItem = {
   fields: {
     id: number;
     name: string;
-    dataType: MasterPlanFieldDataType;
-    alignment: "Left" | "Center" | "Right";
-    isHidden: boolean;
   }[];
   isHidden?: boolean;
   allowRemovingElements?: boolean;
@@ -290,7 +287,29 @@ export type MasterPlanFilters = {
   allowRemovingElements?: boolean;
 };
 
-export type MasterPlanFieldDataType = "Number" | "Text" | "Boolean";
+// --- admin/manage/units/master-plan-fields/MasterPlanFieldsClient.tsx ---
+export type MasterPlanFieldItem = {
+  id: number;
+  name: string;
+  masterPlanIds: number[];
+  dataType: MasterPlanFieldDataType;
+  alignment: "Left" | "Center" | "Right";
+  isHidden: boolean;
+
+  creationDate: string;
+  updateDate: string;
+  createdBy: string;
+  updatedBy: string;
+};
+
+export type MasterPlanFieldFilters = {
+  dataTypes?: MasterPlanFieldDataType[];
+  alignments?: ("Left" | "Center" | "Right")[];
+  masterPlanIds?: number[];
+  isHidden?: boolean;
+};
+
+export type MasterPlanFieldDataType = "Number" | "Text" | "Boolean" | "Date";
 export const getMasterPlanFieldDataTypeOptions = (
   t: (key: string) => string,
 ) => [
@@ -309,5 +328,23 @@ export const getMasterPlanFieldDataTypeOptions = (
   {
     label: t("Common/Date"),
     value: "Date" as MasterPlanFieldDataType,
+  },
+];
+
+export type MasterPlanFieldAlignment = "Left" | "Center" | "Right";
+export const getMasterPlanFieldAlignmentOptions = (
+  t: (key: string) => string,
+) => [
+  {
+    label: t("Common/Left"),
+    value: "Left" as MasterPlanFieldAlignment,
+  },
+  {
+    label: t("Common/Center"),
+    value: "Center" as MasterPlanFieldAlignment,
+  },
+  {
+    label: t("Common/Right"),
+    value: "Right" as MasterPlanFieldAlignment,
   },
 ];

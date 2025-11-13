@@ -357,7 +357,7 @@ const ReportModal = (props: Props) => {
 
       await fetchReportsForHour();
       props.onItemUpdated();
-      notify("success", t("ReportModal/Event") + t("Modal/created"));
+      notify("success", t("ReportModal/Event") + t("Modal/created1"));
       return true;
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -405,7 +405,7 @@ const ReportModal = (props: Props) => {
 
       await fetchReportsForHour();
       props.onItemUpdated();
-      notify("success", t("ReportModal/Event") + t("Modal/updated"));
+      notify("success", t("ReportModal/Event") + t("Modal/updated1"));
       return true;
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -707,7 +707,7 @@ const ReportModal = (props: Props) => {
                     {!canAddReport &&
                     conflictReport?.startTime.slice(0, 13) !==
                       `${selectedDate}T${selectedHour.padStart(2, "0")}` ? (
-                      <div className="text-(--note-error) text-sm">
+                      <div className="text-sm text-(--note-error)">
                         {t("ReportModal/Blocking event")}
                         <br />
                         <button
@@ -767,7 +767,7 @@ const ReportModal = (props: Props) => {
                           .map((report, index) => (
                             <div
                               key={report.id}
-                              className="bg-(--bg-main) relative flex flex-col gap-4 rounded-2xl p-4"
+                              className="relative flex flex-col gap-4 rounded-2xl bg-(--bg-main) p-4"
                             >
                               {report.categoryId && (
                                 <div className="flex justify-between gap-4">
@@ -894,7 +894,7 @@ const ReportModal = (props: Props) => {
                                         ?.slice(0, 16)
                                         .replace("T", " ")}{" "}
                                       -{" "}
-                                      <span className="text-(--note-error) font-semibold">
+                                      <span className="font-semibold text-(--note-error)">
                                         {t("Unit/ongoing")}
                                       </span>
                                     </>
@@ -974,7 +974,7 @@ const ReportModal = (props: Props) => {
                     )}
 
                     {isAddingReport && (
-                      <div className="bg-(--bg-main) flex flex-col gap-6 rounded-2xl p-8">
+                      <div className="flex flex-col gap-6 rounded-2xl bg-(--bg-main) p-8">
                         {categories.length > 0 && (
                           <div
                             className={`${currentReport.categoryId && categories.map((s) => (s.subCategories.length > 0 ? "sm:grid-cols-2" : "sm:grid-cols-1"))} grid grid-cols-1 gap-6`}
@@ -1136,7 +1136,6 @@ const ReportModal = (props: Props) => {
                           />
                         </div>
 
-
                         <RichTextEditor
                           ref={editorRef}
                           name="content"
@@ -1209,7 +1208,7 @@ const ReportModal = (props: Props) => {
 
                         {validationError && (
                           <div
-                            className="text-(--note-error) -mt-3 text-sm font-semibold"
+                            className="-mt-3 text-sm font-semibold text-(--note-error)"
                             dangerouslySetInnerHTML={{
                               __html: validationError,
                             }}

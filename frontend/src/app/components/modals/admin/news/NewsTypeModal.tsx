@@ -112,7 +112,7 @@ const NewsTypeModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Type") + t("Modal/created"), 4000);
+      notify("success", t("Common/Type") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -211,7 +211,7 @@ const NewsTypeModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Type") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Type") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -256,11 +256,11 @@ const NewsTypeModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="text-(--border-tertiary) w-12" />
-                <h3 className="text-(--text-secondary) text-sm whitespace-nowrap">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("NewsTypeModal/Info1")}
                 </h3>
-                <hr className="text-(--border-tertiary) w-full" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">

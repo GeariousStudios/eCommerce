@@ -116,7 +116,7 @@ const NewsModal = (props: Props) => {
       } else {
         props.onClose();
         props.onNewsUpdated();
-        notify("success", t("NewsModal/News item") + t("Modal/created"), 4000);
+        notify("success", t("NewsModal/News item") + t("Modal/created1"), 4000);
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
@@ -239,7 +239,7 @@ const NewsModal = (props: Props) => {
 
       props.onClose();
       props.onNewsUpdated();
-      notify("success", t("NewsModal/News item") + t("Modal/updated"), 4000);
+      notify("success", t("NewsModal/News item") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }

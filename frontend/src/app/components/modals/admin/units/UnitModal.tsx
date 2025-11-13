@@ -230,7 +230,7 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Unit") + t("Modal/created"), 4000);
+      notify("success", t("Common/Unit") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -514,7 +514,7 @@ const UnitModal = (props: Props) => {
       props.onClose();
       props.onItemUpdated();
       window.dispatchEvent(new Event("unit-list-updated"));
-      notify("success", t("Common/Unit") + t("Modal/updated"), 4000);
+      notify("success", t("Common/Unit") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
     }
@@ -543,16 +543,16 @@ const UnitModal = (props: Props) => {
       <>
         <button
           disabled={isDragging}
-          className={`${roundedButtonClass} group bg-(--bg-modal-link)! w-auto gap-2 px-4`}
+          className={`${roundedButtonClass} group w-auto gap-2 bg-(--bg-modal-link)! px-4`}
           onClick={onDelete}
         >
           <span
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} duration-(--fast) truncate font-semibold transition-colors`}
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} truncate font-semibold transition-colors duration-(--fast)`}
           >
             {label}
           </span>
           <XMarkIcon
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} duration-(--fast) h-6 w-6 transition-[color,rotate]`}
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} h-6 w-6 transition-[color,rotate] duration-(--fast)`}
           />
         </button>
       </>
