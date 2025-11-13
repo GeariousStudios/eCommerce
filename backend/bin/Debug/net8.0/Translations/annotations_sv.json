@@ -1,0 +1,34 @@
+{
+  "Validation/Please enter": "Fyll i {0}",
+  "Validation/Please select": "Välj {0}",
+  "Validation/cannot contain spaces": "{0} får inte innehålla mellanslag",
+  "Validation/is invalid": "{0} är ogiltig",
+  "Validation/cannot exceed": "{0} får inte vara längre än {1} tecken",
+  "Validation/must be at least": "{0} måste vara minst {1} tecken",
+
+  "Common/a name": "ett namn",
+  "Common/Name": "Namn",
+  "Common/a color": "en färg",
+  "Common/Color format": "Färgens format",
+
+  "Unit/a group": "en grupp",
+
+  "User/a username": "ett användarnamn",
+  "User/Username": "Användarnamn",
+  "User/a password": "ett lösenord",
+  "User/Password": "Lösenord",
+  "User/Email": "Mejladress",
+  "User/at least one role": "minst en roll",
+  "User/First name": "Förnamn",
+  "User/Last name": "Efternamn",
+
+  "UnitColumn/a data type": "en datatyp",
+  "UnitColumn/a comparison text": "en jämförelsetext",
+  "UnitColumn/Comparison text": "Jämförelsetext",
+
+  "Report/a start time": "en starttid",
+
+  "MasterPlan/a group": "en grupp",
+
+  "MasterPlanField/a data type": "en datatyp"
+}

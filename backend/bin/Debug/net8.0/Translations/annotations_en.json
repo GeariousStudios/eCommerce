@@ -1,0 +1,34 @@
+{
+  "Validation/Please enter": "Please enter {0}",
+  "Validation/Please select": "Please select {0}",
+  "Validation/cannot contain spaces": "{0} cannot contain spaces",
+  "Validation/is invalid": "{0} is invalid",
+  "Validation/cannot exceed": "{0} cannot exceed {1} characters",
+  "Validation/must be at least": "{0} must be at least {1} characters",
+
+  "Common/a name": "a name",
+  "Common/Name": "Name",
+  "Common/a color": "a color",
+  "Common/Color format": "Color format",
+
+  "Unit/a group": "a group",
+
+  "User/a username": "a username",
+  "User/Username": "Username",
+  "User/a password": "a password",
+  "User/Password": "Password",
+  "User/Email": "Email",
+  "User/at least one role": "at least one role",
+  "User/First name": "First name",
+  "User/Last name": "Last name",
+
+  "UnitColumn/a data type": "a data type",
+  "UnitColumn/a comparison text": "a comparison text",
+  "UnitColumn/Comparison text": "Comparison text",
+
+  "Report/a start time": "a start time",
+
+  "MasterPlan/a group": "a group",
+
+  "MasterPlanField/a data type": "a data type"
+}

@@ -361,6 +361,7 @@ const MasterPlanClient = (props: Props) => {
                   dragElastic={0}
                   dragConstraints={constraintsRef}
                   className="pointer-events-auto absolute bottom-4 mx-4 flex w-fit flex-col gap-4 rounded-2xl bg-(--bg-modal) p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] lg:left-1/2 lg:-translate-x-1/2"
+                  style={{ touchAction: "none" }}
                 >
                   <div
                     className="flex cursor-move items-center justify-between gap-4"

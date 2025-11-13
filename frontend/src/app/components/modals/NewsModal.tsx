@@ -377,21 +377,10 @@ const NewsModal = (props: Props) => {
                   required
                 />
 
-                {/* <RichTextEditor
-                  ref={editorRef}
-                  value={content}
-                  name="content"
-                  onReady={() => {
-                    setIsEditorReady(true);
-                  }}
-                  onChange={(val) => setContent(val)}
-                  required
-                /> */}
                 <RichTextEditor
                   ref={editorRef}
                   name="content"
                   onReady={() => setIsEditorReady(true)}
-                  onChange={(val) => setContent(val)}
                   required
                 />
               </div>

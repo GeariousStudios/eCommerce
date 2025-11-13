@@ -456,7 +456,8 @@ const UserModal = (props: Props) => {
                 <MultiDropdown
                   addSpacer
                   scrollContainer={getScrollEl}
-                  customSpace={11} // <-- 6.5 = 3 options, 9 = 4 options, 11 = 5 options.
+                  // customSpace={11} // <-- 6.5 = 3 options, 9 = 4 options, 11 = 5 options.
+                  showAbove
                   label={t("Users/Permissions")}
                   options={[
                     { label: t("Roles/Admin"), value: "Admin" },

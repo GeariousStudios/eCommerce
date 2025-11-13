@@ -22,6 +22,7 @@ type MasterPlanElement = {
   isNew?: boolean;
   originalOrder?: number;
   originalGroupId?: number | null;
+  originalStruckElement?: boolean | null;
 };
 
 export const useMasterPlan = (
@@ -122,6 +123,7 @@ export const useMasterPlan = (
               ...el,
               originalOrder: index,
               originalGroupId: el.groupId,
+              originalStruckElement: el.struckElement,
               values: el.values.map((v: any) => ({
                 ...v,
                 originalValue: v.value,
@@ -316,7 +318,7 @@ export const useMasterPlan = (
                 : String(el.id) === String(elementId);
 
             return shouldStrike
-              ? { ...el, struckElement: !currentlyStruck }
+              ? { ...el, struckElement: !currentlyStruck, hasChanges: true }
               : el;
           }),
         };
@@ -418,10 +420,12 @@ export const useMasterPlan = (
 
         const orderChanged = plan.elements.indexOf(el) !== el.originalOrder;
         const groupChanged = el.groupId !== el.originalGroupId;
+        const struckChanged = el.struckElement !== el.originalStruckElement;
         const hasChanged =
           el.values.some((v) => v.value !== v.originalValue) ||
           orderChanged ||
-          groupChanged;
+          groupChanged ||
+          struckChanged;
 
         if (!hasChanged) continue;
 
@@ -475,6 +479,7 @@ export const useMasterPlan = (
       }
 
       setIsEditing(false);
+      setEditMode("element");
       setRefetchData(true);
       await handleCheck(true);
       clearRemovedElements();
@@ -487,6 +492,7 @@ export const useMasterPlan = (
   // --- Handle cancel ---
   const handleAbortChanges = async () => {
     setIsEditing(false);
+    setEditMode("element");
     setRefetchData(true);
     await handleCheck(true, true);
     clearRemovedElements();
@@ -562,6 +568,10 @@ export const useMasterPlan = (
 
           skipNextInfoRef.current = false;
           setIsEditing(false);
+          setEditMode("element");
+          clearRemovedElements();
+          setSelectedId(null);
+          setRefetchData(true);
         }
       },
     );
@@ -576,6 +586,9 @@ export const useMasterPlan = (
 
           skipNextInfoRef.current = false;
           setIsEditing(false);
+          setEditMode("element");
+          clearRemovedElements();
+          setSelectedId(null);
           setRefetchData(true);
         }
       },
@@ -591,6 +604,9 @@ export const useMasterPlan = (
 
           skipNextInfoRef.current = false;
           setIsEditing(false);
+          setEditMode("element");
+          clearRemovedElements();
+          setSelectedId(null);
           setRefetchData(true);
         }
       },
@@ -973,7 +989,7 @@ export const useMasterPlan = (
     groupCounter,
     isStrikeMode,
     setShowHidden,
-    setIsExpanded: undefined,
+    setIsExpanded,
     setCurrentPage,
     setItemsPerPage,
     setIsEditing,

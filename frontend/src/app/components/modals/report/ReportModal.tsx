@@ -318,6 +318,7 @@ const ReportModal = (props: Props) => {
     const startTimeIso = localDateTimeToUtcIso(report.startTime);
     const date = report.startTime.slice(0, 10);
     const hour = parseInt(report.startTime.slice(11, 13), 10);
+    const content = editorRef.current?.getContent() ?? "";
 
     try {
       const response = await fetch(`${apiUrl}/report/create`, {
@@ -335,7 +336,8 @@ const ReportModal = (props: Props) => {
           subCategoryId: report.subCategoryId || null,
           categoryName: report.categoryName || null,
           subCategoryName: report.subCategoryName || null,
-          content: report.content,
+          // content: report.content,
+          content,
           date,
           hour,
         }),
@@ -367,6 +369,7 @@ const ReportModal = (props: Props) => {
     const startTimeIso = localDateTimeToUtcIso(report.startTime);
     const date = report.startTime.slice(0, 10);
     const hour = parseInt(report.startTime.slice(11, 13), 10);
+    const content = editorRef.current?.getContent() ?? "";
 
     try {
       const response = await fetch(`${apiUrl}/report/update/${report.id}`, {
@@ -381,7 +384,8 @@ const ReportModal = (props: Props) => {
           stopTime: report.stopTime || null,
           categoryId: report.categoryId || null,
           subCategoryId: report.subCategoryId || null,
-          content: report.content,
+          // content: report.content,
+          content,
           date,
           hour,
         }),
@@ -1132,31 +1136,11 @@ const ReportModal = (props: Props) => {
                           />
                         </div>
 
-                        {/* <RichTextEditor
-                          ref={editorRef}
-                          value={currentReport.content}
-                          name="content"
-                          onReady={() => {
-                            setIsEditorReady(true);
-                          }}
-                          onChange={(val) =>
-                            setCurrentReport((prev) => ({
-                              ...prev,
-                              content: val,
-                            }))
-                          }
-                        /> */}
 
                         <RichTextEditor
                           ref={editorRef}
                           name="content"
                           onReady={() => setIsEditorReady(true)}
-                          onChange={(val) =>
-                            setCurrentReport((prev) => ({
-                              ...prev,
-                              content: val,
-                            }))
-                          }
                         />
 
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">

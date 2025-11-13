@@ -13,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
     [Route("master-plan-field")]
     public class MasterPlanFieldController : ControllerBase
     {
@@ -75,6 +74,7 @@ namespace backend.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteMasterPlanField(int id)
         {
             var lang = await GetLangAsync();
@@ -96,6 +96,7 @@ namespace backend.Controllers
         }
 
         [HttpPost("create")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateMasterPlanField(CreateMasterPlanFieldDto dto)
         {
             var lang = await GetLangAsync();
@@ -173,6 +174,7 @@ namespace backend.Controllers
         }
 
         [HttpPut("update/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateMasterPlanField(int id, UpdateMasterPlanFieldDto dto)
         {
             var lang = await GetLangAsync();

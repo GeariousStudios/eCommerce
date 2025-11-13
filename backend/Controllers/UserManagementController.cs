@@ -484,12 +484,12 @@ namespace backend.Controllers
                     );
                 }
 
-                if (user.Roles != userRoles)
-                {
-                    return BadRequest(
-                        new { message = await _t.GetAsync("Users/CannotChangeRolesOnline", lang) }
-                    );
-                }
+                // if (user.Roles != userRoles)
+                // {
+                //     return BadRequest(
+                //         new { message = await _t.GetAsync("Users/CannotChangeRolesOnline", lang) }
+                //     );
+                // }
             }
 
             if (!string.IsNullOrWhiteSpace(dto.Password) && dto.Password.Length < 8)

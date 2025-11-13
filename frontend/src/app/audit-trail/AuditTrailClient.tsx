@@ -478,7 +478,7 @@ const AuditTrailClient = (props: Props) => {
       </div>
 
       {/* --- RESULT LIST --- */}
-      <div className="border-(--border-main) relative w-full overflow-x-auto rounded border>
+      <div className="border-(--border-main) relative w-full overflow-x-auto rounded border">
         <table className="w-full min-w-6xl table-fixed border-collapse">
           <thead className="bg-(--bg-grid-header)">
             <tr>
@@ -490,7 +490,7 @@ const AuditTrailClient = (props: Props) => {
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
-                classNameAddition="sticky left-0 bg-(--bg-grid-header) z-[calc(var(--z-base)+1)"
+                classNameAddition="sticky left-0 bg-(--bg-grid-header) z-[calc(var(--z-base)+1)]"
               />
               <ThCell
                 sortingItem="action"
@@ -567,7 +567,7 @@ const AuditTrailClient = (props: Props) => {
                       className={`${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} duration-(--fast) hover:bg-(--bg-grid-header-hover) cursor-pointer transition-[background]`}
                       onClick={() => setExpandedRow(isExpanded ? null : a.id)}
                     >
-                      <TdCell classNameAddition="sticky left-0 [background:inherit] z-[calc(var(--z-base)+1)">
+                      <TdCell classNameAddition="sticky left-0 [background:inherit] z-[calc(var(--z-base)+1)]">
                         {new Date(a.timestamp + "Z").toLocaleString()}
                       </TdCell>
                       <TdCell>{a.action}</TdCell>

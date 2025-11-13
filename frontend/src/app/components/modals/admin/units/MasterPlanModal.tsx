@@ -360,7 +360,7 @@ const MasterPlanModal = (props: Props) => {
             unitGroupId: parseInt(unitGroup),
             isHidden,
             allowRemovingElements,
-            masterPlanFieldIds,
+            masterPlanFieldIds: masterPlanFieldIds.filter((id) => id > 0),
             newMasterPlanFields,
             updatedExistingMasterPlanFields,
             masterPlanFieldIdsToDelete,
