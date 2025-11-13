@@ -61,8 +61,7 @@ const Navbar = (props: Props) => {
   const [isAnyDragging, setIsAnyDragging] = useState(false);
 
   // --- Other ---
-  const { isAuthReady, isDev, isAdmin, isReporter, isLoggedIn } =
-    useAuth();
+  const { isAuthReady, isDev, isAdmin, isReporter, isLoggedIn } = useAuth();
   const { currentTheme } = useTheme();
   const { notify } = useToast();
   const isDesktop = useIsDesktop();
@@ -402,7 +401,10 @@ const Navbar = (props: Props) => {
     return map;
   };
 
-  const menuLookup = useMemo(() => getMenuLookup(), [unitItems, masterPlanItems, t]);
+  const menuLookup = useMemo(
+    () => getMenuLookup(),
+    [unitItems, masterPlanItems, t],
+  );
 
   const validFavourites = favourites.filter((f) => menuLookup.has(f.href));
 
@@ -483,19 +485,19 @@ const Navbar = (props: Props) => {
       <div
         className={`${
           !props.navbarHidden
-            ? "fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/50 md:static md:h-auto md:w-auto md:bg-transparent"
+            ? "z-(--z-overlay) fixed inset-0 h-full w-screen bg-black/50 md:static md:h-auto md:w-auto md:bg-transparent"
             : ""
         }`}
         onPointerDown={() => toggleNavbar()}
       >
         <nav
-          className={`fixed z-[calc(var(--z-overlay)-1)] flex h-full w-full flex-col bg-[var(--bg-navbar)] ${
+          className={`fixed z-[calc(var(--z-overlay)-1)] flex h-full w-full flex-col bg-(--bg-navbar) ${
             props.navbarHidden
               ? "pointer-events-none max-w-0 opacity-0 transition-[max-width,opacity]"
               : props.hasScrollbar
                 ? "max-w-67 opacity-100 transition-[max-width]"
                 : "max-w-64 opacity-100 transition-[max-width]"
-          } duration-[var(--medium)]`}
+          } duration-(--medium)`}
           inert={props.navbarHidden}
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -533,7 +535,7 @@ const Navbar = (props: Props) => {
                   zIndex: 0,
                 }}
               />
-              <div className="pointer-events-none absolute top-0 left-0 h-full w-full border-r-1 border-[var(--border-main)]" />
+              <div className="border-(--border-main) pointer-events-none absolute top-0 left-0 h-full w-full border-r-1" />
               {/* Simulated border. */}
 
               {isAuthReady && unitsLoaded ? (
@@ -548,7 +550,7 @@ const Navbar = (props: Props) => {
                     }
                   >
                     <div className="flex flex-col">
-                      <div className="fixed top-0 flex h-18 transition-transform duration-[var(--slow)]">
+                      <div className="duration-(--slow) fixed top-0 flex h-18 transition-transform">
                         <Link
                           href={`/`}
                           className="mt-2.25 -ml-2.25 flex h-15 max-w-17 min-w-40"
@@ -569,7 +571,7 @@ const Navbar = (props: Props) => {
                         <Outline.ChevronDoubleLeftIcon />
                       </button>
 
-                      <hr className="mt-1 mb-7 rounded-full text-[var(--border-main)]" />
+                      <hr className="text-(--border-main) mt-1 mb-7 rounded-full" />
 
                       {/* --- USER FAVOURITES --- */}
                       {resolvedFavourites.length > 0 && (
@@ -609,7 +611,7 @@ const Navbar = (props: Props) => {
                             }}
                           />
 
-                          <hr className="mt-4 mb-7 rounded-full text-[var(--border-main)]" />
+                          <hr className="text-(--border-main) mt-4 mb-7 rounded-full" />
                         </div>
                       )}
 
@@ -629,7 +631,7 @@ const Navbar = (props: Props) => {
                               isLoggedIn ? onToggleFavourite : undefined
                             }
                           />
-                          <hr className="mt-4 mb-7 rounded-full text-[var(--border-main)]" />
+                          <hr className="text-(--border-main) mt-4 mb-7 rounded-full" />
                         </div>
                       )}
 
@@ -714,7 +716,7 @@ const Navbar = (props: Props) => {
 
                       {isAdmin && (
                         <div>
-                          <hr className="mt-4 mb-7 rounded-full text-[var(--border-main)]" />
+                          <hr className="text-(--border-main) mt-4 mb-7 rounded-full" />
 
                           <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                             {t("Common/Admin")}

@@ -145,7 +145,7 @@ const MenuDropdown = (props: Props) => {
         {...(props.onModal ? { "data-inside-modal": "true" } : {})}
         role="dialog"
         aria-hidden={!props.isOpen}
-        className={`${props.isOpen ? "visible" : "invisible"} ${props.isOpen && entered ? "opacity-100" : "opacity-0"} absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex max-h-[462.5px] flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl bg-[var(--bg-topbar)] p-4 break-words shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+        className={`${props.isOpen ? "visible" : "invisible"} ${props.isOpen && entered ? "opacity-100" : "opacity-0"} bg-(--bg-topbar) duration-(--fast) absolute top-full right-0 z-[calc(var(--z-tooltip)+1)] mt-1 flex max-h-[462.5px] flex-col gap-8 overflow-x-hidden overflow-y-auto rounded-2xl p-4 break-words shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility]`}
         style={{
           width,
           top: position.top,

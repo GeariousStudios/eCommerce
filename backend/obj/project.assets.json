@@ -4292,11 +4292,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\repos\\eCommerce\\backend\\eCommerce.csproj",
-      "projectName": "eCommerce",
-      "projectPath": "D:\\repos\\eCommerce\\backend\\eCommerce.csproj",
+      "projectUniqueName": "D:\\repos\\planningPoint\\backend\\planningPoint.csproj",
+      "projectName": "planningPoint",
+      "projectPath": "D:\\repos\\planningPoint\\backend\\planningPoint.csproj",
       "packagesPath": "C:\\Users\\Liam\\.nuget\\packages\\",
-      "outputPath": "D:\\repos\\eCommerce\\backend\\obj\\",
+      "outputPath": "D:\\repos\\planningPoint\\backend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

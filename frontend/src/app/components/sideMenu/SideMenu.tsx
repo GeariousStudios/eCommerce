@@ -60,7 +60,7 @@ const SideMenu = (props: Props) => {
           e.stopPropagation();
           props.onClose();
         }}
-        className={`${props.isOpen ? "opacity-100" : "pointer-events-none opacity-0"} fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/50 transition-opacity duration-[var(--slow)]`}
+        className={`${props.isOpen ? "opacity-100" : "pointer-events-none opacity-0"} z-(--z-overlay) duration-(--slow) fixed inset-0 h-full w-screen bg-black/50 transition-opacity`}
       >
         <div
           ref={innerRef}
@@ -72,7 +72,7 @@ const SideMenu = (props: Props) => {
             e.stopPropagation();
             e.preventDefault();
           }}
-          className={`${props.isOpen ? "visible translate-y-0 sm:translate-x-0 sm:translate-y-0" : "invisible translate-y-full sm:translate-x-full sm:translate-y-0"} fixed bottom-0 z-[calc(var(--z-modal))] flex h-3/4 w-full flex-col rounded-l-2xl rounded-r-2xl rounded-b-none bg-[var(--bg-topbar)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[translate,visibility] duration-[var(--slow)] sm:top-0 sm:right-0 sm:h-full sm:w-128 sm:!rounded-r-none sm:rounded-b-2xl`}
+          className={`${props.isOpen ? "visible translate-y-0 sm:translate-x-0 sm:translate-y-0" : "invisible translate-y-full sm:translate-x-full sm:translate-y-0"} bg-(--bg-topbar) duration-(--slow) fixed bottom-0 z-[calc(var(--z-modal))] flex h-3/4 w-full flex-col rounded-l-2xl rounded-r-2xl rounded-b-none shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[translate,visibility] sm:top-0 sm:right-0 sm:h-full sm:w-128 sm:!rounded-r-none sm:rounded-b-2xl`}
         >
           <FocusTrap
             active={props.isOpen}
@@ -87,11 +87,11 @@ const SideMenu = (props: Props) => {
                 <span className="text-2xl font-semibold">{props.label}</span>
                 <button
                   onClick={() => props.onClose()}
-                  className="h-[32px] w-[32px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
+                  className="duration-(--fast) hover:text-(--accent-color) h-[32px] w-[32px] cursor-pointer"
                 >
                   <XMarkIcon />
                 </button>
-                <hr className="absolute mt-16 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
+                <hr className="absolute mt-16 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
               </div>
 
               <div className="flex-1 overflow-y-auto px-4">

@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace eCommerce.Migrations
+namespace planningPoint.Migrations
 {
     /// <inheritdoc />
     public partial class AlignmentToField : Migration
@@ -15,15 +15,14 @@ namespace eCommerce.Migrations
                 table: "MasterPlanFields",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Alignment",
-                table: "MasterPlanFields");
+            migrationBuilder.DropColumn(name: "Alignment", table: "MasterPlanFields");
         }
     }
 }

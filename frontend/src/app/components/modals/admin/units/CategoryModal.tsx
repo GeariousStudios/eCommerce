@@ -399,7 +399,7 @@ const CategoryModal = (props: Props) => {
 
     return (
       <div
-        className={`${roundedButtonClass} flex w-auto items-center gap-2 !bg-[var(--bg-modal-link)] px-4 transition-transform duration-[var(--fast)]`}
+        className={`${roundedButtonClass} !bg-(--bg-modal-link) duration-(--fast) flex w-auto items-center gap-2 px-4 transition-transform`}
         style={{
           cursor: isEditing ? "text" : isDragging ? "grabbing" : "grab",
         }}
@@ -427,7 +427,7 @@ const CategoryModal = (props: Props) => {
               }
             }}
             {...categoryConstraints.subCategoryName}
-            className="w-32 border-b border-[var(--border-primary)] bg-transparent outline-none"
+            className="border-(--border-primary) w-32 border-b bg-transparent outline-none"
           />
         ) : (
           <>
@@ -438,7 +438,7 @@ const CategoryModal = (props: Props) => {
                 setEditingSubCategoryId(id);
                 setEditingName(label);
               }}
-              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+              className="duration-(--fast) hover:text-(--accent-color) text-(--text-secondary) transition-colors"
               style={{ cursor: "pointer" }}
             >
               <PencilIcon className="h-5 w-5" />
@@ -452,7 +452,7 @@ const CategoryModal = (props: Props) => {
                 e.stopPropagation();
                 onDelete();
               }}
-              className="text-[var(--text-secondary)] transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+              className="duration-(--fast) hover:text-(--accent-color) text-(--text-secondary) transition-colors"
               style={{ cursor: "pointer" }}
             >
               <XMarkIcon className="h-6 w-6" />
@@ -521,11 +521,11 @@ const CategoryModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("CategoryModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
@@ -542,11 +542,11 @@ const CategoryModal = (props: Props) => {
               </div>
 
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("CategoryModal/Info2")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="flex gap-4">
@@ -561,7 +561,9 @@ const CategoryModal = (props: Props) => {
                     }
                   }}
                   // placeholder={t("CategoryModal/Placeholder text")}
-                  label={t("Common/Add") + " " + t("Common/sub category") + "..."}
+                  label={
+                    t("Common/Add") + " " + t("Common/sub category") + "..."
+                  }
                   {...categoryConstraints.subCategoryName}
                 />
 
@@ -624,7 +626,7 @@ const CategoryModal = (props: Props) => {
                     }}
                   />
 
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
                       t("Common/sub category") +
                       t("Modal/Drag and drop3")}

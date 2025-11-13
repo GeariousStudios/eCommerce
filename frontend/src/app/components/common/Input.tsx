@@ -172,7 +172,7 @@ const Input = ({
           onBlur={onBlur}
           spellCheck={spellCheck}
           required={required}
-          className={`${isDisabled ? "!pointer-events-none opacity-25" : ""} ${isCheckbox || isRadio ? `relative cursor-pointer appearance-none accent-[var(--accent-color)]` : `duration-medium flex ${compact ? "h-[24px] border-0! p-0!" : "h-[40px]"} w-full caret-[var(--accent-color)]`} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer ${notRounded ? "border-y-1" : "rounded border-1"} ${!value && (isDate || isTime || isDateTime) ? "is-empty" : ""} ${inChip ? "border-[var(--text-main)]" : "border-[var(--border-tertiary)]"} ${
+          className={`${isDisabled ? "!pointer-events-none opacity-25" : ""} ${isCheckbox || isRadio ? `accent-(--accent-color) relative cursor-pointer appearance-none` : `duration-medium flex ${compact ? "h-[24px] border-0! p-0!" : "h-[40px]"} caret-(--accent-color) w-full`} ${isRadio ? "rounded-full" : ""} ${readOnly ? "!pointer-events-none" : ""} ${icon ? "pl-12" : ""} ${placeholder?.trim() ? "placeholder" : ""} ${type === "password" ? "-mr-6 pr-8" : ""} peer ${notRounded ? "border-y-1" : "rounded border"} ${!value && (isDate || isTime || isDateTime) ? "is-empty" : ""} ${inChip ? "border-(--text-main)" : "border-(--border-tertiary)"} ${
             isColor ? "cursor-pointer p-1" : "p-2"
           } ${classNameAddition}`}
           readOnly={readOnly}
@@ -192,7 +192,7 @@ const Input = ({
         />
 
         {icon && (
-          <div className="pointer-events-none absolute top-1/2 left-4 flex h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:text-[var(--accent-color)] peer-focus:opacity-100">
+          <div className="peer-focus:text-(--accent-color) pointer-events-none absolute top-1/2 left-4 flex h-6 w-6 -translate-y-1/2 opacity-50 peer-focus:opacity-100">
             {icon}
           </div>
         )}
@@ -203,7 +203,7 @@ const Input = ({
               type="button"
               tabIndex={-1}
               onClick={() => setShowPassword((prev) => !prev)}
-              className="flex cursor-pointer transition-colors duration-[var(--fast)] hover:text-[var(--accent-color)]"
+              className="duration-(--fast) hover:text-(--accent-color) flex cursor-pointer transition-colors"
             >
               {showPassword ? (
                 <EyeSlashIcon className="h-4 w-4" />
@@ -218,7 +218,7 @@ const Input = ({
           (!isCheckbox && !isRadio ? (
             <label
               htmlFor={id}
-              className={`${isDate || isTime || isDateTime ? "top-0" : "top-[60%]"} ${onModal ? "bg-[var(--bg-modal)]" : inChip ? "bg-[var(--bg-navbar)]" : "bg-[var(--bg-main)]"} pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] duration-[var(--slow)] select-none`}
+              className={`${isDate || isTime || isDateTime ? "top-0" : "top-[60%]"} ${onModal ? "bg-(--bg-modal)" : inChip ? "bg-(--bg-navbar)" : "bg-(--bg-main)"} duration-(--slow) pointer-events-none absolute left-2 -translate-y-[65%] px-1.5 transition-[top] select-none`}
             >
               {label}
               {(required || showAsterix) && <span className="pr-2" />}
@@ -235,11 +235,11 @@ const Input = ({
             >
               <span className="relative ml-4 inline-block">
                 <span
-                  className={`${checked ? "" : "!font-normal"} !text-[var(--text-main)]`}
+                  className={`${checked ? "" : "!font-normal"} !text-(--text-main)`}
                 >
                   {label}
                 </span>
-                <div className="absolute bottom-0 left-0 h-[2px] w-0 rounded-full bg-[var(--accent-color)] transition-all duration-[var(--fast)] group-hover:w-full" />
+                <div className="bg-(--accent-color) duration-(--fast) absolute bottom-0 left-0 h-[2px] w-0 rounded-full transition-all group-hover:w-full" />
               </span>
             </label>
           ))}

@@ -62,20 +62,20 @@ const NavbarLink = (props: Props) => {
               e.preventDefault();
             }
           }}
-          className={`${isActive ? "text-[var(--accent-color)]" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : ""} ${props.isDragging ? "" : "hover:bg-[var(--bg-navbar-link)]"} group/link flex min-h-[40px] w-full max-w-full items-center justify-between gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)]`}
+          className={`${isActive ? "text-(--accent-color)" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : ""} ${props.isDragging ? "" : "hover:bg-(--bg-navbar-link)"} group/link flex min-h-[40px] w-full max-w-full items-center justify-between gap-4 rounded-lg border border-transparent p-2 transition-[background,max-width] duration-(--fast)`}
         >
           <div className="flex items-center gap-4 overflow-hidden">
             {hasIcon && (
               <span className="relative flex min-h-6 min-w-6 items-center">
                 {OutlineIcon && (
                   <OutlineIcon
-                    className={`${isActive ? "opacity-0" : "opacity-100"} ${!props.isDragging ? "group-hover/link:opacity-0" : ""} absolute transition-opacity duration-[var(--fast)]`}
+                    className={`${isActive ? "opacity-0" : "opacity-100"} ${!props.isDragging ? "group-hover/link:opacity-0" : ""} absolute transition-opacity duration-(--fast)`}
                     aria-hidden
                   />
                 )}
                 {SolidIcon && (
                   <SolidIcon
-                    className={`${isActive ? "opacity-100" : "opacity-0"} ${!props.isDragging ? "text-[var(--accent-color)] group-hover/link:opacity-100" : ""} absolute transition-opacity duration-[var(--fast)]`}
+                    className={`${isActive ? "opacity-100" : "opacity-0"} ${!props.isDragging ? "text-(--accent-color) group-hover/link:opacity-100" : ""} absolute transition-opacity duration-(--fast)`}
                     aria-hidden
                   />
                 )}

@@ -59,13 +59,13 @@ builder.Services.AddEndpointsApiExplorer();
 /* --- Home --- */
 // builder.Services.AddDbContext<AppDbContext>(options =>
 //     options.UseSqlServer(
-//         "Server=localhost\\SQLEXPRESS;Database=eCommerce;Trusted_Connection=True;TrustServerCertificate=True;"
+//         "Server=localhost\\SQLEXPRESS;Database=planningPoint;Trusted_Connection=True;TrustServerCertificate=True;"
 //     )
 // );
 
 /* --- Work --- */
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=eCommerce.db")
+    options.UseSqlite("Data Source=planningPoint.db")
 );
 
 builder.Services.AddCors(options =>
@@ -79,7 +79,7 @@ builder.Services.AddCors(options =>
                     "http://192.168.1.75:3000",
                     "http://10.160.14.124:3000",
                     "https://geariousstudios.github.io",
-                    "https://ecommerce-1-eng1.onrender.com"
+                    "https://planningPoint-1-eng1.onrender.com"
                 ) // Change to live url after dev.
                 .AllowAnyHeader()
                 .AllowAnyMethod()

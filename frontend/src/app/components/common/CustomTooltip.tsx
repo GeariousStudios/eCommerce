@@ -157,13 +157,13 @@ const CustomTooltip = ({
             <Tooltip.Content
               side={side}
               sideOffset={3}
-              className={`${lgHidden ? "lg:hidden" : ""} pointer-events-none z-[var(--z-tooltip)] rounded bg-[var(--bg-tooltip)] p-[0.4rem_0.6rem] text-[0.8rem] font-semibold text-[var(--text-tooltip)]`}
+              className={`${lgHidden ? "lg:hidden" : ""} z-(--z-tooltip) bg-(--bg-tooltip) text-(--text-tooltip) pointer-events-none rounded p-[0.4rem_0.6rem] text-[0.8rem] font-semibold`}
             >
               {content}
               <Tooltip.Arrow
                 width={15}
                 height={7.5}
-                className="pointer-events-none translate-y-[-1px] fill-[var(--bg-tooltip)]"
+                className="fill-(--bg-tooltip) pointer-events-none translate-y-[-1px]"
               />
             </Tooltip.Content>
           )}

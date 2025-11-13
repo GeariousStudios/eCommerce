@@ -152,7 +152,7 @@ const ShiftsClient = (props: Props) => {
     {
       key: "name, units, shiftTeams, isHidden",
       getValue: (item: ShiftItem) => (
-        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
           <div className="flex flex-col">
             <div className="flex items-center gap-4 text-2xl font-bold">
               <span
@@ -240,7 +240,7 @@ const ShiftsClient = (props: Props) => {
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Status")}:</span>
             <span
-              className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} text-[var(--text-main-reverse)]`}
+              className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
               {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
             </span>
@@ -380,7 +380,7 @@ const ShiftsClient = (props: Props) => {
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: ShiftItem) => (
         <span
-          className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
         >
           {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
         </span>

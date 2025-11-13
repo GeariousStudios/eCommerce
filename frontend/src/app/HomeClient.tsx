@@ -487,7 +487,7 @@ const HomeClient = (props: Props) => {
             {isEditing ? (
               <button
                 onClick={createTrendingPanel}
-                className="duration-fast flex w-full cursor-pointer items-center justify-center gap-2 rounded border-1 border-dashed border-[var(--border-main)] bg-[var(--bg-grid-header)] p-2 transition-colors hover:bg-[var(--bg-navbar-link)]"
+                className="duration-fast flex w-full cursor-pointer items-center justify-center gap-2 rounded border border-dashed border-(--border-main) bg-(--bg-grid-header) p-2 transition-colors hover:bg-(--bg-navbar-link)"
               >
                 {t("TrendingPanel/Add trending panel")}
               </button>
@@ -642,11 +642,11 @@ const HomeClient = (props: Props) => {
           {props.isLoggedIn === false && (
             <div className="flex w-full flex-col lg:w-1/3 lg:min-w-80">
               {/* --- Login header --- */}
-              <div className="flex h-[40px] items-center rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
+              <div className="flex h-[40px] items-center rounded-t border border-(--border-main) bg-(--bg-grid-header) px-3 py-2">
                 <span className="font-semibold">{t("Common/Login")}</span>
               </div>
               {/* --- Login content --- */}
-              <div className="flex max-h-144 min-h-144 items-center justify-center rounded-b border-1 border-t-0 border-[var(--border-main)] p-4">
+              <div className="flex max-h-144 min-h-144 items-center justify-center rounded-b border border-t-0 border-(--border-main) p-4">
                 {/* --- Login form --- */}
                 {props.isConnected ? (
                   <form
@@ -705,7 +705,7 @@ const HomeClient = (props: Props) => {
             className={`${props.isLoggedIn ? "w-full" : "lg:w-2/3"} flex w-full flex-col`}
           >
             {/* --- News header --- */}
-            <div className="flex h-[40px] items-center justify-between rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
+            <div className="flex h-[40px] items-center justify-between rounded-t border border-(--border-main) bg-(--bg-grid-header) px-3 py-2">
               <span className="truncate font-semibold">{t("Common/News")}</span>
 
               {props.isLoggedIn !== false && props.isAdmin && (
@@ -722,7 +722,7 @@ const HomeClient = (props: Props) => {
             </div>
 
             {/* --- News content --- */}
-            <div className="flex max-h-144 min-h-144 flex-col overflow-y-auto rounded-b border-1 border-t-0 border-[var(--border-main)] p-2">
+            <div className="flex max-h-144 min-h-144 flex-col overflow-y-auto rounded-b border border-t-0 border-(--border-main) p-2">
               {!props.isAuthReady ? (
                 ""
               ) : isLoadingNews ? (
@@ -731,7 +731,7 @@ const HomeClient = (props: Props) => {
                 <div>
                   {newsItems.map((item, index) => (
                     <div key={index}>
-                      <article className="group/newsItem duration-fast flex flex-col p-2 transition-colors hover:bg-[var(--bg-navbar-link)]">
+                      <article className="group/newsItem duration-fast flex flex-col p-2 transition-colors hover:bg-(--bg-navbar-link)">
                         <time
                           className="text-xs uppercase"
                           dateTime={item.date}
@@ -744,7 +744,7 @@ const HomeClient = (props: Props) => {
                         </time>
 
                         <div className="flex items-center justify-between">
-                          <h3 className="text-xl text-[var(--accent-color)]">
+                          <h3 className="text-xl text-(--accent-color)">
                             {item.typeName}
                           </h3>
                           {props.isLoggedIn !== false && props.isAdmin && (
@@ -793,14 +793,14 @@ const HomeClient = (props: Props) => {
                         <div
                           dangerouslySetInnerHTML={{ __html: item.content }}
                         />
-                        <small className="mt-4 text-[var(--text-secondary)] italic">
+                        <small className="mt-4 text-(--text-secondary) italic">
                           {t("Common/Updated")}{" "}
                           {utcIsoToLocalDateTime(item.updateDate)}{" "}
                           {t("Common/by")} {item.updatedBy}
                         </small>
                       </article>
                       {index !== newsItems.length - 1 && (
-                        <hr className="text-[var(--border-main)]" />
+                        <hr className="text-(--border-main)" />
                       )}
                     </div>
                   ))}

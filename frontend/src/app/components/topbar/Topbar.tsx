@@ -143,7 +143,7 @@ const Topbar = (props: Props) => {
       />
       <div
         inert={!isVisible}
-        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} fixed z-[calc(var(--z-overlay)-2)] flex h-18 w-full justify-between gap-4 border-b-1 border-[var(--border-main)] bg-[var(--bg-navbar)] px-4 py-2 transition-[max-width,translate] duration-[var(--medium)]`}
+        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} border-(--border-main) duration-(--medium) fixed z-[calc(var(--z-overlay)-2)] flex h-18 w-full justify-between gap-4 border-b-1 bg-(--bg-navbar) px-4 py-2 transition-[max-width,translate]`}
       >
         {!isAuthReady ? (
           <Message
@@ -177,13 +177,13 @@ const Topbar = (props: Props) => {
                         <span className="xs:inline hidden md:hidden">
                           ...&nbsp;/&nbsp;
                         </span>
-                        <span className="font-semibold break-all text-[var(--accent-color)]">
+                        <span className="font-semibold break-all text-(--accent-color)">
                           {props.breadcrumbs.at(-1)?.label}
                         </span>
                       </>
                     )}
                     {props.breadcrumbs.length === 1 && (
-                      <span className="font-semibold text-[var(--accent-color)]">
+                      <span className="font-semibold text-(--accent-color)">
                         {props.breadcrumbs[0].label}
                       </span>
                     )}
@@ -201,7 +201,7 @@ const Topbar = (props: Props) => {
                           <span
                             className={
                               item.isActive
-                                ? "font-semibold text-[var(--accent-color)]"
+                                ? "text-(--accent-color) font-semibold"
                                 : !item.clickable
                                   ? "opacity-50"
                                   : ""
@@ -222,7 +222,7 @@ const Topbar = (props: Props) => {
                   {/* <div className="xs:flex hidden"> */}
                   <span className="">{t("SettingsModal/Welcome")}&nbsp;</span>
                   <div>
-                    <span className="font-semibold text-[var(--accent-color)]">
+                    <span className="text-(--accent-color) font-semibold">
                       {firstName ? firstName : username}
                     </span>
                     !
@@ -249,10 +249,10 @@ const Topbar = (props: Props) => {
                   >
                     <span className="group relative flex h-6 w-6 items-center justify-center">
                       <OutlineBellIcon
-                        className={`${bellIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                        className={`${bellIconClicked ? "opacity-0" : "opacity-100"} duration-(--fast) absolute transition-opacity group-hover:opacity-0`}
                       />
                       <SolidBellIcon
-                        className={`${bellIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                        className={`${bellIconClicked ? "opacity-100" : "opacity-0"} text-(--accent-color) duration-(--fast) absolute transition-opacity group-hover:opacity-100`}
                       />
                     </span>
                   </button>
@@ -281,19 +281,19 @@ const Topbar = (props: Props) => {
                     {isLoggedIn ? (
                       <>
                         <OutlineUserIcon
-                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} duration-(--fast) absolute transition-opacity group-hover:opacity-0`}
                         />
                         <SolidUserIcon
-                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} text-(--accent-color) duration-(--fast) absolute transition-opacity group-hover:opacity-100`}
                         />
                       </>
                     ) : (
                       <>
                         <OutlineCog6ToothIcon
-                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} duration-(--fast) absolute transition-opacity group-hover:opacity-0`}
                         />
                         <SolidCog6ToothIcon
-                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} text-(--accent-color) duration-(--fast) absolute transition-opacity group-hover:opacity-100`}
                         />
                       </>
                     )}
@@ -308,13 +308,13 @@ const Topbar = (props: Props) => {
                   <div className="relative">
                     <div className="flex justify-between gap-4">
                       {isLoggedIn ? (
-                        <span className="font-semibold break-words text-[var(--accent-color)]">
+                        <span className="text-(--accent-color) font-semibold break-words">
                           {firstName && lastName
                             ? firstName + " " + lastName
                             : firstName || username}
                         </span>
                       ) : (
-                        <span className="font-semibold break-words text-[var(--accent-color)]">
+                        <span className="text-(--accent-color) font-semibold break-words">
                           {t("SettingsModal/No one logged in")}
                         </span>
                       )}
@@ -356,7 +356,7 @@ const Topbar = (props: Props) => {
                         </div>
                       </button>
                     </div>
-                    <hr className="absolute mt-4 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
+                    <hr className="absolute mt-4 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
                   </div>
 
                   <div>
@@ -393,7 +393,7 @@ const Topbar = (props: Props) => {
                   </div>
 
                   <div className="relative">
-                    <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
+                    <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-(--border-tertiary)" />
                     <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                       {t("SettingsModal/Session")}
                     </span>

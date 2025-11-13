@@ -560,7 +560,7 @@ const MasterPlanModal = (props: Props) => {
 
     return (
       <div
-        className={`${roundedButtonClass} relative flex w-auto items-center gap-2 !bg-[var(--bg-modal-link)] px-4 transition-transform duration-[var(--fast)]`}
+        className={`${roundedButtonClass} !bg-(--bg-modal-link) duration-(--fast) relative flex w-auto items-center gap-2 px-4 transition-transform`}
         style={{ cursor: isDragging ? "grabbing" : "grab" }}
       >
         <span className="truncate font-semibold select-none">{label}</span>
@@ -759,11 +759,11 @@ const MasterPlanModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("MasterPlanModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
@@ -793,11 +793,11 @@ const MasterPlanModal = (props: Props) => {
               </div>
 
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("MasterPlanModal/Info2")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="flex gap-4">
@@ -884,7 +884,7 @@ const MasterPlanModal = (props: Props) => {
                     }}
                   />
 
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop2") +
                       t("Common/master plan field") +
                       t("Modal/Drag and drop3")}
@@ -894,11 +894,11 @@ const MasterPlanModal = (props: Props) => {
               <span className="mb-4" />
 
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("Common/Status")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="flex justify-between gap-6">

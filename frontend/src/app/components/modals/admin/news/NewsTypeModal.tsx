@@ -256,11 +256,11 @@ const NewsTypeModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="text-(--border-tertiary) w-12" />
+                <h3 className="text-(--text-secondary) text-sm whitespace-nowrap">
                   {t("NewsTypeModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="text-(--border-tertiary) w-full" />
               </div>
 
               <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">

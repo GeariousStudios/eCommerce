@@ -7,7 +7,7 @@ using backend.Data;
 
 #nullable disable
 
-namespace eCommerce.Migrations
+namespace planningPoint.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     partial class AppDbContextModelSnapshot : ModelSnapshot

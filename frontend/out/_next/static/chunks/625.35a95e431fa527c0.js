@@ -1,1 +1,372 @@
-"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[625],{1368:(e,t,r)=>{let n;r.d(t,{A:()=>l});let o={randomUUID:"undefined"!=typeof crypto&&crypto.randomUUID&&crypto.randomUUID.bind(crypto)},a=new Uint8Array(16),s=[];for(let e=0;e<256;++e)s.push((e+256).toString(16).slice(1));let l=function(e,t,r){if(o.randomUUID&&!t&&!e)return o.randomUUID();let l=(e=e||{}).random??e.rng?.()??function(){if(!n){if("undefined"==typeof crypto||!crypto.getRandomValues)throw Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");n=crypto.getRandomValues.bind(crypto)}return n(a)}();if(l.length<16)throw Error("Random bytes length must be >= 16");if(l[6]=15&l[6]|64,l[8]=63&l[8]|128,t){if((r=r||0)<0||r+16>t.length)throw RangeError(`UUID byte range ${r}:${r+15} is out of buffer bounds`);for(let e=0;e<16;++e)t[r+e]=l[e];return t}return function(e,t=0){return(s[e[t+0]]+s[e[t+1]]+s[e[t+2]]+s[e[t+3]]+"-"+s[e[t+4]]+s[e[t+5]]+"-"+s[e[t+6]]+s[e[t+7]]+"-"+s[e[t+8]]+s[e[t+9]]+"-"+s[e[t+10]]+s[e[t+11]]+s[e[t+12]]+s[e[t+13]]+s[e[t+14]]+s[e[t+15]]).toLowerCase()}(l)}},1625:(e,t,r)=>{r.r(t),r.d(t,{default:()=>i});var n=r(5155),o=r(2115),a=r(7877),s=r(8500),l=r(5695);let i=e=>{let[t,r]=(0,o.useState)(""),[i,c]=(0,o.useState)(""),[u,d]=(0,o.useState)(!1),[m,f]=(0,o.useState)(""),[v,h]=(0,o.useState)(!0),p=(0,l.useParams)(),g=null==p?void 0:p.id,w="https://ecommerce-9jo7.onrender.com";localStorage.getItem("token");let{notify:y}=(0,s.d)();return((0,o.useEffect)(()=>{let e=async()=>{try{let e=await fetch("".concat(w,"/unit/fetch/").concat(g),{headers:{"Content-Type":"application/json"}}),r=await e.json();e.ok?t(r):y("error",r.message)}catch(e){y("error",String(e))}},t=e=>{var t,n,o;r(null!=(t=e.name)?t:""),c(String(null!=(n=e.unitGroupId)?n:"")),d(null!=(o=e.isHidden)&&o)};g&&e()},[g]),(0,o.useEffect)(()=>{if(!i)return;let e=e=>{var t;f(null!=(t=e.name)?t:"")};(async()=>{try{let t=await fetch("".concat(w,"/unit-group/fetch/").concat(i),{headers:{"Content-Type":"application/json"}}),r=await t.json();t.ok?e(r):y("error",r.message)}catch(e){y("error",String(e))}finally{h(!1)}})()},[i]),!v&&u)?(0,n.jsx)(a.default,{icon:"lock",content:"lock",fullscreen:!0}):v||u?void 0:(0,n.jsxs)(n.Fragment,{children:[(0,n.jsxs)("div",{children:[(0,n.jsx)("strong",{className:"text-[var(--accent-color)]",children:"ID:"})," ",g]}),(0,n.jsxs)("div",{children:[(0,n.jsx)("strong",{className:"text-[var(--accent-color)]",children:"Namn:"})," ",t]}),(0,n.jsxs)("div",{children:[(0,n.jsx)("strong",{className:"text-[var(--accent-color)]",children:"Enhetsgrupp:"})," ",m]}),(0,n.jsx)(a.default,{icon:"work",content:"Denna vy \xe4r ej p\xe5b\xf6rjad \xe4nnu!",fullscreen:!0})]})}},2589:(e,t,r)=>{r.d(t,{A:()=>o});var n=r(2115);let o=n.forwardRef(function(e,t){let{title:r,titleId:o,...a}=e;return n.createElement("svg",Object.assign({xmlns:"http://www.w3.org/2000/svg",fill:"none",viewBox:"0 0 24 24",strokeWidth:1.5,stroke:"currentColor","aria-hidden":"true","data-slot":"icon",ref:t,"aria-labelledby":o},a),r?n.createElement("title",{id:o},r):null,n.createElement("path",{strokeLinecap:"round",strokeLinejoin:"round",d:"m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"}))})},5695:(e,t,r)=>{var n=r(8999);r.o(n,"useParams")&&r.d(t,{useParams:function(){return n.useParams}}),r.o(n,"usePathname")&&r.d(t,{usePathname:function(){return n.usePathname}})},6865:(e,t,r)=>{r.d(t,{A:()=>o});var n=r(2115);let o=n.forwardRef(function(e,t){let{title:r,titleId:o,...a}=e;return n.createElement("svg",Object.assign({xmlns:"http://www.w3.org/2000/svg",fill:"none",viewBox:"0 0 24 24",strokeWidth:1.5,stroke:"currentColor","aria-hidden":"true","data-slot":"icon",ref:t,"aria-labelledby":o},a),r?n.createElement("title",{id:o},r):null,n.createElement("path",{strokeLinecap:"round",strokeLinejoin:"round",d:"M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"}))})},7695:(e,t,r)=>{r.d(t,{A:()=>o});var n=r(2115);let o=n.forwardRef(function(e,t){let{title:r,titleId:o,...a}=e;return n.createElement("svg",Object.assign({xmlns:"http://www.w3.org/2000/svg",fill:"none",viewBox:"0 0 24 24",strokeWidth:1.5,stroke:"currentColor","aria-hidden":"true","data-slot":"icon",ref:t,"aria-labelledby":o},a),r?n.createElement("title",{id:o},r):null,n.createElement("path",{strokeLinecap:"round",strokeLinejoin:"round",d:"m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"}))})},8500:(e,t,r)=>{r.d(t,{ToastProvider:()=>m,d:()=>d});var n=r(5155),o=r(2115),a=r(6865),s=r(2589),l=r(7695);let i=e=>{let[t,r]=(0,o.useState)(!0);(0,o.useEffect)(()=>{var t;let r=setTimeout(i,null!=(t=e.duration)?t:3e3);return()=>clearTimeout(r)},[e.duration]);let i=()=>{t&&(r(!1),setTimeout(()=>{var t;null==(t=e.onDone)||t.call(e)},500))},c="success"===e.type?"bg-[var(--note-success)] hover:bg-[var(--note-success-hover)] active:bg-[var(--note-success-active)]":"error"===e.type?"bg-[var(--note-error)] hover:bg-[var(--note-error-hover)] active:bg-[var(--note-error-active)]":"bg-[var(--note-info)] hover:bg-[var(--note-info-hover)] active:bg-[var(--note-info-active)]",u="success"===e.type?a.A:"error"===e.type?s.A:l.A;return(0,n.jsxs)("div",{className:"".concat(t?"opacity-100":"opacity-0"," ").concat(c," flex cursor-pointer items-center justify-center gap-4 rounded py-4 font-semibold text-[var(--text-main-reverse)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,background]"),style:{transitionDuration:"500ms, 200ms"},onClick:i,children:[(0,n.jsx)(u,{className:"h-8 w-8"}),(0,n.jsx)("div",{className:"w-2/3",children:e.content})]})};var c=r(1368);let u=(0,o.createContext)(null),d=()=>{let e=(0,o.useContext)(u);if(!e)throw Error("useToast must be used inside ToastProvider");return e},m=e=>{let{children:t}=e,[r,a]=(0,o.useState)([]),s=(0,o.useCallback)((e,t,r)=>{let n=(0,c.A)();a(o=>[...o,{id:n,type:e,content:t,duration:r}]),setTimeout(()=>{a(e=>e.filter(e=>e.id!==n))},(null!=r?r:3e3)+500)},[]),l=e=>{a(t=>t.filter(t=>t.id!==e))};return(0,n.jsxs)(u.Provider,{value:{notify:s},children:[t,(0,n.jsx)("div",{className:"fixed bottom-4 z-[calc(var(--z-tooltip)-1)] mx-4 flex w-[calc(100%-2rem)] flex-col gap-4 sm:right-4 sm:mx-0 sm:w-72 sm:min-w-72",children:r.map(e=>(0,n.jsx)(i,{content:e.content,type:e.type,duration:e.duration,onDone:()=>l(e.id)},e.id))})]})}}}]);
+"use strict";
+(self.webpackChunk_N_E = self.webpackChunk_N_E || []).push([
+  [625],
+  {
+    1368: (e, t, r) => {
+      let n;
+      r.d(t, { A: () => l });
+      let o = {
+          randomUUID:
+            "undefined" != typeof crypto &&
+            crypto.randomUUID &&
+            crypto.randomUUID.bind(crypto),
+        },
+        a = new Uint8Array(16),
+        s = [];
+      for (let e = 0; e < 256; ++e) s.push((e + 256).toString(16).slice(1));
+      let l = function (e, t, r) {
+        if (o.randomUUID && !t && !e) return o.randomUUID();
+        let l =
+          (e = e || {}).random ??
+          e.rng?.() ??
+          (function () {
+            if (!n) {
+              if ("undefined" == typeof crypto || !crypto.getRandomValues)
+                throw Error(
+                  "crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported",
+                );
+              n = crypto.getRandomValues.bind(crypto);
+            }
+            return n(a);
+          })();
+        if (l.length < 16) throw Error("Random bytes length must be >= 16");
+        if (((l[6] = (15 & l[6]) | 64), (l[8] = (63 & l[8]) | 128), t)) {
+          if ((r = r || 0) < 0 || r + 16 > t.length)
+            throw RangeError(
+              `UUID byte range ${r}:${r + 15} is out of buffer bounds`,
+            );
+          for (let e = 0; e < 16; ++e) t[r + e] = l[e];
+          return t;
+        }
+        return (function (e, t = 0) {
+          return (
+            s[e[t + 0]] +
+            s[e[t + 1]] +
+            s[e[t + 2]] +
+            s[e[t + 3]] +
+            "-" +
+            s[e[t + 4]] +
+            s[e[t + 5]] +
+            "-" +
+            s[e[t + 6]] +
+            s[e[t + 7]] +
+            "-" +
+            s[e[t + 8]] +
+            s[e[t + 9]] +
+            "-" +
+            s[e[t + 10]] +
+            s[e[t + 11]] +
+            s[e[t + 12]] +
+            s[e[t + 13]] +
+            s[e[t + 14]] +
+            s[e[t + 15]]
+          ).toLowerCase();
+        })(l);
+      };
+    },
+    1625: (e, t, r) => {
+      r.r(t), r.d(t, { default: () => i });
+      var n = r(5155),
+        o = r(2115),
+        a = r(7877),
+        s = r(8500),
+        l = r(5695);
+      let i = (e) => {
+        let [t, r] = (0, o.useState)(""),
+          [i, c] = (0, o.useState)(""),
+          [u, d] = (0, o.useState)(!1),
+          [m, f] = (0, o.useState)(""),
+          [v, h] = (0, o.useState)(!0),
+          p = (0, l.useParams)(),
+          g = null == p ? void 0 : p.id,
+          w = "https://planningpoint-9jo7.onrender.com";
+        localStorage.getItem("token");
+        let { notify: y } = (0, s.d)();
+        return ((0, o.useEffect)(() => {
+          let e = async () => {
+              try {
+                let e = await fetch("".concat(w, "/unit/fetch/").concat(g), {
+                    headers: { "Content-Type": "application/json" },
+                  }),
+                  r = await e.json();
+                e.ok ? t(r) : y("error", r.message);
+              } catch (e) {
+                y("error", String(e));
+              }
+            },
+            t = (e) => {
+              var t, n, o;
+              r(null != (t = e.name) ? t : ""),
+                c(String(null != (n = e.unitGroupId) ? n : "")),
+                d(null != (o = e.isHidden) && o);
+            };
+          g && e();
+        }, [g]),
+        (0, o.useEffect)(() => {
+          if (!i) return;
+          let e = (e) => {
+            var t;
+            f(null != (t = e.name) ? t : "");
+          };
+          (async () => {
+            try {
+              let t = await fetch(
+                  "".concat(w, "/unit-group/fetch/").concat(i),
+                  { headers: { "Content-Type": "application/json" } },
+                ),
+                r = await t.json();
+              t.ok ? e(r) : y("error", r.message);
+            } catch (e) {
+              y("error", String(e));
+            } finally {
+              h(!1);
+            }
+          })();
+        }, [i]),
+        !v && u)
+          ? (0, n.jsx)(a.default, {
+              icon: "lock",
+              content: "lock",
+              fullscreen: !0,
+            })
+          : v || u
+            ? void 0
+            : (0, n.jsxs)(n.Fragment, {
+                children: [
+                  (0, n.jsxs)("div", {
+                    children: [
+                      (0, n.jsx)("strong", {
+                        className: "text-(--accent-color)]",
+                        children: "ID:",
+                      }),
+                      " ",
+                      g,
+                    ],
+                  }),
+                  (0, n.jsxs)("div", {
+                    children: [
+                      (0, n.jsx)("strong", {
+                        className: "text-(--accent-color)]",
+                        children: "Namn:",
+                      }),
+                      " ",
+                      t,
+                    ],
+                  }),
+                  (0, n.jsxs)("div", {
+                    children: [
+                      (0, n.jsx)("strong", {
+                        className: "text-(--accent-color)]",
+                        children: "Enhetsgrupp:",
+                      }),
+                      " ",
+                      m,
+                    ],
+                  }),
+                  (0, n.jsx)(a.default, {
+                    icon: "work",
+                    content: "Denna vy \xe4r ej p\xe5b\xf6rjad \xe4nnu!",
+                    fullscreen: !0,
+                  }),
+                ],
+              });
+      };
+    },
+    2589: (e, t, r) => {
+      r.d(t, { A: () => o });
+      var n = r(2115);
+      let o = n.forwardRef(function (e, t) {
+        let { title: r, titleId: o, ...a } = e;
+        return n.createElement(
+          "svg",
+          Object.assign(
+            {
+              xmlns: "http://www.w3.org/2000/svg",
+              fill: "none",
+              viewBox: "0 0 24 24",
+              strokeWidth: 1.5,
+              stroke: "currentColor",
+              "aria-hidden": "true",
+              "data-slot": "icon",
+              ref: t,
+              "aria-labelledby": o,
+            },
+            a,
+          ),
+          r ? n.createElement("title", { id: o }, r) : null,
+          n.createElement("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+          }),
+        );
+      });
+    },
+    5695: (e, t, r) => {
+      var n = r(8999);
+      r.o(n, "useParams") &&
+        r.d(t, {
+          useParams: function () {
+            return n.useParams;
+          },
+        }),
+        r.o(n, "usePathname") &&
+          r.d(t, {
+            usePathname: function () {
+              return n.usePathname;
+            },
+          });
+    },
+    6865: (e, t, r) => {
+      r.d(t, { A: () => o });
+      var n = r(2115);
+      let o = n.forwardRef(function (e, t) {
+        let { title: r, titleId: o, ...a } = e;
+        return n.createElement(
+          "svg",
+          Object.assign(
+            {
+              xmlns: "http://www.w3.org/2000/svg",
+              fill: "none",
+              viewBox: "0 0 24 24",
+              strokeWidth: 1.5,
+              stroke: "currentColor",
+              "aria-hidden": "true",
+              "data-slot": "icon",
+              ref: t,
+              "aria-labelledby": o,
+            },
+            a,
+          ),
+          r ? n.createElement("title", { id: o }, r) : null,
+          n.createElement("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z",
+          }),
+        );
+      });
+    },
+    7695: (e, t, r) => {
+      r.d(t, { A: () => o });
+      var n = r(2115);
+      let o = n.forwardRef(function (e, t) {
+        let { title: r, titleId: o, ...a } = e;
+        return n.createElement(
+          "svg",
+          Object.assign(
+            {
+              xmlns: "http://www.w3.org/2000/svg",
+              fill: "none",
+              viewBox: "0 0 24 24",
+              strokeWidth: 1.5,
+              stroke: "currentColor",
+              "aria-hidden": "true",
+              "data-slot": "icon",
+              ref: t,
+              "aria-labelledby": o,
+            },
+            a,
+          ),
+          r ? n.createElement("title", { id: o }, r) : null,
+          n.createElement("path", {
+            strokeLinecap: "round",
+            strokeLinejoin: "round",
+            d: "m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z",
+          }),
+        );
+      });
+    },
+    8500: (e, t, r) => {
+      r.d(t, { ToastProvider: () => m, d: () => d });
+      var n = r(5155),
+        o = r(2115),
+        a = r(6865),
+        s = r(2589),
+        l = r(7695);
+      let i = (e) => {
+        let [t, r] = (0, o.useState)(!0);
+        (0, o.useEffect)(() => {
+          var t;
+          let r = setTimeout(i, null != (t = e.duration) ? t : 3e3);
+          return () => clearTimeout(r);
+        }, [e.duration]);
+        let i = () => {
+            t &&
+              (r(!1),
+              setTimeout(() => {
+                var t;
+                null == (t = e.onDone) || t.call(e);
+              }, 500));
+          },
+          c =
+            "success" === e.type
+              ? "bg-(--note-success)] hover:bg-(--note-success-hover)] active:bg-(--note-success-active)]"
+              : "error" === e.type
+                ? "bg-(--note-error)] hover:bg-(--note-error-hover)] active:bg-(--note-error-active)]"
+                : "bg-(--note-info)] hover:bg-(--note-info-hover)] active:bg-(--note-info-active)]",
+          u = "success" === e.type ? a.A : "error" === e.type ? s.A : l.A;
+        return (0, n.jsxs)("div", {
+          className: ""
+            .concat(t ? "opacity-100" : "opacity-0", " ")
+            .concat(
+              c,
+              " flex cursor-pointer items-center justify-center gap-4 rounded py-4 font-semibold text-(--text-main-reverse)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,background]",
+            ),
+          style: { transitionDuration: "500ms, 200ms" },
+          onClick: i,
+          children: [
+            (0, n.jsx)(u, { className: "h-8 w-8" }),
+            (0, n.jsx)("div", { className: "w-2/3", children: e.content }),
+          ],
+        });
+      };
+      var c = r(1368);
+      let u = (0, o.createContext)(null),
+        d = () => {
+          let e = (0, o.useContext)(u);
+          if (!e) throw Error("useToast must be used inside ToastProvider");
+          return e;
+        },
+        m = (e) => {
+          let { children: t } = e,
+            [r, a] = (0, o.useState)([]),
+            s = (0, o.useCallback)((e, t, r) => {
+              let n = (0, c.A)();
+              a((o) => [...o, { id: n, type: e, content: t, duration: r }]),
+                setTimeout(
+                  () => {
+                    a((e) => e.filter((e) => e.id !== n));
+                  },
+                  (null != r ? r : 3e3) + 500,
+                );
+            }, []),
+            l = (e) => {
+              a((t) => t.filter((t) => t.id !== e));
+            };
+          return (0, n.jsxs)(u.Provider, {
+            value: { notify: s },
+            children: [
+              t,
+              (0, n.jsx)("div", {
+                className:
+                  "fixed bottom-4 z-[calc(var(--z-tooltip)-1)] mx-4 flex w-[calc(100%-2rem)] flex-col gap-4 sm:right-4 sm:mx-0 sm:w-72 sm:min-w-72",
+                children: r.map((e) =>
+                  (0, n.jsx)(
+                    i,
+                    {
+                      content: e.content,
+                      type: e.type,
+                      duration: e.duration,
+                      onDone: () => l(e.id),
+                    },
+                    e.id,
+                  ),
+                ),
+              }),
+            ],
+          });
+        };
+    },
+  },
+]);

@@ -35,10 +35,10 @@ const Toast = (props: Props) => {
 
   const backgroundColor =
     props.type === "success"
-      ? "bg-[var(--note-success)] hover:bg-[var(--note-success-hover)] active:bg-[var(--note-success-active)]"
+      ? "bg-(--note-success) hover:bg-(--note-success-hover) active:bg-(--note-success-active)"
       : props.type === "error"
-        ? "bg-[var(--note-error)] hover:bg-[var(--note-error-hover)] active:bg-[var(--note-error-active)]"
-        : "bg-[var(--note-info)] hover:bg-[var(--note-info-hover)] active:bg-[var(--note-info-active)]";
+        ? "bg-(--note-error) hover:bg-(--note-error-hover) active:bg-(--note-error-active)"
+        : "bg-(--note-info) hover:bg-(--note-info-hover) active:bg-(--note-info-active)";
 
   const Icon =
     props.type === "success"
@@ -49,11 +49,11 @@ const Toast = (props: Props) => {
 
   return (
     <div
-      className={`${isVisible ? "opacity-100" : "opacity-0"} ${backgroundColor} flex cursor-pointer items-center  gap-4 rounded p-4 font-semibold text-[var(--text-main-reverse)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,background]`}
+      className={`${isVisible ? "opacity-100" : "opacity-0"} ${backgroundColor} text-(--text-main-reverse) flex cursor-pointer items-center gap-4 rounded p-4 font-semibold shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,background]`}
       style={{ transitionDuration: "500ms, 200ms" }}
       onClick={handleClose}
     >
-      <Icon className="h-8 w-8 min-h-8 min-w-8" />
+      <Icon className="h-8 min-h-8 w-8 min-w-8" />
       <div className="">
         {typeof props.content === "string" ? (
           <div dangerouslySetInnerHTML={{ __html: props.content }} />

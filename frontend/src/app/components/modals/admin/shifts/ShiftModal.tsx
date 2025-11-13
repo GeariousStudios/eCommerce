@@ -659,11 +659,11 @@ const ShiftModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("ShiftModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
@@ -700,11 +700,11 @@ const ShiftModal = (props: Props) => {
               </div>
 
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("ShiftModal/Info2")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
@@ -813,7 +813,7 @@ const ShiftModal = (props: Props) => {
                       return (
                         <div
                           key={id}
-                          className="flex flex-col gap-8 rounded-2xl bg-[var(--bg-navbar)] p-4"
+                          className="flex flex-col gap-8 rounded-2xl bg-(--bg-navbar) p-4"
                         >
                           <div className="flex items-center justify-between gap-8">
                             <span className="font-semibold">{team.name}</span>
@@ -1010,7 +1010,7 @@ const ShiftModal = (props: Props) => {
                       );
                     }}
                   />
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop2") +
                       t("Common/shift team") +
                       t("Modal/Drag and drop3")}
@@ -1019,11 +1019,11 @@ const ShiftModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("Common/Status")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="mb-8 flex justify-between gap-6">
@@ -1053,7 +1053,7 @@ const ShiftModal = (props: Props) => {
               </button>
               {validationError && (
                 <div
-                  className="xs:hidden col-span-3 -mt-3 flex text-sm font-semibold text-[var(--note-error)]"
+                  className="xs:hidden text-(--note-error) col-span-3 -mt-3 flex text-sm font-semibold"
                   dangerouslySetInnerHTML={{ __html: validationError }}
                 />
               )}
@@ -1067,7 +1067,7 @@ const ShiftModal = (props: Props) => {
 
               {validationError && (
                 <div
-                  className="xs:flex col-span-3 -mt-3 hidden text-sm font-semibold text-[var(--note-error)]"
+                  className="xs:flex text-(--note-error) col-span-3 -mt-3 hidden text-sm font-semibold"
                   dangerouslySetInnerHTML={{ __html: validationError }}
                 />
               )}

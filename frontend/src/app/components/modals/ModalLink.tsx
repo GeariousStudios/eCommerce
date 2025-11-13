@@ -28,17 +28,17 @@ const ModalLink = (props: Props) => {
         {props.href ? (
           <Link
             href={props.href}
-            className={`${isActive ? "text-[var(--accent-color)]" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : ""} group flex h-[40px] w-full items-center gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-modal-link)] md:justify-between`}
+            className={`${isActive ? "text-(--accent-color)" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : ""} group flex h-[40px] w-full items-center gap-4 rounded-lg border border-transparent p-2 transition-[background,max-width] duration-(--fast) hover:bg-(--bg-modal-link) md:justify-between`}
           >
             {props.icon && props.iconHover ? (
               <div className="flex items-center gap-4 overflow-hidden">
                 <span className="relative flex min-h-6 min-w-6 items-center">
                   <props.icon
-                    className={`${isActive ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                    className={`${isActive ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                   />
 
                   <props.iconHover
-                    className={`${isActive ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                    className={`${isActive ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                   />
                 </span>
                 <span className={`${isActive ? "font-bold" : ""} truncate`}>
@@ -54,17 +54,17 @@ const ModalLink = (props: Props) => {
         ) : (
           <button
             onClick={props.onClick}
-            className={`${isActive ? "text-[var(--accent-color)]" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : "cursor-pointer"} group flex h-[40px] w-full items-center gap-4 rounded-lg border-1 border-transparent p-2 transition-[background,max-width] duration-[var(--fast)] hover:bg-[var(--bg-modal-link)] md:justify-between`}
+            className={`${isActive ? "text-(--accent-color)" : ""} ${props.disabled ? "cursor-not-allowed opacity-33" : "cursor-pointer"} group flex h-[40px] w-full items-center gap-4 rounded-lg border border-transparent p-2 transition-[background,max-width] duration-(--fast) hover:bg-(--bg-modal-link) md:justify-between`}
           >
             {props.icon && props.iconHover ? (
               <div className="flex items-center gap-4 overflow-hidden">
                 <span className="relative flex min-h-6 min-w-6 items-center">
                   <props.icon
-                    className={`${isActive ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                    className={`${isActive ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                   />
 
                   <props.iconHover
-                    className={`${isActive ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                    className={`${isActive ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                   />
                 </span>
                 <span className={`${isActive ? "font-bold" : ""} truncate`}>

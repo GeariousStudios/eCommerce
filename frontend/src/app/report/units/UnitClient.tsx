@@ -77,19 +77,19 @@ type ShiftChange = {
 
 // --- CLASSES ---
 export const thClass =
-  "px-4 py-2 h-[40px] text-left border-b-1 border-b-[var(--border-main)] border-r-1 border-r-[var(--border-secondary)] flex-inline items-center justify-center";
+  "px-4 py-2 h-[40px] text-left border-b-1 border-b-(--border-main) border-r-1 border-r-(--border-secondary) flex-inline items-center justify-center";
 
 export const tdClass =
-  "px-4 py-2 h-[40px] text-left break-all border-1 border-[var(--border-secondary)] flex-inline items-center justify-center";
+  "px-4 py-2 h-[40px] text-left break-all border border-(--border-secondary) flex-inline items-center justify-center";
 
 export const tdClassSpecial =
   "px-4 py-2 h-[40px] text-left break-all flex-inline items-center justify-center";
 
 export const shiftsClass =
-  "truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
+  "truncate font-semibold transition-colors duration-(--fast) group-hover:text-(--accent-color)";
 
 export const shiftsIconClass =
-  "h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]";
+  "h-6 w-6 transition-[color,rotate] duration-(--fast) group-hover:text-(--accent-color)";
 
 const UnitClient = (props: Props) => {
   const t = useTranslations();
@@ -1377,7 +1377,7 @@ const UnitClient = (props: Props) => {
                   disabled={!props.isReporter}
                 >
                   <span
-                    className={`${shiftsClass} ${shiftsOpen ? "text-[var(--accent-color)]" : ""}`}
+                    className={`${shiftsClass} ${shiftsOpen ? "text-(--accent-color)" : ""}`}
                   >
                     {(() => {
                       const sid = currentActiveShiftId;
@@ -1403,7 +1403,7 @@ const UnitClient = (props: Props) => {
                     })()}
                   </span>
                   <ChevronDownIcon
-                    className={`${shiftsIconClass} ${shiftsOpen ? "-rotate-180 text-[var(--accent-color)]" : ""}`}
+                    className={`${shiftsIconClass} ${shiftsOpen ? "-rotate-180 text-(--accent-color)" : ""}`}
                   />
                 </button>
               </CustomTooltip>
@@ -1476,9 +1476,9 @@ const UnitClient = (props: Props) => {
               </MenuDropdown>
             </div>
           </div>
-          <div className="w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
+          <div className="w-full overflow-x-auto rounded border border-(--border-main)">
             <table className="w-full max-w-full min-w-fit border-collapse overflow-x-auto">
-              <thead className="bg-[var(--bg-grid-header)]">
+              <thead className="bg-(--bg-grid-header)">
                 {isBootstrapping ? (
                   <tr>
                     <th
@@ -1490,7 +1490,7 @@ const UnitClient = (props: Props) => {
                   <tr>
                     {/* --- Standard <th>s --- */}
                     <th
-                      className={`${thClass} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] cursor-pointer bg-[var(--bg-grid-header)] whitespace-nowrap transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
+                      className={`${thClass} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] cursor-pointer bg-(--bg-grid-header) whitespace-nowrap transition-[background] duration-(--fast) hover:bg-(--bg-grid-header-hover)`}
                       onClick={toggleAllRows}
                       role="button"
                       aria-label={t("Unit/Open or collapse")}
@@ -1500,12 +1500,12 @@ const UnitClient = (props: Props) => {
                       </div>
                     </th>
                     <th
-                      className={`${thClass} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
+                      className={`${thClass} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-(--bg-grid-header) whitespace-nowrap`}
                     >
                       {t("Common/Time")}
                     </th>
                     <th
-                      className={`${thClass} w-[72px] bg-[var(--bg-grid-header)] whitespace-nowrap`}
+                      className={`${thClass} w-[72px] bg-(--bg-grid-header) whitespace-nowrap`}
                     >
                       {t("Common/Shift")}
                     </th>
@@ -1619,12 +1619,12 @@ const UnitClient = (props: Props) => {
                               toggleRow(hour);
                             }}
                             aria-label="Öppna/stäng"
-                            className={`${hour % 2 === 0 ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} group/row cursor-pointer transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]`}
+                            className={`${hour % 2 === 0 ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} group/row cursor-pointer transition-[background] duration-(--fast) hover:bg-(--bg-grid-header-hover)`}
                           >
                             {/* --- Standard <td>s --- */}
                             {/* --- Expand <td> --- */}
                             <td
-                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)] group-hover/row:bg-[var(--bg-grid-header-hover)]" : "bg-[var(--bg-grid-zebra)] group-hover/row:bg-[var(--bg-grid-header-hover)]"} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] border-l-0 whitespace-nowrap transition-[background] duration-[var(--fast)]`}
+                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-(--bg-grid) group-hover/row:bg-(--bg-grid-header-hover)" : "bg-(--bg-grid-zebra) group-hover/row:bg-(--bg-grid-header-hover)"} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] border-l-0 whitespace-nowrap transition-[background] duration-(--fast)`}
                             >
                               <div className={iconButtonPrimaryClass}>
                                 {isExpanded ? (
@@ -1637,7 +1637,7 @@ const UnitClient = (props: Props) => {
 
                             {/* --- Time <td> --- */}
                             <td
-                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)] group-hover/row:bg-[var(--bg-grid-header-hover)]" : "bg-[var(--bg-grid-zebra)] group-hover/row:bg-[var(--bg-grid-header-hover)]"} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] whitespace-nowrap transition-[background] duration-[var(--fast)]`}
+                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-(--bg-grid) group-hover/row:bg-(--bg-grid-header-hover)" : "bg-(--bg-grid-zebra) group-hover/row:bg-(--bg-grid-header-hover)"} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] whitespace-nowrap transition-[background] duration-(--fast)`}
                             >
                               {hour.toString().padStart(2, "0")}:00
                             </td>
@@ -1728,7 +1728,7 @@ const UnitClient = (props: Props) => {
                                         content={t("Unit/Ongoing event")}
                                         showOnTouch
                                       >
-                                        <span className="group ml-1 min-h-4 min-w-4 cursor-help text-[var(--note-error)]">
+                                        <span className="group ml-1 min-h-4 min-w-4 cursor-help text-(--note-error)">
                                           <HoverIcon
                                             outline={
                                               Outline.ExclamationTriangleIcon
@@ -1844,9 +1844,9 @@ const UnitClient = (props: Props) => {
                                               e.preventDefault();
                                               saveInlineEdit();
                                             }
-                                            }}
-                                            min={0}
-                                            max={999999}
+                                          }}
+                                          min={0}
+                                          max={999999}
                                         />
                                       ) : (
                                         <>
@@ -1916,13 +1916,13 @@ const UnitClient = (props: Props) => {
                             return (
                               <tr
                                 key={`change-${hour}-${change.id}`}
-                                className="bg-[var(--bg-grid-note)]"
+                                className="bg-(--bg-grid-note)"
                               >
                                 <td
-                                  className={`${tdClassSpecial} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] bg-[var(--bg-grid-note)]`}
+                                  className={`${tdClassSpecial} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] bg-(--bg-grid-note)`}
                                 />
                                 <td
-                                  className={`${tdClassSpecial} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-[var(--bg-grid-note)]`}
+                                  className={`${tdClassSpecial} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-(--bg-grid-note)`}
                                 >
                                   {toHm(change.hour, change.minute)}
                                 </td>
@@ -1977,7 +1977,7 @@ const UnitClient = (props: Props) => {
                                         <HoverIcon
                                           outline={Outline.PencilIcon}
                                           solid={Solid.PencilIcon}
-                                          className="h-6 min-h-6 w-6 min-w-6 text-[var(--text-main)]"
+                                          className="h-6 min-h-6 w-6 min-w-6 text-(--text-main)"
                                           active={
                                             openChangeMenuId === change.id
                                           }
@@ -2093,7 +2093,7 @@ const UnitClient = (props: Props) => {
 
                           {isExpanded && (
                             <tr
-                              className={`${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} border-y-1 border-y-[var(--border-secondary)]`}
+                              className={`${hour === 23 ? "border-b-0" : ""} ${hour % 2 === 0 ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} border-y-1 border-y-(--border-secondary)`}
                             >
                               <td
                                 colSpan={
@@ -2170,7 +2170,7 @@ const UnitClient = (props: Props) => {
                                     return hourReports.map((report, index) => (
                                       <div
                                         key={`${report.id ?? "temp"}-${report.startTime ?? "unknown"}-${index}`}
-                                        className="relative flex flex-col gap-4 rounded bg-[var(--bg-modal)] p-4"
+                                        className="relative flex flex-col gap-4 rounded bg-(--bg-modal) p-4"
                                       >
                                         {report.categoryName && (
                                           <div className="flex justify-between gap-4">
@@ -2180,7 +2180,7 @@ const UnitClient = (props: Props) => {
                                               </div>
 
                                               {report.subCategoryName && (
-                                                <div className="text-sm text-[var(--text-secondary)]">
+                                                <div className="text-sm text-(--text-secondary)">
                                                   <>{report.subCategoryName}</>
                                                 </div>
                                               )}
@@ -2257,7 +2257,7 @@ const UnitClient = (props: Props) => {
                                           </div>
                                         )}
                                         <div className="flex justify-between gap-2">
-                                          <div className="text-sm text-[var(--text-secondary)]">
+                                          <div className="text-sm text-(--text-secondary)">
                                             {report.stopTime ? (
                                               (() => {
                                                 const start = new Date(
@@ -2324,7 +2324,7 @@ const UnitClient = (props: Props) => {
                                                   ?.slice(0, 16)
                                                   .replace("T", " ")}{" "}
                                                 -{" "}
-                                                <span className="font-semibold text-[var(--note-error)]">
+                                                <span className="font-semibold text-(--note-error)">
                                                   {t("Unit/ongoing")}
                                                 </span>
                                               </>
@@ -2404,7 +2404,7 @@ const UnitClient = (props: Props) => {
                                           }}
                                         />
 
-                                        <div className="mt-8 flex justify-end text-sm text-[var(--text-secondary)]">
+                                        <div className="mt-8 flex justify-end text-sm text-(--text-secondary)">
                                           <div className="flex flex-col text-right">
                                             {report.creationDate && (
                                               <div>

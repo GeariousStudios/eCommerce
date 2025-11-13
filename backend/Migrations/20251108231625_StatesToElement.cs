@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace eCommerce.Migrations
+namespace planningPoint.Migrations
 {
     /// <inheritdoc />
     public partial class StatesToElement : Migration
@@ -15,47 +15,43 @@ namespace eCommerce.Migrations
                 table: "MasterPlanElements",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: false
+            );
 
             migrationBuilder.AddColumn<int>(
                 name: "GroupId",
                 table: "MasterPlanElements",
                 type: "INTEGER",
-                nullable: true);
+                nullable: true
+            );
 
             migrationBuilder.AddColumn<bool>(
                 name: "NextElement",
                 table: "MasterPlanElements",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: false
+            );
 
             migrationBuilder.AddColumn<bool>(
                 name: "StruckElement",
                 table: "MasterPlanElements",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: false
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "CurrentElement",
-                table: "MasterPlanElements");
+            migrationBuilder.DropColumn(name: "CurrentElement", table: "MasterPlanElements");
 
-            migrationBuilder.DropColumn(
-                name: "GroupId",
-                table: "MasterPlanElements");
+            migrationBuilder.DropColumn(name: "GroupId", table: "MasterPlanElements");
 
-            migrationBuilder.DropColumn(
-                name: "NextElement",
-                table: "MasterPlanElements");
+            migrationBuilder.DropColumn(name: "NextElement", table: "MasterPlanElements");
 
-            migrationBuilder.DropColumn(
-                name: "StruckElement",
-                table: "MasterPlanElements");
+            migrationBuilder.DropColumn(name: "StruckElement", table: "MasterPlanElements");
         }
     }
 }

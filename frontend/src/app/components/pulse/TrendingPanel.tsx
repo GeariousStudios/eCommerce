@@ -757,7 +757,7 @@ const TrendingPanel: React.FC<Props> = ({
 
   return (
     <div ref={panelRef} className={`${className} relative`}>
-      <div className="relative flex h-[40px] items-center justify-between rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2">
+      <div className="relative flex h-[40px] items-center justify-between rounded-t border border-(--border-main) bg-(--bg-grid-header) px-3 py-2">
         <span className="truncate font-semibold">{panelName}</span>
         <div className="flex items-center gap-2">
           {isEditing && (
@@ -1021,7 +1021,7 @@ const TrendingPanel: React.FC<Props> = ({
       </div>
 
       <div className="col-span-2">
-        <div className="flex flex-col overflow-y-auto rounded-b border-1 border-t-0 border-[var(--border-main)] px-2 pt-1">
+        <div className="flex flex-col overflow-y-auto rounded-b border border-t-0 border-(--border-main) px-2 pt-1">
           {panelViewMode === "LineChart" ? (
             // --- LINE CHART ---
             <div className="mt-2 overflow-hidden">
@@ -1142,7 +1142,7 @@ const TrendingPanel: React.FC<Props> = ({
 
                           if (isAll) {
                             return (
-                              <span className="cursor-default text-[var(--text-main)]">
+                              <span className="cursor-default text-(--text-main)">
                                 {value}
                               </span>
                             );
@@ -1161,7 +1161,7 @@ const TrendingPanel: React.FC<Props> = ({
                               showOnTouch
                             >
                               <span
-                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-[var(--text-main)] transition-opacity delay-[var(--very-fast)]`}
+                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-(--text-main) transition-opacity delay-(--very-fast)`}
                               >
                                 {value}
                               </span>
@@ -1280,7 +1280,7 @@ const TrendingPanel: React.FC<Props> = ({
 
                           if (isAll) {
                             return (
-                              <span className="cursor-default text-[var(--text-main)]">
+                              <span className="cursor-default text-(--text-main)">
                                 {value}
                               </span>
                             );
@@ -1299,7 +1299,7 @@ const TrendingPanel: React.FC<Props> = ({
                               showOnTouch
                             >
                               <span
-                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-[var(--text-main)] transition-opacity delay-[var(--very-fast)]`}
+                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-(--text-main) transition-opacity delay-(--very-fast)`}
                               >
                                 {value}
                               </span>
@@ -1344,11 +1344,11 @@ const TrendingPanel: React.FC<Props> = ({
                 </div>
               ) : (
                 <div className="flex h-64 flex-col items-center">
-                  <div className="text-sm text-[var(--text-secondary)]">
+                  <div className="text-sm text-(--text-secondary)">
                     {t("TrendingPanel/Total")}
                   </div>
 
-                  <div className="text-xl font-bold text-[var(--text-main)]">
+                  <div className="text-xl font-bold text-(--text-main)">
                     {(aggregation === "Total"
                       ? daily.reduce((sum, d) => sum + (Number(d.ALL) || 0), 0)
                       : Math.round(
@@ -1414,7 +1414,7 @@ const TrendingPanel: React.FC<Props> = ({
                             : false;
 
                           return isAll ? (
-                            <span className="cursor-default text-[var(--text-main)]">
+                            <span className="cursor-default text-(--text-main)">
                               {value}
                             </span>
                           ) : (
@@ -1430,7 +1430,7 @@ const TrendingPanel: React.FC<Props> = ({
                               showOnTouch
                             >
                               <span
-                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-[var(--text-main)] transition-opacity delay-[var(--very-fast)]`}
+                                className={`${isHidden ? "opacity-25" : ""} cursor-pointer text-(--text-main) transition-opacity delay-(--very-fast)`}
                               >
                                 {value}
                               </span>
@@ -1489,11 +1489,11 @@ const TrendingPanel: React.FC<Props> = ({
                 </div>
               ) : (
                 <div className="flex h-64 flex-col items-center">
-                  <div className="flex flex-col items-center text-xl text-[var(--text-main)]">
-                    <div className="text-sm text-[var(--text-secondary)]">
+                  <div className="flex flex-col items-center text-xl text-(--text-main)">
+                    <div className="text-sm text-(--text-secondary)">
                       {t("TrendingPanel/Total")}
                     </div>
-                    <div className="text-xl font-bold text-[var(--text-main)]">
+                    <div className="text-xl font-bold text-(--text-main)">
                       {(aggregation === "Total"
                         ? daily.reduce(
                             (sum, d) => sum + (Number(d.ALL) || 0),
@@ -1558,7 +1558,7 @@ const TrendingPanel: React.FC<Props> = ({
                           >
                             <div
                               onClick={() => toggleUnitVisibility(u.id)}
-                              className={`flex cursor-pointer items-center gap-[5px] transition-opacity delay-[var(--very-fast)] ${
+                              className={`flex cursor-pointer items-center gap-[5px] transition-opacity delay-(--very-fast) ${
                                 isHidden ? "opacity-25" : ""
                               }`}
                             >
@@ -1580,10 +1580,10 @@ const TrendingPanel: React.FC<Props> = ({
 
           {/* --- PANEL INFO --- */}
           <div className="mt-2 text-sm">
-            <div className="-mx-2 bg-[var(--bg-grid-zebra)] px-2 py-1">
+            <div className="-mx-2 bg-(--bg-grid-zebra) px-2 py-1">
               <div className="flex w-full items-center justify-between gap-2">
                 <button
-                  className="flex w-full cursor-pointer items-center justify-between text-left transition-colors delay-[var(--transition-fast)] hover:text-[var(--accent-color)]"
+                  className="flex w-full cursor-pointer items-center justify-between text-left transition-colors delay-(--transition-fast) hover:text-(--accent-color)"
                   onClick={() => setLocalShowInfo(!localShowInfo)}
                 >
                   <span>
@@ -1596,7 +1596,7 @@ const TrendingPanel: React.FC<Props> = ({
                     animate={{ rotate: localShowInfo ? 0 : 180 }}
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                   >
-                    <Outline.ChevronUpIcon className="h-4 w-4 text-[var(--text-primary)]" />
+                    <Outline.ChevronUpIcon className="h-4 w-4 text-(--text-primary)" />
                   </motion.div>
                 </button>
 
@@ -1642,7 +1642,7 @@ const TrendingPanel: React.FC<Props> = ({
                 >
                   {/* --- Data to trend --- */}
                   <div className="-mx-2 flex justify-between px-2 py-1">
-                    <span className="text-[var(--text-secondary)]">
+                    <span className="text-(--text-secondary)">
                       {t("TrendingPanel/Data to trend")}
                     </span>
                     <span className="font-medium">
@@ -1654,8 +1654,8 @@ const TrendingPanel: React.FC<Props> = ({
                   </div>
 
                   {/* --- Trending type --- */}
-                  <div className="-mx-2 flex justify-between bg-[var(--bg-grid-zebra)] px-2 py-1">
-                    <span className="text-[var(--text-secondary)]">
+                  <div className="-mx-2 flex justify-between bg-(--bg-grid-zebra) px-2 py-1">
+                    <span className="text-(--text-secondary)">
                       {t("TrendingPanel/Trending type")}
                     </span>
                     <span className="font-medium">
@@ -1667,7 +1667,7 @@ const TrendingPanel: React.FC<Props> = ({
 
                   {/* --- Units to trend --- */}
                   <div className="-mx-2 flex justify-between px-2 py-1">
-                    <span className="text-[var(--text-secondary)]">
+                    <span className="text-(--text-secondary)">
                       {t("Common/Units")}
                     </span>
                     <span className="max-w-[60%] text-right font-medium">
@@ -1678,8 +1678,8 @@ const TrendingPanel: React.FC<Props> = ({
                   </div>
 
                   {/* --- Trending period --- */}
-                  <div className="-mx-2 flex justify-between bg-[var(--bg-grid-zebra)] px-2 py-1">
-                    <span className="text-[var(--text-secondary)]">
+                  <div className="-mx-2 flex justify-between bg-(--bg-grid-zebra) px-2 py-1">
+                    <span className="text-(--text-secondary)">
                       {t("TrendingPanel/Trending period")}
                     </span>
                     <span className="font-medium">
@@ -1701,7 +1701,7 @@ const TrendingPanel: React.FC<Props> = ({
 
                   {/* --- Date range --- */}
                   <div className="-mx-2 flex justify-between px-2 py-1">
-                    <span className="text-[var(--text-secondary)]">
+                    <span className="text-(--text-secondary)">
                       {t("Common/Date range")}
                     </span>
                     <span className="font-medium">
@@ -1725,7 +1725,7 @@ const TrendingPanel: React.FC<Props> = ({
             {/* --- RESIZE HANDLE --- */}
             {isEditing && (
               <div
-                className={`absolute top-0 right-0 h-full w-2 cursor-ew-resize hover:bg-[var(--text-secondary)] ${isResizing ? "bg-[var(--text-secondary)]" : "bg-transparent"}`}
+                className={`absolute top-0 right-0 h-full w-2 cursor-ew-resize hover:bg-(--text-secondary) ${isResizing ? "bg-(--text-secondary)" : "bg-transparent"}`}
                 onMouseDown={handleMouseDown}
               />
             )}

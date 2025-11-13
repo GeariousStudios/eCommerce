@@ -216,15 +216,15 @@ const NavbarSubmenu = (props: Props) => {
                 aria-haspopup="true"
                 aria-controls="submenu-menu"
                 aria-expanded={isOpen}
-                className={`${isOpen ? "bg-[var(--bg-navbar-link)]" : ""} ${isActive ? "text-[var(--accent-color)]" : ""} group flex h-[40px] w-full cursor-pointer items-center justify-between rounded-lg p-2 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]`}
+                className={`${isOpen ? "bg-(--bg-navbar-link)" : ""} ${isActive ? "text-(--accent-color)" : ""} group duration-(--fast) hover:bg-(--bg-navbar-link) flex h-[40px] w-full cursor-pointer items-center justify-between rounded-lg p-2 transition-colors`}
               >
                 <div className="flex items-center gap-4">
                   <span className="relative flex h-6 w-6 items-center">
                     <props.icon
-                      className={`${isOpen || isActive ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-[var(--fast)] group-hover:opacity-0`}
+                      className={`${isOpen || isActive ? "opacity-0" : "opacity-100"} duration-(--fast) absolute transition-opacity group-hover:opacity-0`}
                     />
                     <props.iconHover
-                      className={`${isOpen || isActive ? "opacity-100" : "opacity-0"} absolute text-[var(--accent-color)] transition-opacity duration-[var(--fast)] group-hover:opacity-100`}
+                      className={`${isOpen || isActive ? "opacity-100" : "opacity-0"} text-(--accent-color) duration-(--fast) absolute transition-opacity group-hover:opacity-100`}
                     />
                   </span>
                   <span
@@ -236,8 +236,8 @@ const NavbarSubmenu = (props: Props) => {
 
                 <ChevronRightIcon
                   className={`${
-                    isOpen ? "rotate-180 text-[var(--accent-color)]" : ""
-                  } h-6 w-6 rotate-0 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]`}
+                    isOpen ? "text-(--accent-color) rotate-180" : ""
+                  } duration-(--fast) group-hover:text-(--accent-color) h-6 w-6 rotate-0 transition-[color,rotate]`}
                 />
               </button>
             </div>
@@ -245,11 +245,11 @@ const NavbarSubmenu = (props: Props) => {
               ref={innerRef}
               id="submenu-menu"
               inert={!isOpen}
-              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-67" : "left-64"} fixed top-0 h-full overflow-x-hidden border-r-1 border-[var(--border-main)] bg-[var(--bg-navbar)] transition-all duration-[var(--slow)]`}
+              className={` ${widthClasses} ${isOpen ? "visible" : "invisible"} ${props.hasScrollbar ? "left-67" : "left-64"} border-(--border-main) duration-(--slow) fixed top-0 h-full overflow-x-hidden border-r-1 bg-(--bg-navbar) transition-all`}
             >
               <div className="my-4 ml-4">
                 <div className="flex gap-2">
-                  <props.iconHover className="flex max-h-4 min-h-4 max-w-4 min-w-4 text-[var(--accent-color)]" />
+                  <props.iconHover className="text-(--accent-color) flex max-h-4 min-h-4 max-w-4 min-w-4" />
                   <span className="truncate text-xs">{props.label}</span>
                 </div>
                 <div
@@ -267,14 +267,14 @@ const NavbarSubmenu = (props: Props) => {
                         (!menu.requiresAdmin || isAdmin) &&
                         (!menu.requiresDev || isDev) && (
                           <ul
-                            className={`${isOpen ? "opacity-100" : "opacity-0"} w-34 transition-opacity duration-[var(--fast)]`}
+                            className={`${isOpen ? "opacity-100" : "opacity-0"} duration-(--fast) w-34 transition-opacity`}
                           >
-                            <li className="truncate border-[var(--border-main)] pt-6 pb-1">
+                            <li className="border-(--border-main) truncate pt-6 pb-1">
                               {menu.label}
                             </li>
 
                             {/* --- Border --- */}
-                            <hr className="text-[var(--border-main)]" />
+                            <hr className="text-(--border-main)" />
                             {/* --- /Border --- */}
 
                             {menu.items.map((item, index) => {
@@ -306,7 +306,7 @@ const NavbarSubmenu = (props: Props) => {
                                           showOnTouch
                                           mediumDelay
                                         >
-                                          <li className="group/link flex w-34 items-center rounded-lg transition-colors hover:bg-[var(--bg-navbar-link)]">
+                                          <li className="group/link hover:bg-(--bg-navbar-link) flex w-34 items-center rounded-lg transition-colors">
                                             {item.href ? (
                                               <Link
                                                 onClick={(e) => {
@@ -319,7 +319,7 @@ const NavbarSubmenu = (props: Props) => {
                                                 }}
                                                 href={item.href}
                                                 tabIndex={isOpen ? 0 : -1}
-                                                className={`${itemIsActive ? "font-bold text-[var(--accent-color)]" : "text-[var(--text-navbar)]"} ${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full p-2 text-sm break-all`}
+                                                className={`${itemIsActive ? "text-(--accent-color) font-bold" : "text-(--text-navbar)"} ${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full p-2 text-sm break-all`}
                                               >
                                                 {item.label}
                                               </Link>
@@ -327,7 +327,7 @@ const NavbarSubmenu = (props: Props) => {
                                               <button
                                                 onClick={item.onClick}
                                                 tabIndex={isOpen ? 0 : -1}
-                                                className={`${item.disabled ? "cursor-not-allowed opacity-50" : ""} flex h-full w-full cursor-pointer p-2 text-sm break-all text-[var(--text-navbar)]`}
+                                                className={`${item.disabled ? "cursor-not-allowed opacity-50" : ""} text-(--text-navbar) flex h-full w-full cursor-pointer p-2 text-sm break-all`}
                                               >
                                                 {item.label}
                                               </button>

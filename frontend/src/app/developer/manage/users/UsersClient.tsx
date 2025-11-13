@@ -145,14 +145,14 @@ const UsersClient = (props: Props) => {
     {
       key: "username, firstName, lastName, roles, isOnline",
       getValue: (item: UserItem) => (
-        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
               <span className="flex items-center gap-2">
                 {item.username}{" "}
                 {item.isLocked && (
                   <CustomTooltip content={t("Users/Locked user")} showOnTouch>
-                    <LockClosedIcon className="h-5 w-5 cursor-help text-[var(--locked)]" />
+                    <LockClosedIcon className="text-(--locked) h-5 w-5 cursor-help" />
                   </CustomTooltip>
                 )}
               </span>
@@ -185,7 +185,7 @@ const UsersClient = (props: Props) => {
             {item.roles.map((role, i) => (
               <span
                 key={i}
-                className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)] text-[var(--text-one)]" : role === "Developer" ? "bg-[var(--badge-two)] text-[var(--text-two)]" : role === "Reporter" ? "bg-[var(--badge-three)] text-[var(--text-three)]" : role === "Planner" ? "bg-[var(--badge-four)] text-[var(--text-four)]" : role === "MasterPlanner" ? "bg-[var(--badge-five)] text-[var(--text-five)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
+                className={`${badgeClass} ${role === "Admin" ? "bg-(--badge-one) text-(--text-one)" : role === "Developer" ? "bg-(--badge-two) text-(--text-two)" : role === "Reporter" ? "bg-(--badge-three) text-(--text-three)" : role === "Planner" ? "bg-(--badge-four) text-(--text-four)" : role === "MasterPlanner" ? "bg-(--badge-five) text-(--text-five)" : "bg-(--accent-color) text-(--text-main-reverse)"} `}
               >
                 {formatRole(role)}
               </span>
@@ -263,7 +263,7 @@ const UsersClient = (props: Props) => {
           {item.roles.map((role, i) => (
             <span
               key={i}
-              className={`${badgeClass} ${role === "Admin" ? "bg-[var(--badge-one)] text-[var(--text-one)]" : role === "Developer" ? "bg-[var(--badge-two)] text-[var(--text-two)]" : role === "Reporter" ? "bg-[var(--badge-three)] text-[var(--text-three)]" : role === "Planner" ? "bg-[var(--badge-four)] text-[var(--text-four)]" : role === "MasterPlanner" ? "bg-[var(--badge-five)] text-[var(--text-five)]" : "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"} `}
+              className={`${badgeClass} ${role === "Admin" ? "bg-(--badge-one) text-(--text-one)" : role === "Developer" ? "bg-(--badge-two) text-(--text-two)" : role === "Reporter" ? "bg-(--badge-three) text-(--text-three)" : role === "Planner" ? "bg-(--badge-four) text-(--text-four)" : role === "MasterPlanner" ? "bg-(--badge-five) text-(--text-five)" : "bg-(--accent-color) text-(--text-main-reverse)"} `}
             >
               {formatRole(role)}
             </span>
@@ -282,7 +282,7 @@ const UsersClient = (props: Props) => {
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: UserItem) => (
         <span
-          className={`${badgeClass} ${item.isLocked ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+          className={`${badgeClass} ${item.isLocked ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
         >
           {item.isLocked ? t("Users/Locked") : t("Users/Unlocked")}
         </span>

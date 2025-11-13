@@ -109,11 +109,11 @@ const MasterPlanClient = (props: Props) => {
     <>
       {isEditing && (
         <>
-          <div className="fixed inset-0 z-[calc(var(--z-edit)-2)] bg-[var(--bg-main)] opacity-90" />
+          <div className="fixed inset-0 z-[calc(var(--z-edit)-2)] bg-(--bg-main) opacity-90" />
 
-          <div className="pointer-events-none fixed inset-0 z-[calc(var(--z-edit)+1)] border-6 border-[var(--edit-mode)]" />
+          <div className="pointer-events-none fixed inset-0 z-[calc(var(--z-edit)+1)] border-6 border-(--edit-mode)" />
 
-          <div className="fixed top-0 left-0 z-[var(--z-edit)] w-full bg-[var(--edit-mode)] py-2 text-center text-lg font-semibold tracking-wide text-[var(--text-main-reverse)]">
+          <div className="fixed top-0 left-0 z-(--z-edit) w-full bg-(--edit-mode) py-2 text-center text-lg font-semibold tracking-wide text-(--text-main-reverse)">
             {t("Common/Editing")} {t("Common/master plan")}
           </div>
         </>
@@ -123,7 +123,7 @@ const MasterPlanClient = (props: Props) => {
         className={`grid gap-4 ${isEditing ? "relative z-[calc(var(--z-edit)-1)]" : ""}`}
       >
         {/* --- HEADER --- */}
-        {/* <div className="grid w-full rounded-2xl bg-[var(--bg-modal)]">
+        {/* <div className="grid w-full rounded-2xl bg-(--bg-modal)">
           <div className="flex items-center justify-between gap-4 px-6 pt-6">
             <h2 className="text-lg font-semibold whitespace-nowrap">
               {t("Common/Settings")}
@@ -151,14 +151,14 @@ const MasterPlanClient = (props: Props) => {
                   transition={{ duration: 0.25, ease: "easeInOut" }}
                 >
                   <div className="grid gap-6">
-                    <hr className="-mx-6 mt-6 text-[var(--border-tertiary)]" />
+                    <hr className="-mx-6 mt-6 text-(--border-tertiary)" />
 
                     <div className="flex items-center gap-2">
-                      <hr className="w-12 text-[var(--border-tertiary)]" />
-                      <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                      <hr className="w-12 text-(--border-tertiary)" />
+                      <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                         {t("AuditTrail/Filters")}
                       </h3>
-                      <hr className="w-full text-[var(--border-tertiary)]" />
+                      <hr className="w-full text-(--border-tertiary)" />
                     </div>
 
                     <div className="mb-8 grid gap-6">
@@ -167,11 +167,11 @@ const MasterPlanClient = (props: Props) => {
 
                     <div className="grid gap-6">
                       <div className="flex items-center gap-2">
-                        <hr className="w-12 text-[var(--border-tertiary)]" />
-                        <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                        <hr className="w-12 text-(--border-tertiary)" />
+                        <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                           {t("Common/Status")}
                         </h3>
-                        <hr className="w-full text-[var(--border-tertiary)]" />
+                        <hr className="w-full text-(--border-tertiary)" />
                       </div>
 
                       <div className="mb-8">
@@ -221,9 +221,9 @@ const MasterPlanClient = (props: Props) => {
                 <button
                   className={` ${buttonPrimaryClass} group lg:w-max lg:px-4 ${
                     isEditing
-                      ? "!bg-[var(--note-success)] text-[var(--text-main-reverse)] hover:!bg-[var(--note-success-hover)]"
+                      ? "!bg-(--note-success) text-(--text-main-reverse) hover:!bg-(--note-success-hover)"
                       : showForceColor
-                        ? "!bg-[var(--note-error)] text-[var(--text-main-reverse)] hover:!bg-[var(--note-error-hover)]"
+                        ? "!bg-(--note-error) text-(--text-main-reverse) hover:!bg-(--note-error-hover)"
                         : ""
                   } `}
                   disabled={isCheckingOut || isCheckingIn || isLoading}
@@ -341,7 +341,7 @@ const MasterPlanClient = (props: Props) => {
 
             {/* --- Checked out by text --- */}
             {checkedOutBy && !isEditing && !isCheckingOut && !isCheckingIn && (
-              <p className="text-sm text-[var(--text-secondary)]">
+              <p className="text-sm text-(--text-secondary)">
                 {t("MasterPlan/Checked out by")}:{" "}
                 <span className="font-medium">{checkedOutBy}</span>
               </p>
@@ -360,7 +360,7 @@ const MasterPlanClient = (props: Props) => {
                   dragMomentum={false}
                   dragElastic={0}
                   dragConstraints={constraintsRef}
-                  className="pointer-events-auto absolute bottom-4 mx-4 flex w-fit flex-col gap-4 rounded-2xl bg-[var(--bg-modal)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] lg:left-1/2 lg:-translate-x-1/2"
+                  className="pointer-events-auto absolute bottom-4 mx-4 flex w-fit flex-col gap-4 rounded-2xl bg-(--bg-modal) p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] lg:left-1/2 lg:-translate-x-1/2"
                 >
                   <div
                     className="flex cursor-move items-center justify-between gap-4"
@@ -380,7 +380,7 @@ const MasterPlanClient = (props: Props) => {
                     <Outline.Bars3Icon className="h-6 w-6 opacity-50" />
                   </div>
 
-                  <hr className="-ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
+                  <hr className="-ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
 
                   <div className="flex flex-wrap items-center justify-end gap-x-6 gap-y-2">
                     {/* --- Don't join groups --- */}
@@ -612,9 +612,9 @@ const MasterPlanClient = (props: Props) => {
         )}
 
         {/* --- RESULT LIST --- */}
-        <div className="relative w-full overflow-x-auto rounded border-1 border-[var(--border-main)]">
+        <div className="relative w-full overflow-x-auto rounded border border-(--border-main)">
           <table className="table w-full min-w-6xl table-auto border-collapse">
-            <thead className="bg-[var(--bg-grid-header)]">
+            <thead className="bg-(--bg-grid-header)">
               <tr>
                 {/* <ThCell
                 label="ID"
@@ -649,7 +649,7 @@ const MasterPlanClient = (props: Props) => {
                 <tr>
                   <td
                     colSpan={fieldOptions.length || 1}
-                    className="h-57 text-center text-[var(--text-secondary)]"
+                    className="h-57 text-center text-(--text-secondary)"
                   >
                     <Message icon="loading" content={t("Message/Content")} />
                   </td>
@@ -677,13 +677,13 @@ const MasterPlanClient = (props: Props) => {
                     return (
                       <tr
                         key={`${planId}-${el.id}`}
-                        className={` ${isEven ? "bg-[var(--bg-grid)]" : "bg-[var(--bg-grid-zebra)]"} ${
+                        className={` ${isEven ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} ${
                           removedElementIds.includes(el.id)
-                            ? "!bg-[var(--button-delete)] text-[var(--text-main-reverse)]"
+                            ? "!bg-(--button-delete) text-(--text-main-reverse)"
                             : ""
-                        } ${isStrikeMode ? "cursor-pointer" : ""} ${selectedId === el.id ? "ring-2 ring-[var(--accent-color)]" : "hover:bg-[var(--bg-grid-header-hover)]"} transition-[background] duration-[var(--fast)]`}
+                        } ${isStrikeMode ? "cursor-pointer" : ""} ${selectedId === el.id ? "ring-2 ring-(--accent-color)" : "hover:bg-(--bg-grid-header-hover)"} transition-[background] duration-(--fast)`}
                       >
-                        {/* <TdCell classNameAddition="min-w-fit whitespace-nowrap px-4 text-[var(--text-secondary)]">
+                        {/* <TdCell classNameAddition="min-w-fit whitespace-nowrap px-4 text-(--text-secondary)">
                         {String(el.id)}
                       </TdCell> */}
 
@@ -791,7 +791,7 @@ const MasterPlanClient = (props: Props) => {
                                         el.struckElement
                                           ? "line-through opacity-60"
                                           : ""
-                                      } ${val ? "" : "text-[var(--text-secondary)]"}`}
+                                      } ${val ? "" : "text-(--text-secondary)"}`}
                                     >
                                       {val || "—"}
                                     </span>
@@ -811,7 +811,7 @@ const MasterPlanClient = (props: Props) => {
 
         {/* --- PAGINATION --- */}
         <div className="flex w-full flex-wrap justify-between gap-x-12 gap-y-4">
-          <span className="flex w-[175.23px] text-[var(--text-secondary)]">
+          <span className="flex w-[175.23px] text-(--text-secondary)">
             {t("Manage/Viewing")} {(currentPage - 1) * itemsPerPage + 1}-
             {Math.min(currentPage * itemsPerPage, totalGroups)}{" "}
             {t("Manage/out of")} {totalGroups}
@@ -871,9 +871,9 @@ const MasterPlanClient = (props: Props) => {
                       onClick={() => setCurrentPage(Number(page))}
                       className={`${
                         currentPage === page
-                          ? "bg-[var(--accent-color)] text-[var(--text-main-reverse)]"
-                          : "hover:text-[var(--accent-color)]"
-                      } flex min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-[var(--fast)]`}
+                          ? "bg-(--accent-color) text-(--text-main-reverse)"
+                          : "hover:text-(--accent-color)"
+                      } flex min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-(--fast)`}
                     >
                       {page}
                     </button>

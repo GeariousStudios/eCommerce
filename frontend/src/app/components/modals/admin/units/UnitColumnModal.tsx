@@ -324,11 +324,11 @@ const UnitColumnModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("ColumnModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-2 mb-8 grid grid-cols-1 gap-6">
@@ -361,11 +361,11 @@ const UnitColumnModal = (props: Props) => {
               {dataType === "Number" ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <hr className="w-12 text-[var(--border-tertiary)]" />
-                    <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    <hr className="w-12 text-(--border-tertiary)" />
+                    <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                       {t("ColumnModal/Info2")}
                     </h3>
-                    <hr className="w-full text-[var(--border-tertiary)]" />
+                    <hr className="w-full text-(--border-tertiary)" />
                   </div>
 
                   <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">
@@ -399,11 +399,11 @@ const UnitColumnModal = (props: Props) => {
               ) : dataType === "Text" ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <hr className="w-12 text-[var(--border-tertiary)]" />
-                    <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                    <hr className="w-12 text-(--border-tertiary)" />
+                    <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                       {t("ColumnModal/Info3")}
                     </h3>
-                    <hr className="w-full text-[var(--border-tertiary)]" />
+                    <hr className="w-full text-(--border-tertiary)" />
                   </div>
 
                   <div className="xs:grid-cols-1 mb-8 grid grid-cols-1 gap-6">

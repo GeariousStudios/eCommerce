@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace eCommerce.Migrations
+namespace planningPoint.Migrations
 {
     /// <inheritdoc />
     public partial class AllowRemovingElements : Migration
@@ -15,15 +15,14 @@ namespace eCommerce.Migrations
                 table: "MasterPlans",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: false
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "AllowRemovingElements",
-                table: "MasterPlans");
+            migrationBuilder.DropColumn(name: "AllowRemovingElements", table: "MasterPlans");
         }
     }
 }

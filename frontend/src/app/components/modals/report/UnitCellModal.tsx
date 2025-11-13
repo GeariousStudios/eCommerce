@@ -294,11 +294,11 @@ const UnitCellModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitCellModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -349,11 +349,11 @@ const UnitCellModal = (props: Props) => {
                 className={`${selectedHour && selectedDate ? "" : "pointer-events-none opacity-25"} flex flex-col gap-6`}
               >
                 <div className="mt-8 flex items-center gap-2">
-                  <hr className="w-12 text-[var(--border-tertiary)]" />
-                  <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                  <hr className="w-12 text-(--border-tertiary)" />
+                  <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                     {t("UnitCellModal/Info2")}
                   </h3>
-                  <hr className="w-full text-[var(--border-tertiary)]" />
+                  <hr className="w-full text-(--border-tertiary)" />
                 </div>
 
                 <div className="flex flex-col gap-6">

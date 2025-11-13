@@ -159,7 +159,7 @@ const MasterPlansClient = (props: Props) => {
     {
       key: "name, units, isHidden, fields, unitGroupName, allowRemovingElements",
       getValue: (item: MasterPlanItem) => (
-        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
           <div className="flex flex-col">
             <div className="flex items-center gap-4 text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
@@ -182,7 +182,7 @@ const MasterPlansClient = (props: Props) => {
                 item.fields.map((field, i) => (
                   <span
                     key={i}
-                    className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                    className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
                   >
                     {field.name}
                   </span>
@@ -225,7 +225,7 @@ const MasterPlansClient = (props: Props) => {
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Status")}:</span>
             <span
-              className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} text-[var(--text-main-reverse)]`}
+              className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
               {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
             </span>
@@ -290,7 +290,7 @@ const MasterPlansClient = (props: Props) => {
           {item.fields.map((field, i) => (
             <span
               key={i}
-              className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+              className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
             >
               {field.name}
             </span>
@@ -334,7 +334,7 @@ const MasterPlansClient = (props: Props) => {
       ),
       responsivePriority: 4,
     },
-     {
+    {
       key: "allowRemovingElements",
       label: t("MasterPlans/Allow removing elements"),
       sortingItem: "allowremovingelementscount",
@@ -344,9 +344,11 @@ const MasterPlansClient = (props: Props) => {
       childClassNameAddition: "w-[88px] min-w-[88px]",
       getValue: (item: MasterPlanItem) => (
         <span
-          className={`${badgeClass} ${item.allowRemovingElements ? "bg-[var(--unlocked)]" : "bg-[var(--locked)]"} w-full text-[var(--text-main-reverse)]`}
+          className={`${badgeClass} ${item.allowRemovingElements ? "bg-(--unlocked)" : "bg-(--locked)"} text-(--text-main-reverse) w-full`}
         >
-          {item.allowRemovingElements ? t("Manage/Allowed") : t("Manage/Disallowed")}
+          {item.allowRemovingElements
+            ? t("Manage/Allowed")
+            : t("Manage/Disallowed")}
         </span>
       ),
       responsivePriority: 5,
@@ -361,7 +363,7 @@ const MasterPlansClient = (props: Props) => {
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: MasterPlanItem) => (
         <span
-          className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
         >
           {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
         </span>
@@ -502,7 +504,7 @@ const MasterPlansClient = (props: Props) => {
         };
       }),
     },
-     {
+    {
       label: t("MasterPlans/Allow removing elements"),
       breakpoint: "2xl",
       options: [

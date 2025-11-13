@@ -128,7 +128,7 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
       {props.isOpen && (
         <div
           ref={constraintsRef}
-          className="fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/50"
+          className="z-(--z-overlay) fixed inset-0 h-full w-screen bg-black/50"
         >
           <FocusTrap
             focusTrapOptions={{
@@ -144,7 +144,7 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
                 role="dialog"
                 aria-hidden={!props.isOpen}
                 aria-modal="true"
-                className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} ${props.smallModal ? "max-w-lg" : "max-w-3xl"} relative left-1/2 z-[calc(var(--z-modal))] flex max-h-[90svh] w-[90vw] -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]`}
+                className={`${props.isOpen ? "visible opacity-100" : "invisible opacity-0"} ${props.smallModal ? "max-w-lg" : "max-w-3xl"} bg-(--bg-modal) duration-(--fast) relative left-1/2 z-[calc(var(--z-modal))] flex max-h-[90svh] w-[90vw] -translate-1/2 flex-col overflow-x-hidden rounded-2xl shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility]`}
                 drag
                 dragControls={dragControls}
                 dragListener={false}
@@ -171,7 +171,7 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
                     >
                       <div className="flex items-center gap-4">
                         {Icon && (
-                          <Icon className="xs:h-8 xs:min-h-8 xs:w-8 xs:min-w-8 h-6 min-h-6 w-6 min-w-6 text-[var(--accent-color)]" />
+                          <Icon className="xs:h-8 xs:min-h-8 xs:w-8 xs:min-w-8 text-(--accent-color) h-6 min-h-6 w-6 min-w-6" />
                         )}
                         <span className="xs:text-xl flex items-center font-semibold">
                           {props.label}
@@ -180,11 +180,11 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
                       <button
                         type="button"
                         onClick={requestClose}
-                        className="xs:h-[30px] xs:min-h-[30px] xs:w-[30px] xs:min-w-[30px] h-[22px] min-h-[22px] w-[22px] min-w-[22px] cursor-pointer duration-[var(--fast)] hover:text-[var(--accent-color)]"
+                        className="xs:h-[30px] xs:min-h-[30px] xs:w-[30px] xs:min-w-[30px] duration-(--fast) hover:text-(--accent-color) h-[22px] min-h-[22px] w-[22px] min-w-[22px] cursor-pointer"
                       >
                         <XMarkIcon />
                       </button>
-                      <hr className="xs:mt-16 absolute mt-14 -ml-4 flex w-[calc(100%+2rem)] text-[var(--border-tertiary)]" />
+                      <hr className="xs:mt-16 absolute mt-14 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
                     </div>
                   </div>
                 )}
@@ -206,10 +206,10 @@ const ModalBase = forwardRef((props: BaseProps, ref) => {
             escapeDeactivates: false,
           }}
         >
-          <div className="fixed inset-0 z-[var(--z-overlay)] h-full w-screen bg-black/75">
+          <div className="z-(--z-overlay) fixed inset-0 h-full w-screen bg-black/75">
             <div className="relative top-1/2">
-              <div className="relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-md -translate-1/2 flex-col overflow-x-hidden rounded-2xl bg-[var(--bg-modal)] p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility] duration-[var(--fast)]">
-                <p className="mb-6 text-[var(--text-main)]">
+              <div className="bg-(--bg-modal) duration-(--fast) relative left-1/2 z-[calc(var(--z-modal))] flex w-[90vw] max-w-md -translate-1/2 flex-col overflow-x-hidden rounded-2xl p-4 shadow-[0_0_16px_0_rgba(0,0,0,0.125)] transition-[opacity,visibility]">
+                <p className="text-(--text-main) mb-6">
                   {props.confirmCloseMessage ?? t("Modal/Unsaved")}
                 </p>
                 <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
@@ -247,7 +247,7 @@ const Content = ({ children, className }: SectionProps) => (
 
 const Footer = ({ children, className }: SectionProps) => (
   <div
-    className={`${className ?? ""} grid grid-cols-3 gap-4 border-t border-[var(--border-tertiary)] p-4`}
+    className={`${className ?? ""} border-(--border-tertiary) grid grid-cols-3 gap-4 border-t p-4`}
   >
     {children}
   </div>

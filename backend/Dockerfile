@@ -21,4 +21,4 @@ COPY --from=build /out .
 ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
 
 # Start app
-ENTRYPOINT ["dotnet", "eCommerce.dll"]
+ENTRYPOINT ["dotnet", "planningPoint.dll"]

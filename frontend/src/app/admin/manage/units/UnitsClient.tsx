@@ -178,7 +178,7 @@ const UnitsClient = (props: Props) => {
     {
       key: "name, isHidden",
       getValue: (item: UnitItem) => (
-        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
           <div className="flex flex-col">
             <span className="flex items-center gap-4 text-2xl font-bold">
               <span
@@ -230,7 +230,7 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                      className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
                     >
                       {col.name}
                     </span>
@@ -257,7 +257,7 @@ const UnitsClient = (props: Props) => {
                   return (
                     <span
                       key={id}
-                      className={`${badgeClass} bg-[var(--badge-main-reverse)] text-[var(--text-reverse)]`}
+                      className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-reverse)`}
                     >
                       {cat.name}
                     </span>
@@ -342,7 +342,7 @@ const UnitsClient = (props: Props) => {
           <div className="flex flex-wrap gap-2">
             <span className="w-full font-semibold">{t("Common/Status")}:</span>
             <span
-              className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} text-[var(--text-main-reverse)]`}
+              className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse)`}
             >
               {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
             </span>
@@ -435,7 +435,7 @@ const UnitsClient = (props: Props) => {
             return (
               <span
                 key={id}
-                className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
               >
                 {col.name}
               </span>
@@ -462,7 +462,7 @@ const UnitsClient = (props: Props) => {
             return (
               <span
                 key={id}
-                className={`${badgeClass} bg-[var(--badge-main-reverse)] text-[var(--text-reverse)]`}
+                className={`${badgeClass} bg-(--badge-main-reverse) text-(--text-reverse)`}
               >
                 {cat.name}
               </span>
@@ -556,7 +556,7 @@ const UnitsClient = (props: Props) => {
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: UnitItem) => (
         <span
-          className={`${badgeClass} ${item.isHidden ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
         >
           {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
         </span>

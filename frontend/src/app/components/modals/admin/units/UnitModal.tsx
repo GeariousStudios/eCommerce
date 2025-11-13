@@ -543,16 +543,16 @@ const UnitModal = (props: Props) => {
       <>
         <button
           disabled={isDragging}
-          className={`${roundedButtonClass} group w-auto gap-2 !bg-[var(--bg-modal-link)] px-4`}
+          className={`${roundedButtonClass} group bg-(--bg-modal-link)! w-auto gap-2 px-4`}
           onClick={onDelete}
         >
           <span
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} truncate font-semibold transition-colors duration-[var(--fast)]`}
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} duration-(--fast) truncate font-semibold transition-colors`}
           >
             {label}
           </span>
           <XMarkIcon
-            className={`${disableHover ? "" : !isDragging && "group-hover:text-[var(--accent-color)]"} h-6 w-6 transition-[color,rotate] duration-[var(--fast)]`}
+            className={`${disableHover ? "" : !isDragging && "group-hover:text-(--accent-color)"} duration-(--fast) h-6 w-6 transition-[color,rotate]`}
           />
         </button>
       </>
@@ -641,11 +641,11 @@ const UnitModal = (props: Props) => {
           >
             <ModalBase.Content>
               <div className="flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info1")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="xs:grid-cols-2 grid grid-cols-1 gap-6">
@@ -736,11 +736,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info2")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <MultiDropdown
@@ -781,7 +781,7 @@ const UnitModal = (props: Props) => {
                       );
                     }}
                   />
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
                       t("Common/column") +
                       t("Modal/Drag and drop3")}
@@ -790,11 +790,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info3")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <MultiDropdown
@@ -835,7 +835,7 @@ const UnitModal = (props: Props) => {
                       );
                     }}
                   />
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop1") +
                       t("Common/category") +
                       t("Modal/Drag and drop3")}
@@ -844,11 +844,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info4")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <MultiDropdown
@@ -888,7 +888,7 @@ const UnitModal = (props: Props) => {
                       );
                     }}
                   />
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop2") +
                       t("Common/shift") +
                       t("Modal/Drag and drop3")}
@@ -897,11 +897,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("UnitModal/Info5")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <MultiDropdown
@@ -944,7 +944,7 @@ const UnitModal = (props: Props) => {
                       );
                     }}
                   />
-                  <span className="text-sm text-[var(--text-secondary)] italic">
+                  <span className="text-sm text-(--text-secondary) italic">
                     {t("Modal/Drag and drop2") +
                       t("Common/stop type") +
                       t("Modal/Drag and drop3")}
@@ -953,11 +953,11 @@ const UnitModal = (props: Props) => {
               )}
 
               <div className="mt-8 flex items-center gap-2">
-                <hr className="w-12 text-[var(--border-tertiary)]" />
-                <h3 className="text-sm whitespace-nowrap text-[var(--text-secondary)]">
+                <hr className="w-12 text-(--border-tertiary)" />
+                <h3 className="text-sm whitespace-nowrap text-(--text-secondary)">
                   {t("Common/Status")}
                 </h3>
-                <hr className="w-full text-[var(--border-tertiary)]" />
+                <hr className="w-full text-(--border-tertiary)" />
               </div>
 
               <div className="mb-8">

@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace eCommerce.Migrations
+namespace planningPoint.Migrations
 {
     /// <inheritdoc />
     public partial class ChangestoMPField : Migration
@@ -15,26 +15,24 @@ namespace eCommerce.Migrations
                 table: "MasterPlanFields",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: 0);
+                defaultValue: 0
+            );
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsHidden",
                 table: "MasterPlanFields",
                 type: "INTEGER",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: false
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "DataType",
-                table: "MasterPlanFields");
+            migrationBuilder.DropColumn(name: "DataType", table: "MasterPlanFields");
 
-            migrationBuilder.DropColumn(
-                name: "IsHidden",
-                table: "MasterPlanFields");
+            migrationBuilder.DropColumn(name: "IsHidden", table: "MasterPlanFields");
         }
     }
 }

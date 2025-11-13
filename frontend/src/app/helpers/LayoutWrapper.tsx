@@ -338,7 +338,7 @@ const LayoutWrapper = (props: Props) => {
       />
       <div className="flex min-h-screen">
         <div
-          className={`${hasScrollbar && !navbarHidden ? "md:ml-67" : !hasScrollbar && !navbarHidden ? "md:ml-64" : ""} w-full overflow-hidden p-4 pt-22 duration-[var(--medium)]`}
+          className={`${hasScrollbar && !navbarHidden ? "md:ml-67" : !hasScrollbar && !navbarHidden ? "md:ml-64" : ""} duration-(--medium) w-full overflow-hidden p-4 pt-22`}
         >
           {props.children}
         </div>

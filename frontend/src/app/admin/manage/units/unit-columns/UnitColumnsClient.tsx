@@ -152,7 +152,7 @@ const UnitColumnsClient = (props: Props) => {
     {
       key: "name, units",
       getValue: (item: UnitColumnItem) => (
-        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
@@ -285,7 +285,7 @@ const UnitColumnsClient = (props: Props) => {
       childClassNameAddition: "w-[92px] min-w-[92px]",
       getValue: (item: UnitColumnItem) => (
         <span
-          className={`${badgeClass} ${item.hasData ? "bg-[var(--locked)]" : "bg-[var(--unlocked)]"} w-full text-[var(--text-main-reverse)]`}
+          className={`${badgeClass} ${item.hasData ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
         >
           {item.hasData ? t("Common/Yes") : t("Common/No")}
         </span>

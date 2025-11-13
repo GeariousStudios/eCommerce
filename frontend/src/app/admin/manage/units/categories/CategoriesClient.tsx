@@ -147,7 +147,7 @@ const CategoriesClient = (props: Props) => {
     {
       key: "name, subCategories, units",
       getValue: (item: CategoryItem) => (
-        <div className="flex flex-col gap-4 rounded-2xl bg-[var(--bg-grid-header)] p-4">
+        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
@@ -164,7 +164,7 @@ const CategoriesClient = (props: Props) => {
                 item.subCategories.map((category, i) => (
                   <span
                     key={i}
-                    className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+                    className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
                   >
                     {category}
                   </span>
@@ -255,7 +255,7 @@ const CategoriesClient = (props: Props) => {
           {item.subCategories.map((category, i) => (
             <span
               key={i}
-              className={`${badgeClass} bg-[var(--badge-main)] text-[var(--text-main-reverse)]`}
+              className={`${badgeClass} bg-(--badge-main) text-(--text-main-reverse)`}
             >
               {category}
             </span>

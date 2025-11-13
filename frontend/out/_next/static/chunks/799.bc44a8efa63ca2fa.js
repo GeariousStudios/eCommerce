@@ -1,1 +1,1691 @@
-"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[799],{8799:(e,t,a)=>{a.r(t),a.d(t,{default:()=>T});var l=a(5155),n=a(2115),s=a(1701),r=a(3555),o=a(8500),i=a(4541),c=a(815),d=a(6934),u=a(4822),x=a(6493),h=a(5271),m=a(3472),f=a(3762),g=a(2237),p=a(7765),j=a(2175),v=a(1151),b=a(1972),w=a(7877),N=a(4402),k=a(4163),y=a(251);let S=e=>{let t=(0,n.useRef)(null),[a,r]=(0,n.useState)(""),[i,c]=(0,n.useState)([]),[d,u]=(0,n.useState)([]),[h,m]=(0,n.useState)(!1),[f,g]=(0,n.useState)(""),[v,w]=(0,n.useState)([]),N=localStorage.getItem("token"),{notify:S}=(0,o.d)(),C="https://ecommerce-9jo7.onrender.com";(0,n.useEffect)(()=>{e.isOpen&&E()},[e.isOpen]),(0,n.useEffect)(()=>{e.isOpen&&null!==e.categoryId&&void 0!==e.categoryId&&v.length>0?I():(r(""),c([]),u([]),g(""))},[e.isOpen,e.categoryId,v]);let A=async t=>{t.preventDefault();try{let t=await fetch("".concat(C,"/category/create"),{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer ".concat(N)},body:JSON.stringify({name:a,units:i.map(Number),subCategories:d})});if(401===t.status)return void localStorage.removeItem("token");let l=await t.json();if(!t.ok){if(l.errors){let e=null,t=Number.MAX_SAFE_INTEGER;for(let a in l.errors)for(let n of l.errors[a]){let a=n.match(/\[(\d+)\]/),l=a?parseInt(a[1],10):99;l<t&&(t=l,e=n.replace(/\[\d+\]\s*/,""))}e&&S("error",e);return}if(l.message)return void S("error",l.message);S("error","Ett ok\xe4nt fel intr\xe4ffade");return}e.onClose(),e.onCategoryUpdated(),S("success","Kategori skapad!",4e3)}catch(e){S("error",String(e))}},E=async()=>{try{let e=await fetch("".concat(C,"/unit"),{headers:{"Content-Type":"application/json",Authorization:"Bearer ".concat(N)}}),t=await e.json();e.ok?w(t.items):S("error",t.message)}catch(e){S("error",String(e))}},I=async()=>{try{let t=await fetch("".concat(C,"/category/fetch/").concat(e.categoryId),{headers:{"Content-Type":"application/json",Authorization:"Bearer ".concat(N)}}),a=await t.json();t.ok?D(a):S("error",a.message)}catch(e){S("error",String(e))}},D=e=>{var t,a,l;r(null!=(a=e.name)?a:""),c(null==(t=e.units)?void 0:t.map(e=>{let t=v.find(t=>t.name===e);return t?String(t.id):null}).filter(Boolean)),u(null!=(l=e.subCategories)?l:[])},O=async(t,l)=>{t.preventDefault();try{let t=await fetch("".concat(C,"/category/update/").concat(e.categoryId),{method:"PUT",headers:{"Content-Type":"application/json",Authorization:"Bearer ".concat(N)},body:JSON.stringify({name:a,units:i.map(Number),subCategories:d})});if(401===t.status)return void localStorage.removeItem("token");let l=await t.json();if(!t.ok){if(l.errors){let e=null,t=Number.MAX_SAFE_INTEGER;for(let a in l.errors)for(let n of l.errors[a]){let a=n.match(/\[(\d+)\]/),l=a?parseInt(a[1],10):99;l<t&&(t=l,e=n.replace(/\[\d+\]\s*/,""))}e&&S("error",e);return}if(l.message)return void S("error",l.message);S("error","Ett ok\xe4nt fel intr\xe4ffade");return}e.onClose(),e.onCategoryUpdated(),S("success","Kategori uppdaterad!",4e3)}catch(e){S("error",String(e))}},R=()=>{let e=f.trim();e?d.includes(e)?S("error","En underkategori med samma namn finns redan"):(u(t=>[...t,e].sort((e,t)=>e.localeCompare(t,"sv"))),g("")):S("error","Ange namnet p\xe5 underkategorin f\xf6rst")},M=e=>{let{label:t,onDelete:a}=e;return(0,l.jsx)(l.Fragment,{children:(0,l.jsxs)("button",{className:"".concat(b.Kt," group w-auto gap-2 !bg-[var(--bg-modal-link)] px-4"),onClick:a,children:[(0,l.jsx)("span",{className:"truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]",children:t}),(0,l.jsx)(x.A,{className:"h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]"})]})})};return(0,l.jsx)(l.Fragment,{children:e.isOpen&&(0,l.jsx)(k.A,{isOpen:e.isOpen,onClose:()=>e.onClose(),icon:e.categoryId?j.A:p.A,label:e.categoryId?"Redigera kategori":"L\xe4gg till ny kategori",children:(0,l.jsxs)("form",{ref:t,className:"relative flex flex-col gap-4",onSubmit:t=>e.categoryId?O(t,e.categoryId):A(t),children:[(0,l.jsxs)("div",{className:"flex items-center gap-2",children:[(0,l.jsx)("hr",{className:"w-12 text-[var(--border-main)]"}),(0,l.jsx)("h3",{className:"text-sm whitespace-nowrap text-[var(--text-secondary)]",children:"Uppgifter om kategorin"}),(0,l.jsx)("hr",{className:"w-full text-[var(--border-main)]"})]}),(0,l.jsxs)("div",{className:"mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4",children:[(0,l.jsx)(s.A,{label:"Namn",value:a,onChange:e=>r(String(e)),onModal:!0,required:!0}),(0,l.jsx)("div",{className:"flex w-full gap-6 sm:gap-4",children:(0,l.jsx)(y.A,{id:"unitGroup",label:"Enheter med \xe5tkomst",value:i,onChange:e=>c(e),onModal:!0,options:v.map(e=>({label:e.name,value:String(e.id)}))})})]}),(0,l.jsxs)("div",{className:"flex items-center gap-2",children:[(0,l.jsx)("hr",{className:"w-12 text-[var(--border-main)]"}),(0,l.jsx)("h3",{className:"text-sm whitespace-nowrap text-[var(--text-secondary)]",children:"Underkategorier"}),(0,l.jsx)("hr",{className:"w-full text-[var(--border-main)]"})]}),(0,l.jsxs)("div",{className:"flex gap-4",children:[(0,l.jsx)(s.A,{value:f,onChange:e=>g(String(e)),onModal:!0,onKeyDown:e=>{"Enter"===e.key&&(e.preventDefault(),R())}}),(0,l.jsx)("button",{type:"button",onClick:R,className:"".concat(b.$e),children:(0,l.jsx)(p.A,{})})]}),d.length>0&&(0,l.jsx)("div",{className:"flex flex-wrap gap-2",children:d.slice().sort((e,t)=>e.localeCompare(t,"sv")).map((e,t)=>(0,l.jsx)(M,{label:e,onDelete:()=>u(t=>t.filter((a,l)=>l!==t.indexOf(e)))},t))}),(0,l.jsxs)("div",{className:"mt-8 flex flex-col gap-4 sm:flex-row sm:justify-between",children:[(0,l.jsx)("button",{type:"button",onClick:()=>{var e;null==(e=t.current)||e.requestSubmit()},className:"".concat(b.$e," w-full grow-2 sm:w-auto"),children:e.categoryId?"Uppdatera":"L\xe4gg till"}),(0,l.jsx)("button",{type:"button",onClick:e.onClose,className:"".concat(b.p9," w-full grow sm:w-auto"),children:"\xc5ngra"})]})]})})})};var C=a(3107),A=a(703);let E="pl-4 p-2 min-w-48 h-[40px] cursor-pointer border-1 border-t-0 border-[var(--border-secondary)] border-b-[var(--border-main)] text-left transition-[background] duration-[var(--fast)] hover:bg-[var(--bg-grid-header-hover)]",I="py-2 px-4 min-w-48 h-[40px] border-1 border-b-0 border-[var(--border-secondary)] text-left break-all",D="truncate font-semibold transition-colors duration-[var(--fast)] group-hover:text-[var(--accent-color)]",O="h-6 w-6 transition-[color,rotate] duration-[var(--fast)] group-hover:text-[var(--accent-color)]",R=e=>{let{filterRef:t,label:a,breakpoint:r,filterData:o}=e,[i,d]=(0,n.useState)(!1),u="relative hidden ";return"2xs"===r?u+="2xs:flex":"xs"===r?u+="xs:flex":"sm"===r?u+="sm:flex":"md"===r?u+="md:flex":"ml"===r?u+="ml:flex":"lg"===r?u+="lg:flex":"xl"===r?u+="xl:flex":"2xl"===r&&(u+="2xl:flex"),(0,l.jsxs)("div",{className:u,children:[(0,l.jsxs)("button",{ref:t,className:"".concat(b.Kt," group w-auto gap-2 px-4"),onClick:()=>{d(e=>!e)},children:[(0,l.jsx)("span",{className:"".concat(D," ").concat(i?"text-[var(--accent-color)]":""),children:a}),(0,l.jsx)(c.A,{className:"".concat(O," ").concat(i?"rotate-180 text-[var(--accent-color)]":"")})]}),(0,l.jsx)(C.A,{triggerRef:t,isOpen:i,onClose:()=>d(!1),children:(0,l.jsx)("div",{className:"flex w-full flex-col gap-4",children:o.map((e,t)=>{var a;return(0,l.jsxs)("div",{onClick:()=>e.setShow(!e.show),className:"group flex cursor-pointer justify-between",children:[(0,l.jsx)(s.A,{type:"checkbox",checked:e.show,label:e.label,readOnly:!0}),(0,l.jsxs)("span",{children:["(",null!=(a=e.count)?a:0,")"]})]},t)})})})]})},M=e=>{let{filterRef:t,label:a,filterData:r}=e,[o,i]=(0,n.useState)(!1),[d,u]=(0,n.useState)("0px");return(0,n.useEffect)(()=>{t.current&&u(o?"".concat(t.current.scrollHeight,"px"):"0px")},[o]),(0,l.jsxs)("div",{children:[(0,l.jsxs)("button",{onClick:()=>i(e=>!e),className:"".concat(o?"text-[var(--accent-color)]":""," flex w-full cursor-pointer items-center justify-between py-4 duration-[var(--fast)] hover:text-[var(--accent-color)]"),children:[(0,l.jsx)("span",{className:"text-lg font-semibold",children:a}),(0,l.jsx)(c.A,{className:"".concat(o?"rotate-180":""," transition-rotate h-6 w-6 duration-[var(--fast)]")})]}),(0,l.jsx)("div",{style:{height:d},className:"overflow-hidden transition-[height] duration-[var(--slow)]",children:(0,l.jsx)("div",{ref:t,children:(0,l.jsx)("div",{className:"flex w-full flex-col",children:r.map((e,t)=>{var a;return(0,l.jsxs)("div",{onClick:()=>e.setShow(!e.show),className:"".concat(t===r.length-1?"mb-4":""," group flex cursor-pointer justify-between py-4"),children:[(0,l.jsx)(s.A,{type:"checkbox",checked:e.show,label:e.label,readOnly:!0}),(0,l.jsxs)("span",{children:["(",null!=(a=e.count)?a:0,")"]})]},t)})})})}),(0,l.jsx)("hr",{className:"-ml-4 flex w-[calc(100%+2rem)] text-[var(--border-main)]"})]})},T=e=>{var t,a,k,y;let[C,T]=(0,n.useState)(2),[K,U]=(0,n.useState)(!1),[z,B]=(0,n.useState)(null),[L,H]=(0,n.useState)([]),[F,_]=(0,n.useState)(null),[V,$]=(0,n.useState)([]),[G,P]=(0,n.useState)(!1),[q,J]=(0,n.useState)([]),[X,W]=(0,n.useState)(!1),[Q,Y]=(0,n.useState)(1),[Z,ee]=(0,n.useState)(5),[et,ea]=(0,n.useState)(null),[el,en]=(0,n.useState)("id"),[es,er]=(0,n.useState)("asc"),[eo,ei]=(0,n.useState)(""),[ec,ed]=(0,n.useState)([]),[eu,ex]=(0,n.useState)(null),[eh,em]=(0,n.useState)([]),ef=localStorage.getItem("token"),eg="https://ecommerce-9jo7.onrender.com",{notify:ep}=(0,o.d)(),ej=Q*Z-Z,ev=Math.max(0,Math.min(Z,(null!=et?et:0)-ej)),eb=Math.max(0,Math.min(Z,ev)),ew=Math.max(1,Math.ceil((null!=et?et:0)/Z)),eN=(0,n.useRef)(null),ek=(0,n.useRef)(null),ey=(0,n.useRef)(null),eS=(0,n.useRef)(null),eC=(0,n.useRef)(null),[eA,eE]=(0,n.useState)(!1),eI=async function(e,t,a,l){let n=!(arguments.length>4)||void 0===arguments[4]||arguments[4];try{var s,r;n&&U(!0);let o=new URLSearchParams({page:String(e),pageSize:String(t),sortBy:a,sortOrder:l,search:eo});ec.length>0&&ec.forEach(e=>{o.append("units",e.toString())}),null!==eu&&o.append("hasSubCategories",String(eu));let i=await fetch("".concat(eg,"/category?").concat(o.toString()),{headers:{"Content-Type":"application/json",Authorization:"Bearer ".concat(ef)}});if(401===i.status)return void localStorage.removeItem("token");let c=await i.json();if(!i.ok)return void ep("error",c.message);H(Array.isArray(c.items)?c.items:[]),ea(null!=(s=c.totalCount)?s:0),B(null!=(r=c.counts)?r:null)}catch(e){}finally{n&&U(!1)}},eD=async e=>{try{let t=await fetch("".concat(eg,"/category/delete/").concat(e),{method:"DELETE",headers:{"Content-Type":"application/json",Authorization:"Bearer ".concat(ef)}});if(401===t.status)return void localStorage.removeItem("token");let a=await t.json();if(!t.ok)return void ep("error",a.message);await eI(Q,Z,el,es),ep("success","Kategori borttagen!",4e3)}catch(e){ep("error",String(e))}},eO=async()=>{try{let e=await fetch("".concat(eg,"/unit"),{headers:{"Content-Type":"application/json",Authorization:"Bearer ".concat(ef)}}),t=await e.json();e.ok?em(t.items):ep("error",t.message)}catch(e){ep("error",String(e))}};(0,n.useEffect)(()=>{eO()},[]),(0,n.useEffect)(()=>{eI(Q,Z,el,es)},[Q,Z,el,es,eo,ec,eu]),(0,n.useEffect)(()=>{Y(1)},[eo,eu,ec]);let eR=e=>{let t=e===el&&"asc"===es?"desc":"asc";en(e),er(t),eI(Q,Z,e,t,!1)},eM=e=>el!==e?(0,l.jsx)(d.A,{className:"h-6 w-6"}):"asc"===es?(0,l.jsx)(u.A,{className:"h-6 w-6"}):(0,l.jsx)(c.A,{className:"h-6 w-6"}),eT=L.map(e=>e.id),eK=L.map(e=>e.id),eU=eK.length>0&&eK.every(e=>V.includes(e)),ez=e=>{L.find(t=>t.id===e)&&(V.includes(e)?$(V.filter(t=>t!==e)):$([...V,e]))},eB=()=>{eU?$(V.filter(e=>!eK.includes(e))):$([...new Set([...V,...eK])])};(0,n.useEffect)(()=>{let e=()=>{let e=window.innerWidth,t=2;e>=640&&(t+=1),e>=1024&&(t+=1),T(t)};return e(),window.addEventListener("resize",e),()=>removeEventListener("resize",e)},[]);let eL=function(){let e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:[];J(e),W(e=>!e)},eH=function(){let e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:null;_(e),P(!0)},eF=e=>{let{visible:t,onClickEvent:a,label:n}=e;return(0,l.jsx)(l.Fragment,{children:t&&(0,l.jsxs)("button",{className:"".concat(b.Kt," group w-auto gap-2 px-4"),onClick:()=>{a(!1)},children:[(0,l.jsx)("span",{className:"".concat(D),children:n}),(0,l.jsx)(x.A,{className:"".concat(O)})]})})},e_=e=>{let{sortingItem:t,label:a,labelAsc:n,labelDesc:s,classNameAddition:r}=e;return(0,l.jsx)(i.A,{content:el===t&&"asc"===es?"Sortera "+n:"Sortera "+s,children:(0,l.jsx)("th",{className:"".concat(E," ").concat(r||""),onClick:()=>eR(t),onKeyDown:e=>{("Enter"===e.key||" "===e.key)&&(e.preventDefault(),eR(t))},tabIndex:0,"aria-sort":el===t?"asc"===es?"ascending":"descending":"none",children:(0,l.jsxs)("div",{className:"relative flex gap-2",children:[(0,l.jsx)("span",{className:"w-full truncate overflow-hidden text-ellipsis",children:a}),(0,l.jsx)("span",{className:"flex",children:eM(t)})]})})})},eV=e=>{let{children:t,classNameAddition:a}=e;return(0,l.jsx)("td",{className:"".concat(I," ").concat(a||""),children:(0,l.jsx)("div",{className:"truncate overflow-hidden text-ellipsis",children:t})})};return(0,l.jsxs)(l.Fragment,{children:[(0,l.jsx)(S,{isOpen:G,onClose:()=>{P(!1),_(null)},categoryId:F,onCategoryUpdated:()=>{eI(Q,Z,el,es)}}),(0,l.jsx)(r.A,{isOpen:X,onClose:()=>{eL(),J([])},onConfirm:async()=>{for(let e of q)await eD(e);W(!1),J([]),$([])}}),(0,l.jsxs)("div",{className:"flex flex-col gap-4",children:[(0,l.jsxs)("div",{className:"flex flex-col gap-4",children:[(0,l.jsxs)("div",{className:"flex flex-wrap gap-4",children:[(0,l.jsx)(i.A,{content:"L\xe4gg till ny kategori",lgHidden:!0,children:(0,l.jsx)("button",{className:"".concat(b.$e," sm:w-56 sm:min-w-56"),onClick:()=>{eH()},onKeyDown:e=>{("Enter"===e.key||" "===e.key)&&(e.preventDefault(),eH())},tabIndex:0,children:(0,l.jsxs)("div",{className:"flex items-center justify-center gap-2 truncate",children:[(0,l.jsx)(p.A,{className:"h-6"}),(0,l.jsx)("span",{className:"hidden sm:block",children:"L\xe4gg till ny kategori"})]})})}),(0,l.jsx)(i.A,{content:0===V.length?"V\xe4lj en kategori":1===V.length?"Redigera kategori":"Du kan bara redigera en kategori i taget!",lgHidden:1===V.length,showOnTouch:0===V.length||V.length>1,children:(0,l.jsx)("button",{className:"".concat(b.p9," sm:w-56 sm:min-w-56"),onClick:()=>{eH(V[0])},onKeyDown:e=>{("Enter"===e.key||" "===e.key)&&(e.preventDefault(),eH(V[0]))},tabIndex:0,disabled:0===V.length||V.length>1,children:(0,l.jsxs)("div",{className:"flex items-center justify-center gap-2 truncate",children:[(0,l.jsx)(j.A,{className:"h-6 min-h-6 w-6 min-w-6"}),(0,l.jsx)("span",{className:"hidden sm:block",children:"Redigera kategori"})]})})}),(0,l.jsx)(i.A,{content:0===V.length?"V\xe4lj en eller fler kategorier":"Ta bort kategori (".concat(V.length,")"),lgHidden:V.length>0,showOnTouch:0===V.length,children:(0,l.jsx)("button",{className:"".concat(b.s9," 3xs:ml-auto lg:w-56 lg:min-w-56"),onClick:()=>eL(V),onKeyDown:e=>{("Enter"===e.key||" "===e.key)&&(e.preventDefault(),eL(V))},tabIndex:0,disabled:0===V.length,children:(0,l.jsxs)("div",{className:"flex items-center justify-center gap-2 truncate",children:[(0,l.jsx)(v.A,{className:"h-6"}),(0,l.jsxs)("span",{className:"hidden lg:block",children:["Ta bort kategori",(0,l.jsx)("span",{children:V.length>0?" (".concat(V.length,")"):""})]})]})})})]}),(0,l.jsxs)("div",{className:"3xs:flex-nowrap flex flex-wrap justify-between gap-4",children:[(0,l.jsx)("div",{className:"flex w-full items-center gap-4",children:(0,l.jsx)("div",{className:"flex w-full items-center justify-start",children:(0,l.jsx)(s.A,{icon:(0,l.jsx)(h.A,{}),placeholder:"S\xf6k kategori",value:eo,onChange:e=>ei(String(e).toLowerCase())})})}),(0,l.jsxs)("div",{className:"flex gap-4",children:[(0,l.jsx)(R,{filterRef:eN,label:"Underkategorier",breakpoint:"sm",filterData:[{label:"Har underkategorier",show:!0===eu,setShow:e=>ex(!!e||null),count:null!=(t=null==z?void 0:z.withSubCategories)?t:0},{label:"Inga underkategorier",show:!1===eu,setShow:e=>ex(!e&&null),count:null!=(a=null==z?void 0:z.withoutSubCategories)?a:0}]}),(0,l.jsx)(R,{filterRef:ek,label:"Enheter med \xe5tkomst",breakpoint:"ml",filterData:eh.map(e=>{var t,a;return{label:e.name,show:ec.includes(e.id),setShow:t=>{ed(a=>t?[...a,e.id]:a.filter(t=>t!==e.id))},count:null!=(a=null==z||null==(t=z.unitCounts)?void 0:t[e.name])?a:0}})}),(0,l.jsxs)("div",{className:"relative",children:[(0,l.jsxs)("button",{className:"".concat(b.Kt," group xs:w-auto xs:px-4 gap-2"),onClick:()=>{eE(!0)},children:[(0,l.jsx)("span",{className:"".concat(D," xs:flex hidden"),children:"Alla filter"}),(0,l.jsx)(m.A,{className:"".concat(O)})]}),(0,l.jsx)(A.A,{triggerRef:ey,isOpen:eA,onClose:()=>eE(!1),label:"Alla filter",children:(0,l.jsxs)("div",{className:"flex h-full flex-col justify-between",children:[(0,l.jsxs)("div",{className:"flex flex-col",children:[(0,l.jsx)(M,{filterRef:eS,label:"Underkategorier",filterData:[{label:"Har underkategorier",show:!0===eu,setShow:e=>ex(!!e||null),count:null!=(k=null==z?void 0:z.withSubCategories)?k:0},{label:"Inga underkategorier",show:!1===eu,setShow:e=>ex(!e&&null),count:null!=(y=null==z?void 0:z.withoutSubCategories)?y:0}]}),(0,l.jsx)(M,{filterRef:eC,label:"Enheter med \xe5tkomst",filterData:eh.map(e=>{var t,a;return{label:e.name,show:ec.includes(e.id),setShow:t=>{ed(a=>t?[...a,e.id]:a.filter(t=>t!==e.id))},count:null!=(a=null==z||null==(t=z.unitCounts)?void 0:t[e.name])?a:0}})})]}),(0,l.jsxs)("div",{className:"flex flex-col gap-4 py-4 sm:flex-row",children:[(0,l.jsxs)("button",{onClick:()=>eE(!1),className:"".concat(b.$e," w-full"),children:["Visa"," ",(0,l.jsx)("span",{className:"font-normal",children:null!=et?et:0})]}),(0,l.jsx)("button",{onClick:()=>{ex(null),ed([])},className:"".concat(b.p9," w-full"),disabled:null===eu&&0===ec.length,children:"Rensa alla"})]})]})})]})]})]}),(null!==eu||ec.length>0)&&(0,l.jsxs)("div",{className:"flex flex-wrap gap-4",children:[(0,l.jsx)("span",{className:"flex items-center font-semibold text-[var(--text-secondary)]",children:"Aktiva filter:"}),(0,l.jsx)(eF,{visible:!0===eu,onClickEvent:ex,label:"Har underkategorier"}),(0,l.jsx)(eF,{visible:!1===eu,onClickEvent:ex,label:"Inga underkategorier"}),ec.map(e=>{var t;let a=eh.find(t=>t.id===e);return(0,l.jsx)(eF,{visible:!0,onClickEvent:()=>ed(t=>t.filter(t=>t!==e)),label:null!=(t=null==a?void 0:a.name)?t:""},e)}),(0,l.jsx)("button",{className:"group w-auto cursor-pointer rounded-full px-4 transition-colors duration-[var(--fast)] hover:bg-[var(--bg-navbar-link)]",onClick:()=>{ex(null),ed([])},children:(0,l.jsx)("span",{className:"font-semibold text-[var(--accent-color)]",children:"Rensa alla"})})]})]}),(0,l.jsx)("div",{className:"flex w-full flex-col",children:(0,l.jsx)("div",{className:"flex w-full overflow-x-auto rounded border-1 border-[var(--border-main)]",children:(0,l.jsxs)("table",{className:"w-full table-fixed border-collapse",children:[(0,l.jsx)("thead",{className:"".concat(!e.isConnected||K?"pointer-events-none":""," bg-[var(--bg-grid-header)]"),children:(0,l.jsxs)("tr",{children:[(0,l.jsx)("th",{className:"".concat(E," !w-[40px] !min-w-[40px] !border-l-0 !pl-2"),onClick:eB,onKeyDown:e=>{("Enter"===e.key||" "===e.key)&&(e.preventDefault(),eB())},children:(0,l.jsx)("div",{className:"flex items-center justify-center",children:(0,l.jsx)(s.A,{type:"checkbox",checked:eU,indeterminate:!eU&&eT.some(e=>V.includes(e)),readOnly:!0})})}),(0,l.jsx)(e_,{sortingItem:"name",label:"Namn",labelAsc:"namn \xd6-A",labelDesc:"namn A-\xd6"}),(0,l.jsx)(e_,{sortingItem:"units",label:"Enheter med \xe5tkomst",labelAsc:"enheter med \xe5tkomst \xd6-A",labelDesc:"enheter med \xe5tkomst A-\xd6",classNameAddition:"hidden lg:table-cell"}),(0,l.jsx)(e_,{sortingItem:"subCategories",label:"Underkategorier",labelAsc:"underkategorier \xd6-A",labelDesc:"underkategorier A-\xd6",classNameAddition:"hidden xs:table-cell"})]})}),(0,l.jsx)("tbody",{children:e.isConnected&&0!==L.length?K?(0,l.jsx)(l.Fragment,{children:(0,l.jsx)("tr",{className:"bg-[var(--bg-grid)]",children:(0,l.jsx)("td",{colSpan:C,style:{height:"".concat(40*eb,"px")},children:(0,l.jsx)("div",{className:"flex h-[40px]",children:(0,l.jsx)(w.default,{icon:"loading",content:"H\xe4mtar inneh\xe5ll...",sideMessage:(null!=ev?ev:0)<=2})})})})}):(0,l.jsx)(l.Fragment,{children:L.map((e,t)=>{let a=V.includes(e.id),n="".concat(t%2==0?"bg-[var(--bg-grid)]":"bg-[var(--bg-grid-zebra)]"," ").concat(a?"bg-[var--bg-grid-header-hover)]":"","\n                        hover:bg-[var(--bg-grid-header-hover)] cursor-pointer transition-[background] duration-[var(--fast)]");return(0,l.jsxs)("tr",{className:n,onClick:()=>ez(e.id),onKeyDown:t=>{("Enter"===t.key||" "===t.key)&&(t.preventDefault(),ez(e.id))},children:[(0,l.jsx)("td",{className:"".concat(I," !w-[40px] !min-w-[40px] cursor-pointer !border-l-0"),children:(0,l.jsx)("div",{className:"flex items-center justify-center",children:(0,l.jsx)("div",{className:"flex items-center justify-center",children:(0,l.jsx)(s.A,{type:"checkbox",checked:V.includes(e.id),readOnly:!0})})})}),(0,l.jsx)(eV,{children:e.name}),(0,l.jsx)(eV,{classNameAddition:"hidden lg:table-cell",children:(0,l.jsx)("div",{className:"flex flex-wrap gap-2",children:e.units.map((e,t)=>(0,l.jsx)("span",{className:"flex h-6 items-center justify-center rounded-xl bg-[var(--bg-navbar-link)] px-4 text-sm font-semibold",children:e},t))})}),(0,l.jsx)(eV,{classNameAddition:"hidden xs:table-cell",children:(0,l.jsx)("div",{className:"flex flex-wrap gap-2",children:e.subCategories.map((e,t)=>(0,l.jsx)("span",{className:"flex h-6 items-center justify-center rounded-xl bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-reverse)]",children:e},t))})})]},e.id)})}):(0,l.jsx)("tr",{children:(0,l.jsx)("td",{colSpan:C,className:"h-57",children:e.isConnected?(0,l.jsx)(w.default,{icon:"search",content:eo||ec.length>0||null!==eu?"Inga kategorier kunde hittas med det s\xf6kkriteriet.":"Det finns inga kategorier."}):(0,l.jsx)(w.default,{icon:"server",content:"server"})})})})]})})}),(0,l.jsxs)("div",{className:"flex w-full flex-wrap justify-between gap-x-12 gap-y-4",children:[(0,l.jsxs)("span",{className:"flex w-[175.23px] text-[var(--text-secondary)]",children:["Visar ",(Q-1)*Z+1,"-",Math.min(Q*Z,null!=et?et:0)," av"," ",null!=et?et:0]}),(0,l.jsxs)("div",{className:"xs:w-auto flex w-full items-center",children:[(0,l.jsx)("button",{type:"button",onClick:()=>{$([]),Y(e=>Math.max(e-1,1))},disabled:1===Q,className:"".concat(b.U0),children:(0,l.jsx)(f.A,{className:"min-h-full min-w-full"})}),(0,l.jsx)("div",{className:"flex flex-wrap items-center justify-center",children:(()=>{let e=[];if(ew<=7){for(let t=1;t<=ew;t++)e.push(t);return e}if(Q<=3){for(let t=1;t<=4;t++)e.push(t);e.push("..."),e.push(ew)}else if(Q>=ew-2){e.push(1),e.push("...");for(let t=ew-3;t<=ew;t++)e.push(t)}else{e.push(1),e.push("...");for(let t=Q-1;t<=Q+1;t++)e.push(t);e.push("..."),e.push(ew)}return e})().map((e,t)=>"..."===e?(0,l.jsx)("span",{className:"flex px-2",children:"..."},t):(0,l.jsx)("button",{onClick:()=>{$([]),Y(Number(e))},className:"".concat(Q===e?"bg-[var(--accent-color)] text-[var(--text-main-reverse)]":"hover:text-[var(--accent-color)]"," ").concat(Q===e&&e>=100?"px-5":""," flex max-w-7 min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-[var(--fast)]"),children:e},t))}),(0,l.jsx)("button",{type:"button",onClick:()=>{$([]),Y(e=>e<Math.max(1,Math.ceil((null!=et?et:0)/Z))?e+1:e)},disabled:Q>=Math.ceil((null!=et?et:0)/Z),className:"".concat(b.U0),children:(0,l.jsx)(g.A,{className:"min-h-full min-w-full"})})]}),(0,l.jsxs)("div",{className:"flex items-center gap-4",children:[(0,l.jsx)("span",{className:"",children:"Antal per sida:"}),(0,l.jsxs)("div",{className:"3xs:min-w-20",children:[(0,l.jsx)("div",{id:"portal-root"}),(0,l.jsx)(N.A,{options:[{label:"5",value:"5"},{label:"15",value:"15"},{label:"25",value:"25"}],value:String(Z),onChange:e=>{let t=Number(e),a=Math.ceil((null!=et?et:0)/t);ee(t),Q>a&&Y(a)}})]})]})]}),(0,l.jsxs)("div",{className:"flex w-full flex-col",children:[(0,l.jsx)("div",{className:"flex items-center rounded-t border-1 border-[var(--border-main)] bg-[var(--bg-grid-header)] px-3 py-2",children:(0,l.jsx)("span",{className:"truncate font-semibold",children:"Anv\xe4ndarinformation"})}),(0,l.jsx)("div",{className:"".concat(0===V.length||V.length>1?"items-center":""," flex max-h-96 min-h-80 overflow-x-auto rounded-b border-1 border-t-0 border-[var(--border-main)] p-4"),children:0===V.length?(0,l.jsx)(w.default,{icon:"category",content:"H\xe4r kan du se information om vald kategori. V\xe4lj en i tabellen ovan!"}):V.length>1?(0,l.jsx)(w.default,{icon:"beware",content:"Kan inte visa information om flera kategorier samtidigt."}):(0,l.jsx)("div",{className:"flex",children:L.filter(e=>e.id===V[0]).map(e=>(0,l.jsxs)("div",{className:"flex flex-col gap-8",children:[(0,l.jsxs)("div",{className:"flex flex-col gap-8",children:[(0,l.jsxs)("p",{children:[(0,l.jsx)("strong",{children:"Namn: "}),e.name]}),(0,l.jsxs)("div",{className:"".concat(e.units.length>0?"gap-2":""," flex flex-col"),children:[(0,l.jsxs)("div",{className:"".concat(e.units.length>0?"flex-col gap-2":""," flex"),children:[(0,l.jsx)("strong",{children:"Enheter med \xe5tkomst: "}),(0,l.jsx)("div",{className:"flex flex-wrap gap-2",children:e.units.length>0?e.units.map((e,t)=>(0,l.jsx)("span",{className:"flex h-6 items-center justify-center rounded-xl bg-[var(--bg-navbar-link)] px-4 text-sm font-semibold",children:e},t)):"\xa0-"})]}),(0,l.jsxs)("div",{className:"".concat(e.subCategories.length>0?"flex-col gap-2":""," flex"),children:[(0,l.jsx)("strong",{children:"Underkategorier: "}),(0,l.jsx)("div",{className:"flex flex-wrap gap-2",children:e.subCategories.length>0?e.subCategories.map((e,t)=>(0,l.jsx)("span",{className:"flex h-6 items-center justify-center rounded-xl bg-[var(--accent-color)] px-4 text-sm font-semibold text-[var(--text-main-reverse)]",children:e},t)):"\xa0-"})]})]})]}),(0,l.jsxs)("div",{children:[(0,l.jsxs)("p",{children:[(0,l.jsx)("strong",{children:"Skapad: "}),new Date(e.creationDate).toLocaleString()," av"," ",e.createdBy]}),(0,l.jsxs)("p",{children:[(0,l.jsx)("strong",{children:"Uppdaterad: "}),new Date(e.updateDate).toLocaleString()," av"," ",e.updatedBy]})]})]},e.id))})})]})]})]})}}}]);
+"use strict";
+(self.webpackChunk_N_E = self.webpackChunk_N_E || []).push([
+  [799],
+  {
+    8799: (e, t, a) => {
+      a.r(t), a.d(t, { default: () => T });
+      var l = a(5155),
+        n = a(2115),
+        s = a(1701),
+        r = a(3555),
+        o = a(8500),
+        i = a(4541),
+        c = a(815),
+        d = a(6934),
+        u = a(4822),
+        x = a(6493),
+        h = a(5271),
+        m = a(3472),
+        f = a(3762),
+        g = a(2237),
+        p = a(7765),
+        j = a(2175),
+        v = a(1151),
+        b = a(1972),
+        w = a(7877),
+        N = a(4402),
+        k = a(4163),
+        y = a(251);
+      let S = (e) => {
+        let t = (0, n.useRef)(null),
+          [a, r] = (0, n.useState)(""),
+          [i, c] = (0, n.useState)([]),
+          [d, u] = (0, n.useState)([]),
+          [h, m] = (0, n.useState)(!1),
+          [f, g] = (0, n.useState)(""),
+          [v, w] = (0, n.useState)([]),
+          N = localStorage.getItem("token"),
+          { notify: S } = (0, o.d)(),
+          C = "https://planningpoint-9jo7.onrender.com";
+        (0, n.useEffect)(() => {
+          e.isOpen && E();
+        }, [e.isOpen]),
+          (0, n.useEffect)(() => {
+            e.isOpen &&
+            null !== e.categoryId &&
+            void 0 !== e.categoryId &&
+            v.length > 0
+              ? I()
+              : (r(""), c([]), u([]), g(""));
+          }, [e.isOpen, e.categoryId, v]);
+        let A = async (t) => {
+            t.preventDefault();
+            try {
+              let t = await fetch("".concat(C, "/category/create"), {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: "Bearer ".concat(N),
+                },
+                body: JSON.stringify({
+                  name: a,
+                  units: i.map(Number),
+                  subCategories: d,
+                }),
+              });
+              if (401 === t.status)
+                return void localStorage.removeItem("token");
+              let l = await t.json();
+              if (!t.ok) {
+                if (l.errors) {
+                  let e = null,
+                    t = Number.MAX_SAFE_INTEGER;
+                  for (let a in l.errors)
+                    for (let n of l.errors[a]) {
+                      let a = n.match(/\[(\d+)\]/),
+                        l = a ? parseInt(a[1], 10) : 99;
+                      l < t && ((t = l), (e = n.replace(/\[\d+\]\s*/, "")));
+                    }
+                  e && S("error", e);
+                  return;
+                }
+                if (l.message) return void S("error", l.message);
+                S("error", "Ett ok\xe4nt fel intr\xe4ffade");
+                return;
+              }
+              e.onClose(),
+                e.onCategoryUpdated(),
+                S("success", "Kategori skapad!", 4e3);
+            } catch (e) {
+              S("error", String(e));
+            }
+          },
+          E = async () => {
+            try {
+              let e = await fetch("".concat(C, "/unit"), {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer ".concat(N),
+                  },
+                }),
+                t = await e.json();
+              e.ok ? w(t.items) : S("error", t.message);
+            } catch (e) {
+              S("error", String(e));
+            }
+          },
+          I = async () => {
+            try {
+              let t = await fetch(
+                  "".concat(C, "/category/fetch/").concat(e.categoryId),
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: "Bearer ".concat(N),
+                    },
+                  },
+                ),
+                a = await t.json();
+              t.ok ? D(a) : S("error", a.message);
+            } catch (e) {
+              S("error", String(e));
+            }
+          },
+          D = (e) => {
+            var t, a, l;
+            r(null != (a = e.name) ? a : ""),
+              c(
+                null == (t = e.units)
+                  ? void 0
+                  : t
+                      .map((e) => {
+                        let t = v.find((t) => t.name === e);
+                        return t ? String(t.id) : null;
+                      })
+                      .filter(Boolean),
+              ),
+              u(null != (l = e.subCategories) ? l : []);
+          },
+          O = async (t, l) => {
+            t.preventDefault();
+            try {
+              let t = await fetch(
+                "".concat(C, "/category/update/").concat(e.categoryId),
+                {
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer ".concat(N),
+                  },
+                  body: JSON.stringify({
+                    name: a,
+                    units: i.map(Number),
+                    subCategories: d,
+                  }),
+                },
+              );
+              if (401 === t.status)
+                return void localStorage.removeItem("token");
+              let l = await t.json();
+              if (!t.ok) {
+                if (l.errors) {
+                  let e = null,
+                    t = Number.MAX_SAFE_INTEGER;
+                  for (let a in l.errors)
+                    for (let n of l.errors[a]) {
+                      let a = n.match(/\[(\d+)\]/),
+                        l = a ? parseInt(a[1], 10) : 99;
+                      l < t && ((t = l), (e = n.replace(/\[\d+\]\s*/, "")));
+                    }
+                  e && S("error", e);
+                  return;
+                }
+                if (l.message) return void S("error", l.message);
+                S("error", "Ett ok\xe4nt fel intr\xe4ffade");
+                return;
+              }
+              e.onClose(),
+                e.onCategoryUpdated(),
+                S("success", "Kategori uppdaterad!", 4e3);
+            } catch (e) {
+              S("error", String(e));
+            }
+          },
+          R = () => {
+            let e = f.trim();
+            e
+              ? d.includes(e)
+                ? S("error", "En underkategori med samma namn finns redan")
+                : (u((t) => [...t, e].sort((e, t) => e.localeCompare(t, "sv"))),
+                  g(""))
+              : S("error", "Ange namnet p\xe5 underkategorin f\xf6rst");
+          },
+          M = (e) => {
+            let { label: t, onDelete: a } = e;
+            return (0, l.jsx)(l.Fragment, {
+              children: (0, l.jsxs)("button", {
+                className: "".concat(
+                  b.Kt,
+                  " group w-auto gap-2 !bg-(--bg-modal-link)] px-4",
+                ),
+                onClick: a,
+                children: [
+                  (0, l.jsx)("span", {
+                    className:
+                      "truncate font-semibold transition-colors duration-(--fast)] group-hover:text-(--accent-color)]",
+                    children: t,
+                  }),
+                  (0, l.jsx)(x.A, {
+                    className:
+                      "h-6 w-6 transition-[color,rotate] duration-(--fast)] group-hover:text-(--accent-color)]",
+                  }),
+                ],
+              }),
+            });
+          };
+        return (0, l.jsx)(l.Fragment, {
+          children:
+            e.isOpen &&
+            (0, l.jsx)(k.A, {
+              isOpen: e.isOpen,
+              onClose: () => e.onClose(),
+              icon: e.categoryId ? j.A : p.A,
+              label: e.categoryId
+                ? "Redigera kategori"
+                : "L\xe4gg till ny kategori",
+              children: (0, l.jsxs)("form", {
+                ref: t,
+                className: "relative flex flex-col gap-4",
+                onSubmit: (t) => (e.categoryId ? O(t, e.categoryId) : A(t)),
+                children: [
+                  (0, l.jsxs)("div", {
+                    className: "flex items-center gap-2",
+                    children: [
+                      (0, l.jsx)("hr", {
+                        className: "w-12 text-(--border-main)]",
+                      }),
+                      (0, l.jsx)("h3", {
+                        className:
+                          "text-sm whitespace-nowrap text-(--text-secondary)",
+                        children: "Uppgifter om kategorin",
+                      }),
+                      (0, l.jsx)("hr", {
+                        className: "w-full text-(--border-main)]",
+                      }),
+                    ],
+                  }),
+                  (0, l.jsxs)("div", {
+                    className: "mb-8 flex flex-col gap-6 sm:flex-row sm:gap-4",
+                    children: [
+                      (0, l.jsx)(s.A, {
+                        label: "Namn",
+                        value: a,
+                        onChange: (e) => r(String(e)),
+                        onModal: !0,
+                        required: !0,
+                      }),
+                      (0, l.jsx)("div", {
+                        className: "flex w-full gap-6 sm:gap-4",
+                        children: (0, l.jsx)(y.A, {
+                          id: "unitGroup",
+                          label: "Enheter med \xe5tkomst",
+                          value: i,
+                          onChange: (e) => c(e),
+                          onModal: !0,
+                          options: v.map((e) => ({
+                            label: e.name,
+                            value: String(e.id),
+                          })),
+                        }),
+                      }),
+                    ],
+                  }),
+                  (0, l.jsxs)("div", {
+                    className: "flex items-center gap-2",
+                    children: [
+                      (0, l.jsx)("hr", {
+                        className: "w-12 text-(--border-main)]",
+                      }),
+                      (0, l.jsx)("h3", {
+                        className:
+                          "text-sm whitespace-nowrap text-(--text-secondary)",
+                        children: "Underkategorier",
+                      }),
+                      (0, l.jsx)("hr", {
+                        className: "w-full text-(--border-main)]",
+                      }),
+                    ],
+                  }),
+                  (0, l.jsxs)("div", {
+                    className: "flex gap-4",
+                    children: [
+                      (0, l.jsx)(s.A, {
+                        value: f,
+                        onChange: (e) => g(String(e)),
+                        onModal: !0,
+                        onKeyDown: (e) => {
+                          "Enter" === e.key && (e.preventDefault(), R());
+                        },
+                      }),
+                      (0, l.jsx)("button", {
+                        type: "button",
+                        onClick: R,
+                        className: "".concat(b.$e),
+                        children: (0, l.jsx)(p.A, {}),
+                      }),
+                    ],
+                  }),
+                  d.length > 0 &&
+                    (0, l.jsx)("div", {
+                      className: "flex flex-wrap gap-2",
+                      children: d
+                        .slice()
+                        .sort((e, t) => e.localeCompare(t, "sv"))
+                        .map((e, t) =>
+                          (0, l.jsx)(
+                            M,
+                            {
+                              label: e,
+                              onDelete: () =>
+                                u((t) =>
+                                  t.filter((a, l) => l !== t.indexOf(e)),
+                                ),
+                            },
+                            t,
+                          ),
+                        ),
+                    }),
+                  (0, l.jsxs)("div", {
+                    className:
+                      "mt-8 flex flex-col gap-4 sm:flex-row sm:justify-between",
+                    children: [
+                      (0, l.jsx)("button", {
+                        type: "button",
+                        onClick: () => {
+                          var e;
+                          null == (e = t.current) || e.requestSubmit();
+                        },
+                        className: "".concat(b.$e, " w-full grow-2 sm:w-auto"),
+                        children: e.categoryId ? "Uppdatera" : "L\xe4gg till",
+                      }),
+                      (0, l.jsx)("button", {
+                        type: "button",
+                        onClick: e.onClose,
+                        className: "".concat(b.p9, " w-full grow sm:w-auto"),
+                        children: "\xc5ngra",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }),
+        });
+      };
+      var C = a(3107),
+        A = a(703);
+      let E =
+          "pl-4 p-2 min-w-48 h-[40px] cursor-pointer border border-t-0 border-(--border-secondary)] border-b-(--border-main)] text-left transition-[background] duration-(--fast)] hover:bg-(--bg-grid-header-hover)]",
+        I =
+          "py-2 px-4 min-w-48 h-[40px] border border-b-0 border-(--border-secondary)] text-left break-all",
+        D =
+          "truncate font-semibold transition-colors duration-(--fast)] group-hover:text-(--accent-color)]",
+        O =
+          "h-6 w-6 transition-[color,rotate] duration-(--fast)] group-hover:text-(--accent-color)]",
+        R = (e) => {
+          let { filterRef: t, label: a, breakpoint: r, filterData: o } = e,
+            [i, d] = (0, n.useState)(!1),
+            u = "relative hidden ";
+          return (
+            "2xs" === r
+              ? (u += "2xs:flex")
+              : "xs" === r
+                ? (u += "xs:flex")
+                : "sm" === r
+                  ? (u += "sm:flex")
+                  : "md" === r
+                    ? (u += "md:flex")
+                    : "ml" === r
+                      ? (u += "ml:flex")
+                      : "lg" === r
+                        ? (u += "lg:flex")
+                        : "xl" === r
+                          ? (u += "xl:flex")
+                          : "2xl" === r && (u += "2xl:flex"),
+            (0, l.jsxs)("div", {
+              className: u,
+              children: [
+                (0, l.jsxs)("button", {
+                  ref: t,
+                  className: "".concat(b.Kt, " group w-auto gap-2 px-4"),
+                  onClick: () => {
+                    d((e) => !e);
+                  },
+                  children: [
+                    (0, l.jsx)("span", {
+                      className: ""
+                        .concat(D, " ")
+                        .concat(i ? "text-(--accent-color)]" : ""),
+                      children: a,
+                    }),
+                    (0, l.jsx)(c.A, {
+                      className: ""
+                        .concat(O, " ")
+                        .concat(i ? "rotate-180 text-(--accent-color)]" : ""),
+                    }),
+                  ],
+                }),
+                (0, l.jsx)(C.A, {
+                  triggerRef: t,
+                  isOpen: i,
+                  onClose: () => d(!1),
+                  children: (0, l.jsx)("div", {
+                    className: "flex w-full flex-col gap-4",
+                    children: o.map((e, t) => {
+                      var a;
+                      return (0, l.jsxs)(
+                        "div",
+                        {
+                          onClick: () => e.setShow(!e.show),
+                          className:
+                            "group flex cursor-pointer justify-between",
+                          children: [
+                            (0, l.jsx)(s.A, {
+                              type: "checkbox",
+                              checked: e.show,
+                              label: e.label,
+                              readOnly: !0,
+                            }),
+                            (0, l.jsxs)("span", {
+                              children: [
+                                "(",
+                                null != (a = e.count) ? a : 0,
+                                ")",
+                              ],
+                            }),
+                          ],
+                        },
+                        t,
+                      );
+                    }),
+                  }),
+                }),
+              ],
+            })
+          );
+        },
+        M = (e) => {
+          let { filterRef: t, label: a, filterData: r } = e,
+            [o, i] = (0, n.useState)(!1),
+            [d, u] = (0, n.useState)("0px");
+          return (
+            (0, n.useEffect)(() => {
+              t.current &&
+                u(o ? "".concat(t.current.scrollHeight, "px") : "0px");
+            }, [o]),
+            (0, l.jsxs)("div", {
+              children: [
+                (0, l.jsxs)("button", {
+                  onClick: () => i((e) => !e),
+                  className: "".concat(
+                    o ? "text-(--accent-color)]" : "",
+                    " flex w-full cursor-pointer items-center justify-between py-4 duration-(--fast)] hover:text-(--accent-color)]",
+                  ),
+                  children: [
+                    (0, l.jsx)("span", {
+                      className: "text-lg font-semibold",
+                      children: a,
+                    }),
+                    (0, l.jsx)(c.A, {
+                      className: "".concat(
+                        o ? "rotate-180" : "",
+                        " transition-rotate h-6 w-6 duration-(--fast)]",
+                      ),
+                    }),
+                  ],
+                }),
+                (0, l.jsx)("div", {
+                  style: { height: d },
+                  className:
+                    "overflow-hidden transition-[height] duration-(--slow)]",
+                  children: (0, l.jsx)("div", {
+                    ref: t,
+                    children: (0, l.jsx)("div", {
+                      className: "flex w-full flex-col",
+                      children: r.map((e, t) => {
+                        var a;
+                        return (0, l.jsxs)(
+                          "div",
+                          {
+                            onClick: () => e.setShow(!e.show),
+                            className: "".concat(
+                              t === r.length - 1 ? "mb-4" : "",
+                              " group flex cursor-pointer justify-between py-4",
+                            ),
+                            children: [
+                              (0, l.jsx)(s.A, {
+                                type: "checkbox",
+                                checked: e.show,
+                                label: e.label,
+                                readOnly: !0,
+                              }),
+                              (0, l.jsxs)("span", {
+                                children: [
+                                  "(",
+                                  null != (a = e.count) ? a : 0,
+                                  ")",
+                                ],
+                              }),
+                            ],
+                          },
+                          t,
+                        );
+                      }),
+                    }),
+                  }),
+                }),
+                (0, l.jsx)("hr", {
+                  className:
+                    "-ml-4 flex w-[calc(100%+2rem)] text-(--border-main)]",
+                }),
+              ],
+            })
+          );
+        },
+        T = (e) => {
+          var t, a, k, y;
+          let [C, T] = (0, n.useState)(2),
+            [K, U] = (0, n.useState)(!1),
+            [z, B] = (0, n.useState)(null),
+            [L, H] = (0, n.useState)([]),
+            [F, _] = (0, n.useState)(null),
+            [V, $] = (0, n.useState)([]),
+            [G, P] = (0, n.useState)(!1),
+            [q, J] = (0, n.useState)([]),
+            [X, W] = (0, n.useState)(!1),
+            [Q, Y] = (0, n.useState)(1),
+            [Z, ee] = (0, n.useState)(5),
+            [et, ea] = (0, n.useState)(null),
+            [el, en] = (0, n.useState)("id"),
+            [es, er] = (0, n.useState)("asc"),
+            [eo, ei] = (0, n.useState)(""),
+            [ec, ed] = (0, n.useState)([]),
+            [eu, ex] = (0, n.useState)(null),
+            [eh, em] = (0, n.useState)([]),
+            ef = localStorage.getItem("token"),
+            eg = "https://planningpoint-9jo7.onrender.com",
+            { notify: ep } = (0, o.d)(),
+            ej = Q * Z - Z,
+            ev = Math.max(0, Math.min(Z, (null != et ? et : 0) - ej)),
+            eb = Math.max(0, Math.min(Z, ev)),
+            ew = Math.max(1, Math.ceil((null != et ? et : 0) / Z)),
+            eN = (0, n.useRef)(null),
+            ek = (0, n.useRef)(null),
+            ey = (0, n.useRef)(null),
+            eS = (0, n.useRef)(null),
+            eC = (0, n.useRef)(null),
+            [eA, eE] = (0, n.useState)(!1),
+            eI = async function (e, t, a, l) {
+              let n =
+                !(arguments.length > 4) ||
+                void 0 === arguments[4] ||
+                arguments[4];
+              try {
+                var s, r;
+                n && U(!0);
+                let o = new URLSearchParams({
+                  page: String(e),
+                  pageSize: String(t),
+                  sortBy: a,
+                  sortOrder: l,
+                  search: eo,
+                });
+                ec.length > 0 &&
+                  ec.forEach((e) => {
+                    o.append("units", e.toString());
+                  }),
+                  null !== eu && o.append("hasSubCategories", String(eu));
+                let i = await fetch(
+                  "".concat(eg, "/category?").concat(o.toString()),
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: "Bearer ".concat(ef),
+                    },
+                  },
+                );
+                if (401 === i.status)
+                  return void localStorage.removeItem("token");
+                let c = await i.json();
+                if (!i.ok) return void ep("error", c.message);
+                H(Array.isArray(c.items) ? c.items : []),
+                  ea(null != (s = c.totalCount) ? s : 0),
+                  B(null != (r = c.counts) ? r : null);
+              } catch (e) {
+              } finally {
+                n && U(!1);
+              }
+            },
+            eD = async (e) => {
+              try {
+                let t = await fetch(
+                  "".concat(eg, "/category/delete/").concat(e),
+                  {
+                    method: "DELETE",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: "Bearer ".concat(ef),
+                    },
+                  },
+                );
+                if (401 === t.status)
+                  return void localStorage.removeItem("token");
+                let a = await t.json();
+                if (!t.ok) return void ep("error", a.message);
+                await eI(Q, Z, el, es),
+                  ep("success", "Kategori borttagen!", 4e3);
+              } catch (e) {
+                ep("error", String(e));
+              }
+            },
+            eO = async () => {
+              try {
+                let e = await fetch("".concat(eg, "/unit"), {
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: "Bearer ".concat(ef),
+                    },
+                  }),
+                  t = await e.json();
+                e.ok ? em(t.items) : ep("error", t.message);
+              } catch (e) {
+                ep("error", String(e));
+              }
+            };
+          (0, n.useEffect)(() => {
+            eO();
+          }, []),
+            (0, n.useEffect)(() => {
+              eI(Q, Z, el, es);
+            }, [Q, Z, el, es, eo, ec, eu]),
+            (0, n.useEffect)(() => {
+              Y(1);
+            }, [eo, eu, ec]);
+          let eR = (e) => {
+              let t = e === el && "asc" === es ? "desc" : "asc";
+              en(e), er(t), eI(Q, Z, e, t, !1);
+            },
+            eM = (e) =>
+              el !== e
+                ? (0, l.jsx)(d.A, { className: "h-6 w-6" })
+                : "asc" === es
+                  ? (0, l.jsx)(u.A, { className: "h-6 w-6" })
+                  : (0, l.jsx)(c.A, { className: "h-6 w-6" }),
+            eT = L.map((e) => e.id),
+            eK = L.map((e) => e.id),
+            eU = eK.length > 0 && eK.every((e) => V.includes(e)),
+            ez = (e) => {
+              L.find((t) => t.id === e) &&
+                (V.includes(e) ? $(V.filter((t) => t !== e)) : $([...V, e]));
+            },
+            eB = () => {
+              eU
+                ? $(V.filter((e) => !eK.includes(e)))
+                : $([...new Set([...V, ...eK])]);
+            };
+          (0, n.useEffect)(() => {
+            let e = () => {
+              let e = window.innerWidth,
+                t = 2;
+              e >= 640 && (t += 1), e >= 1024 && (t += 1), T(t);
+            };
+            return (
+              e(),
+              window.addEventListener("resize", e),
+              () => removeEventListener("resize", e)
+            );
+          }, []);
+          let eL = function () {
+              let e =
+                arguments.length > 0 && void 0 !== arguments[0]
+                  ? arguments[0]
+                  : [];
+              J(e), W((e) => !e);
+            },
+            eH = function () {
+              let e =
+                arguments.length > 0 && void 0 !== arguments[0]
+                  ? arguments[0]
+                  : null;
+              _(e), P(!0);
+            },
+            eF = (e) => {
+              let { visible: t, onClickEvent: a, label: n } = e;
+              return (0, l.jsx)(l.Fragment, {
+                children:
+                  t &&
+                  (0, l.jsxs)("button", {
+                    className: "".concat(b.Kt, " group w-auto gap-2 px-4"),
+                    onClick: () => {
+                      a(!1);
+                    },
+                    children: [
+                      (0, l.jsx)("span", {
+                        className: "".concat(D),
+                        children: n,
+                      }),
+                      (0, l.jsx)(x.A, { className: "".concat(O) }),
+                    ],
+                  }),
+              });
+            },
+            e_ = (e) => {
+              let {
+                sortingItem: t,
+                label: a,
+                labelAsc: n,
+                labelDesc: s,
+                classNameAddition: r,
+              } = e;
+              return (0, l.jsx)(i.A, {
+                content:
+                  el === t && "asc" === es ? "Sortera " + n : "Sortera " + s,
+                children: (0, l.jsx)("th", {
+                  className: "".concat(E, " ").concat(r || ""),
+                  onClick: () => eR(t),
+                  onKeyDown: (e) => {
+                    ("Enter" === e.key || " " === e.key) &&
+                      (e.preventDefault(), eR(t));
+                  },
+                  tabIndex: 0,
+                  "aria-sort":
+                    el === t
+                      ? "asc" === es
+                        ? "ascending"
+                        : "descending"
+                      : "none",
+                  children: (0, l.jsxs)("div", {
+                    className: "relative flex gap-2",
+                    children: [
+                      (0, l.jsx)("span", {
+                        className:
+                          "w-full truncate overflow-hidden text-ellipsis",
+                        children: a,
+                      }),
+                      (0, l.jsx)("span", {
+                        className: "flex",
+                        children: eM(t),
+                      }),
+                    ],
+                  }),
+                }),
+              });
+            },
+            eV = (e) => {
+              let { children: t, classNameAddition: a } = e;
+              return (0, l.jsx)("td", {
+                className: "".concat(I, " ").concat(a || ""),
+                children: (0, l.jsx)("div", {
+                  className: "truncate overflow-hidden text-ellipsis",
+                  children: t,
+                }),
+              });
+            };
+          return (0, l.jsxs)(l.Fragment, {
+            children: [
+              (0, l.jsx)(S, {
+                isOpen: G,
+                onClose: () => {
+                  P(!1), _(null);
+                },
+                categoryId: F,
+                onCategoryUpdated: () => {
+                  eI(Q, Z, el, es);
+                },
+              }),
+              (0, l.jsx)(r.A, {
+                isOpen: X,
+                onClose: () => {
+                  eL(), J([]);
+                },
+                onConfirm: async () => {
+                  for (let e of q) await eD(e);
+                  W(!1), J([]), $([]);
+                },
+              }),
+              (0, l.jsxs)("div", {
+                className: "flex flex-col gap-4",
+                children: [
+                  (0, l.jsxs)("div", {
+                    className: "flex flex-col gap-4",
+                    children: [
+                      (0, l.jsxs)("div", {
+                        className: "flex flex-wrap gap-4",
+                        children: [
+                          (0, l.jsx)(i.A, {
+                            content: "L\xe4gg till ny kategori",
+                            lgHidden: !0,
+                            children: (0, l.jsx)("button", {
+                              className: "".concat(
+                                b.$e,
+                                " sm:w-56 sm:min-w-56",
+                              ),
+                              onClick: () => {
+                                eH();
+                              },
+                              onKeyDown: (e) => {
+                                ("Enter" === e.key || " " === e.key) &&
+                                  (e.preventDefault(), eH());
+                              },
+                              tabIndex: 0,
+                              children: (0, l.jsxs)("div", {
+                                className:
+                                  "flex items-center justify-center gap-2 truncate",
+                                children: [
+                                  (0, l.jsx)(p.A, { className: "h-6" }),
+                                  (0, l.jsx)("span", {
+                                    className: "hidden sm:block",
+                                    children: "L\xe4gg till ny kategori",
+                                  }),
+                                ],
+                              }),
+                            }),
+                          }),
+                          (0, l.jsx)(i.A, {
+                            content:
+                              0 === V.length
+                                ? "V\xe4lj en kategori"
+                                : 1 === V.length
+                                  ? "Redigera kategori"
+                                  : "Du kan bara redigera en kategori i taget!",
+                            lgHidden: 1 === V.length,
+                            showOnTouch: 0 === V.length || V.length > 1,
+                            children: (0, l.jsx)("button", {
+                              className: "".concat(
+                                b.p9,
+                                " sm:w-56 sm:min-w-56",
+                              ),
+                              onClick: () => {
+                                eH(V[0]);
+                              },
+                              onKeyDown: (e) => {
+                                ("Enter" === e.key || " " === e.key) &&
+                                  (e.preventDefault(), eH(V[0]));
+                              },
+                              tabIndex: 0,
+                              disabled: 0 === V.length || V.length > 1,
+                              children: (0, l.jsxs)("div", {
+                                className:
+                                  "flex items-center justify-center gap-2 truncate",
+                                children: [
+                                  (0, l.jsx)(j.A, {
+                                    className: "h-6 min-h-6 w-6 min-w-6",
+                                  }),
+                                  (0, l.jsx)("span", {
+                                    className: "hidden sm:block",
+                                    children: "Redigera kategori",
+                                  }),
+                                ],
+                              }),
+                            }),
+                          }),
+                          (0, l.jsx)(i.A, {
+                            content:
+                              0 === V.length
+                                ? "V\xe4lj en eller fler kategorier"
+                                : "Ta bort kategori (".concat(V.length, ")"),
+                            lgHidden: V.length > 0,
+                            showOnTouch: 0 === V.length,
+                            children: (0, l.jsx)("button", {
+                              className: "".concat(
+                                b.s9,
+                                " 3xs:ml-auto lg:w-56 lg:min-w-56",
+                              ),
+                              onClick: () => eL(V),
+                              onKeyDown: (e) => {
+                                ("Enter" === e.key || " " === e.key) &&
+                                  (e.preventDefault(), eL(V));
+                              },
+                              tabIndex: 0,
+                              disabled: 0 === V.length,
+                              children: (0, l.jsxs)("div", {
+                                className:
+                                  "flex items-center justify-center gap-2 truncate",
+                                children: [
+                                  (0, l.jsx)(v.A, { className: "h-6" }),
+                                  (0, l.jsxs)("span", {
+                                    className: "hidden lg:block",
+                                    children: [
+                                      "Ta bort kategori",
+                                      (0, l.jsx)("span", {
+                                        children:
+                                          V.length > 0
+                                            ? " (".concat(V.length, ")")
+                                            : "",
+                                      }),
+                                    ],
+                                  }),
+                                ],
+                              }),
+                            }),
+                          }),
+                        ],
+                      }),
+                      (0, l.jsxs)("div", {
+                        className:
+                          "3xs:flex-nowrap flex flex-wrap justify-between gap-4",
+                        children: [
+                          (0, l.jsx)("div", {
+                            className: "flex w-full items-center gap-4",
+                            children: (0, l.jsx)("div", {
+                              className:
+                                "flex w-full items-center justify-start",
+                              children: (0, l.jsx)(s.A, {
+                                icon: (0, l.jsx)(h.A, {}),
+                                placeholder: "S\xf6k kategori",
+                                value: eo,
+                                onChange: (e) => ei(String(e).toLowerCase()),
+                              }),
+                            }),
+                          }),
+                          (0, l.jsxs)("div", {
+                            className: "flex gap-4",
+                            children: [
+                              (0, l.jsx)(R, {
+                                filterRef: eN,
+                                label: "Underkategorier",
+                                breakpoint: "sm",
+                                filterData: [
+                                  {
+                                    label: "Har underkategorier",
+                                    show: !0 === eu,
+                                    setShow: (e) => ex(!!e || null),
+                                    count:
+                                      null !=
+                                      (t =
+                                        null == z
+                                          ? void 0
+                                          : z.withSubCategories)
+                                        ? t
+                                        : 0,
+                                  },
+                                  {
+                                    label: "Inga underkategorier",
+                                    show: !1 === eu,
+                                    setShow: (e) => ex(!e && null),
+                                    count:
+                                      null !=
+                                      (a =
+                                        null == z
+                                          ? void 0
+                                          : z.withoutSubCategories)
+                                        ? a
+                                        : 0,
+                                  },
+                                ],
+                              }),
+                              (0, l.jsx)(R, {
+                                filterRef: ek,
+                                label: "Enheter med \xe5tkomst",
+                                breakpoint: "ml",
+                                filterData: eh.map((e) => {
+                                  var t, a;
+                                  return {
+                                    label: e.name,
+                                    show: ec.includes(e.id),
+                                    setShow: (t) => {
+                                      ed((a) =>
+                                        t
+                                          ? [...a, e.id]
+                                          : a.filter((t) => t !== e.id),
+                                      );
+                                    },
+                                    count:
+                                      null !=
+                                      (a =
+                                        null == z || null == (t = z.unitCounts)
+                                          ? void 0
+                                          : t[e.name])
+                                        ? a
+                                        : 0,
+                                  };
+                                }),
+                              }),
+                              (0, l.jsxs)("div", {
+                                className: "relative",
+                                children: [
+                                  (0, l.jsxs)("button", {
+                                    className: "".concat(
+                                      b.Kt,
+                                      " group xs:w-auto xs:px-4 gap-2",
+                                    ),
+                                    onClick: () => {
+                                      eE(!0);
+                                    },
+                                    children: [
+                                      (0, l.jsx)("span", {
+                                        className: "".concat(
+                                          D,
+                                          " xs:flex hidden",
+                                        ),
+                                        children: "Alla filter",
+                                      }),
+                                      (0, l.jsx)(m.A, {
+                                        className: "".concat(O),
+                                      }),
+                                    ],
+                                  }),
+                                  (0, l.jsx)(A.A, {
+                                    triggerRef: ey,
+                                    isOpen: eA,
+                                    onClose: () => eE(!1),
+                                    label: "Alla filter",
+                                    children: (0, l.jsxs)("div", {
+                                      className:
+                                        "flex h-full flex-col justify-between",
+                                      children: [
+                                        (0, l.jsxs)("div", {
+                                          className: "flex flex-col",
+                                          children: [
+                                            (0, l.jsx)(M, {
+                                              filterRef: eS,
+                                              label: "Underkategorier",
+                                              filterData: [
+                                                {
+                                                  label: "Har underkategorier",
+                                                  show: !0 === eu,
+                                                  setShow: (e) =>
+                                                    ex(!!e || null),
+                                                  count:
+                                                    null !=
+                                                    (k =
+                                                      null == z
+                                                        ? void 0
+                                                        : z.withSubCategories)
+                                                      ? k
+                                                      : 0,
+                                                },
+                                                {
+                                                  label: "Inga underkategorier",
+                                                  show: !1 === eu,
+                                                  setShow: (e) =>
+                                                    ex(!e && null),
+                                                  count:
+                                                    null !=
+                                                    (y =
+                                                      null == z
+                                                        ? void 0
+                                                        : z.withoutSubCategories)
+                                                      ? y
+                                                      : 0,
+                                                },
+                                              ],
+                                            }),
+                                            (0, l.jsx)(M, {
+                                              filterRef: eC,
+                                              label: "Enheter med \xe5tkomst",
+                                              filterData: eh.map((e) => {
+                                                var t, a;
+                                                return {
+                                                  label: e.name,
+                                                  show: ec.includes(e.id),
+                                                  setShow: (t) => {
+                                                    ed((a) =>
+                                                      t
+                                                        ? [...a, e.id]
+                                                        : a.filter(
+                                                            (t) => t !== e.id,
+                                                          ),
+                                                    );
+                                                  },
+                                                  count:
+                                                    null !=
+                                                    (a =
+                                                      null == z ||
+                                                      null == (t = z.unitCounts)
+                                                        ? void 0
+                                                        : t[e.name])
+                                                      ? a
+                                                      : 0,
+                                                };
+                                              }),
+                                            }),
+                                          ],
+                                        }),
+                                        (0, l.jsxs)("div", {
+                                          className:
+                                            "flex flex-col gap-4 py-4 sm:flex-row",
+                                          children: [
+                                            (0, l.jsxs)("button", {
+                                              onClick: () => eE(!1),
+                                              className: "".concat(
+                                                b.$e,
+                                                " w-full",
+                                              ),
+                                              children: [
+                                                "Visa",
+                                                " ",
+                                                (0, l.jsx)("span", {
+                                                  className: "font-normal",
+                                                  children: null != et ? et : 0,
+                                                }),
+                                              ],
+                                            }),
+                                            (0, l.jsx)("button", {
+                                              onClick: () => {
+                                                ex(null), ed([]);
+                                              },
+                                              className: "".concat(
+                                                b.p9,
+                                                " w-full",
+                                              ),
+                                              disabled:
+                                                null === eu && 0 === ec.length,
+                                              children: "Rensa alla",
+                                            }),
+                                          ],
+                                        }),
+                                      ],
+                                    }),
+                                  }),
+                                ],
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                      (null !== eu || ec.length > 0) &&
+                        (0, l.jsxs)("div", {
+                          className: "flex flex-wrap gap-4",
+                          children: [
+                            (0, l.jsx)("span", {
+                              className:
+                                "flex items-center font-semibold text-(--text-secondary)",
+                              children: "Aktiva filter:",
+                            }),
+                            (0, l.jsx)(eF, {
+                              visible: !0 === eu,
+                              onClickEvent: ex,
+                              label: "Har underkategorier",
+                            }),
+                            (0, l.jsx)(eF, {
+                              visible: !1 === eu,
+                              onClickEvent: ex,
+                              label: "Inga underkategorier",
+                            }),
+                            ec.map((e) => {
+                              var t;
+                              let a = eh.find((t) => t.id === e);
+                              return (0, l.jsx)(
+                                eF,
+                                {
+                                  visible: !0,
+                                  onClickEvent: () =>
+                                    ed((t) => t.filter((t) => t !== e)),
+                                  label:
+                                    null != (t = null == a ? void 0 : a.name)
+                                      ? t
+                                      : "",
+                                },
+                                e,
+                              );
+                            }),
+                            (0, l.jsx)("button", {
+                              className:
+                                "group w-auto cursor-pointer rounded-full px-4 transition-colors duration-(--fast)] hover:bg-(--bg-navbar-link)]",
+                              onClick: () => {
+                                ex(null), ed([]);
+                              },
+                              children: (0, l.jsx)("span", {
+                                className:
+                                  "font-semibold text-(--accent-color)]",
+                                children: "Rensa alla",
+                              }),
+                            }),
+                          ],
+                        }),
+                    ],
+                  }),
+                  (0, l.jsx)("div", {
+                    className: "flex w-full flex-col",
+                    children: (0, l.jsx)("div", {
+                      className:
+                        "flex w-full overflow-x-auto rounded border border-(--border-main)]",
+                      children: (0, l.jsxs)("table", {
+                        className: "w-full table-fixed border-collapse",
+                        children: [
+                          (0, l.jsx)("thead", {
+                            className: "".concat(
+                              !e.isConnected || K ? "pointer-events-none" : "",
+                              " bg-(--bg-grid-header)]",
+                            ),
+                            children: (0, l.jsxs)("tr", {
+                              children: [
+                                (0, l.jsx)("th", {
+                                  className: "".concat(
+                                    E,
+                                    " !w-[40px] !min-w-[40px] !border-l-0 !pl-2",
+                                  ),
+                                  onClick: eB,
+                                  onKeyDown: (e) => {
+                                    ("Enter" === e.key || " " === e.key) &&
+                                      (e.preventDefault(), eB());
+                                  },
+                                  children: (0, l.jsx)("div", {
+                                    className:
+                                      "flex items-center justify-center",
+                                    children: (0, l.jsx)(s.A, {
+                                      type: "checkbox",
+                                      checked: eU,
+                                      indeterminate:
+                                        !eU && eT.some((e) => V.includes(e)),
+                                      readOnly: !0,
+                                    }),
+                                  }),
+                                }),
+                                (0, l.jsx)(e_, {
+                                  sortingItem: "name",
+                                  label: "Namn",
+                                  labelAsc: "namn \xd6-A",
+                                  labelDesc: "namn A-\xd6",
+                                }),
+                                (0, l.jsx)(e_, {
+                                  sortingItem: "units",
+                                  label: "Enheter med \xe5tkomst",
+                                  labelAsc: "enheter med \xe5tkomst \xd6-A",
+                                  labelDesc: "enheter med \xe5tkomst A-\xd6",
+                                  classNameAddition: "hidden lg:table-cell",
+                                }),
+                                (0, l.jsx)(e_, {
+                                  sortingItem: "subCategories",
+                                  label: "Underkategorier",
+                                  labelAsc: "underkategorier \xd6-A",
+                                  labelDesc: "underkategorier A-\xd6",
+                                  classNameAddition: "hidden xs:table-cell",
+                                }),
+                              ],
+                            }),
+                          }),
+                          (0, l.jsx)("tbody", {
+                            children:
+                              e.isConnected && 0 !== L.length
+                                ? K
+                                  ? (0, l.jsx)(l.Fragment, {
+                                      children: (0, l.jsx)("tr", {
+                                        className: "bg-(--bg-grid)]",
+                                        children: (0, l.jsx)("td", {
+                                          colSpan: C,
+                                          style: {
+                                            height: "".concat(40 * eb, "px"),
+                                          },
+                                          children: (0, l.jsx)("div", {
+                                            className: "flex h-[40px]",
+                                            children: (0, l.jsx)(w.default, {
+                                              icon: "loading",
+                                              content:
+                                                "H\xe4mtar inneh\xe5ll...",
+                                              sideMessage:
+                                                (null != ev ? ev : 0) <= 2,
+                                            }),
+                                          }),
+                                        }),
+                                      }),
+                                    })
+                                  : (0, l.jsx)(l.Fragment, {
+                                      children: L.map((e, t) => {
+                                        let a = V.includes(e.id),
+                                          n = ""
+                                            .concat(
+                                              t % 2 == 0
+                                                ? "bg-(--bg-grid)]"
+                                                : "bg-(--bg-grid-zebra)]",
+                                              " ",
+                                            )
+                                            .concat(
+                                              a
+                                                ? "bg-[var--bg-grid-header-hover)]"
+                                                : "",
+                                              "\n                        hover:bg-(--bg-grid-header-hover)] cursor-pointer transition-[background] duration-(--fast)]",
+                                            );
+                                        return (0, l.jsxs)(
+                                          "tr",
+                                          {
+                                            className: n,
+                                            onClick: () => ez(e.id),
+                                            onKeyDown: (t) => {
+                                              ("Enter" === t.key ||
+                                                " " === t.key) &&
+                                                (t.preventDefault(), ez(e.id));
+                                            },
+                                            children: [
+                                              (0, l.jsx)("td", {
+                                                className: "".concat(
+                                                  I,
+                                                  " !w-[40px] !min-w-[40px] cursor-pointer !border-l-0",
+                                                ),
+                                                children: (0, l.jsx)("div", {
+                                                  className:
+                                                    "flex items-center justify-center",
+                                                  children: (0, l.jsx)("div", {
+                                                    className:
+                                                      "flex items-center justify-center",
+                                                    children: (0, l.jsx)(s.A, {
+                                                      type: "checkbox",
+                                                      checked: V.includes(e.id),
+                                                      readOnly: !0,
+                                                    }),
+                                                  }),
+                                                }),
+                                              }),
+                                              (0, l.jsx)(eV, {
+                                                children: e.name,
+                                              }),
+                                              (0, l.jsx)(eV, {
+                                                classNameAddition:
+                                                  "hidden lg:table-cell",
+                                                children: (0, l.jsx)("div", {
+                                                  className:
+                                                    "flex flex-wrap gap-2",
+                                                  children: e.units.map(
+                                                    (e, t) =>
+                                                      (0, l.jsx)(
+                                                        "span",
+                                                        {
+                                                          className:
+                                                            "flex h-6 items-center justify-center rounded-xl bg-(--bg-navbar-link)] px-4 text-sm font-semibold",
+                                                          children: e,
+                                                        },
+                                                        t,
+                                                      ),
+                                                  ),
+                                                }),
+                                              }),
+                                              (0, l.jsx)(eV, {
+                                                classNameAddition:
+                                                  "hidden xs:table-cell",
+                                                children: (0, l.jsx)("div", {
+                                                  className:
+                                                    "flex flex-wrap gap-2",
+                                                  children: e.subCategories.map(
+                                                    (e, t) =>
+                                                      (0, l.jsx)(
+                                                        "span",
+                                                        {
+                                                          className:
+                                                            "flex h-6 items-center justify-center rounded-xl bg-(--accent-color)] px-4 text-sm font-semibold text-(--text-main-reverse)]",
+                                                          children: e,
+                                                        },
+                                                        t,
+                                                      ),
+                                                  ),
+                                                }),
+                                              }),
+                                            ],
+                                          },
+                                          e.id,
+                                        );
+                                      }),
+                                    })
+                                : (0, l.jsx)("tr", {
+                                    children: (0, l.jsx)("td", {
+                                      colSpan: C,
+                                      className: "h-57",
+                                      children: e.isConnected
+                                        ? (0, l.jsx)(w.default, {
+                                            icon: "search",
+                                            content:
+                                              eo || ec.length > 0 || null !== eu
+                                                ? "Inga kategorier kunde hittas med det s\xf6kkriteriet."
+                                                : "Det finns inga kategorier.",
+                                          })
+                                        : (0, l.jsx)(w.default, {
+                                            icon: "server",
+                                            content: "server",
+                                          }),
+                                    }),
+                                  }),
+                          }),
+                        ],
+                      }),
+                    }),
+                  }),
+                  (0, l.jsxs)("div", {
+                    className:
+                      "flex w-full flex-wrap justify-between gap-x-12 gap-y-4",
+                    children: [
+                      (0, l.jsxs)("span", {
+                        className: "flex w-[175.23px] text-(--text-secondary)",
+                        children: [
+                          "Visar ",
+                          (Q - 1) * Z + 1,
+                          "-",
+                          Math.min(Q * Z, null != et ? et : 0),
+                          " av",
+                          " ",
+                          null != et ? et : 0,
+                        ],
+                      }),
+                      (0, l.jsxs)("div", {
+                        className: "xs:w-auto flex w-full items-center",
+                        children: [
+                          (0, l.jsx)("button", {
+                            type: "button",
+                            onClick: () => {
+                              $([]), Y((e) => Math.max(e - 1, 1));
+                            },
+                            disabled: 1 === Q,
+                            className: "".concat(b.U0),
+                            children: (0, l.jsx)(f.A, {
+                              className: "min-h-full min-w-full",
+                            }),
+                          }),
+                          (0, l.jsx)("div", {
+                            className:
+                              "flex flex-wrap items-center justify-center",
+                            children: (() => {
+                              let e = [];
+                              if (ew <= 7) {
+                                for (let t = 1; t <= ew; t++) e.push(t);
+                                return e;
+                              }
+                              if (Q <= 3) {
+                                for (let t = 1; t <= 4; t++) e.push(t);
+                                e.push("..."), e.push(ew);
+                              } else if (Q >= ew - 2) {
+                                e.push(1), e.push("...");
+                                for (let t = ew - 3; t <= ew; t++) e.push(t);
+                              } else {
+                                e.push(1), e.push("...");
+                                for (let t = Q - 1; t <= Q + 1; t++) e.push(t);
+                                e.push("..."), e.push(ew);
+                              }
+                              return e;
+                            })().map((e, t) =>
+                              "..." === e
+                                ? (0, l.jsx)(
+                                    "span",
+                                    { className: "flex px-2", children: "..." },
+                                    t,
+                                  )
+                                : (0, l.jsx)(
+                                    "button",
+                                    {
+                                      onClick: () => {
+                                        $([]), Y(Number(e));
+                                      },
+                                      className: ""
+                                        .concat(
+                                          Q === e
+                                            ? "bg-(--accent-color)] text-(--text-main-reverse)]"
+                                            : "hover:text-(--accent-color)]",
+                                          " ",
+                                        )
+                                        .concat(
+                                          Q === e && e >= 100 ? "px-5" : "",
+                                          " flex max-w-7 min-w-7 cursor-pointer justify-center rounded-full px-1 text-lg transition-colors duration-(--fast)]",
+                                        ),
+                                      children: e,
+                                    },
+                                    t,
+                                  ),
+                            ),
+                          }),
+                          (0, l.jsx)("button", {
+                            type: "button",
+                            onClick: () => {
+                              $([]),
+                                Y((e) =>
+                                  e <
+                                  Math.max(
+                                    1,
+                                    Math.ceil((null != et ? et : 0) / Z),
+                                  )
+                                    ? e + 1
+                                    : e,
+                                );
+                            },
+                            disabled: Q >= Math.ceil((null != et ? et : 0) / Z),
+                            className: "".concat(b.U0),
+                            children: (0, l.jsx)(g.A, {
+                              className: "min-h-full min-w-full",
+                            }),
+                          }),
+                        ],
+                      }),
+                      (0, l.jsxs)("div", {
+                        className: "flex items-center gap-4",
+                        children: [
+                          (0, l.jsx)("span", {
+                            className: "",
+                            children: "Antal per sida:",
+                          }),
+                          (0, l.jsxs)("div", {
+                            className: "3xs:min-w-20",
+                            children: [
+                              (0, l.jsx)("div", { id: "portal-root" }),
+                              (0, l.jsx)(N.A, {
+                                options: [
+                                  { label: "5", value: "5" },
+                                  { label: "15", value: "15" },
+                                  { label: "25", value: "25" },
+                                ],
+                                value: String(Z),
+                                onChange: (e) => {
+                                  let t = Number(e),
+                                    a = Math.ceil((null != et ? et : 0) / t);
+                                  ee(t), Q > a && Y(a);
+                                },
+                              }),
+                            ],
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  (0, l.jsxs)("div", {
+                    className: "flex w-full flex-col",
+                    children: [
+                      (0, l.jsx)("div", {
+                        className:
+                          "flex items-center rounded-t border border-(--border-main)] bg-(--bg-grid-header)] px-3 py-2",
+                        children: (0, l.jsx)("span", {
+                          className: "truncate font-semibold",
+                          children: "Anv\xe4ndarinformation",
+                        }),
+                      }),
+                      (0, l.jsx)("div", {
+                        className: "".concat(
+                          0 === V.length || V.length > 1 ? "items-center" : "",
+                          " flex max-h-96 min-h-80 overflow-x-auto rounded-b border border-t-0 border-(--border-main)] p-4",
+                        ),
+                        children:
+                          0 === V.length
+                            ? (0, l.jsx)(w.default, {
+                                icon: "category",
+                                content:
+                                  "H\xe4r kan du se information om vald kategori. V\xe4lj en i tabellen ovan!",
+                              })
+                            : V.length > 1
+                              ? (0, l.jsx)(w.default, {
+                                  icon: "beware",
+                                  content:
+                                    "Kan inte visa information om flera kategorier samtidigt.",
+                                })
+                              : (0, l.jsx)("div", {
+                                  className: "flex",
+                                  children: L.filter((e) => e.id === V[0]).map(
+                                    (e) =>
+                                      (0, l.jsxs)(
+                                        "div",
+                                        {
+                                          className: "flex flex-col gap-8",
+                                          children: [
+                                            (0, l.jsxs)("div", {
+                                              className: "flex flex-col gap-8",
+                                              children: [
+                                                (0, l.jsxs)("p", {
+                                                  children: [
+                                                    (0, l.jsx)("strong", {
+                                                      children: "Namn: ",
+                                                    }),
+                                                    e.name,
+                                                  ],
+                                                }),
+                                                (0, l.jsxs)("div", {
+                                                  className: "".concat(
+                                                    e.units.length > 0
+                                                      ? "gap-2"
+                                                      : "",
+                                                    " flex flex-col",
+                                                  ),
+                                                  children: [
+                                                    (0, l.jsxs)("div", {
+                                                      className: "".concat(
+                                                        e.units.length > 0
+                                                          ? "flex-col gap-2"
+                                                          : "",
+                                                        " flex",
+                                                      ),
+                                                      children: [
+                                                        (0, l.jsx)("strong", {
+                                                          children:
+                                                            "Enheter med \xe5tkomst: ",
+                                                        }),
+                                                        (0, l.jsx)("div", {
+                                                          className:
+                                                            "flex flex-wrap gap-2",
+                                                          children:
+                                                            e.units.length > 0
+                                                              ? e.units.map(
+                                                                  (e, t) =>
+                                                                    (0, l.jsx)(
+                                                                      "span",
+                                                                      {
+                                                                        className:
+                                                                          "flex h-6 items-center justify-center rounded-xl bg-(--bg-navbar-link)] px-4 text-sm font-semibold",
+                                                                        children:
+                                                                          e,
+                                                                      },
+                                                                      t,
+                                                                    ),
+                                                                )
+                                                              : "\xa0-",
+                                                        }),
+                                                      ],
+                                                    }),
+                                                    (0, l.jsxs)("div", {
+                                                      className: "".concat(
+                                                        e.subCategories.length >
+                                                          0
+                                                          ? "flex-col gap-2"
+                                                          : "",
+                                                        " flex",
+                                                      ),
+                                                      children: [
+                                                        (0, l.jsx)("strong", {
+                                                          children:
+                                                            "Underkategorier: ",
+                                                        }),
+                                                        (0, l.jsx)("div", {
+                                                          className:
+                                                            "flex flex-wrap gap-2",
+                                                          children:
+                                                            e.subCategories
+                                                              .length > 0
+                                                              ? e.subCategories.map(
+                                                                  (e, t) =>
+                                                                    (0, l.jsx)(
+                                                                      "span",
+                                                                      {
+                                                                        className:
+                                                                          "flex h-6 items-center justify-center rounded-xl bg-(--accent-color)] px-4 text-sm font-semibold text-(--text-main-reverse)]",
+                                                                        children:
+                                                                          e,
+                                                                      },
+                                                                      t,
+                                                                    ),
+                                                                )
+                                                              : "\xa0-",
+                                                        }),
+                                                      ],
+                                                    }),
+                                                  ],
+                                                }),
+                                              ],
+                                            }),
+                                            (0, l.jsxs)("div", {
+                                              children: [
+                                                (0, l.jsxs)("p", {
+                                                  children: [
+                                                    (0, l.jsx)("strong", {
+                                                      children: "Skapad: ",
+                                                    }),
+                                                    new Date(
+                                                      e.creationDate,
+                                                    ).toLocaleString(),
+                                                    " av",
+                                                    " ",
+                                                    e.createdBy,
+                                                  ],
+                                                }),
+                                                (0, l.jsxs)("p", {
+                                                  children: [
+                                                    (0, l.jsx)("strong", {
+                                                      children: "Uppdaterad: ",
+                                                    }),
+                                                    new Date(
+                                                      e.updateDate,
+                                                    ).toLocaleString(),
+                                                    " av",
+                                                    " ",
+                                                    e.updatedBy,
+                                                  ],
+                                                }),
+                                              ],
+                                            }),
+                                          ],
+                                        },
+                                        e.id,
+                                      ),
+                                  ),
+                                }),
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          });
+        };
+    },
+  },
+]);

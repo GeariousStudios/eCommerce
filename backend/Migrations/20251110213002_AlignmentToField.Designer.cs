@@ -8,7 +8,7 @@ using backend.Data;
 
 #nullable disable
 
-namespace eCommerce.Migrations
+namespace planningPoint.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20251110213002_AlignmentToField")]
