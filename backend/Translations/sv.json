@@ -150,7 +150,8 @@
   "AuditTrail/UnitCell": "Cell",
   "AuditTrail/UnitGroup": "Grupp",
   "AuditTrail/Unit": "Enhet",
-  "AuditTrail/UserManagement": "Användare",
+  "AuditTrail/UserManagement": "Användarhantering",
+  "AuditTrail/User": "Användare",
   "AuditTrail/CreatedPosts": "Skapade poster",
   "AuditTrail/UpdatedPosts": "Uppdaterade poster",
   "AuditTrail/DeletedPosts": "Raderade poster",
@@ -258,6 +259,7 @@
   "AuditTrail/Data": "Data",
   "AuditTrail/OldOrder": "Gammal ordning",
   "AuditTrail/NewOrder": "Ny ordning",
+  "AuditTrail/ReverseColor": "Omvänd färg",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

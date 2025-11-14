@@ -142,21 +142,33 @@ const StopTypesClient = (props: Props) => {
     {
       key: "name, units, isHidden",
       getValue: (item: StopTypeItem) => (
-        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
+        <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <div className="flex items-center gap-4 text-2xl font-bold">
               <span
                 className="h-8 min-h-8 w-8 min-w-8 rounded-full"
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? item.darkColorHex
-                      : item.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? item.darkTextColorHex
-                      : item.lightTextColorHex,
-                }}
+                style={
+                  item.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? item.darkColorHex
+                            : item.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? item.darkColorHex
+                            : item.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? item.darkTextColorHex
+                            : item.lightTextColorHex,
+                      }
+                }
               />
               <span className="flex items-center">{item.name}</span>
             </div>
@@ -176,16 +188,28 @@ const StopTypesClient = (props: Props) => {
                   <span
                     key={i}
                     className={badgeClass}
-                    style={{
-                      backgroundColor:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkColorHex
-                          : matchingUnit?.lightColorHex,
-                      color:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkTextColorHex
-                          : matchingUnit?.lightTextColorHex,
-                    }}
+                    style={
+                      matchingUnit?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkTextColorHex
+                                : matchingUnit?.lightTextColorHex,
+                          }
+                    }
                   >
                     {label}
                   </span>
@@ -238,16 +262,28 @@ const StopTypesClient = (props: Props) => {
         <div className="flex items-center gap-4">
           <span
             className="h-4 min-h-4 w-4 min-w-4 rounded-full"
-            style={{
-              backgroundColor:
-                currentTheme === "dark"
-                  ? item.darkColorHex
-                  : item.lightColorHex,
-              color:
-                currentTheme === "dark"
-                  ? item.darkTextColorHex
-                  : item.lightTextColorHex,
-            }}
+            style={
+              item.reverseColor
+                ? {
+                    boxShadow: `inset 0 0 0 1px ${
+                      currentTheme === "dark"
+                        ? item.darkColorHex
+                        : item.lightColorHex
+                    }`,
+                    backgroundColor: "transparent",
+                    color: "var(--text-main)",
+                  }
+                : {
+                    backgroundColor:
+                      currentTheme === "dark"
+                        ? item.darkColorHex
+                        : item.lightColorHex,
+                    color:
+                      currentTheme === "dark"
+                        ? item.darkTextColorHex
+                        : item.lightTextColorHex,
+                  }
+            }
           />
           {item.name}
         </div>
@@ -270,16 +306,28 @@ const StopTypesClient = (props: Props) => {
               <span
                 key={i}
                 className={badgeClass}
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkColorHex
-                      : matchingUnit?.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkTextColorHex
-                      : matchingUnit?.lightTextColorHex,
-                }}
+                style={
+                  matchingUnit?.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkTextColorHex
+                            : matchingUnit?.lightTextColorHex,
+                      }
+                }
               >
                 {label}
               </span>
@@ -293,13 +341,13 @@ const StopTypesClient = (props: Props) => {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
-      labelAsc: t("Shifts/hidden shifts"),
-      labelDesc: t("Shifts/visible shifts"),
+      labelAsc: t("StopTypes/visible stop types"),
+      labelDesc: t("StopTypes/hidden stop types"),
       classNameAddition: "w-[100px] min-w-[100px]",
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: StopTypeItem) => (
         <span
-          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
+          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
         >
           {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
         </span>

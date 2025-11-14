@@ -17,5 +17,6 @@ namespace backend.Dtos.ShiftTeam
         public string DarkColorHex { get; set; } = "#e0e0e0";
         public string LightTextColorHex { get; set; } = "#ffffff";
         public string DarkTextColorHex { get; set; } = "#000000";
+        public bool ReverseColor { get; set; }
     }
 }

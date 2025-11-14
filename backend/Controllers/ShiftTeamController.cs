@@ -140,6 +140,7 @@ namespace backend.Controllers
                     DarkColorHex = st.DarkColorHex,
                     LightTextColorHex = ColorHelper.GetReadableTextColor(st.LightColorHex),
                     DarkTextColorHex = ColorHelper.GetReadableTextColor(st.DarkColorHex),
+                    ReverseColor = st.ReverseColor,
                     Shifts = st
                         .ShiftToShiftTeams.OrderBy(sst => sst.Order)
                         .Select(sst => new ShiftDto
@@ -185,6 +186,7 @@ namespace backend.Controllers
                 DarkColorHex = shiftTeam.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.DarkColorHex),
+                ReverseColor = shiftTeam.ReverseColor,
                 Shifts = shiftTeam
                     .ShiftToShiftTeams.OrderBy(x => x.Order)
                     .Select(x => new ShiftDto
@@ -241,6 +243,9 @@ namespace backend.Controllers
                     ["Name"] = shiftTeam.Name,
                     ["LightColorHex"] = shiftTeam.LightColorHex,
                     ["DarkColorHex"] = shiftTeam.DarkColorHex,
+                    ["ReverseColor"] = shiftTeam.ReverseColor
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["IsHidden"] = shiftTeam.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -299,6 +304,7 @@ namespace backend.Controllers
                 IsHidden = dto.IsHidden,
                 LightColorHex = dto.LightColorHex,
                 DarkColorHex = dto.DarkColorHex,
+                ReverseColor = dto.ReverseColor,
 
                 // Meta data.
                 CreationDate = now,
@@ -320,6 +326,7 @@ namespace backend.Controllers
                 DarkColorHex = shiftTeam.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.DarkColorHex),
+                ReverseColor = shiftTeam.ReverseColor,
 
                 // Meta data.
                 CreationDate = shiftTeam.CreationDate,
@@ -341,6 +348,9 @@ namespace backend.Controllers
                     ["Name"] = shiftTeam.Name,
                     ["LightColorHex"] = shiftTeam.LightColorHex,
                     ["DarkColorHex"] = shiftTeam.DarkColorHex,
+                    ["ReverseColor"] = shiftTeam.ReverseColor
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["IsHidden"] = shiftTeam.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -427,6 +437,9 @@ namespace backend.Controllers
                 ["Name"] = shiftTeam.Name,
                 ["LightColorHex"] = shiftTeam.LightColorHex,
                 ["DarkColorHex"] = shiftTeam.DarkColorHex,
+                ["ReverseColor"] = shiftTeam.ReverseColor
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
                 ["IsHidden"] = shiftTeam.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
@@ -434,6 +447,7 @@ namespace backend.Controllers
             shiftTeam.IsHidden = dto.IsHidden;
             shiftTeam.LightColorHex = dto.LightColorHex;
             shiftTeam.DarkColorHex = dto.DarkColorHex;
+            shiftTeam.ReverseColor = dto.ReverseColor;
 
             // Meta data.
             shiftTeam.UpdateDate = now;
@@ -450,6 +464,7 @@ namespace backend.Controllers
                 DarkColorHex = shiftTeam.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(shiftTeam.DarkColorHex),
+                ReverseColor = shiftTeam.ReverseColor,
 
                 // Meta data.
                 UpdateDate = shiftTeam.UpdateDate,
@@ -472,6 +487,9 @@ namespace backend.Controllers
                         ["Name"] = shiftTeam.Name,
                         ["LightColorHex"] = shiftTeam.LightColorHex,
                         ["DarkColorHex"] = shiftTeam.DarkColorHex,
+                        ["ReverseColor"] = shiftTeam.ReverseColor
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
                         ["IsHidden"] = shiftTeam.IsHidden
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },

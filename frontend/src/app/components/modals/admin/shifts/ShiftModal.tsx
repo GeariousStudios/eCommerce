@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
+import * as Outline from "@heroicons/react/24/outline";
+import * as Solid from "@heroicons/react/24/solid";
 import Input from "../../../common/Input";
 import { useToast } from "../../../toast/ToastProvider";
 import {
@@ -24,6 +25,9 @@ import { XMarkIcon } from "@heroicons/react/20/solid";
 import MultiDropdown from "@/app/components/common/MultiDropdown";
 import DragDrop from "@/app/components/common/DragDrop";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
+import CustomTooltip from "@/app/components/common/CustomTooltip";
+import HoverIcon from "@/app/components/common/HoverIcon";
 
 type Props = {
   isOpen: boolean;
@@ -58,10 +62,12 @@ const ShiftModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [isHidden, setIsHidden] = useState(false);
   const [lightColorHex, setLightColorHex] = useState("#212121");
   const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
+  const [reverseColor, setReverseColor] = useState(false);
   const [shiftTeamIds, setShiftTeamIds] = useState<number[]>([]);
   const [shiftTeams, setShiftTeams] = useState<ShiftTeamOptions[]>([]);
   const [weeklyTimes, setWeeklyTimes] = useState<WeeklyTime[]>([]);
@@ -79,6 +85,7 @@ const ShiftModal = (props: Props) => {
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
   const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
+  const [originalReverseColor, setOriginalReverseColor] = useState(false);
   const [originalShiftTeamIds, setOriginalShiftTeamIds] = useState<number[]>(
     [],
   );
@@ -135,6 +142,9 @@ const ShiftModal = (props: Props) => {
       setDarkColorHex("#e0e0e0");
       setOriginalDarkColorHex("#e0e0e0");
 
+      setReverseColor(false);
+      setOriginalReverseColor(false);
+
       setShiftTeamIds([]);
       setOriginalShiftTeamIds([]);
 
@@ -155,9 +165,10 @@ const ShiftModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add shift ---
-  const addShift = async (event: FormEvent) => {
+  // --- Create shift ---
+  const createShift = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     const msg = runLocalValidation();
     if (msg) {
@@ -180,6 +191,7 @@ const ShiftModal = (props: Props) => {
           isHidden,
           lightColorHex,
           darkColorHex,
+          reverseColor,
           shiftTeamIds,
           weeklyTimes: weeklyTimesToSend,
           shiftTeamDisplayNames: Object.fromEntries(
@@ -235,9 +247,11 @@ const ShiftModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift") + t("Modal/created1"), 4000);
+      notify("success", t("Common/Shift") + t("Modal/created2"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -315,6 +329,9 @@ const ShiftModal = (props: Props) => {
     setDarkColorHex(result.darkColorHex ?? "#e0e0e0");
     setOriginalDarkColorHex(result.darkColorHex ?? "#e0e0e0");
 
+    setReverseColor(result.reverseColor ?? false);
+    setOriginalReverseColor(result.reverseColor ?? false);
+
     setShiftTeamIds(result.shiftTeamIds ?? []);
     setOriginalShiftTeamIds(result.shiftTeamIds ?? []);
 
@@ -350,6 +367,7 @@ const ShiftModal = (props: Props) => {
   // --- Update shift ---
   const updateShift = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     const msg = runLocalValidation();
     if (msg) {
@@ -372,6 +390,7 @@ const ShiftModal = (props: Props) => {
           isHidden,
           lightColorHex,
           darkColorHex,
+          reverseColor,
           shiftTeamIds,
           weeklyTimes: weeklyTimesToSend,
           shiftTeamDisplayNames: Object.fromEntries(
@@ -427,9 +446,11 @@ const ShiftModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift") + t("Modal/updated1"), 4000);
+      notify("success", t("Common/Shift") + t("Modal/updated2"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -445,6 +466,7 @@ const ShiftModal = (props: Props) => {
         isHidden !== false ||
         lightColorHex !== "#212121" ||
         darkColorHex !== "#e0e0e0" ||
+        reverseColor !== false ||
         JSON.stringify(shiftTeamIds) !== JSON.stringify([]) ||
         JSON.stringify(weeklyTimes) !== JSON.stringify([]) ||
         JSON.stringify(shiftTeamDisplayNames) !== JSON.stringify({}) ||
@@ -459,6 +481,7 @@ const ShiftModal = (props: Props) => {
       isHidden !== originalIsHidden ||
       lightColorHex !== originalLightColorHex ||
       darkColorHex !== originalDarkColorHex ||
+      reverseColor !== originalReverseColor ||
       JSON.stringify(shiftTeamIds) !== JSON.stringify(originalShiftTeamIds) ||
       JSON.stringify(weeklyTimes) !== JSON.stringify(originalWeeklyTimes) ||
       cycleLengthWeeks !== originalCycleLengthWeeks ||
@@ -473,6 +496,7 @@ const ShiftModal = (props: Props) => {
     isHidden,
     lightColorHex,
     darkColorHex,
+    reverseColor,
     shiftTeamIds,
     weeklyTimes,
     cycleLengthWeeks,
@@ -482,6 +506,7 @@ const ShiftModal = (props: Props) => {
     originalIsHidden,
     originalLightColorHex,
     originalDarkColorHex,
+    originalReverseColor,
     originalShiftTeamIds,
     originalWeeklyTimes,
     originalCycleLengthWeeks,
@@ -642,13 +667,13 @@ const ShiftModal = (props: Props) => {
       {props.isOpen && (
         <form
           ref={formRef}
-          onSubmit={(e) => (props.itemId ? updateShift(e) : addShift(e))}
+          onSubmit={(e) => (props.itemId ? updateShift(e) : createShift(e))}
         >
           <ModalBase
             ref={modalRef}
             isOpen={props.isOpen}
             onClose={() => props.onClose()}
-            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
                 ? t("Common/Edit") + " " + t("Common/shift")
@@ -697,6 +722,31 @@ const ShiftModal = (props: Props) => {
                   pattern="^#([0-9A-Fa-f]{6})$"
                   onModal
                 />
+
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={reverseColor}
+                    className={switchClass(reverseColor)}
+                    onClick={() => setReverseColor((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(reverseColor)} />
+                  </button>
+                  {t("Modal/Reverse color")}
+                  <CustomTooltip
+                    content={t("Modal/Tooltip reverse color")}
+                    showOnTouch
+                  >
+                    <span className="group min-h-4 min-w-4 cursor-help">
+                      <HoverIcon
+                        outline={Outline.InformationCircleIcon}
+                        solid={Solid.InformationCircleIcon}
+                        className="flex"
+                      />
+                    </span>
+                  </CustomTooltip>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -1047,9 +1097,23 @@ const ShiftModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
-                disabled={!!validationError}
+                disabled={!!validationError || isSaving}
               >
-                {props.itemId ? t("Modal/Save") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               {validationError && (
                 <div

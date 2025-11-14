@@ -33,6 +33,7 @@ export type CategoryItem = {
     unitGroupName?: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
@@ -96,6 +97,7 @@ export type UnitGroupItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
@@ -124,6 +126,7 @@ export type UnitItem = {
   masterPlanName: string;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor?: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 
@@ -166,6 +169,7 @@ export type ShiftItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
@@ -174,12 +178,14 @@ export type ShiftItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
   isHidden?: boolean;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor?: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 
@@ -204,12 +210,14 @@ export type ShiftTeamItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
   isHidden?: boolean;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor?: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 
@@ -233,11 +241,13 @@ export type StopTypeItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor?: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
   isHidden?: boolean;
@@ -263,6 +273,7 @@ export type MasterPlanItem = {
     name: string;
     lightColorHex: string;
     darkColorHex: string;
+    reverseColor?: boolean;
     lightTextColorHex: string;
     darkTextColorHex: string;
   }[];

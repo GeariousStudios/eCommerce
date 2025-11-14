@@ -56,13 +56,15 @@ namespace backend.Controllers
             [FromQuery] string sortBy = "id",
             [FromQuery] string sortOrder = "asc",
             [FromQuery] int[]? unitIds = null,
-            [FromQuery] string[]? dataTypes = null,
+            [FromQuery] string[]? dataType = null,
             [FromQuery] bool? hasData = null,
             [FromQuery] string? search = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
+            var lang = await GetLangAsync();
+
             var efQuery = _context
                 .UnitColumns.Include(c => c.UnitToUnitColumns)
                 .ThenInclude(uuc => uuc.Unit)
@@ -88,9 +90,9 @@ namespace backend.Controllers
 
             var parsedDataTypes = new List<UnitColumnDataType>();
 
-            if (dataTypes?.Any() == true)
+            if (dataType?.Any() == true)
             {
-                foreach (var dt in dataTypes)
+                foreach (var dt in dataType)
                 {
                     if (Enum.TryParse<UnitColumnDataType>(dt, ignoreCase: true, out var parsed))
                         parsedDataTypes.Add(parsed);
@@ -102,42 +104,85 @@ namespace backend.Controllers
                 }
             }
 
-            var totalCount = await efQuery.CountAsync();
-            var query = efQuery.AsEnumerable();
+            // var totalCount = await efQuery.CountAsync();
+            var list = await efQuery.ToListAsync();
 
-            query = sortBy.ToLower() switch
+            // query = sortBy.ToLower() switch
+            // {
+            //     "name" => sortOrder == "desc"
+            //         ? query.OrderByDescending(c => c.Name.ToLower())
+            //         : query.OrderBy(c => c.Name.ToLower()),
+            //     "unitcount" => sortOrder == "desc"
+            //         ? query
+            //             .OrderByDescending(c => c.UnitToUnitColumns.Count)
+            //             .ThenBy(c => c.Name.ToLower())
+            //         : query.OrderBy(c => c.UnitToUnitColumns.Count).ThenBy(c => c.Name.ToLower()),
+            //     "hasdata" => sortOrder == "desc"
+            //         ? query.OrderByDescending(c => c.HasData).ThenBy(c => c.Name.ToLower())
+            //         : query.OrderBy(c => c.HasData).ThenBy(c => c.Name.ToLower()),
+            //     _ => sortOrder == "desc"
+            //         ? query.OrderByDescending(c => c.Id)
+            //         : query.OrderBy(c => c.Id),
+            // };
+
+            if (sortBy.ToLower() == "datatype")
             {
-                "name" => sortOrder == "desc"
-                    ? query.OrderByDescending(c => c.Name.ToLower())
-                    : query.OrderBy(c => c.Name.ToLower()),
-                "unitcount" => sortOrder == "desc"
-                    ? query
-                        .OrderByDescending(c => c.UnitToUnitColumns.Count)
-                        .ThenBy(c => c.Name.ToLower())
-                    : query.OrderBy(c => c.UnitToUnitColumns.Count).ThenBy(c => c.Name.ToLower()),
-                "hasdata" => sortOrder == "desc"
-                    ? query.OrderByDescending(c => c.HasData).ThenBy(c => c.Name.ToLower())
-                    : query.OrderBy(c => c.HasData).ThenBy(c => c.Name.ToLower()),
-                _ => sortOrder == "desc"
-                    ? query.OrderByDescending(c => c.Id)
-                    : query.OrderBy(c => c.Id),
-            };
+                list =
+                    sortOrder == "desc"
+                        ? list.OrderByDescending(x =>
+                                _t.GetAsync($"AuditTrail/{x.DataType}", lang).Result
+                            )
+                            .ToList()
+                        : list.OrderBy(x => _t.GetAsync($"AuditTrail/{x.DataType}", lang).Result)
+                            .ToList();
+            }
+            else if (sortBy.ToLower() == "name")
+            {
+                list =
+                    sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.Name.ToLower()).ToList()
+                        : list.OrderBy(x => x.Name.ToLower()).ToList();
+            }
+            else if (sortBy.ToLower() == "unitcount")
+            {
+                list =
+                    sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.UnitToUnitColumns.Count).ToList()
+                        : list.OrderBy(x => x.UnitToUnitColumns.Count).ToList();
+            }
+            else if (sortBy.ToLower() == "hasdata")
+            {
+                list =
+                    sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.HasData)
+                            .ThenBy(x => x.Name.ToLower())
+                            .ToList()
+                        : list.OrderBy(x => x.HasData).ThenBy(x => x.Name.ToLower()).ToList();
+            }
+            else
+            {
+                list =
+                    sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.Id).ToList()
+                        : list.OrderBy(x => x.Id).ToList();
+            }
 
-            var columns = query.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            var totalCount = list.Count;
+
+            var columns = list.Skip((page - 1) * pageSize).Take(pageSize).ToList();
 
             // Filters.
             var unitCount = _context
                 .UnitToUnitColumns.GroupBy(uuc => uuc.UnitId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
-            var dataTypeCount = _context
-                .UnitColumns.GroupBy(c => c.DataType)
+            var dataTypeCount = list.GroupBy(c => c.DataType)
                 .ToDictionary(g => g.Key.ToString(), g => g.Count());
 
             var hasDataCount = new Dictionary<string, int>
             {
-                ["True"] = await _context.UnitColumns.CountAsync(c => c.HasData),
-                ["False"] = await _context.UnitColumns.CountAsync(c => !c.HasData),
+                ["True"] = list.Count(c => c.HasData),
+                ["False"] = list.Count(c => !c.HasData),
             };
 
             var result = new
@@ -285,7 +330,7 @@ namespace backend.Controllers
                     ["Name"] = column.Name,
                     ["DataType"] = column.DataType.ToString(),
                     ["Compare"] = column.Compare ? new[] { "Common/Yes" } : new[] { "Common/No" },
-                    ["ComparisonText"] = column.ComparisonText,
+                    ["ComparisonText"] = column.ComparisonText ?? "—",
                     ["LargeColumn"] = column.LargeColumn
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -387,7 +432,7 @@ namespace backend.Controllers
                     ["Name"] = column.Name,
                     ["DataType"] = column.DataType.ToString(),
                     ["Compare"] = column.Compare ? new[] { "Common/Yes" } : new[] { "Common/No" },
-                    ["ComparisonText"] = column.ComparisonText,
+                    ["ComparisonText"] = column.ComparisonText ?? "—",
                     ["LargeColumn"] = column.LargeColumn
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -520,7 +565,7 @@ namespace backend.Controllers
                         ["Compare"] = column.Compare
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },
-                        ["ComparisonText"] = column.ComparisonText,
+                        ["ComparisonText"] = column.ComparisonText ?? "—",
                         ["LargeColumn"] = column.LargeColumn
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },

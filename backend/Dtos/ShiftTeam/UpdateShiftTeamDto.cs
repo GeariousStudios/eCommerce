@@ -22,5 +22,6 @@ namespace backend.Dtos.ShiftTeam
             ErrorMessage = "[6|Common/Color format] Validation/is invalid"
         )]
         public string DarkColorHex { get; set; } = "#e0e0e0";
+        public bool ReverseColor { get; set; }
     }
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import {
   buttonDeletePrimaryClass,
   buttonPrimaryClass,
@@ -10,62 +9,28 @@ import {
 } from "../../styles/buttonClasses";
 import Message from "../../components/common/Message";
 import CustomTooltip from "../../components/common/CustomTooltip";
-import { useToast } from "../../components/toast/ToastProvider";
-import {
-  useParams,
-  useSearchParams,
-  useRouter,
-  notFound,
-} from "next/navigation";
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronUpIcon,
-} from "@heroicons/react/20/solid";
 import React from "react";
+import useClient, {
+  shiftsClass,
+  shiftsIconClass,
+  tdClass,
+  tdClassSpecial,
+  thClass,
+} from "@/app/hooks/useClient";
+import HoverIcon from "@/app/components/common/HoverIcon";
 import * as Outline from "@heroicons/react/24/outline";
 import * as Solid from "@heroicons/react/24/solid";
-import HoverIcon from "@/app/components/common/HoverIcon";
-import Input from "@/app/components/common/Input";
-import ReportModal from "@/app/components/modals/report/ReportModal";
-import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
 import {
   toLocalDateString,
   utcIsoToLocalDateTime,
 } from "@/app/helpers/timeUtils";
-import DeleteModal from "@/app/components/modals/DeleteModal";
-import { useTranslations } from "next-intl";
+import Input from "@/app/components/common/Input";
 import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
 import MenuDropdownAnchor from "@/app/components/common/MenuDropdown/MenuDropdownAnchor";
 import { badgeClass } from "@/app/components/manage/ManageClasses";
-import useTheme from "@/app/hooks/useTheme";
-
-type Props = {
-  isAuthReady: boolean | null;
-  isLoggedIn: boolean | null;
-  isConnected: boolean | null;
-  isReporter: boolean | null;
-};
-
-type Shift = {
-  id: number;
-  name: string;
-  systemKey?: string;
-  teamSpans?: ShiftTeamSpan[];
-};
-
-type ShiftTeamSpan = {
-  id: number;
-  name: string;
-  label: string;
-  start: string;
-  end: string;
-  lightColorHex: string;
-  darkColorHex: string;
-  lightTextColorHex: string;
-  darkTextColorHex: string;
-};
+import DeleteModal from "@/app/components/modals/DeleteModal";
+import ReportModal from "@/app/components/modals/report/ReportModal";
+import UnitCellModal from "@/app/components/modals/report/UnitCellModal";
 
 type ShiftChange = {
   id: number;
@@ -75,1156 +40,68 @@ type ShiftChange = {
   newShiftId: number;
 };
 
-// --- CLASSES ---
-export const thClass =
-  "px-4 py-2 h-[40px] text-left border-b-1 border-b-(--border-main) border-r-1 border-r-(--border-secondary) flex-inline items-center justify-center";
+const UnitClient = (props: any) => {
+  const c = useClient(props);
 
-export const tdClass =
-  "px-4 py-2 h-[40px] text-left break-all border border-(--border-secondary) flex-inline items-center justify-center";
-
-export const tdClassSpecial =
-  "px-4 py-2 h-[40px] text-left break-all flex-inline items-center justify-center";
-
-export const shiftsClass =
-  "truncate font-semibold transition-colors duration-(--fast) group-hover:text-(--accent-color)";
-
-export const shiftsIconClass =
-  "h-6 w-6 transition-[color,rotate] duration-(--fast) group-hover:text-(--accent-color)";
-
-const UnitClient = (props: Props) => {
-  const t = useTranslations();
-
-  // --- VARIABLES ---
-  // --- Other ---
-  const { groupId, unitId } = useParams() as {
-    groupId?: string;
-    unitId?: string;
-  };
-  const parsedGroupId = groupId ? Number(groupId) : undefined;
-  const parsedUnitId = unitId ? Number(unitId) : undefined;
-
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const dateParam = searchParams.get("date");
-
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const token = localStorage.getItem("token");
-  const { notify } = useToast();
-
-  // --- Refs ---
-  const shiftsRef = useRef<HTMLButtonElement | null>(null);
-  const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
-
-  // --- States: Shift ---
-  const [shiftsOpen, setShiftsOpen] = useState(false);
-  const [shiftNames, setShiftNames] = useState<Shift[]>([]);
-  const [shiftOptions, setShiftOptions] = useState<Shift[]>([]);
-  const [currentActiveShiftId, setCurrentActiveShiftId] = useState<
-    number | null
-  >(null);
-  const [shiftVisibility, setShiftVisibility] = useState<
-    Record<number, boolean>
-  >({});
-  const dropdownShifts = shiftOptions.map((s) => ({
-    id: s.id,
-    label: s.systemKey ? t(`Shifts/${s.systemKey}`) : s.name,
-  }));
-  const [shiftChanges, setShiftChanges] = useState<ShiftChange[]>([]);
-  const [openChangeMenuId, setOpenChangeMenuId] = useState<number | null>(null);
-  const [editChangeDate, setEditChangeDate] = useState<string>("");
-  const [editChangeTime, setEditChangeTime] = useState<string>("");
-
-  // --- States: Unit ---
-  const [unitName, setUnitName] = useState("");
-  const [unitGroupId, setUnitGroupId] = useState("");
-  const [isHidden, setIsHidden] = useState(false);
-  const [categoryIds, setCategoryIds] = useState<number[]>([]);
-  const [activeShiftId, setActiveShiftId] = useState<number | null>(null);
-  const [pendingShiftId, setPendingShiftId] = useState<number | null>(null);
-  const [baseShiftId, setBaseShiftId] = useState<number | null>(null);
-  const [unitCreationDate, setUnitCreationDate] = useState<string>("");
-
-  // --- States: UnitGroup ---
-  const [unitGroupName, setUnitGroupName] = useState("");
-
-  // --- States: UnitColumn ---
-  const [unitColumnIds, setUnitColumnIds] = useState<number[]>([]);
-  const [unitColumnNames, setUnitColumnNames] = useState<string[]>([]);
-  const [unitColumnDataTypes, setUnitColumnDataTypes] = useState<string[]>([]);
-  const [unitColumnCompareFlags, setUnitColumnCompareFlags] = useState<
-    boolean[]
-  >([]);
-  const [unitColumnComparisonTexts, setUnitColumnComparisonTexts] = useState<
-    string[]
-  >([]);
-  const [unitColumnLargeColumnFlags, setUnitColumnLargeColumnFlags] = useState<
-    boolean[]
-  >([]);
-
-  // --- States: UnitCell & Report ---
-  const [unitCells, setUnitCells] = useState<any[]>([]);
-  const [reports, setReports] = useState<any[]>([]);
-  const [editingCell, setEditingCell] = useState<{
-    hour: number;
-    columnId: number;
-  } | null>(null);
-  const [editingValue, setEditingValue] = useState<string | number | boolean>(
-    "",
-  );
-
-  // --- States: This ---
-  const [expandedRows, setExpandedRows] = useState<number[]>([]);
-  const [allExpanded, setAllExpanded] = useState(false);
-
-  const [isUnitCellModalOpen, setIsUnitCellModalOpen] = useState(false);
-
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [reportId, setReportId] = useState<string | undefined>();
-
-  const [deleteType, setDeleteType] = useState<"report" | "shiftChange" | null>(
-    null,
-  );
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingItemId, setDeletingItemId] = useState<string | undefined>();
-
-  const [refetchData, setRefetchData] = useState(true);
-
-  // --- States: Other ---
-  const [isLoadingUnits, setIsLoadingUnits] = useState(true);
-  const [isLoadingColumns, setIsLoadingColumns] = useState(true);
-  const [isLoadingShifts, setIsLoadingShifts] = useState(true);
-
-  const [isManualRefresh, setIsManualRefresh] = useState(true);
-
-  const [isInvalid, setIsInvalid] = useState(false);
-  const [isUnitValid, setIsUnitValid] = useState(false);
-
-  const [selectedDate, setSelectedDate] = useState(() => {
-    return dateParam || new Date().toISOString().split("T")[0];
-  });
-  const [tempDate, setTempDate] = useState(selectedDate);
-
-  const [reportDate, setReportDate] = useState<string>("");
-  const [reportHour, setReportHour] = useState<string>("");
-
-  const [pendingShiftDate, setPendingShiftDate] =
-    useState<string>(selectedDate);
-  const [pendingShiftTime, setPendingShiftTime] = useState<string>("");
-  const [nowTs, setNowTs] = useState<number>(() => Date.now());
-
-  const isBootstrapping = isLoadingUnits || isLoadingColumns || isLoadingShifts;
-  const canShowLock = !isBootstrapping && isHidden && !isInvalid;
-  const canShowInvalid = !isBootstrapping && isInvalid && !isHidden;
-  const isReady = !isHidden && !isInvalid;
-
-  // --- Other ---
-  const { currentTheme } = useTheme();
-
-  // --- HELPERS ---
-  const handleDateChange = (val: string) => {
-    if (!val || val === selectedDate) {
-      setTempDate(selectedDate);
-      return;
-    }
-
-    const year = Number(val.split("-")[0]);
-    if (year > 2999 || year < 1000) {
-      setTempDate(selectedDate);
-      return;
-    }
-
-    if (unitCreationDate && val < unitCreationDate) {
-      setTempDate(unitCreationDate);
-      setSelectedDate(unitCreationDate);
-      updateDate(unitCreationDate);
-    } else {
-      setSelectedDate(val);
-      updateDate(val);
-    }
-  };
-
-  const overlaps = (
-    aStart: number,
-    aEnd: number,
-    bStart: number,
-    bEnd: number,
-  ) => {
-    const overlapLinear = (x1: number, x2: number, y1: number, y2: number) =>
-      Math.max(x1, y1) < Math.min(x2, y2);
-
-    if (bEnd > bStart) {
-      return overlapLinear(aStart, aEnd, bStart, bEnd);
-    }
-    return (
-      overlapLinear(aStart, aEnd, bStart, 1440) ||
-      overlapLinear(aStart, aEnd, 0, bEnd)
-    );
-  };
-
-  const toMinutes = (s: string) => {
-    if (!s) {
-      return NaN;
-    }
-
-    const clean = s.trim().replace(".", ":");
-    const [hStr, mStr = "0"] = clean.split(":");
-    const hh = Number(hStr);
-    const mm = Number(mStr);
-
-    if (Number.isNaN(hh) || Number.isNaN(mm)) {
-      return NaN;
-    }
-
-    return hh * 60 + mm;
-  };
-
-  const getShiftLabel = (shiftId: number) => {
-    const s = shiftNames.find((x) => x.id === shiftId);
-    if (!s) {
-      return t("Common/Unknown");
-    }
-
-    if (s.systemKey) {
-      const key = `Shifts/${s.systemKey}`;
-      const tr = t(key);
-      return tr !== key ? tr : s.name;
-    }
-
-    return s.name;
-  };
-
-  const getTeamSpanForHour = (
-    shiftId: number | null,
-    hour: number,
-  ): ShiftTeamSpan | undefined => {
-    if (shiftId == null) {
-      return undefined;
-    }
-
-    const s = shiftNames.find((x) => x.id === shiftId);
-    const spans = s?.teamSpans ?? [];
-    const startM = hour * 60;
-    const endM = (hour + 1) * 60;
-
-    return spans.find((ts) => {
-      const st = toMinutes(ts.start);
-      const en = toMinutes(ts.end);
-      if (Number.isNaN(st) || Number.isNaN(en)) {
-        return false;
-      }
-
-      return overlaps(startM, endM, st, en);
-    });
-  };
-
-  const getSortedChanges = () =>
-    [...shiftChanges].sort(
-      (a, b) => a.hour - b.hour || (a.minute ?? 0) - (b.minute ?? 0),
-    );
-
-  const resolveShiftIdForTime = (
-    hour: number,
-    minute: number = 0,
-  ): number | null => {
-    const changes = getSortedChanges();
-    let sid = baseShiftId ?? activeShiftId ?? null;
-
-    for (const c of changes) {
-      const m = c.minute ?? 0;
-      if (c.hour < hour || (c.hour === hour && m <= minute)) {
-        sid = c.newShiftId;
-      }
-    }
-    return sid;
-  };
-
-  const toHm = (hour: number, minute?: number) =>
-    `${String(hour).padStart(2, "0")}:${String(minute ?? 0).padStart(2, "0")}`;
-
-  const isSameDate = (yyyyMmDd: string, d: Date) => {
-    const a = new Date(yyyyMmDd + "T00:00:00");
-    return (
-      a.getFullYear() === d.getFullYear() &&
-      a.getMonth() === d.getMonth() &&
-      a.getDate() === d.getDate()
-    );
-  };
-
-  const now = new Date(nowTs);
-  const isToday = isSameDate(selectedDate, now);
-  const currentHour = isToday ? now.getHours() : 0;
-  const currentMinute = isToday ? now.getMinutes() : 0;
-
-  const isCreationMidnight = (date?: string, time?: string) => {
-    if (!date || !time || !unitCreationDate) {
-      return false;
-    }
-
-    return date === unitCreationDate && toMinutes(time) === 0;
-  };
-
-  const getNumericCellValue = (cell: any) => {
-    if (cell == null) {
-      return undefined;
-    }
-
-    if (typeof cell.intValue === "number") {
-      return cell.intValue;
-    }
-
-    const n = Number(cell.value);
-    return Number.isFinite(n) ? n : undefined;
-  };
-
-  const compareColsCount = unitColumnNames.reduce((acc, _, i) => {
-    return (
-      acc +
-      (unitColumnDataTypes[i] === "Number" && unitColumnCompareFlags[i] ? 1 : 0)
-    );
-  }, 0);
-
-  // --- BACKEND ---
-  // --- Fetch unit ---
-  useEffect(() => {
-    if (!unitId) {
-      return;
-    }
-
-    const fetchUnit = async () => {
-      try {
-        setIsUnitValid(false);
-        setIsLoadingUnits(true);
-        const response = await fetch(`${apiUrl}/unit/fetch/${unitId}`, {
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
-          },
-        });
-
-        const result = await response.json();
-
-        if (
-          parsedGroupId !== undefined &&
-          result?.unitGroupId !== parsedGroupId
-        ) {
-          setIsInvalid(true);
-          return;
-        }
-
-        if (!response.ok) {
-          notify("error", result?.message ?? t("Modal/Unknown error"));
-        } else {
-          fillUnitData(result);
-          setIsUnitValid(true);
-        }
-      } catch (err) {
-        notify("error", t("Modal/Unknown error"));
-      } finally {
-        setIsLoadingUnits(false);
-      }
-    };
-
-    const fillUnitData = (result: any) => {
-      setUnitName(result.name ?? "");
-      setUnitGroupId(String(result.unitGroupId ?? ""));
-      setIsHidden(result.isHidden ?? false);
-      setCategoryIds(result.categoryIds ?? []);
-      setActiveShiftId(result.activeShiftId ?? null);
-      setCurrentActiveShiftId(result.activeShiftId ?? null);
-      setPendingShiftId(result.activeShiftId ?? null);
-
-      const createdLocal = result?.creationDate
-        ? toLocalDateString(new Date(result.creationDate))
-        : "";
-      setUnitCreationDate(createdLocal);
-
-      if (createdLocal) {
-        const initial = selectedDate || new Date().toISOString().split("T")[0];
-        const clamped = initial < createdLocal ? createdLocal : initial;
-        if (clamped !== selectedDate) {
-          setSelectedDate(clamped);
-          const current = new URLSearchParams(searchParams.toString());
-          current.set("date", clamped);
-          router.replace(`?${current.toString()}`);
-        }
-      }
-    };
-
-    fetchUnit();
-  }, [unitId]);
-
-  // --- Fetch unit group ---
-  useEffect(() => {
-    if (!unitGroupId) {
-      return;
-    }
-
-    const fetchUnitGroup = async () => {
-      try {
-        const response = await fetch(
-          `${apiUrl}/unit-group/fetch/${unitGroupId}`,
-          {
-            headers: {
-              "X-User-Language": localStorage.getItem("language") || "sv",
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          notify("error", result?.message ?? t("Modal/Unknown error"));
-        } else {
-          fillUnitGroupData(result);
-        }
-      } catch (err) {
-        notify("error", t("Modal/Unknown error"));
-      }
-    };
-
-    const fillUnitGroupData = (result: any) => {
-      setUnitGroupName(result.name ?? "");
-    };
-
-    fetchUnitGroup();
-  }, [unitGroupId]);
-
-  // --- Fetch unit columns ---
-  useEffect(() => {
-    if (!unitId || !isUnitValid) {
-      return;
-    }
-
-    const fetchUnitColumns = async () => {
-      try {
-        setIsLoadingColumns(true);
-        const response = await fetch(`${apiUrl}/unit-column/unit/${unitId}`, {
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
-          },
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          notify("error", result?.message ?? t("Modal/Unknown error"));
-        } else {
-          fillUnitColumnData(result);
-        }
-      } catch (err) {
-        notify("error", t("Modal/Unknown error"));
-      } finally {
-        setIsLoadingColumns(false);
-      }
-    };
-
-    const fillUnitColumnData = (result: any) => {
-      setUnitColumnIds(result.map((c: any) => c.id));
-      setUnitColumnNames(result.map((c: any) => c.name));
-      setUnitColumnDataTypes(result.map((c: any) => c.dataType));
-      setUnitColumnCompareFlags(result.map((c: any) => Boolean(c.compare)));
-      setUnitColumnComparisonTexts(
-        result.map((c: any) => c.comparisonText ?? ""),
-      );
-      setUnitColumnLargeColumnFlags(
-        result.map((c: any) => Boolean(c.largeColumn)),
-      );
-    };
-
-    fetchUnitColumns();
-  }, [unitId, isUnitValid]);
-
-  // --- Fetch shifts ---
-  useEffect(() => {
-    if (!unitId || !isUnitValid) {
-      return;
-    }
-
-    const fetchShifts = async () => {
-      try {
-        setIsLoadingShifts(true);
-        const response = await fetch(
-          `${apiUrl}/shift/unit/${unitId}?date=${selectedDate}`,
-          {
-            headers: {
-              "X-User-Language": localStorage.getItem("language") || "sv",
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          notify("error", result?.message ?? t("Modal/Unknown error"));
-        } else {
-          fillShiftData(result);
-        }
-      } catch (err) {
-        notify("error", t("Modal/Unknown error"));
-      } finally {
-        setIsLoadingShifts(false);
-      }
-    };
-
-    const fillShiftData = (result: any) => {
-      const list = Array.isArray(result) ? result : [];
-      const mapped = list.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        systemKey: s.systemKey ?? null,
-        teamSpans: (s.shiftTeamSpans ?? []).map((ts: any) => ({
-          id: ts.teamId,
-          name: ts.name,
-          label: ts.label,
-          start: ts.start,
-          end: ts.end,
-          lightColorHex: ts.lightColorHex,
-          darkColorHex: ts.darkColorHex,
-          lightTextColorHex: ts.lightTextColorHex,
-          darkTextColorHex: ts.darkTextColorHex,
-        })),
-        isHidden: s.isHidden ?? false,
-      }));
-
-      const visibleShifts = mapped.filter((s) => !s.isHidden);
-      setShiftNames(mapped);
-      if (visibleShifts.length > 0) {
-        setShiftOptions(visibleShifts);
-      }
-    };
-
-    fetchShifts();
-  }, [unitId, isUnitValid, selectedDate]);
-
-  // --- Fetch shift changes ---
-  useEffect(() => {
-    if (!unitId || !isUnitValid || !selectedDate) {
-      return;
-    }
-
-    fetchShiftChanges(selectedDate);
-  }, [unitId, isUnitValid, selectedDate]);
-
-  const fetchShiftChanges = async (date: string) => {
-    const response = await fetch(
-      `${apiUrl}/unit/${unitId}/shift-changes?date=${date}`,
-      {
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-        },
-      },
-    );
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
-    setBaseShiftId(data.baseShiftId ?? null);
-    setShiftChanges(Array.isArray(data?.changes) ? data.changes : []);
-    return Array.isArray(data?.changes) ? (data.changes as ShiftChange[]) : [];
-  };
-
-  // --- Update shift change ---
-  const updateShiftChange = async (
-    changeId: number,
-    date: string,
-    hour: number,
-    minute: number,
-    newShiftId?: number,
-  ) => {
-    try {
-      const response = await fetch(
-        `${apiUrl}/unit/${unitId}/shift-change/${changeId}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ date, hour, minute, newShiftId }),
-        },
-      );
-
-      if (response.status === 401) {
-        localStorage.removeItem("token");
-        return;
-      }
-
-      if (!response.ok) {
-        const txt = await response.text();
-        const err = txt ? JSON.parse(txt) : null;
-        notify("error", err?.message || t("Modal/Unknown error"));
-        return;
-      }
-
-      notify("success", t("Unit/Shift change") + t("Modal/updated1"));
-      await fetchShiftChanges(date);
-      await refreshUnitActive();
-    } catch {
-      notify("error", t("Modal/Unknown error"));
-    }
-  };
-
-  const handleEditShiftChange = async (
-    change: ShiftChange,
-    opts?: { date?: string; time?: string; usePendingShift?: boolean },
-  ) => {
-    let date = opts?.date ?? selectedDate;
-    let time = opts?.time;
-
-    if (!time) {
-      const nt = prompt(
-        "HH:mm",
-        `${String(change.hour).padStart(2, "0")}:${String(change.minute ?? 0).padStart(2, "0")}`,
-      );
-
-      if (!nt) {
-        return;
-      }
-
-      time = nt;
-    }
-
-    const [hhStr, mmStr = "0"] = time.split(":");
-    const hh = Number(hhStr);
-    const mm = Number(mmStr);
-    if (!Number.isFinite(hh) || !Number.isFinite(mm)) {
-      notify("error", t("Modal/Unknown error"));
-      return;
-    }
-
-    const newShiftId =
-      opts?.usePendingShift && pendingShiftId !== change.newShiftId
-        ? (pendingShiftId ?? undefined)
-        : undefined;
-
-    await updateShiftChange(change.id, date, hh, mm, newShiftId);
-  };
-
-  // --- Delete shift change ---
-  const deleteShiftChange = async (id: string) => {
-    try {
-      const response = await fetch(
-        `${apiUrl}/unit/${unitId}/shift-change/${Number(id)}`,
-        {
-          method: "DELETE",
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
-      if (response.status === 401) {
-        localStorage.removeItem("token");
-        return;
-      }
-
-      if (!response.ok) {
-        const txt = await response.text();
-        const err = txt ? JSON.parse(txt) : null;
-        notify("error", err?.message || t("Modal/Unknown error"));
-        return;
-      }
-
-      setShiftChanges((prev) => prev.filter((c) => c.id !== Number(id)));
-      await fetchShiftChanges(selectedDate);
-      notify("success", t("Unit/Shift change") + t("Manage/deleted1"));
-    } catch {
-      notify("error", t("Modal/Unknown error"));
-    }
-  };
-
-  useEffect(() => {
-    const isToday = isSameDate(selectedDate, new Date());
-    if (!isToday) {
-      return;
-    }
-
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    const tick = () => {
-      setNowTs(Date.now());
-      const msToNextMinute = 60000 - (Date.now() % 60000) + 25;
-      timer = setTimeout(tick, msToNextMinute);
-    };
-
-    tick();
-
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [selectedDate]);
-
-  useEffect(() => {
-    if (!shiftsOpen) {
-      return;
-    }
-    if (pendingShiftTime) {
-      return;
-    }
-    if (!isToday) {
-      return;
-    }
-    setPendingShiftId(resolveShiftIdForTime(currentHour, currentMinute));
-  }, [
-    nowTs,
-    shiftsOpen,
-    pendingShiftTime,
-    isToday,
-    currentHour,
-    currentMinute,
-  ]);
-
-  // --- Delete report ---
-  const deleteReport = async (id: string) => {
-    try {
-      const response = await fetch(`${apiUrl}/report/delete/${id}`, {
-        method: "DELETE",
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const result = await response.json();
-
-      if (response.status === 401) {
-        localStorage.removeItem("token");
-        return;
-      }
-
-      if (!response.ok) {
-        notify("error", result?.message ?? t("Modal/Unknown error"));
-        return;
-      }
-
-      setReports((prev) => prev.filter((r) => r.id !== id));
-      notify("success", t("ReportModal/Event") + t("Manage/deleted1"));
-    } catch (err) {
-      notify("error", t("Modal/Unknown error"));
-    }
-  };
-
-  // --- Save unit cell ---
-  const saveInlineEdit = async () => {
-    if (!editingCell) {
-      return;
-    }
-
-    try {
-      const { hour, columnId } = editingCell;
-      const dataType = unitColumnDataTypes[unitColumnIds.indexOf(columnId)];
-
-      const isEmpty =
-        dataType === "Number" && (editingValue === "" || editingValue === null);
-
-      const body = {
-        unitId: parsedUnitId,
-        date: selectedDate,
-        hour,
-        values: [
-          {
-            columnId,
-            value:
-              dataType === "Boolean"
-                ? editingValue
-                  ? "true"
-                  : "false"
-                : isEmpty
-                  ? ""
-                  : String(editingValue),
-            intValue:
-              dataType === "Number" && !isEmpty
-                ? Number(editingValue)
-                : undefined,
-          },
-        ],
-      };
-
-      const response = await fetch(`${apiUrl}/unit-cell/update-all/${unitId}`, {
-        method: "PUT",
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (response.ok) {
-        notify("success", t("Common/Changes saved"));
-        setEditingCell(null);
-        setRefetchData(true);
-      } else {
-        const result = await response.json();
-        notify("error", result?.message ?? t("Modal/Unknown error"));
-      }
-    } catch {
-      notify("error", t("Modal/Unknown error"));
-    }
-  };
-
-  // --- UI HANDLERS ---
-  const toggleRow = (index: number) => {
-    setExpandedRows((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
-    );
-  };
-
-  const toggleAllRows = () => {
-    if (allExpanded) {
-      setExpandedRows([]);
-    } else {
-      setExpandedRows(Array.from({ length: 24 }, (_, i) => i));
-    }
-    setAllExpanded(!allExpanded);
-  };
-
-  const toggleUnitCellModal = (hour?: number) => {
-    if (hour !== undefined) {
-      setReportHour(hour.toString());
-    } else {
-      setReportHour("");
-    }
-
-    setIsUnitCellModalOpen((prev) => !prev);
-  };
-
-  // --- TOGGLE MODALS ---
-  // --- Report ---
-  const toggleReportModal = (id?: string, hour?: number, date?: string) => {
-    setReportId(id);
-
-    if (date) {
-      setReportDate(date);
-    } else {
-      setReportDate(selectedDate);
-    }
-
-    if (hour !== undefined) {
-      setReportHour(hour.toString());
-    } else {
-      setReportHour("");
-    }
-
-    setIsReportModalOpen((prev) => !prev);
-  };
-
-  // --- Delete ---
-  const toggleDeleteItemModal = (
-    id?: string,
-    type: "report" | "shiftChange" = "report",
-  ) => {
-    if (id) {
-      setDeletingItemId(id);
-      setDeleteType(type);
-      setIsDeleteModalOpen(true);
-    } else {
-      setIsDeleteModalOpen(false);
-      setDeletingItemId(undefined);
-      setDeleteType(null);
-    }
-  };
-  // --- DATE SELECTOR ---
-  const goToPreviousDay = () => {
-    const date = new Date(selectedDate);
-    date.setDate(date.getDate() - 1);
-    updateDate(date.toISOString().split("T")[0]);
-  };
-
-  const goToNextDay = () => {
-    const date = new Date(selectedDate);
-    date.setDate(date.getDate() + 1);
-    updateDate(date.toISOString().split("T")[0]);
-  };
-
-  const updateDate = (newDate: string) => {
-    if (unitCreationDate && newDate < unitCreationDate) {
-      return;
-    }
-
-    setSelectedDate(newDate);
-    setTempDate(newDate);
-    setRefetchData(true);
-    setExpandedRows([]);
-
-    const current = new URLSearchParams(searchParams.toString());
-    current.set("date", newDate);
-
-    router.replace(`?${current.toString()}`);
-  };
-
-  useEffect(() => {
-    if (!unitId || !selectedDate || !refetchData || isInvalid) {
-      return;
-    }
-
-    if (isBootstrapping) {
-      return;
-    }
-
-    const fetchCells = async () => {
-      const response = await fetch(
-        `${apiUrl}/unit-cell/${unitId}/${selectedDate}`,
-        {
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message);
-      }
-
-      return result;
-    };
-
-    const fetchReports = async () => {
-      const dayStart = new Date(`${selectedDate}T00:00:00`);
-      const dayEnd = new Date(dayStart);
-      dayEnd.setDate(dayEnd.getDate() + 1);
-
-      const response = await fetch(
-        `${apiUrl}/report/range/${unitId}?start=${dayStart.toISOString()}&end=${dayEnd.toISOString()}`,
-        {
-          headers: {
-            "X-User-Language": localStorage.getItem("language") || "sv",
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message);
-      }
-
-      return result;
-    };
-
-    const fetchOngoingReports = async () => {
-      const response = await fetch(`${apiUrl}/report/ongoing/${unitId}`, {
-        headers: {
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          "Content-Type": "application/json",
-        },
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message);
-      }
-
-      return result;
-    };
-
-    Promise.all([fetchCells(), fetchReports(), fetchOngoingReports()])
-      .then(([cells, finishedReports, ongoingReports]) => {
-        setUnitCells(cells);
-
-        const combined = [...finishedReports, ...ongoingReports];
-        const uniqueReports = Array.from(
-          new Map(combined.map((r) => [r.id, r])).values(),
-        );
-        setReports(uniqueReports);
-      })
-      .catch((err) => {
-        notify("error", t("Modal/Unknown error"));
-      })
-      .finally(() => {
-        setRefetchData(false);
-        setIsManualRefresh(false);
-      });
-  }, [unitId, selectedDate, refetchData, isInvalid, isBootstrapping]);
-
-  // --- CHANGE SHIFT ---
-  const changeShift = async () => {
-    try {
-      if (pendingShiftId == null) {
-        return;
-      }
-
-      if (isCreationMidnight(pendingShiftDate, pendingShiftTime)) {
-        notify("error", t("Unit/Shift change already exists"));
-        return;
-      }
-
-      const body: any = { activeShiftId: pendingShiftId };
-      if (pendingShiftDate && pendingShiftTime) {
-        const [hh, mm] = String(pendingShiftTime).split(":").map(Number);
-        body.date = pendingShiftDate;
-        body.hour = Number.isFinite(hh) ? hh : 0;
-        body.minute = Number.isFinite(mm) ? mm : 0;
-      }
-
-      const response = await fetch(`${apiUrl}/unit/${unitId}/active-shift`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-Language": localStorage.getItem("language") || "sv",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (response.status === 401) {
-        localStorage.removeItem("token");
-        return;
-      }
-
-      if (response.status === 204) {
-        const s = shiftNames.find((x) => x.id === pendingShiftId);
-        const key = s?.systemKey
-          ? `Shifts/${String(s.systemKey).trim()}`
-          : null;
-        const label = key
-          ? t(key) !== key
-            ? t(key)
-            : (s?.name ?? "")
-          : (s?.name ?? "");
-
-        const isNowOrPast = (() => {
-          if (!pendingShiftDate || !pendingShiftTime) {
-            return true;
-          }
-
-          const [hh, mm = "0"] = String(pendingShiftTime).split(":");
-          const local = new Date(
-            `${pendingShiftDate}T${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}:00`,
-          );
-          return local <= new Date();
-        })();
-
-        if (isNowOrPast) {
-          setActiveShiftId(pendingShiftId);
-          setCurrentActiveShiftId(pendingShiftId);
-        }
-
-        setShiftsOpen(false);
-        await fetchShiftChanges(selectedDate);
-        await refreshUnitActive();
-
-        notify("info", `${t("Unit/Shift changed")} ${label}`);
-        return;
-      }
-
-      let result: any = null;
-      const text = await response.text();
-      if (text) result = JSON.parse(text);
-
-      if (!response.ok) {
-        notify("error", result?.message || t("Modal/Unknown error"));
-        return;
-      }
-    } catch (err) {
-      notify("error", t("Modal/Unknown error"));
-    }
-  };
-
-  const refreshUnitActive = async () => {
-    const res = await fetch(`${apiUrl}/unit/fetch/${unitId}`, {
-      headers: {
-        "X-User-Language": localStorage.getItem("language") || "sv",
-        "Content-Type": "application/json",
-      },
-    });
-    if (!res.ok) return;
-    const u = await res.json();
-    setActiveShiftId(u.activeShiftId ?? null);
-    setCurrentActiveShiftId(u.activeShiftId ?? null);
-  };
-
-  useEffect(() => {
-    if (shiftNames.length && pendingShiftId != null) {
-      setShiftVisibility(
-        shiftNames.reduce(
-          (acc, s) => ({ ...acc, [s.id]: s.id === pendingShiftId }),
-          {},
-        ),
-      );
-    }
-  }, [shiftNames, pendingShiftId]);
-
-  useEffect(() => {
-    if (currentActiveShiftId != null && !shiftsOpen) {
-      setPendingShiftId(currentActiveShiftId);
-    }
-  }, [currentActiveShiftId, shiftsOpen]);
-
-  if (canShowLock) {
+  if (c.canShowLock) {
     return <Message icon="lock" content="lock" fullscreen />;
   }
-  if (canShowInvalid) {
+  if (c.canShowInvalid) {
     return <Message content="invalid" fullscreen />;
   }
-  if (isReady) {
+  if (c.isReady) {
     return (
       <>
         {/* --- MODALS --- */}
         <UnitCellModal
-          isOpen={isUnitCellModalOpen}
-          onClose={toggleUnitCellModal}
+          isOpen={c.isUnitCellModalOpen}
+          onClose={c.toggleUnitCellModal}
           onItemUpdated={() => {
-            setRefetchData(true);
+            c.setRefetchData(true);
           }}
-          unitId={parsedUnitId}
-          selectedDate={selectedDate}
-          selectedHour={reportHour}
+          unitId={c.parsedUnitId}
+          selectedDate={c.selectedDate}
+          selectedHour={c.reportHour}
         />
 
         <ReportModal
-          isOpen={isReportModalOpen}
-          onClose={toggleReportModal}
+          isOpen={c.isReportModalOpen}
+          onClose={c.toggleReportModal}
           onItemUpdated={() => {
-            setRefetchData(true);
+            c.setRefetchData(true);
           }}
-          unitId={parsedUnitId}
-          categoryIds={categoryIds}
-          reportId={Number(reportId)}
-          selectedDate={reportDate}
-          selectedHour={reportHour}
+          unitId={c.parsedUnitId}
+          categoryIds={c.categoryIds}
+          reportId={Number(c.reportId)}
+          selectedDate={c.reportDate}
+          selectedHour={c.reportHour}
         />
 
         <DeleteModal
-          isOpen={isDeleteModalOpen}
-          onClose={() => toggleDeleteItemModal()}
+          isOpen={c.isDeleteModalOpen}
+          onClose={() => c.toggleDeleteItemModal()}
           onConfirm={async () => {
-            if (!deletingItemId || !deleteType) {
+            if (!c.deletingItemId || !c.deleteType) {
               return;
             }
 
-            if (deleteType === "report") {
-              await deleteReport(deletingItemId);
-              setReports((prev) =>
-                prev.filter((r) => String(r.id) !== deletingItemId),
+            if (c.deleteType === "report") {
+              await c.deleteReport(c.deletingItemId);
+              c.setReports((prev) =>
+                prev.filter((r) => String(r.id) !== c.deletingItemId),
               );
-            } else if (deleteType === "shiftChange") {
-              await deleteShiftChange(deletingItemId);
-              setShiftChanges((prev) =>
-                prev.filter((c) => String(c.id) !== deletingItemId),
+            } else if (c.deleteType === "shiftChange") {
+              await c.deleteShiftChange(c.deletingItemId);
+              c.setShiftChanges((prev) =>
+                prev.filter((sc) => String(sc.id) !== c.deletingItemId),
               );
             }
 
-            toggleDeleteItemModal();
+            c.toggleDeleteItemModal();
           }}
           customDeleteMessage={
-            deleteType === "shiftChange"
-              ? t("Unit/Remove post message")
+            c.deleteType === "shiftChange"
+              ? c.t("Unit/Remove post message")
               : undefined
           }
         />
@@ -1235,23 +112,23 @@ const UnitClient = (props: Props) => {
             <div className="flex gap-4">
               {/* --- Report data top --- */}
               <CustomTooltip
-                content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Tooltip report data") : t("Unit/No columns")}`}
+                content={`${!props.isReporter ? c.t("Common/No access") : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report data") : c.t("Unit/No columns")}`}
                 veryLongDelay={
-                  props.isReporter == true && unitColumnNames.length > 0
+                  props.isReporter == true && c.unitColumnNames.length > 0
                 }
                 showOnTouch
               >
                 <button
                   className={`${buttonSecondaryClass} group lg:w-max lg:px-4`}
-                  onClick={() => toggleUnitCellModal()}
+                  onClick={() => c.toggleUnitCellModal()}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      toggleUnitCellModal();
+                      c.toggleUnitCellModal();
                     }
                   }}
                   tabIndex={0}
-                  disabled={!props.isReporter || unitColumnNames.length === 0}
+                  disabled={!props.isReporter || c.unitColumnNames.length === 0}
                 >
                   <div className="flex items-center justify-center gap-2 truncate">
                     <HoverIcon
@@ -1260,24 +137,24 @@ const UnitClient = (props: Props) => {
                       className="h-6 min-h-6 w-6 min-w-6"
                     />
                     <span className="hidden lg:block">
-                      {t("Unit/Report data")}
+                      {c.t("Unit/Report data")}
                     </span>
                   </div>
                 </button>
               </CustomTooltip>
 
               <CustomTooltip
-                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report events")}`}
+                content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Tooltip report events")}`}
                 veryLongDelay={props.isReporter == true}
                 showOnTouch
               >
                 <button
                   className={`${buttonSecondaryClass} group lg:w-max lg:px-4`}
-                  onClick={() => toggleReportModal()}
+                  onClick={() => c.toggleReportModal()}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      toggleReportModal();
+                      c.toggleReportModal();
                     }
                   }}
                   tabIndex={0}
@@ -1290,7 +167,7 @@ const UnitClient = (props: Props) => {
                       className="h-6 min-h-6 w-6 min-w-6"
                     />
                     <span className="hidden lg:block">
-                      {t("Unit/Report events")}
+                      {c.t("Unit/Report events")}
                     </span>
                   </div>
                 </button>
@@ -1299,57 +176,59 @@ const UnitClient = (props: Props) => {
 
             <div className="ml-auto flex max-w-max flex-wrap items-center gap-4">
               <CustomTooltip
-                content={`${refetchData && isManualRefresh ? t("Common/Updating") : t("Common/Update page")}`}
+                content={`${c.refetchData && c.isManualRefresh ? c.t("Common/Updating") : c.t("Common/Update page")}`}
                 veryLongDelay
                 showOnTouch
               >
                 <button
                   className={`${buttonSecondaryClass} group flex items-center justify-center`}
                   onClick={() => {
-                    setIsManualRefresh(true);
-                    setRefetchData(true);
+                    c.setIsManualRefresh(true);
+                    c.setRefetchData(true);
                   }}
-                  aria-label={t("Common/Update page")}
-                  disabled={isManualRefresh && refetchData}
+                  aria-label={c.t("Common/Update page")}
+                  disabled={c.isManualRefresh && c.refetchData}
                 >
                   <Outline.ArrowPathIcon
-                    className={`${refetchData && isManualRefresh ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} min-h-full min-w-full`}
+                    className={`${c.refetchData && c.isManualRefresh ? "motion-safe:animate-[spin_1s_linear_infinite]" : ""} min-h-full min-w-full`}
                   />
                 </button>
               </CustomTooltip>
               <div className="flex">
                 <button
                   className={`${buttonSecondaryClass} rounded-r-none`}
-                  onClick={goToPreviousDay}
-                  aria-label={t("Unit/Previous day")}
+                  onClick={c.goToPreviousDay}
+                  aria-label={c.t("Unit/Previous day")}
                   disabled={
-                    !!unitCreationDate && selectedDate <= unitCreationDate
+                    !!c.unitCreationDate && c.selectedDate <= c.unitCreationDate
                   }
                 >
-                  <ChevronLeftIcon className="min-h-full min-w-full" />
+                  <Outline.ChevronLeftIcon className="min-h-full min-w-full" />
                 </button>
                 <div className="flex max-w-40 min-w-40">
                   <Input
                     type="date"
-                    value={tempDate}
-                    onChange={(val) => setTempDate(String(val))}
-                    onBlur={(e) => handleDateChange(e.target.value)}
+                    value={c.tempDate}
+                    onChange={(val) => c.setTempDate(String(val))}
+                    onBlur={(e) => c.handleDateChange(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        handleDateChange((e.target as HTMLInputElement).value);
+                        c.handleDateChange(
+                          (e.target as HTMLInputElement).value,
+                        );
                       }
                     }}
                     notRounded
-                    min={unitCreationDate}
+                    min={c.unitCreationDate}
                   />
                 </div>
                 <button
                   className={`${buttonSecondaryClass} rounded-l-none`}
-                  onClick={goToNextDay}
-                  aria-label={t("Unit/Next day")}
+                  onClick={c.goToNextDay}
+                  aria-label={c.t("Unit/Next day")}
                 >
-                  <ChevronRightIcon className="min-h-full min-w-full" />
+                  <Outline.ChevronRightIcon className="min-h-full min-w-full" />
                 </button>
               </div>
             </div>
@@ -1358,74 +237,74 @@ const UnitClient = (props: Props) => {
           <div className="flex justify-between gap-4">
             <div className="relative ml-auto flex items-center gap-4">
               <CustomTooltip
-                content={`${!props.isReporter ? t("Common/No access") : ""}`}
+                content={`${!props.isReporter ? c.t("Common/No access") : ""}`}
                 veryLongDelay={props.isReporter == true}
                 showOnTouch
               >
                 <button
-                  ref={shiftsRef}
+                  ref={c.shiftsRef}
                   className={`${roundedButtonClass} ${!props.isReporter ? "!cursor-not-allowed opacity-50" : ""} group w-auto gap-2 px-4`}
                   onClick={async () => {
-                    setPendingShiftId(null);
-                    setPendingShiftId(currentActiveShiftId ?? null);
-                    setPendingShiftDate(selectedDate);
-                    setPendingShiftTime("");
-                    setShiftsOpen((prev) => !prev);
+                    c.setPendingShiftId(null);
+                    c.setPendingShiftId(c.currentActiveShiftId ?? null);
+                    c.setPendingShiftDate(c.selectedDate);
+                    c.setPendingShiftTime("");
+                    c.setShiftsOpen((prev) => !prev);
                   }}
                   aria-haspopup="menu"
-                  aria-expanded={shiftsOpen}
+                  aria-expanded={c.shiftsOpen}
                   disabled={!props.isReporter}
                 >
                   <span
-                    className={`${shiftsClass} ${shiftsOpen ? "text-(--accent-color)" : ""}`}
+                    className={`${shiftsClass} ${c.shiftsOpen ? "text-(--accent-color)" : ""}`}
                   >
                     {(() => {
-                      const sid = currentActiveShiftId;
+                      const sid = c.currentActiveShiftId;
 
                       if (sid == null) {
-                        return t("Unit/Change shift");
+                        return c.t("Unit/Change shift");
                       }
 
-                      const shift = shiftNames.find((s) => s.id === sid);
+                      const shift = c.shiftNames.find((s) => s.id === sid);
                       if (!shift) {
-                        return t("Unit/Change shift");
+                        return c.t("Unit/Change shift");
                       }
 
                       if (shift.systemKey) {
                         const key = `Shifts/${shift.systemKey}`;
-                        const tr = t(key);
+                        const tr = c.t(key);
                         // return tr !== key ? tr : shift.name;
-                        return t("Unit/Change shift");
+                        return c.t("Unit/Change shift");
                       }
 
                       // return shift.name;
-                      return t("Unit/Change shift");
+                      return c.t("Unit/Change shift");
                     })()}
                   </span>
-                  <ChevronDownIcon
-                    className={`${shiftsIconClass} ${shiftsOpen ? "-rotate-180 text-(--accent-color)" : ""}`}
+                  <Outline.ChevronDownIcon
+                    className={`${shiftsIconClass} ${c.shiftsOpen ? "-rotate-180 text-(--accent-color)" : ""}`}
                   />
                 </button>
               </CustomTooltip>
               <MenuDropdown
-                triggerRef={shiftsRef}
-                isOpen={shiftsOpen}
+                triggerRef={c.shiftsRef}
+                isOpen={c.shiftsOpen}
                 onClose={() => {
-                  setShiftsOpen(false);
-                  setPendingShiftId(null);
+                  c.setShiftsOpen(false);
+                  c.setPendingShiftId(null);
                 }}
               >
                 <div className="flex w-full flex-col gap-4">
-                  {dropdownShifts.map((item) => {
+                  {c.dropdownShifts.map((item) => {
                     const effectivePendingId =
-                      pendingShiftId ?? currentActiveShiftId;
+                      c.pendingShiftId ?? c.currentActiveShiftId;
 
                     return (
                       <div
                         key={item.id}
-                        onClick={() => setPendingShiftId(item.id)}
+                        onClick={() => c.setPendingShiftId(item.id)}
                         role="menuitemradio"
-                        aria-checked={pendingShiftId === item.id}
+                        aria-checked={c.pendingShiftId === item.id}
                         className="group flex cursor-pointer items-center justify-between gap-4"
                       >
                         <Input
@@ -1442,18 +321,18 @@ const UnitClient = (props: Props) => {
                   <div className="mt-4 flex flex-col gap-6">
                     <Input
                       type="date"
-                      value={pendingShiftDate}
-                      onChange={(v) => setPendingShiftDate(String(v))}
-                      label={t("Common/Date")}
-                      min={unitCreationDate}
+                      value={c.pendingShiftDate}
+                      onChange={(v) => c.setPendingShiftDate(String(v))}
+                      label={c.t("Common/Date")}
+                      min={c.unitCreationDate}
                       onModal
                       required
                     />
                     <Input
                       type="time"
-                      value={pendingShiftTime}
-                      onChange={(v) => setPendingShiftTime(String(v))}
-                      label={t("Common/Time")}
+                      value={c.pendingShiftTime}
+                      onChange={(v) => c.setPendingShiftTime(String(v))}
+                      label={c.t("Common/Time")}
                       onModal
                       required
                     />
@@ -1462,16 +341,16 @@ const UnitClient = (props: Props) => {
 
                 <button
                   className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
-                  onClick={changeShift}
+                  onClick={c.changeShift}
                   disabled={
-                    !pendingShiftId ||
-                    !pendingShiftDate ||
-                    !pendingShiftTime ||
+                    !c.pendingShiftId ||
+                    !c.pendingShiftDate ||
+                    !c.pendingShiftTime ||
                     !props.isReporter ||
-                    pendingShiftDate < unitCreationDate
+                    c.pendingShiftDate < c.unitCreationDate
                   }
                 >
-                  {t("Unit/Change to shift")}
+                  {c.t("Unit/Change to shift")}
                 </button>
               </MenuDropdown>
             </div>
@@ -1479,10 +358,12 @@ const UnitClient = (props: Props) => {
           <div className="w-full overflow-x-auto rounded border border-(--border-main)">
             <table className="w-full max-w-full min-w-fit border-collapse overflow-x-auto">
               <thead className="bg-(--bg-grid-header)">
-                {isBootstrapping ? (
+                {c.isBootstrapping ? (
                   <tr>
                     <th
-                      colSpan={unitColumnNames.length + compareColsCount + 4}
+                      colSpan={
+                        c.unitColumnNames.length + c.compareColsCount + 4
+                      }
                       className={`${thClass}`}
                     />
                   </tr>
@@ -1491,36 +372,40 @@ const UnitClient = (props: Props) => {
                     {/* --- Standard <th>s --- */}
                     <th
                       className={`${thClass} sticky left-0 z-[calc(var(--z-base)+2)] w-[52.5px] cursor-pointer bg-(--bg-grid-header) whitespace-nowrap transition-[background] duration-(--fast) hover:bg-(--bg-grid-header-hover)`}
-                      onClick={toggleAllRows}
+                      onClick={c.toggleAllRows}
                       role="button"
-                      aria-label={t("Unit/Open or collapse")}
+                      aria-label={c.t("Unit/Open or collapse")}
                     >
                       <div className={iconButtonPrimaryClass}>
-                        {allExpanded ? <ChevronDownIcon /> : <ChevronUpIcon />}
+                        {c.allExpanded ? (
+                          <Outline.ChevronDownIcon />
+                        ) : (
+                          <Outline.ChevronUpIcon />
+                        )}
                       </div>
                     </th>
                     <th
                       className={`${thClass} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-(--bg-grid-header) whitespace-nowrap`}
                     >
-                      {t("Common/Time")}
+                      {c.t("Common/Time")}
                     </th>
                     <th
                       className={`${thClass} w-[72px] bg-(--bg-grid-header) whitespace-nowrap`}
                     >
-                      {t("Common/Shift")}
+                      {c.t("Common/Shift")}
                     </th>
                     <th
-                      className={`${thClass} ${unitColumnNames.length > 0 ? "w-0" : ""} whitespace-nowrap`}
+                      className={`${thClass} ${c.unitColumnNames.length > 0 ? "w-0" : ""} whitespace-nowrap`}
                     >
-                      {t("Unit/Events")}
+                      {c.t("Unit/Events")}
                     </th>
 
-                    {unitColumnNames.map((col, i, arr) => (
+                    {c.unitColumnNames.map((col, i, arr) => (
                       <React.Fragment key={`head-${i}`}>
                         <th
                           className={`${thClass} ${
-                            unitColumnDataTypes[i] === "Text" &&
-                            unitColumnLargeColumnFlags[i]
+                            c.unitColumnDataTypes[i] === "Text" &&
+                            c.unitColumnLargeColumnFlags[i]
                               ? "min-w-[64ch]"
                               : "min-w-[10ch]"
                           } whitespace-nowrap`}
@@ -1528,17 +413,17 @@ const UnitClient = (props: Props) => {
                           {col}
                         </th>
 
-                        {unitColumnDataTypes[i] === "Number" &&
-                          unitColumnCompareFlags[i] && (
+                        {c.unitColumnDataTypes[i] === "Number" &&
+                          c.unitColumnCompareFlags[i] && (
                             <th
                               className={`${thClass} w-0 min-w-[10ch] whitespace-nowrap`}
                             >
                               <div className="flex items-center justify-between gap-2">
-                                <span>{unitColumnComparisonTexts[i]}</span>
+                                <span>{c.unitColumnComparisonTexts[i]}</span>
                                 <CustomTooltip
                                   content={
-                                    t("Unit/Tooltip comparison text") +
-                                    unitColumnNames[i]
+                                    c.t("Unit/Tooltip comparison text") +
+                                    c.unitColumnNames[i]
                                   }
                                   showOnTouch
                                 >
@@ -1559,11 +444,13 @@ const UnitClient = (props: Props) => {
                 )}
               </thead>
               <tbody>
-                {isBootstrapping ? (
+                {c.isBootstrapping ? (
                   <tr>
                     {/* 960px = h-[tdClass] * 24 */}
                     <td
-                      colSpan={unitColumnNames.length + compareColsCount + 4}
+                      colSpan={
+                        c.unitColumnNames.length + c.compareColsCount + 4
+                      }
                       className={`${tdClass} h-[960px]`}
                     >
                       <Message icon="loading" content="content" />
@@ -1572,19 +459,19 @@ const UnitClient = (props: Props) => {
                 ) : (
                   <>
                     {Array.from({ length: 24 }, (_, hour) => {
-                      const isExpanded = expandedRows.includes(hour);
+                      const isExpanded = c.expandedRows.includes(hour);
 
-                      const hasMidnightChange = shiftChanges.some(
+                      const hasMidnightChange = c.shiftChanges.some(
                         (c) => c.hour === 0 && (c.minute ?? 0) === 0,
                       );
 
                       const isCreationDay =
-                        Boolean(unitCreationDate) &&
-                        selectedDate === unitCreationDate;
+                        Boolean(c.unitCreationDate) &&
+                        c.selectedDate === c.unitCreationDate;
 
                       const baseSynthetic =
                         hour === 0 &&
-                        baseShiftId != null &&
+                        c.baseShiftId != null &&
                         !hasMidnightChange &&
                         isCreationDay
                           ? [
@@ -1592,15 +479,15 @@ const UnitClient = (props: Props) => {
                                 id: -1,
                                 hour: 0,
                                 minute: 0,
-                                oldShiftId: baseShiftId,
-                                newShiftId: baseShiftId,
+                                oldShiftId: c.baseShiftId,
+                                newShiftId: c.baseShiftId,
                               } as ShiftChange,
                             ]
                           : [];
 
                       const changesThisHour = [
                         ...baseSynthetic,
-                        ...shiftChanges.filter((c) => c.hour === hour),
+                        ...c.shiftChanges.filter((c) => c.hour === hour),
                       ].sort(
                         (a, b) =>
                           a.hour - b.hour || (a.minute ?? 0) - (b.minute ?? 0),
@@ -1611,12 +498,12 @@ const UnitClient = (props: Props) => {
                           <tr
                             role="button"
                             onClick={(e) => {
-                              if (editingCell) {
+                              if (c.editingCell) {
                                 e.stopPropagation();
                                 return;
                               }
 
-                              toggleRow(hour);
+                              c.toggleRow(hour);
                             }}
                             aria-label="Öppna/stäng"
                             className={`${hour % 2 === 0 ? "bg-(--bg-grid)" : "bg-(--bg-grid-zebra)"} group/row cursor-pointer transition-[background] duration-(--fast) hover:bg-(--bg-grid-header-hover)`}
@@ -1628,9 +515,9 @@ const UnitClient = (props: Props) => {
                             >
                               <div className={iconButtonPrimaryClass}>
                                 {isExpanded ? (
-                                  <ChevronDownIcon />
+                                  <Outline.ChevronDownIcon />
                                 ) : (
-                                  <ChevronUpIcon />
+                                  <Outline.ChevronUpIcon />
                                 )}
                               </div>
                             </td>
@@ -1647,20 +534,21 @@ const UnitClient = (props: Props) => {
                               className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} whitespace-nowrap`}
                             >
                               {(() => {
-                                const sid = resolveShiftIdForTime(hour, 0);
+                                const sid = c.resolveShiftIdForTime(hour, 0);
 
                                 if (sid == null) {
                                   return "?";
                                 }
 
-                                const shift = shiftNames.find(
+                                const shift = c.shiftNames.find(
                                   (s) => s.id === sid,
                                 );
+
                                 if (!shift) {
                                   return "?";
                                 }
 
-                                const span = getTeamSpanForHour(sid, hour);
+                                const span = c.getTeamSpanForHour(sid, hour);
                                 if (!span) {
                                   return "-";
                                 }
@@ -1668,16 +556,28 @@ const UnitClient = (props: Props) => {
                                 return (
                                   <span
                                     className={`${badgeClass}`}
-                                    style={{
-                                      backgroundColor:
-                                        currentTheme === "dark"
-                                          ? span.darkColorHex
-                                          : span.lightColorHex,
-                                      color:
-                                        currentTheme === "dark"
-                                          ? span.darkTextColorHex
-                                          : span.lightTextColorHex,
-                                    }}
+                                    style={
+                                      span.reverseColor
+                                        ? {
+                                            boxShadow: `inset 0 0 0 1px ${
+                                              c.currentTheme === "dark"
+                                                ? span.darkColorHex
+                                                : span.lightColorHex
+                                            }`,
+                                            backgroundColor: "transparent",
+                                            color: "var(--text-main)",
+                                          }
+                                        : {
+                                            backgroundColor:
+                                              c.currentTheme === "dark"
+                                                ? span.darkColorHex
+                                                : span.lightColorHex,
+                                            color:
+                                              c.currentTheme === "dark"
+                                                ? span.darkTextColorHex
+                                                : span.lightTextColorHex,
+                                          }
+                                    }
                                   >
                                     {span.label}
                                   </span>
@@ -1687,18 +587,18 @@ const UnitClient = (props: Props) => {
 
                             {/* --- Events <td> --- */}
                             <td
-                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${unitColumnNames.length > 0 ? "w-0" : "border-r-0"} whitespace-nowrap`}
+                              className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${c.unitColumnNames.length > 0 ? "w-0" : "border-r-0"} whitespace-nowrap`}
                             >
                               {(() => {
                                 const dayStart = new Date(
-                                  `${selectedDate}T00:00:00`,
+                                  `${c.selectedDate}T00:00:00`,
                                 );
                                 const hourStart = new Date(dayStart);
                                 hourStart.setHours(hour, 0, 0, 0);
                                 const hourEnd = new Date(dayStart);
                                 hourEnd.setHours(hour + 1, 0, 0, 0);
 
-                                const filteredReports = reports.filter(
+                                const filteredReports = c.reports.filter(
                                   (report) => {
                                     if (!report.startTime) {
                                       return false;
@@ -1725,7 +625,7 @@ const UnitClient = (props: Props) => {
                                     {filteredReports.length}{" "}
                                     {hasOngoing && (
                                       <CustomTooltip
-                                        content={t("Unit/Ongoing event")}
+                                        content={c.t("Unit/Ongoing event")}
                                         showOnTouch
                                       >
                                         <span className="group ml-1 min-h-4 min-w-4 cursor-help text-(--note-error)">
@@ -1747,15 +647,16 @@ const UnitClient = (props: Props) => {
                             </td>
 
                             {/* --- Unit Columns <td>s --- */}
-                            {unitColumnNames.map((_, colIdx) => {
-                              const columnId = unitColumnIds[colIdx];
-                              const columnName = unitColumnNames[colIdx];
-                              const dataType = unitColumnDataTypes[colIdx];
-                              const hasCompare = unitColumnCompareFlags[colIdx];
+                            {c.unitColumnNames.map((_, colIdx) => {
+                              const columnId = c.unitColumnIds[colIdx];
+                              const columnName = c.unitColumnNames[colIdx];
+                              const dataType = c.unitColumnDataTypes[colIdx];
+                              const hasCompare =
+                                c.unitColumnCompareFlags[colIdx];
                               const compareLabel =
-                                unitColumnComparisonTexts[colIdx];
+                                c.unitColumnComparisonTexts[colIdx];
 
-                              const cell = unitCells.find(
+                              const cell = c.unitCells.find(
                                 (c) =>
                                   c.hour === hour &&
                                   c.columnName === columnName,
@@ -1764,29 +665,29 @@ const UnitClient = (props: Props) => {
                               const displayValue =
                                 dataType === "Boolean"
                                   ? cell?.value === true
-                                    ? t("Common/Yes")
+                                    ? c.t("Common/Yes")
                                     : cell?.value === "false"
-                                      ? t("Common/No")
+                                      ? c.t("Common/No")
                                       : ""
                                   : (cell?.intValue ?? cell?.value ?? "");
 
                               const numericCurrent =
                                 dataType === "Number"
-                                  ? getNumericCellValue(cell)
+                                  ? c.getNumericCellValue(cell)
                                   : undefined;
 
                               const prevCell =
                                 dataType === "Number"
-                                  ? unitCells.find(
-                                      (c) =>
-                                        c.hour === hour - 1 &&
-                                        c.columnName === columnName,
+                                  ? c.unitCells.find(
+                                      (uc) =>
+                                        uc.hour === hour - 1 &&
+                                        uc.columnName === columnName,
                                     )
                                   : undefined;
 
                               const numericPrev =
                                 dataType === "Number"
-                                  ? getNumericCellValue(prevCell)
+                                  ? c.getNumericCellValue(prevCell)
                                   : undefined;
 
                               const diff =
@@ -1802,19 +703,21 @@ const UnitClient = (props: Props) => {
                                     } ${
                                       hasCompare && dataType === "Number"
                                         ? ""
-                                        : colIdx === unitColumnNames.length - 1
+                                        : colIdx ===
+                                            c.unitColumnNames.length - 1
                                           ? "border-r-0"
                                           : ""
                                     } ${
-                                      unitColumnDataTypes[colIdx] === "Text" &&
-                                      unitColumnLargeColumnFlags[colIdx]
+                                      c.unitColumnDataTypes[colIdx] ===
+                                        "Text" &&
+                                      c.unitColumnLargeColumnFlags[colIdx]
                                         ? "min-w-[28ch]"
                                         : "min-w-[10ch]"
                                     } group/cell break-normal!`}
                                   >
                                     <div className="flex gap-4">
-                                      {editingCell?.hour === hour &&
-                                      editingCell?.columnId === columnId ? (
+                                      {c.editingCell?.hour === hour &&
+                                      c.editingCell?.columnId === columnId ? (
                                         <Input
                                           compact
                                           focusOnMount
@@ -1823,9 +726,9 @@ const UnitClient = (props: Props) => {
                                               ? "number"
                                               : "text"
                                           }
-                                          value={String(editingValue ?? "")}
+                                          value={String(c.editingValue ?? "")}
                                           onChange={(val) =>
-                                            setEditingValue(
+                                            c.setEditingValue(
                                               dataType === "Number"
                                                 ? val === ""
                                                   ? ""
@@ -1835,14 +738,14 @@ const UnitClient = (props: Props) => {
                                                 : val,
                                             )
                                           }
-                                          onBlur={() => setEditingCell(null)}
+                                          onBlur={() => c.setEditingCell(null)}
                                           onKeyDown={(e) => {
                                             if (e.key === "Escape") {
                                               e.stopPropagation();
-                                              setEditingCell(null);
+                                              c.setEditingCell(null);
                                             } else if (e.key === "Enter") {
                                               e.preventDefault();
-                                              saveInlineEdit();
+                                              c.saveInlineEdit();
                                             }
                                           }}
                                           min={0}
@@ -1853,10 +756,10 @@ const UnitClient = (props: Props) => {
                                           {displayValue}
 
                                           <CustomTooltip
-                                            content={`${!props.isReporter ? t("Common/No access") : unitColumnNames.length > 0 ? t("Unit/Tooltip report this data") + t("Unit/Tooltip this hour") : t("Unit/No columns")}`}
+                                            content={`${!props.isReporter ? c.t("Common/No access") : c.unitColumnNames.length > 0 ? c.t("Unit/Tooltip report this data") + c.t("Unit/Tooltip this hour") : c.t("Unit/No columns")}`}
                                             veryLongDelay={
                                               props.isReporter == true &&
-                                              unitColumnNames.length > 0
+                                              c.unitColumnNames.length > 0
                                             }
                                             showOnTouch
                                           >
@@ -1866,11 +769,11 @@ const UnitClient = (props: Props) => {
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 // toggleUnitCellModal(hour);
-                                                setEditingCell({
+                                                c.setEditingCell({
                                                   hour,
                                                   columnId,
                                                 });
-                                                setEditingValue(
+                                                c.setEditingValue(
                                                   cell?.value ??
                                                     cell?.intValue ??
                                                     "",
@@ -1878,7 +781,7 @@ const UnitClient = (props: Props) => {
                                               }}
                                               disabled={
                                                 !props.isReporter ||
-                                                unitColumnNames.length === 0
+                                                c.unitColumnNames.length === 0
                                               }
                                             >
                                               <HoverIcon
@@ -1895,7 +798,7 @@ const UnitClient = (props: Props) => {
 
                                   {dataType === "Number" && hasCompare && (
                                     <td
-                                      className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === unitColumnNames.length - 1 ? "border-r-0" : ""} ${dataType === "Number" ? "max-w-max" : "min-w-32"}`}
+                                      className={`${tdClass} ${hour === 23 ? "border-b-0" : ""} ${colIdx === c.unitColumnNames.length - 1 ? "border-r-0" : ""} ${dataType === "Number" ? "max-w-max" : "min-w-32"}`}
                                     >
                                       {numericPrev == null
                                         ? "0"
@@ -1924,12 +827,12 @@ const UnitClient = (props: Props) => {
                                 <td
                                   className={`${tdClassSpecial} sticky left-[52.5px] z-[calc(var(--z-base)+2)] w-[72px] bg-(--bg-grid-note)`}
                                 >
-                                  {toHm(change.hour, change.minute)}
+                                  {c.toHm(change.hour, change.minute)}
                                 </td>
                                 <td
                                   colSpan={
-                                    unitColumnNames.length +
-                                    compareColsCount +
+                                    c.unitColumnNames.length +
+                                    c.compareColsCount +
                                     4
                                   }
                                 >
@@ -1937,39 +840,41 @@ const UnitClient = (props: Props) => {
                                     <div className="flex w-full items-center justify-center">
                                       <>
                                         {!isSynthetic
-                                          ? t("Unit/Shift changed") +
-                                            getShiftLabel(change.newShiftId)
-                                          : t("Unit/New unit shift changed") +
-                                            getShiftLabel(change.newShiftId)}
+                                          ? c.t("Unit/Shift changed") +
+                                            c.getShiftLabel(change.newShiftId)
+                                          : c.t("Unit/New unit shift changed") +
+                                            c.getShiftLabel(change.newShiftId)}
                                       </>
                                     </div>
                                     <CustomTooltip
-                                      content={`${!props.isReporter ? t("Common/No access") : isSynthetic ? t("Unit/Cannot be edited") : t("Unit/Update post")}`}
+                                      content={`${!props.isReporter ? c.t("Common/No access") : isSynthetic ? c.t("Unit/Cannot be edited") : c.t("Unit/Update post")}`}
                                       veryLongDelay={
                                         props.isReporter == true && !isSynthetic
                                       }
                                       showOnTouch
                                     >
                                       <button
-                                        ref={menuTriggerRef}
+                                        ref={c.menuTriggerRef}
                                         className={`${iconButtonPrimaryClass} ${!props.isReporter ? "!cursor-not-allowed opacity-50" : ""} group mr-4 w-auto`}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          menuTriggerRef.current =
+                                          c.menuTriggerRef.current =
                                             e.currentTarget as HTMLButtonElement;
-                                          setEditChangeDate(selectedDate);
-                                          setEditChangeTime(
-                                            toHm(change.hour, change.minute),
+                                          c.setEditChangeDate(c.selectedDate);
+                                          c.setEditChangeTime(
+                                            c.toHm(change.hour, change.minute),
                                           );
-                                          setPendingShiftId(change.newShiftId);
-                                          setOpenChangeMenuId((prev) =>
+                                          c.setPendingShiftId(
+                                            change.newShiftId,
+                                          );
+                                          c.setOpenChangeMenuId((prev) =>
                                             prev === change.id
                                               ? null
                                               : change.id,
                                           );
                                         }}
                                         aria-haspopup="menu"
-                                        aria-expanded={shiftsOpen}
+                                        aria-expanded={c.shiftsOpen}
                                         disabled={
                                           !props.isReporter || isSynthetic
                                         }
@@ -1979,31 +884,31 @@ const UnitClient = (props: Props) => {
                                           solid={Solid.PencilIcon}
                                           className="h-6 min-h-6 w-6 min-w-6 text-(--text-main)"
                                           active={
-                                            openChangeMenuId === change.id
+                                            c.openChangeMenuId === change.id
                                           }
                                         />
                                       </button>
                                     </CustomTooltip>
 
                                     <MenuDropdownAnchor
-                                      triggerRef={menuTriggerRef}
-                                      isOpen={openChangeMenuId === change.id}
+                                      triggerRef={c.menuTriggerRef}
+                                      isOpen={c.openChangeMenuId === change.id}
                                       onClose={() => {
-                                        setOpenChangeMenuId(null);
-                                        setPendingShiftId(null);
+                                        c.setOpenChangeMenuId(null);
+                                        c.setPendingShiftId(null);
                                       }}
                                       addSpacing={8}
                                     >
                                       <div className="flex w-full flex-col gap-4">
-                                        {dropdownShifts.map((item) => (
+                                        {c.dropdownShifts.map((item) => (
                                           <div
                                             key={item.id}
                                             onClick={() =>
-                                              setPendingShiftId(item.id)
+                                              c.setPendingShiftId(item.id)
                                             }
                                             role="menuitemradio"
                                             aria-checked={
-                                              pendingShiftId === item.id
+                                              c.pendingShiftId === item.id
                                             }
                                             className="group flex cursor-pointer items-center justify-between gap-4"
                                           >
@@ -2011,7 +916,7 @@ const UnitClient = (props: Props) => {
                                               type="radio"
                                               name={`shift-selection-${item.id}`}
                                               checked={
-                                                (pendingShiftId ??
+                                                (c.pendingShiftId ??
                                                   change.newShiftId) === item.id
                                               }
                                               label={item.label}
@@ -2023,21 +928,21 @@ const UnitClient = (props: Props) => {
                                         <div className="mt-4 flex flex-col gap-6">
                                           <Input
                                             type="date"
-                                            value={editChangeDate}
+                                            value={c.editChangeDate}
                                             onChange={(v) =>
-                                              setEditChangeDate(String(v))
+                                              c.setEditChangeDate(String(v))
                                             }
-                                            label={t("Common/Date")}
+                                            label={c.t("Common/Date")}
                                             onModal
                                             required
                                           />
                                           <Input
                                             type="time"
-                                            value={editChangeTime}
+                                            value={c.editChangeTime}
                                             onChange={(v) =>
-                                              setEditChangeTime(String(v))
+                                              c.setEditChangeTime(String(v))
                                             }
-                                            label={t("Common/Time")}
+                                            label={c.t("Common/Time")}
                                             onModal
                                             required
                                           />
@@ -2049,39 +954,39 @@ const UnitClient = (props: Props) => {
                                           className={`${buttonPrimaryClass} !min-h-[32px] w-full rounded-full`}
                                           onClick={async (e) => {
                                             e.stopPropagation();
-                                            await handleEditShiftChange(
+                                            await c.handleEditShiftChange(
                                               change,
                                               {
-                                                date: editChangeDate,
-                                                time: editChangeTime,
+                                                date: c.editChangeDate,
+                                                time: c.editChangeTime,
                                                 usePendingShift: true,
                                               },
                                             );
                                             // setPendingShiftDate(editChangeDate);
                                             // setPendingShiftTime(editChangeTime);
-                                            setOpenChangeMenuId(null);
+                                            c.setOpenChangeMenuId(null);
                                           }}
                                           disabled={
                                             !props.isReporter ||
-                                            !editChangeDate ||
-                                            !editChangeTime
+                                            !c.editChangeDate ||
+                                            !c.editChangeTime
                                           }
                                         >
-                                          {t("Unit/Update post")}
+                                          {c.t("Unit/Update post")}
                                         </button>
                                         <button
                                           className={`${buttonDeletePrimaryClass} !min-h-[32px] w-full rounded-full`}
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            setOpenChangeMenuId(null);
-                                            toggleDeleteItemModal(
+                                            c.setOpenChangeMenuId(null);
+                                            c.toggleDeleteItemModal(
                                               String(change.id),
                                               "shiftChange",
                                             );
                                           }}
                                           disabled={!props.isReporter}
                                         >
-                                          {t("Unit/Remove post")}
+                                          {c.t("Unit/Remove post")}
                                         </button>{" "}
                                       </div>
                                     </MenuDropdownAnchor>
@@ -2097,12 +1002,14 @@ const UnitClient = (props: Props) => {
                             >
                               <td
                                 colSpan={
-                                  unitColumnNames.length + compareColsCount + 4
+                                  c.unitColumnNames.length +
+                                  c.compareColsCount +
+                                  4
                                 }
                               >
                                 <div className="flex flex-col gap-4 p-4">
                                   <CustomTooltip
-                                    content={`${!props.isReporter ? t("Common/No access") : t("Unit/Tooltip report events") + t("Unit/Tooltip this hour")}`}
+                                    content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Tooltip report events") + c.t("Unit/Tooltip this hour")}`}
                                     veryLongDelay={props.isReporter == true}
                                     showOnTouch
                                   >
@@ -2110,10 +1017,10 @@ const UnitClient = (props: Props) => {
                                       className={`${iconButtonPrimaryClass} ml-auto flex items-center justify-center gap-2`}
                                       onClick={() => {
                                         const startDate = new Date(
-                                          `${selectedDate}T${hour.toString().padStart(2, "0")}:00:00`,
+                                          `${c.selectedDate}T${hour.toString().padStart(2, "0")}:00:00`,
                                         );
 
-                                        toggleReportModal(
+                                        c.toggleReportModal(
                                           undefined,
                                           startDate.getHours(),
                                           toLocalDateString(startDate),
@@ -2129,14 +1036,14 @@ const UnitClient = (props: Props) => {
                                     </button>
                                   </CustomTooltip>
                                   {(() => {
-                                    const hourReports = reports.filter(
+                                    const hourReports = c.reports.filter(
                                       (report) => {
                                         if (!report.startTime) {
                                           return false;
                                         }
 
                                         const dayStart = new Date(
-                                          `${selectedDate}T00:00:00`,
+                                          `${c.selectedDate}T00:00:00`,
                                         );
                                         const dayEnd = new Date(dayStart);
                                         dayEnd.setDate(dayEnd.getDate() + 1);
@@ -2167,6 +1074,14 @@ const UnitClient = (props: Props) => {
                                       },
                                     );
 
+                                    function toLocalDateString(
+                                      startDate: Date,
+                                    ): string | undefined {
+                                      throw new Error(
+                                        "Function not implemented.",
+                                      );
+                                    }
+
                                     return hourReports.map((report, index) => (
                                       <div
                                         key={`${report.id ?? "temp"}-${report.startTime ?? "unknown"}-${index}`}
@@ -2189,7 +1104,7 @@ const UnitClient = (props: Props) => {
                                             {report.categoryId && (
                                               <div className="flex gap-2">
                                                 <CustomTooltip
-                                                  content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit event")}`}
+                                                  content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Edit event")}`}
                                                   veryLongDelay={
                                                     props.isReporter == true
                                                   }
@@ -2204,7 +1119,7 @@ const UnitClient = (props: Props) => {
                                                           report.startTime,
                                                         );
 
-                                                      toggleReportModal(
+                                                      c.toggleReportModal(
                                                         report.id,
                                                         startDate.getHours(),
                                                         toLocalDateString(
@@ -2227,7 +1142,7 @@ const UnitClient = (props: Props) => {
                                                 </CustomTooltip>
 
                                                 <CustomTooltip
-                                                  content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete event")}`}
+                                                  content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Delete event")}`}
                                                   veryLongDelay={
                                                     props.isReporter == true
                                                   }
@@ -2237,7 +1152,7 @@ const UnitClient = (props: Props) => {
                                                     type="button"
                                                     className={`${iconButtonPrimaryClass} group`}
                                                     onClick={() =>
-                                                      toggleDeleteItemModal(
+                                                      c.toggleDeleteItemModal(
                                                         report.id,
                                                       )
                                                     }
@@ -2285,18 +1200,18 @@ const UnitClient = (props: Props) => {
                                                 const parts: string[] = [];
                                                 if (diffDays > 0)
                                                   parts.push(
-                                                    `${diffDays} ${diffDays === 1 ? t("Common/day") : t("Common/days")}`,
+                                                    `${diffDays} ${diffDays === 1 ? c.t("Common/day") : c.t("Common/days")}`,
                                                   );
                                                 if (diffHours > 0)
                                                   parts.push(
-                                                    `${diffHours} ${diffHours === 1 ? t("Common/hour") : t("Common/hours")}`,
+                                                    `${diffHours} ${diffHours === 1 ? c.t("Common/hour") : c.t("Common/hours")}`,
                                                   );
                                                 if (
                                                   diffMinutes > 0 ||
                                                   parts.length === 0
                                                 )
                                                   parts.push(
-                                                    `${diffMinutes} ${diffMinutes === 1 ? t("Common/minute") : t("Common/minutes")}`,
+                                                    `${diffMinutes} ${diffMinutes === 1 ? c.t("Common/minute") : c.t("Common/minutes")}`,
                                                   );
 
                                                 const duration =
@@ -2325,7 +1240,7 @@ const UnitClient = (props: Props) => {
                                                   .replace("T", " ")}{" "}
                                                 -{" "}
                                                 <span className="font-semibold text-(--note-error)">
-                                                  {t("Unit/ongoing")}
+                                                  {c.t("Unit/ongoing")}
                                                 </span>
                                               </>
                                             )}
@@ -2334,7 +1249,7 @@ const UnitClient = (props: Props) => {
                                           {!report.categoryId && (
                                             <div className="flex gap-2">
                                               <CustomTooltip
-                                                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Edit event")}`}
+                                                content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Edit event")}`}
                                                 veryLongDelay={
                                                   props.isReporter == true
                                                 }
@@ -2348,7 +1263,7 @@ const UnitClient = (props: Props) => {
                                                       report.startTime,
                                                     );
 
-                                                    toggleReportModal(
+                                                    c.toggleReportModal(
                                                       report.id,
                                                       startDate.getHours(),
                                                       toLocalDateString(
@@ -2371,7 +1286,7 @@ const UnitClient = (props: Props) => {
                                               </CustomTooltip>
 
                                               <CustomTooltip
-                                                content={`${!props.isReporter ? t("Common/No access") : t("Unit/Delete event")}`}
+                                                content={`${!props.isReporter ? c.t("Common/No access") : c.t("Unit/Delete event")}`}
                                                 veryLongDelay={
                                                   props.isReporter == true
                                                 }
@@ -2381,7 +1296,7 @@ const UnitClient = (props: Props) => {
                                                   type="button"
                                                   className={`${iconButtonPrimaryClass} group`}
                                                   onClick={() =>
-                                                    toggleDeleteItemModal(
+                                                    c.toggleDeleteItemModal(
                                                       report.id,
                                                     )
                                                   }
@@ -2409,24 +1324,24 @@ const UnitClient = (props: Props) => {
                                             {report.creationDate && (
                                               <div>
                                                 <span className="font-semibold">
-                                                  {t("Common/Created")}
+                                                  {c.t("Common/Created")}
                                                 </span>{" "}
                                                 {utcIsoToLocalDateTime(
                                                   report.creationDate,
                                                 )}{" "}
-                                                {t("Common/by")}{" "}
+                                                {c.t("Common/by")}{" "}
                                                 {report.createdBy}
                                               </div>
                                             )}
                                             {report.updateDate && (
                                               <div>
                                                 <span className="font-semibold">
-                                                  {t("Common/Updated")}
+                                                  {c.t("Common/Updated")}
                                                 </span>{" "}
                                                 {utcIsoToLocalDateTime(
                                                   report.updateDate,
                                                 )}{" "}
-                                                {t("Common/by")}{" "}
+                                                {c.t("Common/by")}{" "}
                                                 {report.updatedBy}
                                               </div>
                                             )}
@@ -2448,16 +1363,16 @@ const UnitClient = (props: Props) => {
             </table>
           </div>
           <CustomTooltip
-            content={t("Unit/Scroll to top")}
+            content={c.t("Unit/Scroll to top")}
             veryLongDelay
             showOnTouch
           >
             <button
               className={`${buttonSecondaryClass} ml-auto`}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              aria-label={t("Unit/Scroll to top")}
+              aria-label={c.t("Unit/Scroll to top")}
             >
-              <ChevronUpIcon className="min-h-full min-w-full" />
+              <Outline.ChevronUpIcon className="min-h-full min-w-full" />
             </button>
           </CustomTooltip>
         </div>

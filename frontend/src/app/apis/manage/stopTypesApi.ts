@@ -103,6 +103,7 @@ export type UnitOption = {
   unitGroupName?: string;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 };

@@ -14,6 +14,7 @@ import {
 import { useToast } from "../toast/ToastProvider";
 import ModalBase, { ModalBaseHandle } from "./ModalBase";
 import { useTranslations } from "next-intl";
+import LoadingSpinner from "../common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -39,6 +40,7 @@ const NewsModal = (props: Props) => {
   const hasSetInitialContent = useRef(false);
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [date, setDate] = useState("");
   const [typeId, setTypeId] = useState<string | number>("");
   const [typeName, setTypeName] = useState<string | number>("");
@@ -87,9 +89,10 @@ const NewsModal = (props: Props) => {
   }, [props.isOpen, props.newsId]);
 
   // --- BACKEND ---
-  // --- Add news item ---
-  const addNews = async (event: FormEvent) => {
+  // --- Create news item ---
+  const createNews = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     const currentContent = editorRef.current?.getContent() ?? "";
 
@@ -120,6 +123,8 @@ const NewsModal = (props: Props) => {
       }
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -211,6 +216,7 @@ const NewsModal = (props: Props) => {
   // --- Update news item ---
   const updateNews = async (event: FormEvent, id: number) => {
     event.preventDefault();
+    setIsSaving(true);
 
     const currentContent = editorRef.current?.getContent() ?? "";
 
@@ -242,6 +248,8 @@ const NewsModal = (props: Props) => {
       notify("success", t("NewsModal/News item") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -316,7 +324,7 @@ const NewsModal = (props: Props) => {
         <form
           ref={formRef}
           onSubmit={(e) =>
-            props.newsId ? updateNews(e, props.newsId) : addNews(e)
+            props.newsId ? updateNews(e, props.newsId) : createNews(e)
           }
         >
           <ModalBase
@@ -391,8 +399,23 @@ const NewsModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.newsId ? t("Modal/Update") : t("Common/Add")}
+                {isSaving ? (
+                  props.newsId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.newsId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

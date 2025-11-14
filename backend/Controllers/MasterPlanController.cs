@@ -415,7 +415,8 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = masterPlan.Id,
                     ["Name"] = masterPlan.Name,
-                    ["UnitGroup"] = $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
+                    ["UnitGroup"] =
+                        $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})" ?? "—",
                     ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
                         ? string.Join(
                             "<br>",
@@ -570,7 +571,8 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = masterPlan.Id,
                     ["Name"] = masterPlan.Name,
-                    ["UnitGroup"] = $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
+                    ["UnitGroup"] =
+                        $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})" ?? "—",
                     ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
                         ? string.Join(
                             "<br>",
@@ -743,7 +745,7 @@ namespace backend.Controllers
                         ["ObjectID"] = masterPlan.Id,
                         ["Name"] = masterPlan.Name,
                         ["UnitGroup"] =
-                            $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})",
+                            $"{masterPlan.UnitGroup.Name} (ID: {masterPlan.UnitGroupId})" ?? "—",
                         ["MasterPlanFields"] = masterPlan.MasterPlanToMasterPlanFields.Any()
                             ? string.Join(
                                 "<br>",

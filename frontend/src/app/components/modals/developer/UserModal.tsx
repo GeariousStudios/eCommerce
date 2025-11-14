@@ -14,6 +14,7 @@ import MultiDropdown from "../../common/MultiDropdown";
 import ModalBase, { ModalBaseHandle } from "../ModalBase";
 import { useTranslations } from "next-intl";
 import { userConstraints } from "@/app/helpers/inputConstraints";
+import LoadingSpinner from "../../common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -32,6 +33,7 @@ const UserModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [username, setUsername] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -88,9 +90,10 @@ const UserModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add user ---
-  const addUser = async (event: FormEvent) => {
+  // --- Create user ---
+  const createUser = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/user-management/create`, {
@@ -156,6 +159,8 @@ const UserModal = (props: Props) => {
       notify("success", t("Common/User") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -211,6 +216,7 @@ const UserModal = (props: Props) => {
   // --- Update user ---
   const updateUser = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(
@@ -279,6 +285,8 @@ const UserModal = (props: Props) => {
       notify("success", t("Common/User") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -343,7 +351,7 @@ const UserModal = (props: Props) => {
       {props.isOpen && (
         <form
           ref={formRef}
-          onSubmit={(e) => (props.itemId ? updateUser(e) : addUser(e))}
+          onSubmit={(e) => (props.itemId ? updateUser(e) : createUser(e))}
         >
           <ModalBase
             ref={modalRef}
@@ -494,8 +502,23 @@ const UserModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Save") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

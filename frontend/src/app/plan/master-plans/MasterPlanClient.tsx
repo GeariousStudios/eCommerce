@@ -103,6 +103,7 @@ const MasterPlanClient = (props: Props) => {
     isSelectedStruck,
     handleHoldStart,
     handleHoldEnd,
+    duplicateSelected,
   } = useMasterPlan(t, apiUrl, token, masterPlanId);
 
   return (
@@ -443,148 +444,193 @@ const MasterPlanClient = (props: Props) => {
                       </CustomTooltip>
                     </div>
                   </div>
-                  <div className="flex flex-wrap justify-end gap-4">
-                    {/* --- Add element --- */}
-                    <CustomTooltip
-                      content={t("MasterPlan/Add element tooltip")}
-                      showOnTouch
-                      longDelay
-                    >
-                      <button
-                        className={`${buttonPrimaryClass} group flex items-center justify-center gap-2 lg:w-max lg:px-4`}
-                        onClick={() => {
-                          const topGroup =
-                            editMode === "group"
-                              ? (masterPlans[0]?.elements?.[0]?.groupId ?? null)
-                              : null;
-                          handleAddElement(
-                            masterPlans[0]?.id as number,
-                            topGroup,
-                          );
-                        }}
-                      >
-                        <HoverIcon
-                          outline={Outline.PlusIcon}
-                          solid={Solid.PlusIcon}
-                          className="h-6 w-6"
-                        />
-                        <span className="hidden lg:block">
-                          {t("MasterPlan/Add element")}
-                        </span>
-                      </button>
-                    </CustomTooltip>
 
-                    {/* --- Move up --- */}
-                    <CustomTooltip
-                      content={t("MasterPlan/Move up tooltip")}
-                      showOnTouch
-                      longDelay
-                    >
-                      <button
-                        className={`${buttonSecondaryClass} group flex items-center justify-center gap-2 lg:w-max lg:px-4`}
-                        onMouseDown={() => handleHoldStart("up")}
-                        onMouseUp={handleHoldEnd}
-                        onMouseLeave={handleHoldEnd}
-                        disabled={selectedId === null}
-                      >
-                        <HoverIcon
-                          outline={Outline.ArrowUpIcon}
-                          solid={Solid.ArrowUpIcon}
-                          className="h-6 w-6"
-                        />
-                        <span className="hidden lg:block">
-                          {t("MasterPlan/Move up")}
-                        </span>
-                      </button>
-                    </CustomTooltip>
+                  <hr className="-ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
 
-                    {/* --- Move down --- */}
-                    <CustomTooltip
-                      content={t("MasterPlan/Move down tooltip")}
-                      showOnTouch
-                      longDelay
-                    >
-                      <button
-                        className={`${buttonSecondaryClass} group flex items-center justify-center gap-2 lg:w-max lg:px-4`}
-                        onMouseDown={() => handleHoldStart("down")}
-                        onMouseUp={handleHoldEnd}
-                        onMouseLeave={handleHoldEnd}
-                        disabled={selectedId === null}
-                      >
-                        <HoverIcon
-                          outline={Outline.ArrowDownIcon}
-                          solid={Solid.ArrowDownIcon}
-                          className="h-6 w-6"
-                        />
-                        <span className="hidden lg:block">
-                          {t("MasterPlan/Move down")}
-                        </span>
-                      </button>
-                    </CustomTooltip>
-
-                    {/* --- Strike mode --- */}
-                    <CustomTooltip
-                      content={t("MasterPlan/Strike tooltip")}
-                      showOnTouch
-                      longDelay
-                    >
-                      <button
-                        className={`${
-                          isSelectedStruck
-                            ? buttonPrimaryClass
-                            : buttonSecondaryClass
-                        } group flex items-center justify-center gap-2 lg:w-max lg:px-4`}
-                        onClick={() => {
-                          if (selectedId !== null) {
-                            toggleStrikeThrough(String(selectedId), editMode);
-                          }
-                        }}
-                        disabled={selectedId === null}
-                      >
-                        <HoverIcon
-                          outline={Outline.NoSymbolIcon}
-                          solid={Solid.NoSymbolIcon}
-                          className="h-6 w-6"
-                        />
-                        <span className="hidden lg:block">
-                          {t("MasterPlan/Strike")}
-                        </span>
-                      </button>
-                    </CustomTooltip>
-
-                    {/* --- Delete element --- */}
-                    {masterPlans[0]?.allowRemovingElements && (
+                  <div className="flex w-full flex-col gap-4">
+                    <div className="flex gap-4 lg:grid lg:grid-cols-3">
+                      {/* --- Add element --- */}
                       <CustomTooltip
-                        content={t("MasterPlan/Mark for deletion tooltip")}
+                        content={t("MasterPlan/Add element tooltip")}
                         showOnTouch
                         longDelay
                       >
                         <button
-                          className={`${
-                            removedElementIds.includes(Number(selectedId))
-                              ? buttonDeletePrimaryClass
-                              : buttonDeleteSecondaryClass
-                          } group flex items-center justify-center gap-2 lg:w-max lg:px-4`}
+                          className={`${buttonPrimaryClass} group col-span-2 flex w-full items-center justify-center gap-2 lg:px-4`}
+                          onClick={() => {
+                            const topGroup =
+                              editMode === "group"
+                                ? (masterPlans[0]?.elements?.[0]?.groupId ??
+                                  null)
+                                : null;
+                            handleAddElement(
+                              masterPlans[0]?.id as number,
+                              topGroup,
+                            );
+                          }}
+                        >
+                          <HoverIcon
+                            outline={Outline.PlusIcon}
+                            solid={Solid.PlusIcon}
+                            className="h-6 w-6"
+                          />
+                          {t("MasterPlan/Add element")}
+                        </button>
+                      </CustomTooltip>
+
+                      {/* --- Duplicate object */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Tooltip duplicate object")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${buttonSecondaryClass} group col-span-1 flex items-center justify-center gap-2 lg:w-full lg:px-4`}
                           onClick={() => {
                             if (selectedId !== null) {
-                              toggleRemoveElement(String(selectedId), editMode);
+                              duplicateSelected(
+                                String(masterPlans[0]?.id),
+                                selectedId,
+                                editMode,
+                              );
                             }
                           }}
                           disabled={selectedId === null}
                         >
                           <HoverIcon
-                            outline={Outline.TrashIcon}
-                            solid={Solid.TrashIcon}
+                            outline={Outline.SquaresPlusIcon}
+                            solid={Solid.SquaresPlusIcon}
                             className="h-6 w-6"
                           />
                           <span className="hidden lg:block">
-                            {removedElementIds.includes(Number(selectedId))
-                              ? t("MasterPlan/Undo mark for deletion")
-                              : t("MasterPlan/Mark for deletion")}
+                            {t("MasterPlan/Duplicate object")}
                           </span>
                         </button>
                       </CustomTooltip>
-                    )}
+                    </div>
+
+                    <hr className="-mr-4 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
+
+                    <div className="grid gap-4">
+                      {/* --- Move up --- */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Move up tooltip")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${buttonSecondaryClass} group flex w-full items-center justify-center gap-2 px-4`}
+                          onMouseDown={() => handleHoldStart("up")}
+                          onMouseUp={handleHoldEnd}
+                          onMouseLeave={handleHoldEnd}
+                          disabled={selectedId === null}
+                        >
+                          <HoverIcon
+                            outline={Outline.ArrowUpIcon}
+                            solid={Solid.ArrowUpIcon}
+                            className="h-6 w-6"
+                          />
+                          {t("MasterPlan/Move up")}
+                        </button>
+                      </CustomTooltip>
+
+                      {/* --- Move down --- */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Move down tooltip")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${buttonSecondaryClass} group flex w-full items-center justify-center gap-2 px-4`}
+                          onMouseDown={() => handleHoldStart("down")}
+                          onMouseUp={handleHoldEnd}
+                          onMouseLeave={handleHoldEnd}
+                          disabled={selectedId === null}
+                        >
+                          <HoverIcon
+                            outline={Outline.ArrowDownIcon}
+                            solid={Solid.ArrowDownIcon}
+                            className="h-6 w-6"
+                          />
+                          {t("MasterPlan/Move down")}
+                        </button>
+                      </CustomTooltip>
+                    </div>
+
+                    <hr className="-mr-4 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
+
+                    <div className="flex gap-4 lg:grid lg:grid-cols-3">
+                      {/* --- Strike mode --- */}
+                      <CustomTooltip
+                        content={t("MasterPlan/Strike tooltip")}
+                        showOnTouch
+                        longDelay
+                      >
+                        <button
+                          className={`${
+                            isSelectedStruck
+                              ? buttonPrimaryClass
+                              : buttonSecondaryClass
+                          } group col-span-1 flex items-center justify-center gap-2 lg:w-full lg:px-4`}
+                          onClick={() => {
+                            if (selectedId !== null) {
+                              toggleStrikeThrough(String(selectedId), editMode);
+                            }
+                          }}
+                          disabled={selectedId === null}
+                        >
+                          <HoverIcon
+                            outline={Outline.NoSymbolIcon}
+                            solid={Solid.NoSymbolIcon}
+                            className="h-6 w-6"
+                          />
+                          <span className="hidden lg:block">
+                            {t("MasterPlan/Strike")}
+                          </span>
+                        </button>
+                      </CustomTooltip>
+
+                      {/* --- Delete element --- */}
+                      {masterPlans[0]?.allowRemovingElements && (
+                        <CustomTooltip
+                          content={t("MasterPlan/Mark for deletion tooltip")}
+                          showOnTouch
+                          longDelay
+                        >
+                          <button
+                            className={`${
+                              selectedId !== null &&
+                              removedElementIds.some(
+                                (id) => String(id) === String(selectedId),
+                              )
+                                ? buttonDeletePrimaryClass
+                                : buttonDeleteSecondaryClass
+                            } group col-span-2 flex w-full items-center justify-center gap-2 px-4`}
+                            onClick={() => {
+                              if (selectedId !== null) {
+                                toggleRemoveElement(
+                                  String(selectedId),
+                                  editMode,
+                                );
+                              }
+                            }}
+                            disabled={selectedId === null}
+                          >
+                            <HoverIcon
+                              outline={Outline.TrashIcon}
+                              solid={Solid.TrashIcon}
+                              className="h-6 w-6"
+                            />
+                            {selectedId !== null &&
+                            removedElementIds.some(
+                              (id) => String(id) === String(selectedId),
+                            )
+                              ? t("MasterPlan/Undo mark for deletion")
+                              : t("MasterPlan/Mark for deletion")}
+                          </button>
+                        </CustomTooltip>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               </div>

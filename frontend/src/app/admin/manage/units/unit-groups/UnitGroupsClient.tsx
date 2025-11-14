@@ -168,16 +168,28 @@ const UnitGroupsClient = (props: Props) => {
                   <span
                     key={i}
                     className={badgeClass}
-                    style={{
-                      backgroundColor:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkColorHex
-                          : matchingUnit?.lightColorHex,
-                      color:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkTextColorHex
-                          : matchingUnit?.lightTextColorHex,
-                    }}
+                    style={
+                      matchingUnit?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkTextColorHex
+                                : matchingUnit?.lightTextColorHex,
+                          }
+                    }
                   >
                     {label}
                   </span>
@@ -237,16 +249,28 @@ const UnitGroupsClient = (props: Props) => {
               <span
                 key={i}
                 className={badgeClass}
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkColorHex
-                      : matchingUnit?.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkTextColorHex
-                      : matchingUnit?.lightTextColorHex,
-                }}
+                style={
+                      matchingUnit?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkTextColorHex
+                                : matchingUnit?.lightTextColorHex,
+                          }
+                    }
               >
                 {label}
               </span>

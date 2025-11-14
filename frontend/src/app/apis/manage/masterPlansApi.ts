@@ -153,7 +153,7 @@ export const fetchMasterPlanFields = async (): Promise<
 
   const result = await response.json();
 
-  return Array.isArray(result) ? result : [];
+  return result.items ?? [];
 };
 
 export type UnitOption = {
@@ -162,6 +162,7 @@ export type UnitOption = {
   unitGroupName?: string;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
   masterPlanId?: number;

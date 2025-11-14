@@ -25,6 +25,7 @@ namespace backend.Dtos.Unit
             ErrorMessage = "[7|Common/Color format] Validation/is invalid"
         )]
         public string DarkColorHex { get; set; } = "#e0e0e0";
+        public bool ReverseColor { get; set; }
 
         public List<int> UnitColumnIds { get; set; } = new();
         public List<int> CategoryIds { get; set; } = new();

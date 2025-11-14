@@ -102,6 +102,7 @@ export type ShiftOption = {
   name: string;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 };

@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
+import * as Outline from "@heroicons/react/24/outline";
+import * as Solid from "@heroicons/react/24/solid";
 import Input from "../../../common/Input";
 import { useToast } from "../../../toast/ToastProvider";
 import {
@@ -13,6 +14,9 @@ import {
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
 import { shiftTeamConstraints } from "@/app/helpers/inputConstraints";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
+import CustomTooltip from "@/app/components/common/CustomTooltip";
+import HoverIcon from "@/app/components/common/HoverIcon";
 
 type Props = {
   isOpen: boolean;
@@ -31,15 +35,18 @@ const ShiftTeamModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [isHidden, setIsHidden] = useState(false);
   const [lightColorHex, setLightColorHex] = useState("#212121");
   const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
+  const [reverseColor, setReverseColor] = useState(false);
 
   const [originalName, setOriginalName] = useState("");
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
   const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
+  const [originalReverseColor, setOriginalReverseColor] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   // --- Other ---
@@ -66,13 +73,17 @@ const ShiftTeamModal = (props: Props) => {
 
       setDarkColorHex("#e0e0e0");
       setOriginalDarkColorHex("#e0e0e0");
+
+      setReverseColor(false);
+      setOriginalReverseColor(false);
     }
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add shift team ---
-  const addShiftTeam = async (event: FormEvent) => {
+  // --- Create shift team ---
+  const createShiftTeam = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/shift-team/create`, {
@@ -87,6 +98,7 @@ const ShiftTeamModal = (props: Props) => {
           isHidden,
           lightColorHex,
           darkColorHex,
+          reverseColor,
         }),
       });
 
@@ -132,9 +144,11 @@ const ShiftTeamModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift team") + t("Modal/created1"), 4000);
+      notify("success", t("Common/Shift team") + t("Modal/created2"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -176,11 +190,15 @@ const ShiftTeamModal = (props: Props) => {
 
     setDarkColorHex(result.darkColorHex ?? "#e0e0e0");
     setOriginalDarkColorHex(result.darkColorHex ?? "#e0e0e0");
+
+    setReverseColor(result.reverseColor ?? false);
+    setOriginalReverseColor(result.reverseColor ?? false);
   };
 
   // --- Update shift team ---
   const updateShiftTeam = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(
@@ -197,6 +215,7 @@ const ShiftTeamModal = (props: Props) => {
             isHidden,
             lightColorHex,
             darkColorHex,
+            reverseColor,
           }),
         },
       );
@@ -243,9 +262,11 @@ const ShiftTeamModal = (props: Props) => {
 
       props.onClose();
       props.onItemUpdated();
-      notify("success", t("Common/Shift team") + t("Modal/updated1"), 4000);
+      notify("success", t("Common/Shift team") + t("Modal/updated2"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -260,7 +281,8 @@ const ShiftTeamModal = (props: Props) => {
         name !== "" ||
         isHidden !== false ||
         lightColorHex !== "" ||
-        darkColorHex !== "";
+        darkColorHex !== "" ||
+        reverseColor !== false;
 
       setIsDirty(dirty);
       return;
@@ -270,17 +292,20 @@ const ShiftTeamModal = (props: Props) => {
       name !== originalName ||
       isHidden !== originalIsHidden ||
       lightColorHex !== originalLightColorHex ||
-      darkColorHex !== originalDarkColorHex;
+      darkColorHex !== originalDarkColorHex ||
+      reverseColor !== originalReverseColor;
     setIsDirty(dirty);
   }, [
     name,
     isHidden,
     lightColorHex,
     darkColorHex,
+    reverseColor,
     originalName,
     originalIsHidden,
     originalLightColorHex,
     originalDarkColorHex,
+    originalReverseColor,
   ]);
 
   return (
@@ -289,14 +314,14 @@ const ShiftTeamModal = (props: Props) => {
         <form
           ref={formRef}
           onSubmit={(e) =>
-            props.itemId ? updateShiftTeam(e) : addShiftTeam(e)
+            props.itemId ? updateShiftTeam(e) : createShiftTeam(e)
           }
         >
           <ModalBase
             ref={modalRef}
             isOpen={props.isOpen}
             onClose={() => props.onClose()}
-            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
                 ? t("Common/Edit") + " " + t("Common/shift team")
@@ -345,6 +370,31 @@ const ShiftTeamModal = (props: Props) => {
                   pattern="^#([0-9A-Fa-f]{6})$"
                   onModal
                 />
+
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={reverseColor}
+                    className={switchClass(reverseColor)}
+                    onClick={() => setReverseColor((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(reverseColor)} />
+                  </button>
+                  {t("Modal/Reverse color")}
+                  <CustomTooltip
+                    content={t("Modal/Tooltip reverse color")}
+                    showOnTouch
+                  >
+                    <span className="group min-h-4 min-w-4 cursor-help">
+                      <HoverIcon
+                        outline={Outline.InformationCircleIcon}
+                        solid={Solid.InformationCircleIcon}
+                        className="flex"
+                      />
+                    </span>
+                  </CustomTooltip>
+                </div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -379,8 +429,23 @@ const ShiftTeamModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Save") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

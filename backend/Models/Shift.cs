@@ -21,6 +21,7 @@ namespace backend.Models
 
         [MaxLength(7)]
         public string DarkColorHex { get; set; } = "#e0e0e0";
+        public bool ReverseColor { get; set; }
 
         public ShiftSystemKey? SystemKey { get; set; }
         public bool IsSystem => SystemKey != null;

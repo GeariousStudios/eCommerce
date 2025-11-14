@@ -57,11 +57,18 @@ const useManage = <
         setIsLoading(true);
       }
 
+      const getBackendSortOrder = () => {
+        if (sortBy.toLowerCase().endsWith("count")) {
+          return sortOrder === "asc" ? "desc" : "asc";
+        }
+        return sortOrder;
+      };
+
       const data = await fetchFunction({
         page: currentPage,
         pageSize: itemsPerPage,
         sortBy,
-        sortOrder,
+        sortOrder: getBackendSortOrder(),
         search: searchTerm,
         filters,
       });

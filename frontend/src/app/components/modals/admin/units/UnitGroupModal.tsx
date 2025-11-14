@@ -11,6 +11,7 @@ import {
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
 import { unitGroupConstraints } from "@/app/helpers/inputConstraints";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -29,6 +30,7 @@ const UnitGroupModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
 
   const [originalName, setOriginalName] = useState("");
@@ -53,9 +55,10 @@ const UnitGroupModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add unit group ---
-  const addUnitGroup = async (event: FormEvent) => {
+  // --- Create unit group ---
+  const createUnitGroup = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/unit-group/create`, {
@@ -116,6 +119,8 @@ const UnitGroupModal = (props: Props) => {
       notify("success", t("Common/Group") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -153,6 +158,7 @@ const UnitGroupModal = (props: Props) => {
   // --- Update unit group ---
   const updateUnitGroup = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(
@@ -216,6 +222,8 @@ const UnitGroupModal = (props: Props) => {
       notify("success", t("Common/Group") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -242,7 +250,7 @@ const UnitGroupModal = (props: Props) => {
         <form
           ref={formRef}
           onSubmit={(e) =>
-            props.itemId ? updateUnitGroup(e) : addUnitGroup(e)
+            props.itemId ? updateUnitGroup(e) : createUnitGroup(e)
           }
         >
           <ModalBase
@@ -286,8 +294,23 @@ const UnitGroupModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Save") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

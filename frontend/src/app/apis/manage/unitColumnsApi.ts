@@ -32,12 +32,17 @@ export const fetchContent = async ({
 
   // --- FILTERS START ---
   filters?.dataTypes?.forEach((type) => {
-    params.append("dataTypes", type);
+    params.append("dataType", type);
   });
 
   filters?.unitIds?.forEach((id) => {
     params.append("unitIds", id.toString());
   });
+
+  if (filters?.hasData !== undefined) {
+    params.append("hasData", String(filters.hasData));
+  }
+
   // --- FILTERS STOP ---
 
   const response = await fetch(`${apiUrl}/unit-column?${params}`, {
@@ -103,6 +108,7 @@ export type UnitOption = {
   unitGroupName?: string;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 };

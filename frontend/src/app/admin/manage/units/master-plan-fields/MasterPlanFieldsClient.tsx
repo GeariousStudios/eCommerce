@@ -252,11 +252,11 @@ const MasterPlanFieldsClient = (props: Props) => {
       responsivePriority: 3,
     },
     {
-      key: "masterPlanName",
+      key: "masterPlanCount",
       label: t("Common/Master plans"),
-      sortingItem: "masterplanname",
-      labelAsc: t("Common/master plan") + " Ö-A",
-      labelDesc: t("Common/master plan") + " A-Ö",
+      sortingItem: "masterplancount",
+      labelAsc: t("Common/master plan") + t("Manage/ascending"),
+      labelDesc: t("Common/master plan") + t("Manage/descending"),
       getValue: (item: MasterPlanFieldItem) => (
         <div className="flex flex-wrap gap-2">
           {item.masterPlanIds.map((id, i) => {
@@ -278,8 +278,8 @@ const MasterPlanFieldsClient = (props: Props) => {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
-      labelAsc: t("MasterPlanFields/hidden master plan fields"),
-      labelDesc: t("MasterPlanFields/visible master plan fields"),
+      labelAsc: t("MasterPlanFields/visible master plan fields"),
+      labelDesc: t("MasterPlanFields/hidden master plan fields"),
       classNameAddition: "w-[100px] min-w-[100px]",
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: MasterPlanFieldItem) => (

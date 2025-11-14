@@ -24,6 +24,7 @@ namespace backend.Services
                 ("ShiftChange", null),
                 ("StopType", null),
                 ("MasterPlan", null),
+                ("MasterPlanField", null),
                 ("MasterPlanElement", null),
             },
 
@@ -34,7 +35,12 @@ namespace backend.Services
             ["Reporter"] = new() { ("Report", null), ("UnitCell", null) },
 
             // Master planners can only see actions related to master plans.
-            ["MasterPlanner"] = new() { ("MasterPlan", null), ("MasterPlanElement", null) },
+            ["MasterPlanner"] = new()
+            {
+                ("MasterPlan", null),
+                ("MasterPlanField", null),
+                ("MasterPlanElement", null),
+            },
         };
     }
 }

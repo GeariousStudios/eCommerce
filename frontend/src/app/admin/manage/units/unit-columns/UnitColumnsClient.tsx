@@ -152,7 +152,7 @@ const UnitColumnsClient = (props: Props) => {
     {
       key: "name, units",
       getValue: (item: UnitColumnItem) => (
-        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
+        <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <span className="flex items-center justify-between text-2xl font-bold">
               <span className="flex items-center">{item.name}</span>
@@ -177,16 +177,28 @@ const UnitColumnsClient = (props: Props) => {
                   <span
                     key={i}
                     className={badgeClass}
-                    style={{
-                      backgroundColor:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkColorHex
-                          : matchingUnit?.lightColorHex,
-                      color:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkTextColorHex
-                          : matchingUnit?.lightTextColorHex,
-                    }}
+                    style={
+                      matchingUnit?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkTextColorHex
+                                : matchingUnit?.lightTextColorHex,
+                          }
+                    }
                   >
                     {label}
                   </span>
@@ -230,10 +242,21 @@ const UnitColumnsClient = (props: Props) => {
       getValue: (item: UnitColumnItem) => item.name,
       responsivePriority: 0,
     },
+    // {
+    //   key: "datatyp",
+    //   label: t("Columns/Data type"),
+    //   getValue: (item: UnitColumnItem) => item.dataType,
+    //   responsivePriority: 1,
+    // },
     {
-      key: "datatyp",
+      key: "dataType",
       label: t("Columns/Data type"),
-      getValue: (item: UnitColumnItem) => item.dataType,
+      sortingItem: "datatype",
+      labelAsc: t("Columns/data type") + " Ö-A",
+      labelDesc: t("Columns/data type") + " A-Ö",
+      getValue: (item: UnitColumnItem) => (
+        <span>{t("Common/" + item.dataType)}</span>
+      ),
       responsivePriority: 1,
     },
     {
@@ -256,16 +279,28 @@ const UnitColumnsClient = (props: Props) => {
               <span
                 key={i}
                 className={badgeClass}
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkColorHex
-                      : matchingUnit?.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkTextColorHex
-                      : matchingUnit?.lightTextColorHex,
-                }}
+                style={
+                      matchingUnit?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkTextColorHex
+                                : matchingUnit?.lightTextColorHex,
+                          }
+                    }
               >
                 {label}
               </span>
@@ -285,7 +320,7 @@ const UnitColumnsClient = (props: Props) => {
       childClassNameAddition: "w-[92px] min-w-[92px]",
       getValue: (item: UnitColumnItem) => (
         <span
-          className={`${badgeClass} ${item.hasData ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
+          className={`${badgeClass} ${item.hasData ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
         >
           {item.hasData ? t("Common/Yes") : t("Common/No")}
         </span>

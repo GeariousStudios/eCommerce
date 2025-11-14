@@ -122,5 +122,5 @@ export const fetchMasterPlans = async (): Promise<MasterPlanOption[]> => {
 
   const result = await response.json();
 
-  return Array.isArray(result.items) ? result.items : [];
+  return result.items ?? [];
 };

@@ -88,6 +88,7 @@ const ReportModal = (props: Props) => {
   const hasSetInitialContent = useRef(false);
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
   const [reports, setReports] = useState<Report[]>([]);
@@ -319,6 +320,7 @@ const ReportModal = (props: Props) => {
     const date = report.startTime.slice(0, 10);
     const hour = parseInt(report.startTime.slice(11, 13), 10);
     const content = editorRef.current?.getContent() ?? "";
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/report/create`, {
@@ -362,6 +364,8 @@ const ReportModal = (props: Props) => {
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
       return false;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -370,6 +374,7 @@ const ReportModal = (props: Props) => {
     const date = report.startTime.slice(0, 10);
     const hour = parseInt(report.startTime.slice(11, 13), 10);
     const content = editorRef.current?.getContent() ?? "";
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/report/update/${report.id}`, {
@@ -410,6 +415,8 @@ const ReportModal = (props: Props) => {
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
       return false;
+    } finally {
+      setIsSaving(false);
     }
   };
 

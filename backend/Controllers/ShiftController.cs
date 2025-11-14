@@ -163,6 +163,7 @@ namespace backend.Controllers
                         DarkColorHex = s.DarkColorHex,
                         LightTextColorHex = ColorHelper.GetReadableTextColor(s.LightColorHex),
                         DarkTextColorHex = ColorHelper.GetReadableTextColor(s.DarkColorHex),
+                        ReverseColor = s.ReverseColor,
                         ShiftTeamIds = s
                             .ShiftToShiftTeams.OrderBy(sst => sst.Order)
                             .Select(sst => sst.ShiftTeamId)
@@ -174,13 +175,14 @@ namespace backend.Controllers
                                 Id = sst.ShiftTeam.Id,
                                 Name = sst.ShiftTeam.Name,
                                 LightColorHex = sst.ShiftTeam.LightColorHex,
-                                DarkColorHex = sst.ShiftTeam.LightColorHex,
+                                DarkColorHex = sst.ShiftTeam.DarkColorHex,
                                 LightTextColorHex = ColorHelper.GetReadableTextColor(
                                     sst.ShiftTeam.LightColorHex
                                 ),
                                 DarkTextColorHex = ColorHelper.GetReadableTextColor(
                                     sst.ShiftTeam.DarkColorHex
                                 ),
+                                ReverseColor = sst.ShiftTeam.ReverseColor,
                             })
                             .ToList(),
                         ShiftTeamDisplayNames = s.ShiftToShiftTeams.ToDictionary(
@@ -279,6 +281,7 @@ namespace backend.Controllers
                 DarkColorHex = shift.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(shift.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(shift.DarkColorHex),
+                ReverseColor = shift.ReverseColor,
 
                 ShiftTeamIds = shift
                     .ShiftToShiftTeams.OrderBy(x => x.Order)
@@ -299,6 +302,7 @@ namespace backend.Controllers
                         DarkTextColorHex = ColorHelper.GetReadableTextColor(
                             x.ShiftTeam.DarkColorHex
                         ),
+                        ReverseColor = x.ShiftTeam.ReverseColor,
                     })
                     .ToList(),
                 ShiftTeamDisplayNames = shift.ShiftToShiftTeams.ToDictionary(
@@ -428,12 +432,18 @@ namespace backend.Controllers
                         DarkColorHex = shift.DarkColorHex,
                         LightTextColorHex = ColorHelper.GetReadableTextColor(shift.LightColorHex),
                         DarkTextColorHex = ColorHelper.GetReadableTextColor(shift.DarkColorHex),
+                        ReverseColor = shift.ReverseColor,
                         ShiftTeamSpans = teamSpans
                             .Select(ts =>
                             {
                                 var team = _context
                                     .ShiftTeams.Where(st => st.Id == ts.teamId)
-                                    .Select(st => new { st.LightColorHex, st.DarkColorHex })
+                                    .Select(st => new
+                                    {
+                                        st.LightColorHex,
+                                        st.DarkColorHex,
+                                        st.ReverseColor,
+                                    })
                                     .FirstOrDefault();
 
                                 var lightColor = team?.LightColorHex ?? "#e0e0e0";
@@ -452,6 +462,7 @@ namespace backend.Controllers
                                         lightColor
                                     ),
                                     DarkTextColorHex = ColorHelper.GetReadableTextColor(darkColor),
+                                    ReverseColor = team?.ReverseColor ?? false,
                                 };
                             })
                             .ToList(),
@@ -507,15 +518,19 @@ namespace backend.Controllers
                     ["Name"] = shift.Name,
                     ["LightColorHex"] = shift.LightColorHex,
                     ["DarkColorHex"] = shift.DarkColorHex,
+                    ["ReverseColor"] = shift.ReverseColor
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
                     ["AnchorWeekStart"] = shift.AnchorWeekStart,
-                    ["Teams"] = shift
-                        .ShiftToShiftTeams.Select(st =>
-                            st.ShiftTeam != null
-                                ? $"{st.ShiftTeam.Name} (ID: {st.ShiftTeam.Id})"
-                                : $"(ID: {st.ShiftTeamId})"
-                        )
-                        .ToList(),
+                    ["Teams"] =
+                        shift
+                            .ShiftToShiftTeams.Select(st =>
+                                st.ShiftTeam != null
+                                    ? $"{st.ShiftTeam.Name} (ID: {st.ShiftTeam.Id})"
+                                    : $"(ID: {st.ShiftTeamId})"
+                            )
+                            .ToList() ?? new List<string> { "—" },
                     ["WeeklyTimes"] = _context
                         .ShiftToShiftTeamSchedules.Where(s => s.ShiftId == shift.Id)
                         .AsEnumerable()
@@ -615,6 +630,7 @@ namespace backend.Controllers
                 IsHidden = dto.IsHidden,
                 LightColorHex = dto.LightColorHex,
                 DarkColorHex = dto.DarkColorHex,
+                ReverseColor = dto.ReverseColor,
                 CycleLengthWeeks = dto.CycleLengthWeeks,
                 AnchorWeekStart = monday,
 
@@ -675,6 +691,7 @@ namespace backend.Controllers
                 DarkColorHex = shift.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(shift.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(shift.DarkColorHex),
+                ReverseColor = shift.ReverseColor,
 
                 // Meta data.
                 CreationDate = shift.CreationDate,
@@ -696,15 +713,20 @@ namespace backend.Controllers
                     ["Name"] = shift.Name,
                     ["LightColorHex"] = shift.LightColorHex,
                     ["DarkColorHex"] = shift.DarkColorHex,
+                    ["ReverseColor"] = shift.ReverseColor
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
                     ["AnchorWeekStart"] = shift.AnchorWeekStart,
-                    ["Teams"] = dto
-                        .ShiftTeamIds?.Select(id =>
-                        {
-                            var team = _context.ShiftTeams.FirstOrDefault(t => t.Id == id);
-                            return team != null ? $"{team.Name} (ID: {team.Id})" : $"(ID: {id})";
-                        })
-                        .ToList(),
+                    ["Teams"] =
+                        dto.ShiftTeamIds?.Select(id =>
+                            {
+                                var team = _context.ShiftTeams.FirstOrDefault(t => t.Id == id);
+                                return team != null
+                                    ? $"{team.Name} (ID: {team.Id})"
+                                    : $"(ID: {id})";
+                            })
+                            .ToList() ?? new List<string> { "—" },
                     ["WeeklyTimes"] = dto
                         .WeeklyTimes?.Select(w =>
                         {
@@ -816,6 +838,9 @@ namespace backend.Controllers
                 ["Name"] = shift.Name,
                 ["LightColorHex"] = shift.LightColorHex,
                 ["DarkColorHex"] = shift.DarkColorHex,
+                ["ReverseColor"] = shift.ReverseColor
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
                 ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
                 ["AnchorWeekStart"] = shift.AnchorWeekStart,
                 ["Teams"] = oldTeams
@@ -862,6 +887,7 @@ namespace backend.Controllers
             shift.IsHidden = dto.IsHidden;
             shift.LightColorHex = dto.LightColorHex;
             shift.DarkColorHex = dto.DarkColorHex;
+            shift.ReverseColor = dto.ReverseColor;
 
             shift.CycleLengthWeeks = dto.CycleLengthWeeks;
             shift.AnchorWeekStart = ToMonday(dto.AnchorWeekStart);
@@ -925,6 +951,7 @@ namespace backend.Controllers
                 DarkColorHex = shift.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(shift.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(shift.DarkColorHex),
+                ReverseColor = shift.ReverseColor,
 
                 // Meta data.
                 UpdateDate = shift.UpdateDate,
@@ -947,17 +974,20 @@ namespace backend.Controllers
                         ["Name"] = shift.Name,
                         ["LightColorHex"] = shift.LightColorHex,
                         ["DarkColorHex"] = shift.DarkColorHex,
+                        ["ReverseColor"] = shift.ReverseColor
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
                         ["CycleLengthWeeks"] = shift.CycleLengthWeeks,
                         ["AnchorWeekStart"] = shift.AnchorWeekStart,
-                        ["Teams"] = dto
-                            .ShiftTeamIds?.Select(id =>
-                            {
-                                var team = _context.ShiftTeams.FirstOrDefault(t => t.Id == id);
-                                return team != null
-                                    ? $"{team.Name} (ID: {team.Id})"
-                                    : $"(ID: {id})";
-                            })
-                            .ToList(),
+                        ["Teams"] =
+                            dto.ShiftTeamIds?.Select(id =>
+                                {
+                                    var team = _context.ShiftTeams.FirstOrDefault(t => t.Id == id);
+                                    return team != null
+                                        ? $"{team.Name} (ID: {team.Id})"
+                                        : $"(ID: {id})";
+                                })
+                                .ToList() ?? new List<string> { "—" },
                         ["WeeklyTimes"] = dto
                             .WeeklyTimes?.Select(w =>
                             {

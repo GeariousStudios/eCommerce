@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { PencilSquareIcon, PlusIcon } from "@heroicons/react/24/outline";
+import * as Outline from "@heroicons/react/24/outline";
+import * as Solid from "@heroicons/react/24/solid";
 import Input from "../../../common/Input";
 import { useToast } from "../../../toast/ToastProvider";
 import {
@@ -13,6 +14,9 @@ import {
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
 import { stopTypeConstraints } from "@/app/helpers/inputConstraints";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
+import CustomTooltip from "@/app/components/common/CustomTooltip";
+import HoverIcon from "@/app/components/common/HoverIcon";
 
 type Props = {
   isOpen: boolean;
@@ -31,14 +35,17 @@ const StopTypeModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [lightColorHex, setLightColorHex] = useState("#212121");
   const [darkColorHex, setDarkColorHex] = useState("#e0e0e0");
+  const [reverseColor, setReverseColor] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
 
   const [originalName, setOriginalName] = useState("");
   const [originalLightColorHex, setOriginalLightColorHex] = useState("#212121");
   const [originalDarkColorHex, setOriginalDarkColorHex] = useState("#e0e0e0");
+  const [originalReverseColor, setOriginalReverseColor] = useState(false);
   const [originalIsHidden, setOriginalIsHidden] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
@@ -64,15 +71,19 @@ const StopTypeModal = (props: Props) => {
       setDarkColorHex("#e0e0e0");
       setOriginalDarkColorHex("#e0e0e0");
 
+      setReverseColor(false);
+      setOriginalReverseColor(false);
+
       setIsHidden(false);
       setOriginalIsHidden(false);
     }
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add stop type ---
-  const addStopType = async (event: FormEvent) => {
+  // --- Create stop type ---
+  const createStopType = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/stop-type/create`, {
@@ -86,6 +97,7 @@ const StopTypeModal = (props: Props) => {
           name,
           lightColorHex,
           darkColorHex,
+          reverseColor,
           isHidden,
         }),
       });
@@ -135,6 +147,8 @@ const StopTypeModal = (props: Props) => {
       notify("success", t("Common/Type") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -174,6 +188,9 @@ const StopTypeModal = (props: Props) => {
     setDarkColorHex(result.darkColorHex ?? "#e0e0e0");
     setOriginalDarkColorHex(result.darkColorHex ?? "#e0e0e0");
 
+    setReverseColor(result.reverseColor ?? false);
+    setOriginalReverseColor(result.reverseColor ?? false);
+
     setIsHidden(result.isHidden ?? false);
     setOriginalIsHidden(result.isHidden ?? false);
   };
@@ -181,6 +198,7 @@ const StopTypeModal = (props: Props) => {
   // --- Update stop type ---
   const updateStopType = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(
@@ -196,6 +214,7 @@ const StopTypeModal = (props: Props) => {
             name,
             lightColorHex,
             darkColorHex,
+            reverseColor,
             isHidden,
           }),
         },
@@ -246,6 +265,8 @@ const StopTypeModal = (props: Props) => {
       notify("success", t("Common/Type") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -260,6 +281,7 @@ const StopTypeModal = (props: Props) => {
         name !== "" ||
         lightColorHex !== "#212121" ||
         darkColorHex !== "#e0e0e0" ||
+        reverseColor !== false ||
         isHidden !== false;
 
       setIsDirty(dirty);
@@ -270,6 +292,7 @@ const StopTypeModal = (props: Props) => {
       name !== originalName ||
       lightColorHex !== originalLightColorHex ||
       darkColorHex !== originalDarkColorHex ||
+      reverseColor !== originalReverseColor ||
       isHidden !== originalIsHidden;
 
     setIsDirty(dirty);
@@ -278,10 +301,12 @@ const StopTypeModal = (props: Props) => {
     name,
     lightColorHex,
     darkColorHex,
+    reverseColor,
     isHidden,
     originalName,
     originalLightColorHex,
     originalDarkColorHex,
+    originalReverseColor,
     originalIsHidden,
   ]);
 
@@ -290,13 +315,15 @@ const StopTypeModal = (props: Props) => {
       {props.isOpen && (
         <form
           ref={formRef}
-          onSubmit={(e) => (props.itemId ? updateStopType(e) : addStopType(e))}
+          onSubmit={(e) =>
+            props.itemId ? updateStopType(e) : createStopType(e)
+          }
         >
           <ModalBase
             ref={modalRef}
             isOpen={props.isOpen}
             onClose={() => props.onClose()}
-            icon={props.itemId ? PencilSquareIcon : PlusIcon}
+            icon={props.itemId ? Outline.PencilSquareIcon : Outline.PlusIcon}
             label={
               props.itemId
                 ? t("Common/Edit") + " " + t("Common/type")
@@ -345,6 +372,31 @@ const StopTypeModal = (props: Props) => {
                   pattern="^#([0-9A-Fa-f]{6})$"
                   onModal
                 />
+
+                <div className="flex items-center gap-2 truncate">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={reverseColor}
+                    className={switchClass(reverseColor)}
+                    onClick={() => setReverseColor((prev) => !prev)}
+                  >
+                    <div className={switchKnobClass(reverseColor)} />
+                  </button>
+                  {t("Modal/Reverse color")}
+                  <CustomTooltip
+                    content={t("Modal/Tooltip reverse color")}
+                    showOnTouch
+                  >
+                    <span className="group min-h-4 min-w-4 cursor-help">
+                      <HoverIcon
+                        outline={Outline.InformationCircleIcon}
+                        solid={Solid.InformationCircleIcon}
+                        className="flex"
+                      />
+                    </span>
+                  </CustomTooltip>
+                </div>
               </div>
 
               <div className="mt-8 flex items-center gap-2">
@@ -378,8 +430,23 @@ const StopTypeModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Update") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

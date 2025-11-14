@@ -19,6 +19,7 @@ import { XMarkIcon } from "@heroicons/react/20/solid";
 import DragDrop from "../../../common/DragDrop";
 import { useTranslations } from "next-intl";
 import { categoryConstraints } from "@/app/helpers/inputConstraints";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -43,6 +44,7 @@ const CategoryModal = (props: Props) => {
   const updatedSubCategoriesRef = useRef<SubCategoryDto[]>([]);
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [subCategoryIds, setSubCategoryIds] = useState<number[]>([]);
   const [newSubCategory, setNewSubCategory] = useState("");
@@ -88,6 +90,7 @@ const CategoryModal = (props: Props) => {
   // --- Create category ---
   const createCategory = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     const newSubCategoryNames = updatedSubCategoriesRef.current
       .filter((sc) => subCategoryIds.includes(sc.id) && sc.id < 0)
@@ -169,12 +172,15 @@ const CategoryModal = (props: Props) => {
       notify("success", t("Common/Category") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
   // --- Update category ---
   const updateCategory = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     const newSubCategoryNames = updatedSubCategoriesRef.current
       .filter((sc) => subCategoryIds.includes(sc.id) && sc.id < 0)
@@ -264,6 +270,8 @@ const CategoryModal = (props: Props) => {
       notify("success", t("Common/Category") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -642,8 +650,23 @@ const CategoryModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Save") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

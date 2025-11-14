@@ -12,6 +12,7 @@ import ModalBase, { ModalBaseHandle } from "../ModalBase";
 import SingleDropdown from "../../common/SingleDropdown";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useTranslations } from "next-intl";
+import LoadingSpinner from "../../common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -37,6 +38,7 @@ const UnitCellModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [unitColumns, setUnitColumns] = useState<UnitColumnOptions[]>([]);
   const [unitCells, setUnitCells] = useState<
     Record<number, string | number | boolean>
@@ -187,6 +189,7 @@ const UnitCellModal = (props: Props) => {
 
   const updateUnitCells = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(
@@ -252,6 +255,8 @@ const UnitCellModal = (props: Props) => {
       notify("success", t("Common/Changes saved"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -416,8 +421,15 @@ const UnitCellModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {t("Modal/Save")}
+                {isSaving ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <LoadingSpinner /> {t("Modal/Saving")}
+                  </div>
+                ) : (
+                  t("Modal/Save")
+                )}
               </button>
               <button
                 type="button"

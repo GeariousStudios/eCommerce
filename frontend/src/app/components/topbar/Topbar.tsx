@@ -32,6 +32,7 @@ import SettingsModal from "../modals/SettingsModal";
 import Link from "next/link";
 import useLanguage from "@/app/hooks/useLanguage";
 import { useTranslations } from "next-intl";
+import { badgeClass } from "../manage/ManageClasses";
 
 type Props = {
   hasScrollbar: boolean;
@@ -73,6 +74,7 @@ const Topbar = (props: Props) => {
     isLoggedIn,
     isAuthReady,
     fetchAuthData,
+    userRoles,
   } = useAuth();
   const { toggleTheme, currentTheme } = useTheme();
   const { toggleLanguage, currentLanguage } = useLanguage();
@@ -143,7 +145,7 @@ const Topbar = (props: Props) => {
       />
       <div
         inert={!isVisible}
-        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} border-(--border-main) duration-(--medium) fixed z-[calc(var(--z-overlay)-2)] flex h-18 w-full justify-between gap-4 border-b-1 bg-(--bg-navbar) px-4 py-2 transition-[max-width,translate]`}
+        className={`${isVisible ? "translate-y-0" : "-translate-y-full"} fixed z-[calc(var(--z-overlay)-2)] flex h-18 w-full justify-between gap-4 border-b-1 border-(--border-main) bg-(--bg-navbar) px-4 py-2 transition-[max-width,translate] duration-(--medium)`}
       >
         {!isAuthReady ? (
           <Message
@@ -201,7 +203,7 @@ const Topbar = (props: Props) => {
                           <span
                             className={
                               item.isActive
-                                ? "text-(--accent-color) font-semibold"
+                                ? "font-semibold text-(--accent-color)"
                                 : !item.clickable
                                   ? "opacity-50"
                                   : ""
@@ -222,7 +224,7 @@ const Topbar = (props: Props) => {
                   {/* <div className="xs:flex hidden"> */}
                   <span className="">{t("SettingsModal/Welcome")}&nbsp;</span>
                   <div>
-                    <span className="text-(--accent-color) font-semibold">
+                    <span className="font-semibold text-(--accent-color)">
                       {firstName ? firstName : username}
                     </span>
                     !
@@ -249,10 +251,10 @@ const Topbar = (props: Props) => {
                   >
                     <span className="group relative flex h-6 w-6 items-center justify-center">
                       <OutlineBellIcon
-                        className={`${bellIconClicked ? "opacity-0" : "opacity-100"} duration-(--fast) absolute transition-opacity group-hover:opacity-0`}
+                        className={`${bellIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                       />
                       <SolidBellIcon
-                        className={`${bellIconClicked ? "opacity-100" : "opacity-0"} text-(--accent-color) duration-(--fast) absolute transition-opacity group-hover:opacity-100`}
+                        className={`${bellIconClicked ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                       />
                     </span>
                   </button>
@@ -281,19 +283,19 @@ const Topbar = (props: Props) => {
                     {isLoggedIn ? (
                       <>
                         <OutlineUserIcon
-                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} duration-(--fast) absolute transition-opacity group-hover:opacity-0`}
+                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                         />
                         <SolidUserIcon
-                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} text-(--accent-color) duration-(--fast) absolute transition-opacity group-hover:opacity-100`}
+                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                         />
                       </>
                     ) : (
                       <>
                         <OutlineCog6ToothIcon
-                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} duration-(--fast) absolute transition-opacity group-hover:opacity-0`}
+                          className={`${userIconClicked ? "opacity-0" : "opacity-100"} absolute transition-opacity duration-(--fast) group-hover:opacity-0`}
                         />
                         <SolidCog6ToothIcon
-                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} text-(--accent-color) duration-(--fast) absolute transition-opacity group-hover:opacity-100`}
+                          className={`${userIconClicked ? "opacity-100" : "opacity-0"} absolute text-(--accent-color) transition-opacity duration-(--fast) group-hover:opacity-100`}
                         />
                       </>
                     )}
@@ -306,60 +308,96 @@ const Topbar = (props: Props) => {
                   onClose={() => setUserIconClicked(false)}
                 >
                   <div className="relative">
-                    <div className="flex justify-between gap-4">
-                      {isLoggedIn ? (
-                        <span className="text-(--accent-color) font-semibold break-words">
-                          {firstName && lastName
-                            ? firstName + " " + lastName
-                            : firstName || username}
-                        </span>
-                      ) : (
-                        <span className="text-(--accent-color) font-semibold break-words">
-                          {t("SettingsModal/No one logged in")}
-                        </span>
-                      )}
+                    <div className="flex flex-col gap-4">
+                      <div className="flex justify-between gap-4">
+                        {isLoggedIn ? (
+                          <span className="font-semibold break-words text-(--accent-color)">
+                            {firstName && lastName
+                              ? firstName + " " + lastName
+                              : firstName || username}
+                          </span>
+                        ) : (
+                          <span className="font-semibold break-words text-(--accent-color)">
+                            {t("SettingsModal/No one logged in")}
+                          </span>
+                        )}
 
-                      <button
-                        onClick={() => {
-                          toggleLanguage();
-                        }}
-                        className={`${roundedButtonClass} relative flex !h-6 min-h-6 !w-6 min-w-6 overflow-hidden`}
-                        aria-label={
-                          currentLanguage === "sv"
-                            ? t("SettingsModal/Switch to English")
-                            : t("SettingsModal/Switch to Swedish")
-                        }
-                      >
-                        <div className="absolute inset-0 origin-center">
-                          <div
-                            className={`absolute inset-0 ${
-                              currentLanguage === "sv"
-                                ? "bg-blue-500"
-                                : "bg-white"
-                            }`}
-                          >
+                        <button
+                          onClick={() => {
+                            toggleLanguage();
+                          }}
+                          className={`${roundedButtonClass} relative flex !h-6 min-h-6 !w-6 min-w-6 overflow-hidden`}
+                          aria-label={
+                            currentLanguage === "sv"
+                              ? t("SettingsModal/Switch to English")
+                              : t("SettingsModal/Switch to Swedish")
+                          }
+                        >
+                          <div className="absolute inset-0 origin-center">
                             <div
-                              className={`absolute top-0 bottom-0 left-[40%] w-[20%] ${
+                              className={`absolute inset-0 ${
                                 currentLanguage === "sv"
-                                  ? "bg-yellow-500"
-                                  : "bg-red-500"
+                                  ? "bg-blue-500"
+                                  : "bg-white"
                               }`}
-                            />
-                            <div
-                              className={`absolute top-[40%] right-0 left-0 h-[20%] ${
-                                currentLanguage === "sv"
-                                  ? "bg-yellow-500"
-                                  : "bg-red-500"
-                              }`}
-                            />
+                            >
+                              <div
+                                className={`absolute top-0 bottom-0 left-[40%] w-[20%] ${
+                                  currentLanguage === "sv"
+                                    ? "bg-yellow-500"
+                                    : "bg-red-500"
+                                }`}
+                              />
+                              <div
+                                className={`absolute top-[40%] right-0 left-0 h-[20%] ${
+                                  currentLanguage === "sv"
+                                    ? "bg-yellow-500"
+                                    : "bg-red-500"
+                                }`}
+                              />
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+
+                      {/* --- Permissions --- */}
+                      {isLoggedIn && (
+                        <div>
+                          {/* <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
+                          {t("SettingsModal/Permissions")}
+                        </span> */}
+
+                          <div className="flex flex-wrap gap-2">
+                            {userRoles.map((role) => (
+                              <span
+                                key={role}
+                                className={`${badgeClass} ${
+                                  role === "Admin"
+                                    ? "bg-(--badge-one) text-(--text-one)"
+                                    : role === "Developer"
+                                      ? "bg-(--badge-two) text-(--text-two)"
+                                      : role === "Reporter"
+                                        ? "bg-(--badge-three) text-(--text-three)"
+                                        : role === "Planner"
+                                          ? "bg-(--badge-four) text-(--text-four)"
+                                          : role === "MasterPlanner"
+                                            ? "bg-(--badge-five) text-(--text-five)"
+                                            : "bg-(--accent-color) text-(--text-main-reverse)"
+                                }`}
+                              >
+                                {t("Roles/" + role)}
+                              </span>
+                            ))}
                           </div>
                         </div>
-                      </button>
+                      )}
                     </div>
+
                     <hr className="absolute mt-4 -ml-4 flex w-[calc(100%+2rem)] text-(--border-tertiary)" />
                   </div>
 
                   <div>
+                    {/* <hr className="absolute -mt-4 -ml-4 w-[calc(100%+2rem)] text-(--border-tertiary)" /> */}
                     <span className="flex pb-1 text-xs font-semibold whitespace-nowrap uppercase">
                       {t("Common/Manage")}
                     </span>

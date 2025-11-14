@@ -362,10 +362,11 @@ namespace backend.Controllers
                 {
                     ["ObjectID"] = category.Id,
                     ["Name"] = category.Name,
-                    ["SubCategories"] = string.Join(
-                        "<br>",
-                        subCategoriesToDelete.Select(sc => $"{sc.Name} (ID: {sc.Id})")
-                    ),
+                    ["SubCategories"] =
+                        string.Join(
+                            "<br>",
+                            subCategoriesToDelete.Select(sc => $"{sc.Name} (ID: {sc.Id})")
+                        ) ?? "—",
                 }
             );
 
@@ -559,12 +560,15 @@ namespace backend.Controllers
                     {
                         ["ObjectID"] = category.Id,
                         ["Name"] = category.Name,
-                        ["SubCategories"] = string.Join(
-                            "<br>",
-                            category
-                                .CategoryToSubCategories.OrderBy(csc => csc.Order)
-                                .Select(csc => $"{csc.SubCategory.Name} (ID: {csc.SubCategory.Id})")
-                        ),
+                        ["SubCategories"] =
+                            string.Join(
+                                "<br>",
+                                category
+                                    .CategoryToSubCategories.OrderBy(csc => csc.Order)
+                                    .Select(csc =>
+                                        $"{csc.SubCategory.Name} (ID: {csc.SubCategory.Id})"
+                                    )
+                            ) ?? "—",
                     }
                 );
 
@@ -815,14 +819,15 @@ namespace backend.Controllers
                         {
                             ["ObjectID"] = category.Id,
                             ["Name"] = category.Name,
-                            ["SubCategories"] = string.Join(
-                                "<br>",
-                                category
-                                    .CategoryToSubCategories.OrderBy(csc => csc.Order)
-                                    .Select(csc =>
-                                        $"{csc.SubCategory.Name} (ID: {csc.SubCategory.Id})"
-                                    )
-                            ),
+                            ["SubCategories"] =
+                                string.Join(
+                                    "<br>",
+                                    category
+                                        .CategoryToSubCategories.OrderBy(csc => csc.Order)
+                                        .Select(csc =>
+                                            $"{csc.SubCategory.Name} (ID: {csc.SubCategory.Id})"
+                                        )
+                                ) ?? "—",
                         },
                     }
                 );

@@ -79,6 +79,7 @@
   "Common/Type": "Type",
   "Common/type": "type",
   "Common/Add": "Add",
+  "Common/Adding": "Adding...",
   "Common/Start": "Start",
   "Common/Stop": "Stop",
   "Common/Delete": "Delete",
@@ -259,6 +260,7 @@
   "Categories/Confirm3": "Do you still want to delete?",
 
   "Columns/Data type": "Data type",
+  "Columns/data type": "data type",
   "Columns/Has data": "Has data",
   "Columns/Data1": "by columns with data",
   "Columns/Data2": "by columns without data",
@@ -275,11 +277,14 @@
   "Modal/updated2": " updated!",
   "Modal/Update": "Update",
   "Modal/Save": "Save",
+  "Modal/Saving": "Saving...",
   "Modal/Nothing": "There's nothing to save!",
   "Modal/Unknown error": "An unknown error occured",
   "Modal/Drag and drop1": "Drag and drop a ",
   "Modal/Drag and drop2": "Drag and drop a ",
   "Modal/Drag and drop3": " to change the viewing order",
+  "Modal/Reverse color": "Reverse color",
+  "Modal/Tooltip reverse color": "The color will be applied as a border instead of a background color",
 
   "DeleteModal/Label": "Are you sure?",
   "DeleteModal/Message": "A deleted item cannot be recovered.",
@@ -307,6 +312,7 @@
   "SettingsModal/Switch to Swedish": "Switch to Swedish",
   "SettingsModal/No one logged in": "No one logged in",
   "SettingsModal/Session": "Session",
+  "SettingsModal/Permissions": "Permissions",
 
   "NewsTypeModal/Info1": "Details about the type",
 
@@ -508,9 +514,11 @@
   "MasterPlan/Do not join groups": "Standalone element",
   "MasterPlan/Do not join groups tooltip": "Prevent the selected element from joining existing groups",
   "MasterPlan/Master Plan Toolbar": "Master Plan Toolbar",
-  "MasterPlan/Mark for deletion": "Mark for deletion",
-  "MasterPlan/Undo mark for deletion": "Undo mark for deletion",
-  "MasterPlan/Mark for deletion tooltip": "Marks selected object for deletion",
+  "MasterPlan/Mark for deletion": "Flag for deletion",
+  "MasterPlan/Undo mark for deletion": "Undo flag for deletion",
+  "MasterPlan/Mark for deletion tooltip": "Flags the selected object for deletion",
+  "MasterPlan/Duplicate object": "Duplicate",
+  "MasterPlan/Tooltip duplicate object": "Duplicate the selected object",
 
   "MasterPlanFields/Hidden master plan fields": "Hidden fields",
   "MasterPlanFields/hidden master plan fields": "hidden fields",

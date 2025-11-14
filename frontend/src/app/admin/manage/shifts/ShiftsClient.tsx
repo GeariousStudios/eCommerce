@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { utcIsoToLocalDateTime } from "@/app/helpers/timeUtils";
 import { useTranslations } from "next-intl";
 import useTheme from "@/app/hooks/useTheme";
+import { match } from "assert";
 
 type Props = {
   isConnected: boolean | null;
@@ -152,21 +153,33 @@ const ShiftsClient = (props: Props) => {
     {
       key: "name, units, shiftTeams, isHidden",
       getValue: (item: ShiftItem) => (
-        <div className="bg-(--bg-grid-header) flex flex-col gap-4 rounded-2xl p-4">
+        <div className="flex flex-col gap-4 rounded-2xl bg-(--bg-grid-header) p-4">
           <div className="flex flex-col">
             <div className="flex items-center gap-4 text-2xl font-bold">
               <span
                 className="h-8 min-h-8 w-8 min-w-8 rounded-full"
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? item.darkColorHex
-                      : item.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? item.darkTextColorHex
-                      : item.lightTextColorHex,
-                }}
+                style={
+                  item.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? item.darkColorHex
+                            : item.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? item.darkColorHex
+                            : item.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? item.darkTextColorHex
+                            : item.lightTextColorHex,
+                      }
+                }
               />
               <span className="flex items-center">{item.name}</span>
             </div>
@@ -188,16 +201,28 @@ const ShiftsClient = (props: Props) => {
                   <span
                     key={i}
                     className={badgeClass}
-                    style={{
-                      backgroundColor:
-                        currentTheme === "dark"
-                          ? matchingShiftTeam?.darkColorHex
-                          : matchingShiftTeam?.lightColorHex,
-                      color:
-                        currentTheme === "dark"
-                          ? matchingShiftTeam?.darkTextColorHex
-                          : matchingShiftTeam?.lightTextColorHex,
-                    }}
+                    style={
+                      matchingShiftTeam?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingShiftTeam?.darkColorHex
+                                : matchingShiftTeam?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingShiftTeam?.darkColorHex
+                                : matchingShiftTeam?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingShiftTeam?.darkTextColorHex
+                                : matchingShiftTeam?.lightTextColorHex,
+                          }
+                    }
                   >
                     {label}
                   </span>
@@ -220,16 +245,28 @@ const ShiftsClient = (props: Props) => {
                   <span
                     key={i}
                     className={badgeClass}
-                    style={{
-                      backgroundColor:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkColorHex
-                          : matchingUnit?.lightColorHex,
-                      color:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkTextColorHex
-                          : matchingUnit?.lightTextColorHex,
-                    }}
+                    style={
+                      matchingUnit?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkTextColorHex
+                                : matchingUnit?.lightTextColorHex,
+                          }
+                    }
                   >
                     {label}
                   </span>
@@ -282,16 +319,28 @@ const ShiftsClient = (props: Props) => {
         <div className="flex items-center gap-4">
           <span
             className="h-4 min-h-4 w-4 min-w-4 rounded-full"
-            style={{
-              backgroundColor:
-                currentTheme === "dark"
-                  ? item.darkColorHex
-                  : item.lightColorHex,
-              color:
-                currentTheme === "dark"
-                  ? item.darkTextColorHex
-                  : item.lightTextColorHex,
-            }}
+            style={
+              item.reverseColor
+                ? {
+                    boxShadow: `inset 0 0 0 1px ${
+                      currentTheme === "dark"
+                        ? item.darkColorHex
+                        : item.lightColorHex
+                    }`,
+                    backgroundColor: "transparent",
+                    color: "var(--text-main)",
+                  }
+                : {
+                    backgroundColor:
+                      currentTheme === "dark"
+                        ? item.darkColorHex
+                        : item.lightColorHex,
+                    color:
+                      currentTheme === "dark"
+                        ? item.darkTextColorHex
+                        : item.lightTextColorHex,
+                  }
+            }
           />
           {item.name}
         </div>
@@ -306,8 +355,8 @@ const ShiftsClient = (props: Props) => {
       labelDesc: t("Shifts/shift team amount") + t("Manage/descending"),
       getValue: (item: ShiftItem) => (
         <div className="flex flex-wrap gap-2">
-          {(item.shiftTeams ?? []).map((shift, i) => {
-            const label = shift.name;
+          {(item.shiftTeams ?? []).map((team, i) => {
+            const label = team.name;
             const matchingShiftTeam = shiftTeams.find(
               (st) => st.name === label,
             );
@@ -316,16 +365,28 @@ const ShiftsClient = (props: Props) => {
               <span
                 key={i}
                 className={badgeClass}
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? matchingShiftTeam?.darkColorHex
-                      : matchingShiftTeam?.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? matchingShiftTeam?.darkTextColorHex
-                      : matchingShiftTeam?.lightTextColorHex,
-                }}
+                style={
+                  matchingShiftTeam?.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? matchingShiftTeam?.darkColorHex
+                            : matchingShiftTeam?.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? matchingShiftTeam?.darkColorHex
+                            : matchingShiftTeam?.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? matchingShiftTeam?.darkTextColorHex
+                            : matchingShiftTeam?.lightTextColorHex,
+                      }
+                }
               >
                 {label}
               </span>
@@ -351,16 +412,28 @@ const ShiftsClient = (props: Props) => {
               <span
                 key={i}
                 className={badgeClass}
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkColorHex
-                      : matchingUnit?.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkTextColorHex
-                      : matchingUnit?.lightTextColorHex,
-                }}
+                style={
+                  matchingUnit?.reverseColor
+                    ? {
+                        boxShadow: `inset 0 0 0 1px ${
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex
+                        }`,
+                        backgroundColor: "transparent",
+                        color: "var(--text-main)",
+                      }
+                    : {
+                        backgroundColor:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkColorHex
+                            : matchingUnit?.lightColorHex,
+                        color:
+                          currentTheme === "dark"
+                            ? matchingUnit?.darkTextColorHex
+                            : matchingUnit?.lightTextColorHex,
+                      }
+                }
               >
                 {label}
               </span>
@@ -374,13 +447,13 @@ const ShiftsClient = (props: Props) => {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
-      labelAsc: t("Shifts/hidden shifts"),
-      labelDesc: t("Shifts/visible shifts"),
+      labelAsc: t("Shifts/visible shifts"),
+      labelDesc: t("Shifts/hidden shifts"),
       classNameAddition: "w-[100px] min-w-[100px]",
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: ShiftItem) => (
         <span
-          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} text-(--text-main-reverse) w-full`}
+          className={`${badgeClass} ${item.isHidden ? "bg-(--locked)" : "bg-(--unlocked)"} w-full text-(--text-main-reverse)`}
         >
           {item.isHidden ? t("Manage/Hidden") : t("Manage/Visible")}
         </span>

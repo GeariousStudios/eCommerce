@@ -131,6 +131,7 @@ namespace backend.Controllers
                     DarkColorHex = t.DarkColorHex,
                     LightTextColorHex = ColorHelper.GetReadableTextColor(t.LightColorHex),
                     DarkTextColorHex = ColorHelper.GetReadableTextColor(t.DarkColorHex),
+                    ReverseColor = t.ReverseColor,
                     Units = t
                         .UnitToStopTypes.Select(ust => ust.Unit)
                         .Select(u => new UnitDto
@@ -184,6 +185,7 @@ namespace backend.Controllers
                 DarkColorHex = stopType.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(stopType.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(stopType.DarkColorHex),
+                ReverseColor = stopType.ReverseColor,
                 Units = stopType
                     .UnitToStopTypes.Select(ust => ust.Unit)
                     .Select(u => new UnitDto
@@ -234,6 +236,9 @@ namespace backend.Controllers
                     ["Name"] = stopType.Name,
                     ["LightColorHex"] = stopType.LightColorHex,
                     ["DarkColorHex"] = stopType.DarkColorHex,
+                    ["ReverseColor"] = stopType.ReverseColor
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["IsHidden"] = stopType.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -291,6 +296,7 @@ namespace backend.Controllers
                 Name = dto.Name,
                 LightColorHex = dto.LightColorHex,
                 DarkColorHex = dto.DarkColorHex,
+                ReverseColor = dto.ReverseColor,
                 IsHidden = dto.IsHidden,
 
                 // Meta data.
@@ -311,6 +317,7 @@ namespace backend.Controllers
                 DarkColorHex = stopType.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(stopType.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(stopType.DarkColorHex),
+                ReverseColor = stopType.ReverseColor,
                 IsHidden = stopType.IsHidden,
 
                 // Meta data.
@@ -333,6 +340,9 @@ namespace backend.Controllers
                     ["Name"] = stopType.Name,
                     ["LightColorHex"] = stopType.LightColorHex,
                     ["DarkColorHex"] = stopType.DarkColorHex,
+                    ["ReverseColor"] = stopType.ReverseColor
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["IsHidden"] = stopType.IsHidden
                         ? new[] { "Common/Yes" }
                         : new[] { "Common/No" },
@@ -395,12 +405,16 @@ namespace backend.Controllers
                 ["Name"] = stopType.Name,
                 ["LightColorHex"] = stopType.LightColorHex,
                 ["DarkColorHex"] = stopType.DarkColorHex,
+                ["ReverseColor"] = stopType.ReverseColor
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
                 ["IsHidden"] = stopType.IsHidden ? new[] { "Common/Yes" } : new[] { "Common/No" },
             };
 
             stopType.Name = dto.Name;
             stopType.LightColorHex = dto.LightColorHex;
             stopType.DarkColorHex = dto.DarkColorHex;
+            stopType.ReverseColor = dto.ReverseColor;
             stopType.IsHidden = dto.IsHidden;
 
             // Meta data.
@@ -417,6 +431,7 @@ namespace backend.Controllers
                 DarkColorHex = stopType.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(stopType.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(stopType.DarkColorHex),
+                ReverseColor = stopType.ReverseColor,
                 IsHidden = stopType.IsHidden,
 
                 // Meta data.
@@ -440,6 +455,9 @@ namespace backend.Controllers
                         ["Name"] = stopType.Name,
                         ["LightColorHex"] = stopType.LightColorHex,
                         ["DarkColorHex"] = stopType.DarkColorHex,
+                        ["ReverseColor"] = stopType.ReverseColor
+                            ? new[] { "Common/Yes" }
+                            : new[] { "Common/No" },
                         ["IsHidden"] = stopType.IsHidden
                             ? new[] { "Common/Yes" }
                             : new[] { "Common/No" },

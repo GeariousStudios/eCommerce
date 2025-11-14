@@ -107,6 +107,7 @@ export type UnitOption = {
   unitGroupName?: string;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 };
@@ -134,6 +135,7 @@ export type ShiftTeamOption = {
   name: string;
   lightColorHex: string;
   darkColorHex: string;
+  reverseColor: boolean;
   lightTextColorHex: string;
   darkTextColorHex: string;
 };

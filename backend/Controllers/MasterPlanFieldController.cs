@@ -112,61 +112,73 @@ namespace backend.Controllers
                 query = query.Where(mp => mp.Name.ToLower().Contains(lowered));
             }
 
-            query = sortBy.ToLower() switch
-            {
-                "name" => sortOrder == "desc"
-                    ? query.OrderByDescending(mpf => mpf.Name.ToLower())
-                    : query.OrderBy(mpf => mpf.Name.ToLower()),
-                "masterplanname" => sortOrder == "desc"
-                    ? query.OrderByDescending(mpf =>
-                        mpf.MasterPlanToMasterPlanFields.Select(mpf => mpf.MasterPlan.Name)
-                            .FirstOrDefault()
-                    )
-                    : query.OrderBy(mpf =>
-                        mpf.MasterPlanToMasterPlanFields.Select(mpf => mpf.MasterPlan.Name)
-                            .FirstOrDefault()
-                    ),
-                "datatype" => sortOrder == "desc"
-                    ? query.OrderByDescending(mpf => mpf.DataType)
-                    : query.OrderBy(mpf => mpf.DataType),
-                "alignment" => sortOrder == "desc"
-                    ? query.OrderByDescending(mpf => mpf.Alignment)
-                    : query.OrderBy(mpf => mpf.Alignment),
-                "visibilitycount" => sortOrder == "desc"
-                    ? query.OrderByDescending(mpf => mpf.IsHidden)
-                    : query.OrderBy(mpf => mpf.IsHidden),
-                _ => sortOrder == "desc"
-                    ? query.OrderByDescending(mpf => mpf.Id)
-                    : query.OrderBy(mpf => mpf.Id),
-            };
+            var list = await query.ToListAsync();
 
-            var totalCount = await query.CountAsync();
+            if (sortBy.ToLower() == "datatype")
+            {
+                list =
+                    sortOrder == "desc"
+                        ? list.OrderByDescending(x =>
+                                _t.GetAsync($"AuditTrail/{x.DataType}", lang).Result
+                            )
+                            .ToList()
+                        : list.OrderBy(x => _t.GetAsync($"AuditTrail/{x.DataType}", lang).Result)
+                            .ToList();
+            }
+            else if (sortBy.ToLower() == "alignment")
+            {
+                list =
+                    sortOrder == "desc"
+                        ? list.OrderByDescending(x =>
+                                _t.GetAsync($"AuditTrail/{x.Alignment}", lang).Result
+                            )
+                            .ToList()
+                        : list.OrderBy(x => _t.GetAsync($"AuditTrail/{x.Alignment}", lang).Result)
+                            .ToList();
+            }
+            else
+            {
+                list = sortBy.ToLower() switch
+                {
+                    "name" => sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.Name.ToLower()).ToList()
+                        : list.OrderBy(x => x.Name.ToLower()).ToList(),
+
+                    "masterplancount" => sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.MasterPlanToMasterPlanFields.Count).ToList()
+                        : list.OrderBy(x => x.MasterPlanToMasterPlanFields.Count).ToList(),
+
+                    "visibilitycount" => sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.IsHidden).ToList()
+                        : list.OrderBy(x => x.IsHidden).ToList(),
+
+                    _ => sortOrder == "desc"
+                        ? list.OrderByDescending(x => x.Id).ToList()
+                        : list.OrderBy(x => x.Id).ToList(),
+                };
+            }
+
+            var totalCount = list.Count;
 
             // Filters.
             var visibilityCount = new Dictionary<string, int>
             {
-                ["Visible"] = await _context.MasterPlanFields.CountAsync(mpf => !mpf.IsHidden),
-                ["Hidden"] = await _context.MasterPlanFields.CountAsync(mpf => mpf.IsHidden),
+                ["Visible"] = list.Count(mpf => !mpf.IsHidden),
+                ["Hidden"] = list.Count(mpf => mpf.IsHidden),
             };
 
-            var masterPlanCount = _context
-                .MasterPlanToMasterPlanFields.GroupBy(mpf => mpf.MasterPlanId)
+            var masterPlanCount = list.SelectMany(mpf => mpf.MasterPlanToMasterPlanFields)
+                .GroupBy(uuc => uuc.MasterPlanId)
                 .ToDictionary(g => g.Key, g => g.Count());
 
-            var dataTypeCount = _context
-                .MasterPlanFields.AsEnumerable()
-                .GroupBy(mpf => mpf.DataType)
-                .ToDictionary(g => g.Key.ToString(), g => g.Count());
+            var dataTypeCount = list.GroupBy(mpf => mpf.DataType)
+                .ToDictionary(g => g.Key, g => g.Count());
 
-            var alignmentCount = _context
-                .MasterPlanFields.AsEnumerable()
-                .GroupBy(mpf => mpf.Alignment)
-                .ToDictionary(g => g.Key.ToString(), g => g.Count());
+            var alignmentCount = list.GroupBy(mpf => mpf.Alignment)
+                .ToDictionary(g => g.Key, g => g.Count());
 
-            var masterPlanFields = query
-                .Skip((page - 1) * pageSize)
+            var masterPlanFields = list.Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .AsEnumerable()
                 .Select(t => new MasterPlanFieldDto
                 {
                     Id = t.Id,

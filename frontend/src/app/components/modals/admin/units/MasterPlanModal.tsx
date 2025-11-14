@@ -29,6 +29,7 @@ import DragDrop from "@/app/components/common/DragDrop";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
 import MenuDropdown from "@/app/components/common/MenuDropdown/MenuDropdown";
 import MultiDropdown from "@/app/components/common/MultiDropdown";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -57,6 +58,7 @@ const MasterPlanModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [unitGroup, setUnitGroup] = useState("");
   const [unitGroups, setUnitGroups] = useState<UnitGroupOptions[]>([]);
@@ -118,6 +120,7 @@ const MasterPlanModal = (props: Props) => {
   // --- Create master plan ---
   const createMasterPlan = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/master-plan/create`, {
@@ -182,6 +185,8 @@ const MasterPlanModal = (props: Props) => {
       notify("success", t("Common/Master plan") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -279,6 +284,7 @@ const MasterPlanModal = (props: Props) => {
   // --- Update master plan ---
   const updateMasterPlan = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(
@@ -346,6 +352,8 @@ const MasterPlanModal = (props: Props) => {
       notify("success", t("Common/Master plan") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -601,8 +609,23 @@ const MasterPlanModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Update") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

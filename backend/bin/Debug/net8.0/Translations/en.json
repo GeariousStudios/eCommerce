@@ -151,7 +151,8 @@
   "AuditTrail/UnitGroup": "Group",
   "AuditTrail/Unit": "Unit",
   "AuditTrail/UnitID": "Unit ID",
-  "AuditTrail/UserManagement": "Users",
+  "AuditTrail/UserManagement": "User management",
+  "AuditTrail/User": "User",
   "AuditTrail/CreatedPosts": "Created posts",
   "AuditTrail/UpdatedPosts": "Updated posts",
   "AuditTrail/DeletedPosts": "Deleted posts",
@@ -257,6 +258,7 @@
   "AuditTrail/Data": "Data",
   "AuditTrail/OldOrder": "Old order",
   "AuditTrail/NewOrder": "New order",
+  "AuditTrail/ReverseColor": "Reverse color",
 
   "AuditTrail/None": "None",
   "AuditTrail/Admin": "Admin",

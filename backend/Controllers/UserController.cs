@@ -294,7 +294,19 @@ namespace backend.Controllers
                         new { message = await _t.GetAsync("Users/UsernameTaken", lang) }
                     );
                 }
+            }
 
+            var oldValues = new Dictionary<string, object?>
+            {
+                ["ObjectID"] = user.Id,
+                ["Username"] = user.Username ?? "—",
+                ["FirstName"] = user.FirstName ?? "—",
+                ["LastName"] = user.LastName ?? "—",
+                ["Email"] = user.Email ?? "—",
+            };
+
+            if (!string.IsNullOrWhiteSpace(dto.Username))
+            {
                 user.Username = dto.Username;
             }
 
@@ -319,6 +331,30 @@ namespace backend.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            var updatedBy = user.FirstName + " " + user.LastName ?? user.Username ?? "";
+
+            // Audit trail.
+            await _audit.LogAsync(
+                "Update",
+                "User",
+                user.Id,
+                updatedBy,
+                user.Id,
+                new
+                {
+                    OldValues = oldValues,
+                    NewValues = new Dictionary<string, object?>
+                    {
+                        ["ObjectID"] = user.Id,
+                        ["Username"] = user.Username ?? "—",
+                        ["FirstName"] = user.FirstName ?? "—",
+                        ["LastName"] = user.LastName ?? "—",
+                        ["Email"] = user.Email ?? "—",
+                    },
+                }
+            );
+
             return Ok(new { message = await _t.GetAsync("Users/ProfileUpdated", lang) });
         }
     }

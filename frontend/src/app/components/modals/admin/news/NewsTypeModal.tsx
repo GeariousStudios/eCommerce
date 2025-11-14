@@ -11,6 +11,7 @@ import {
 import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
 import { newsTypeConstraints } from "@/app/helpers/inputConstraints";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -29,6 +30,7 @@ const NewsTypeModal = (props: Props) => {
   const getScrollEl = () => modalRef.current?.getScrollEl() ?? null;
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
 
   const [originalName, setOriginalName] = useState("");
@@ -53,9 +55,10 @@ const NewsTypeModal = (props: Props) => {
   }, [props.isOpen, props.itemId]);
 
   // --- BACKEND ---
-  // --- Add news type ---
-  const addNewsType = async (event: FormEvent) => {
+  // --- Create news type ---
+  const createNewsType = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/news-type/create`, {
@@ -115,6 +118,8 @@ const NewsTypeModal = (props: Props) => {
       notify("success", t("Common/Type") + t("Modal/created1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -152,6 +157,7 @@ const NewsTypeModal = (props: Props) => {
   // --- Update news type ---
   const updateNewsType = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(
@@ -214,6 +220,8 @@ const NewsTypeModal = (props: Props) => {
       notify("success", t("Common/Type") + t("Modal/updated1"), 4000);
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -239,7 +247,9 @@ const NewsTypeModal = (props: Props) => {
       {props.isOpen && (
         <form
           ref={formRef}
-          onSubmit={(e) => (props.itemId ? updateNewsType(e) : addNewsType(e))}
+          onSubmit={(e) =>
+            props.itemId ? updateNewsType(e) : createNewsType(e)
+          }
         >
           <ModalBase
             ref={modalRef}
@@ -282,8 +292,23 @@ const NewsTypeModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Update") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

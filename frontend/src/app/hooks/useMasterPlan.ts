@@ -239,15 +239,46 @@ export const useMasterPlan = (
           value: "",
         }));
 
-        const nextGroupId =
-          groupId ??
-          (p.elements.length > 0
-            ? Math.max(...p.elements.map((el) => el.groupId || 0)) + 1
-            : 1);
+        let insertIndex = 0;
+        let finalGroupId = null;
+
+        if (selectedId) {
+          const selectedIndex = p.elements.findIndex(
+            (el) => String(el.id) === String(selectedId),
+          );
+          if (selectedIndex !== -1) {
+            const selected = p.elements[selectedIndex];
+            const groupIdentifier = selected.groupId ?? null;
+
+            const topIndex = p.elements.findIndex((el) =>
+              groupIdentifier
+                ? el.groupId === groupIdentifier
+                : el.id === selected.id,
+            );
+
+            insertIndex = topIndex;
+
+            if (editMode === "group" && selected.groupId != null) {
+              finalGroupId = selected.groupId;
+            } else {
+              finalGroupId =
+                p.elements.length > 0
+                  ? Math.max(...p.elements.map((el) => el.groupId || 0)) + 1
+                  : 1;
+            }
+          }
+        }
+
+        if (!selectedId) {
+          finalGroupId =
+            p.elements.length > 0
+              ? Math.max(...p.elements.map((el) => el.groupId || 0)) + 1
+              : 1;
+        }
 
         const newElement: MasterPlanElement = {
           id: `temp-${Date.now()}`,
-          groupId: nextGroupId,
+          groupId: finalGroupId,
           values: newValues,
           currentElement: false,
           nextElement: false,
@@ -255,7 +286,88 @@ export const useMasterPlan = (
           isNew: true,
         };
 
-        return { ...p, elements: [newElement, ...p.elements] };
+        const updated = [...p.elements];
+        updated.splice(insertIndex, 0, newElement);
+
+        return { ...p, elements: updated };
+      }),
+    );
+  };
+
+  // --- Duplicate selected ---
+  const duplicateSelected = (
+    planId: string,
+    elementId: string,
+    mode: "element" | "group",
+  ) => {
+    setMasterPlans((prev) =>
+      prev.map((plan) => {
+        if (String(plan.id) !== String(planId)) return plan;
+
+        const target = plan.elements.find(
+          (e) => String(e.id) === String(elementId),
+        );
+        if (!target) return plan;
+
+        const elements = plan.elements;
+        const groupIdentifier = target.groupId ?? null;
+
+        const topIndex = elements.findIndex((el) =>
+          groupIdentifier
+            ? el.groupId === groupIdentifier
+            : el.id === target.id,
+        );
+
+        const newGroupId =
+          elements.length > 0
+            ? Math.max(...elements.map((el) => el.groupId || 0)) + 1
+            : 1;
+
+        if (mode === "group") {
+          const group = elements.filter((e) =>
+            groupIdentifier
+              ? e.groupId === groupIdentifier
+              : e.id === target.id,
+          );
+
+          const copies = group.map((e) => ({
+            id: `temp-${Date.now()}-${e.id}`,
+            groupId: newGroupId,
+            values: e.values.map((v) => ({
+              masterPlanFieldId: v.masterPlanFieldId,
+              masterPlanFieldName: v.masterPlanFieldName,
+              value: v.value ?? "",
+            })),
+            struckElement: e.struckElement ?? false,
+            currentElement: false,
+            nextElement: false,
+            isNew: true,
+          }));
+
+          const updated = [...elements];
+          updated.splice(topIndex, 0, ...copies);
+          return { ...plan, elements: updated };
+        }
+
+        const copyValues = target.values.map((v) => ({
+          masterPlanFieldId: v.masterPlanFieldId,
+          masterPlanFieldName: v.masterPlanFieldName,
+          value: v.value ?? "",
+        }));
+
+        const newElement: MasterPlanElement = {
+          id: `temp-${Date.now()}`,
+          groupId: newGroupId,
+          values: copyValues,
+          struckElement: target.struckElement ?? false,
+          currentElement: false,
+          nextElement: false,
+          isNew: true,
+        };
+
+        const updated = [...elements];
+        updated.splice(topIndex, 0, newElement);
+        return { ...plan, elements: updated };
       }),
     );
   };
@@ -381,6 +493,9 @@ export const useMasterPlan = (
       }
 
       for (const el of plan.elements) {
+        if (removedElementIds.some((id) => String(id) === String(el.id)))
+          continue;
+
         if (isNaN(Number(el.id))) {
           const createDto = {
             groupId: el.groupId ?? null,
@@ -1028,5 +1143,6 @@ export const useMasterPlan = (
     isExpanded,
     handleHoldStart,
     handleHoldEnd,
+    duplicateSelected,
   };
 };

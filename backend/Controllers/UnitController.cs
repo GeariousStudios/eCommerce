@@ -233,6 +233,7 @@ namespace backend.Controllers
                     DarkColorHex = u.DarkColorHex,
                     LightTextColorHex = ColorHelper.GetReadableTextColor(u.LightColorHex),
                     DarkTextColorHex = ColorHelper.GetReadableTextColor(u.DarkColorHex),
+                    ReverseColor = u.ReverseColor,
                     UnitGroupId = u.UnitGroupId,
                     UnitGroupName = u.UnitGroup.Name,
                     UnitColumnIds = u
@@ -312,6 +313,7 @@ namespace backend.Controllers
                 DarkColorHex = unit.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(unit.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(unit.DarkColorHex),
+                ReverseColor = unit.ReverseColor,
                 UnitGroupId = unit.UnitGroupId,
                 UnitGroupName = unit.UnitGroup.Name ?? unknownGroup,
                 UnitColumnIds = unit
@@ -427,6 +429,9 @@ namespace backend.Controllers
                     ["Name"] = unit.Name,
                     ["LightColorHex"] = unit.LightColorHex,
                     ["DarkColorHex"] = unit.DarkColorHex,
+                    ["ReverseColor"] = unit.ReverseColor
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["UnitGroup"] = $"{unit.UnitGroup.Name} (ID: {unit.UnitGroupId})",
                     ["UnitColumns"] = unitColumnsList,
                     ["Categories"] = categoriesList,
@@ -520,6 +525,7 @@ namespace backend.Controllers
                 UnitGroup = unitGroup,
                 LightColorHex = dto.LightColorHex,
                 DarkColorHex = dto.DarkColorHex,
+                ReverseColor = dto.ReverseColor,
                 IsPlannable = dto.IsPlannable,
 
                 // Meta data.
@@ -635,6 +641,7 @@ namespace backend.Controllers
                 DarkColorHex = unit.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(unit.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(unit.DarkColorHex),
+                ReverseColor = unit.ReverseColor,
                 UnitGroupId = unit.UnitGroupId,
                 UnitColumnIds = unit
                     .UnitToUnitColumns.OrderBy(x => x.Order)
@@ -699,6 +706,9 @@ namespace backend.Controllers
                     ["Name"] = unit.Name,
                     ["LightColorHex"] = unit.LightColorHex,
                     ["DarkColorHex"] = unit.DarkColorHex,
+                    ["ReverseColor"] = unit.ReverseColor
+                        ? new[] { "Common/Yes" }
+                        : new[] { "Common/No" },
                     ["UnitGroup"] = $"{unit.UnitGroup.Name} (ID: {unit.UnitGroupId})",
                     ["UnitColumns"] = unitColumnsList,
                     ["Categories"] = categoriesList,
@@ -840,6 +850,9 @@ namespace backend.Controllers
                 ["Name"] = unit.Name,
                 ["LightColorHex"] = unit.LightColorHex,
                 ["DarkColorHex"] = unit.DarkColorHex,
+                ["ReverseColor"] = unit.ReverseColor
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
                 ["UnitGroup"] = $"{unit.UnitGroup.Name} (ID: {unit.UnitGroupId})",
                 ["UnitColumns"] = oldUnitColumns,
                 ["Categories"] = oldCategories,
@@ -857,6 +870,7 @@ namespace backend.Controllers
             unit.UnitGroup = unitGroup;
             unit.LightColorHex = dto.LightColorHex;
             unit.DarkColorHex = dto.DarkColorHex;
+            unit.ReverseColor = dto.ReverseColor;
             unit.IsPlannable = dto.IsPlannable;
 
             if (dto.IsPlannable && dto.MasterPlanId.HasValue)
@@ -972,6 +986,7 @@ namespace backend.Controllers
                 DarkColorHex = unit.DarkColorHex,
                 LightTextColorHex = ColorHelper.GetReadableTextColor(unit.LightColorHex),
                 DarkTextColorHex = ColorHelper.GetReadableTextColor(unit.DarkColorHex),
+                ReverseColor = unit.ReverseColor,
                 UnitGroupId = unit.UnitGroupId,
                 UnitColumnIds = unit
                     .UnitToUnitColumns.OrderBy(x => x.Order)
@@ -1047,6 +1062,9 @@ namespace backend.Controllers
                 ["Name"] = unit.Name,
                 ["LightColorHex"] = unit.LightColorHex,
                 ["DarkColorHex"] = unit.DarkColorHex,
+                ["ReverseColor"] = unit.ReverseColor
+                    ? new[] { "Common/Yes" }
+                    : new[] { "Common/No" },
                 ["UnitGroup"] = $"{unit.UnitGroup.Name} (ID: {unit.UnitGroupId})",
                 ["UnitColumns"] = newUnitColumns,
                 ["Categories"] = newCategories,

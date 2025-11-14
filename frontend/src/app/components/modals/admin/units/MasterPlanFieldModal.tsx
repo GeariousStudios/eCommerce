@@ -18,6 +18,7 @@ import ModalBase, { ModalBaseHandle } from "../../ModalBase";
 import { useTranslations } from "next-intl";
 import { masterPlanFieldConstraints } from "@/app/helpers/inputConstraints";
 import SingleDropdown from "@/app/components/common/SingleDropdown";
+import LoadingSpinner from "@/app/components/common/LoadingSpinner";
 
 type Props = {
   isOpen: boolean;
@@ -45,6 +46,7 @@ const MasterPlanFieldModal = (props: Props) => {
   const updatedMasterPlanFieldsRef = useRef<MasterPlanFieldDto[]>([]);
 
   // --- States ---
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [isHidden, setIsHidden] = useState(false);
   const [dataType, setDataType] = useState<MasterPlanFieldDataType>("Text");
@@ -96,6 +98,7 @@ const MasterPlanFieldModal = (props: Props) => {
   // --- Create master plan field ---
   const createMasterPlanField = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(`${apiUrl}/master-plan-field/create`, {
@@ -172,6 +175,8 @@ const MasterPlanFieldModal = (props: Props) => {
       );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -218,6 +223,7 @@ const MasterPlanFieldModal = (props: Props) => {
   // --- Update master plan field ---
   const updateMasterPlanField = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSaving(true);
 
     try {
       const response = await fetch(
@@ -297,6 +303,8 @@ const MasterPlanFieldModal = (props: Props) => {
       );
     } catch (err) {
       notify("error", t("Modal/Unknown error"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -452,8 +460,23 @@ const MasterPlanFieldModal = (props: Props) => {
                 type="button"
                 onClick={handleSaveClick}
                 className={`${buttonPrimaryClass} xs:col-span-2 col-span-3`}
+                disabled={isSaving}
               >
-                {props.itemId ? t("Modal/Update") : t("Common/Add")}
+                {isSaving ? (
+                  props.itemId ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Modal/Saving")}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <LoadingSpinner /> {t("Common/Adding")}
+                    </div>
+                  )
+                ) : props.itemId ? (
+                  t("Modal/Save")
+                ) : (
+                  t("Common/Add")
+                )}
               </button>
               <button
                 type="button"

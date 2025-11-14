@@ -205,16 +205,28 @@ const MasterPlansClient = (props: Props) => {
                   <span
                     key={i}
                     className={badgeClass}
-                    style={{
-                      backgroundColor:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkColorHex
-                          : matchingUnit?.lightColorHex,
-                      color:
-                        currentTheme === "dark"
-                          ? matchingUnit?.darkTextColorHex
-                          : matchingUnit?.lightTextColorHex,
-                    }}
+                    style={
+                      matchingUnit?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkTextColorHex
+                                : matchingUnit?.lightTextColorHex,
+                          }
+                    }
                   >
                     {label}
                   </span>
@@ -315,16 +327,28 @@ const MasterPlansClient = (props: Props) => {
               <span
                 key={i}
                 className={badgeClass}
-                style={{
-                  backgroundColor:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkColorHex
-                      : matchingUnit?.lightColorHex,
-                  color:
-                    currentTheme === "dark"
-                      ? matchingUnit?.darkTextColorHex
-                      : matchingUnit?.lightTextColorHex,
-                }}
+                style={
+                      matchingUnit?.reverseColor
+                        ? {
+                            boxShadow: `inset 0 0 0 1px ${
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex
+                            }`,
+                            backgroundColor: "transparent",
+                            color: "var(--text-main)",
+                          }
+                        : {
+                            backgroundColor:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkColorHex
+                                : matchingUnit?.lightColorHex,
+                            color:
+                              currentTheme === "dark"
+                                ? matchingUnit?.darkTextColorHex
+                                : matchingUnit?.lightTextColorHex,
+                          }
+                    }
               >
                 {label}
               </span>
@@ -357,8 +381,8 @@ const MasterPlansClient = (props: Props) => {
       key: "isHidden",
       label: t("Common/Status"),
       sortingItem: "visibilitycount",
-      labelAsc: t("MasterPlans/hidden master plans"),
-      labelDesc: t("MasterPlans/visible master plans"),
+      labelAsc: t("MasterPlans/visible master plans"),
+      labelDesc: t("MasterPlans/hidden master plans"),
       classNameAddition: "w-[100px] min-w-[100px]",
       childClassNameAddition: "w-[72px] min-w-[72px]",
       getValue: (item: MasterPlanItem) => (

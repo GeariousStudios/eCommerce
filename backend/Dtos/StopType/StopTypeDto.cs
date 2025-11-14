@@ -10,6 +10,7 @@ namespace backend.Dtos.StopType
         public string DarkColorHex { get; set; } = "#e0e0e0";
         public string LightTextColorHex { get; set; } = "#ffffff";
         public string DarkTextColorHex { get; set; } = "#000000";
+        public bool ReverseColor { get; set; }
         public List<UnitDto> Units { get; set; } = new();
         public bool IsHidden { get; set; }
 
